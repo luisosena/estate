@@ -15,6 +15,10 @@ Route::get('/landlorddashboard', function () {
     return Inertia::render('landlordDashboard');
 })->name('landlord.dashboard');
 
+Route::get('/testdashboard', function () {
+    return Inertia::render('testDashboard');
+})->name('testdashboard');
+
 Route::get('/mail', function () {
     return Inertia::render('mail');
 })->name('mail');
