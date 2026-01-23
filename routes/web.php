@@ -19,6 +19,10 @@ Route::get('/testdashboard', function () {
     return Inertia::render('testDashboard');
 })->name('testdashboard');
 
+Route::get('/sidebar', function () {
+    return Inertia::render('sidebar');
+})->name('sidebar');
+
 Route::get('/mail', function () {
     return Inertia::render('mail');
 })->name('mail');
