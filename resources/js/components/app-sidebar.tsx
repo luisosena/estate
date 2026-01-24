@@ -191,30 +191,27 @@ export function AppSidebar() {
   return(
       <Sidebar>
         <SidebarHeader>
-          <div>HEADER</div>
+          <div>ESTATE</div>
         </SidebarHeader>
         <SidebarContent>
           <Collapsible defaultOpen className="group/collapsible">
             <SidebarGroup>
               <SidebarGroupLabel>Group 1
               </SidebarGroupLabel>
-              <CollapsibleTrigger>
-                <Plus />
-              </CollapsibleTrigger>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton>
-                    <span>Item 1</span>
+                    <span>Dashboard</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton>
-                    <span>Item 1</span>
+                    <span>Analytics</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton>
-                    <span>Item 1</span>
+                    <span>Tenants</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
