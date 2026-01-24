@@ -38,6 +38,10 @@ import {
   CollapsibleContent, 
   CollapsibleTrigger 
 } from "@/components/ui/collapsible"
+import { LayoutDashboard } from "./animate-ui/icons/layout-dashboard"
+import { ChartColumn } from "./animate-ui/icons/chart-column"
+import { Users } from "./animate-ui/icons/users"
+
 // This is sample data.
 const data = {
   user: {
@@ -201,17 +205,25 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton>
+                    <LayoutDashboard animateOnHover />
                     <span>Dashboard</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton>
+                    <ChartColumn animateOnHover />
                     <span>Analytics</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton>
+                    <Users animateOnHover />
                     <span>Tenants</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton>
+                    <span>Collapsoble</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
