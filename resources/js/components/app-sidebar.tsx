@@ -1,4 +1,4 @@
-/* "use client"
+"use client"
 
 import * as React from "react"
 import {
@@ -187,7 +187,6 @@ const data = {
 }
  */
 
-/*
 export function AppSidebar() {
   return(
       <Sidebar>
@@ -197,7 +196,8 @@ export function AppSidebar() {
         <SidebarContent>
           <Collapsible defaultOpen className="group/collapsible">
             <SidebarGroup>
-              <SidebarGroupLabel>Group 1</SidebarGroupLabel>
+              <SidebarGroupLabel>Group 1
+              </SidebarGroupLabel>
               <CollapsibleTrigger>
                 <Plus />
               </CollapsibleTrigger>
@@ -246,91 +246,4 @@ export function AppSidebar() {
         </SidebarFooter>
       </Sidebar>
   )
-} */
-
-import { useState } from "react";
-
-
-export default function Sidebar() {
-  const [ecomOpen, setEcomOpen] = useState(false);
-
-  return (
-    <div className="w-64 min-h-screen bg-gray-900 text-white p-4">
-      {/* Logo / Title */}
-      <div className="mb-6 text-xl font-bold flex items-center gap-2">
-        <PiFolderSimpleLight className="text-white text-2xl" />
-        Shadcn UI Kit
-      </div>
-
-      {/* Dashboards */}
-      <div className="mb-4">
-        <div className="text-gray-400 uppercase text-xs mb-2">Dashboards</div>
-        <ul className="space-y-1">
-          <li className="flex items-center gap-2 p-2 rounded hover:bg-gray-800 cursor-pointer">
-            <PiClockClockwiseLight />
-            Classic Dashboard
-          </li>
-
-          {/* E-commerce Menu */}
-          <li>
-            <div
-              className="flex items-center justify-between gap-2 p-2 rounded hover:bg-gray-800 cursor-pointer"
-              onClick={() => setEcomOpen(!ecomOpen)}
-            >
-              <div className="flex items-center gap-2">
-                <PiShoppingCartSimpleLight />
-                E-commerce
-              </div>
-              <span>{ecomOpen ? "▾" : "▸"}</span>
-            </div>
-
-            {ecomOpen && (
-              <ul className="ml-6 mt-1 space-y-1">
-                <li className="p-2 rounded hover:bg-gray-800 cursor-pointer">
-                  Dashboard
-                </li>
-                <li className="p-2 rounded hover:bg-gray-800 cursor-pointer">
-                  Product List
-                </li>
-                <li className="p-2 rounded hover:bg-gray-800 cursor-pointer">
-                  Product Detail
-                </li>
-                <li className="p-2 rounded hover:bg-gray-800 cursor-pointer">
-                  Add Product
-                </li>
-                <li className="p-2 rounded hover:bg-gray-800 cursor-pointer">
-                  Order List
-                </li>
-                <li className="p-2 rounded hover:bg-gray-800 cursor-pointer">
-                  Order Detail
-                </li>
-              </ul>
-            )}
-          </li>
-
-          {/* Other Dashboards */}
-          <li className="flex items-center gap-2 p-2 rounded hover:bg-gray-800 cursor-pointer mt-2">
-            <PiCurrencyDollarLight />
-            Payment Dashboard
-          </li>
-          <li className="flex items-center gap-2 p-2 rounded hover:bg-gray-800 cursor-pointer">
-            <PiBuildingsLight />
-            Hotel Dashboard
-          </li>
-          <li className="flex items-center gap-2 p-2 rounded hover:bg-gray-800 cursor-pointer">
-            <PiFolderSimpleLight />
-            Project Management
-          </li>
-          <li className="flex items-center gap-2 p-2 rounded hover:bg-gray-800 cursor-pointer">
-            <PiChartLineLight />
-            Sales
-          </li>
-          <li className="flex items-center gap-2 p-2 rounded hover:bg-gray-800 cursor-pointer">
-            <PiUserLight />
-            CRM
-          </li>
-        </ul>
-      </div>
-    </div>
-  );
 }
