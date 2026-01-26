@@ -32,6 +32,9 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarGroupAction,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar"
 import { 
   Collapsible,
@@ -41,6 +44,7 @@ import {
 import { LayoutDashboard } from "./animate-ui/icons/layout-dashboard"
 import { ChartColumn } from "./animate-ui/icons/chart-column"
 import { Users } from "./animate-ui/icons/users"
+import { Sub } from "@radix-ui/react-dropdown-menu"
 
 // This is sample data.
 const data = {
@@ -223,8 +227,54 @@ export function AppSidebar() {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton>
-                    <span>Collapsoble</span>
+                    <span>Collapsible</span>
                   </SidebarMenuButton>
+                </SidebarMenuItem>
+                <Collapsible defaultOpen className="group/collapsible">
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton>+</SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton>
+                          <span>Item 1</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton>
+                          <span>Item 2</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton>
+                          <span>Item 3</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                  </SidebarMenuItem>
+                </Collapsible>
+                <SidebarMenuItem>
+                  <SidebarMenuButton>
+                    <span>Submenu</span>
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton>
+                        <span>Item 1</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton>
+                        <span>Item 2</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton>
+                        <span>Item 3</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroup>
@@ -250,6 +300,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
+        <SidebarRail />
         <SidebarFooter>
           <div>FOOTER</div>
         </SidebarFooter>
