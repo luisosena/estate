@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
+import MailSidebar from "@/components/mail-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,6 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { MailSidebar } from "@/components/mail-sidebar"
 
 export default function Page() {
   return (
@@ -23,7 +25,7 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      <MailSidebar/>
       <SidebarInset>
         <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
           <SidebarTrigger className="-ml-1" />

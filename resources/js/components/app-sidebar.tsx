@@ -302,7 +302,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarRail />
         <SidebarFooter>
           <div>FOOTER</div>
         </SidebarFooter>
