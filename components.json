@@ -20,6 +20,8 @@
   },
   "registries": {
     "@magicui": "https://magicui.design/r/{name}",
-    "@animate-ui": "https://animate-ui.com/r/{name}.json"
+    "@animate-ui": "https://animate-ui.com/r/{name}.json",
+    "@blocks": "https://blocks.so/r/{name}.json",
+    "@bundui": "https://bundui.io/r/{name}.json"
   }
 }

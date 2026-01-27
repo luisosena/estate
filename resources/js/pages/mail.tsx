@@ -1,55 +1,44 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { MailSidebar } from "@/components/mail-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {    
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
+"use client";
+
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/sidebar-04/app-sidebar";
+import { MailProvider, useMail } from "@/components/sidebar-04/mail-context";
+
+function MailPreview() {
+  const { selectedMail } = useMail();
+  if (!selectedMail) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        Select an email to preview
+      </div>
+    );
+  }
+  return (
+    <div className="flex h-full flex-col">
+      <div className="border-b p-4">
+        <div className="text-lg font-semibold">{selectedMail.subject}</div>
+        <div className="text-sm text-muted-foreground">
+          From: {selectedMail.name} ({selectedMail.email})
+        </div>
+      </div>
+      <div className="p-4 text-sm whitespace-pre-wrap">{`${selectedMail.teaser}\n\nThis is a sample message body for the selected email.\nIt demonstrates the preview area on the right side.`}</div>
+    </div>
+  );
+}
 
 export default function Page() {
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "350px",
-        } as React.CSSProperties
-      }
-    >
-      <MailSidebar/>
-      <SidebarInset>
-        <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">All Inboxes</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Inbox</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          {Array.from({ length: 20 }).map((_, index) => (
-            <div
-              key={index}
-              className="aspect-video h-12 w-full rounded-lg bg-muted/50"
-            />
-          ))}
+    <SidebarProvider>
+      <MailProvider>
+        <div className="flex h-screen w-full">
+          <AppSidebar />
+          <SidebarInset>
+            <div className="flex-1 rounded-xl border m-2">
+              <MailPreview />
+            </div>
+          </SidebarInset>
         </div>
-      </SidebarInset>
+      </MailProvider>
     </SidebarProvider>
-  )
+  );
 }

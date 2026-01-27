@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { usePage } from "@inertiajs/react"
 import { type SharedData } from "@/types"
+import  Stats07  from "@/components/stats-07"
 
 
 export default function Page() {
@@ -80,10 +81,13 @@ export default function Page() {
         </header>
         <span className="text-2xl pl-4">Dashbnoard</span>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+          <div /*className="grid auto-rows-min gap-4 md:grid-cols-3"*/>
+          {/*
             <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
             <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
             <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
+          */}
+          <Stats07/>
           </div>
           <div className="bg-muted/50 h-50 w-full">
           <span className="text-2xl m-4">Summary</span>
