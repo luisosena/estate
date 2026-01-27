@@ -1,11 +1,14 @@
-import { Item, ItemContent, ItemGroup, ItemHeader, ItemMedia, ItemSeparator, ItemTitle } from "@/components/ui/item"
-
-
-
+import { AppSidebar } from "@/components/app-sidebar"
+import {SidebarProvider, SidebarInset, SidebarTrigger} from "@/components/ui/sidebar"
+import { Item, ItemContent, ItemGroup, ItemHeader, ItemTitle } from "@/components/ui/item"
 
 
 export default function TenantDashboard() {
   return (
+    <SidebarProvider>
+    <AppSidebar />
+    <SidebarInset>
+      <SidebarTrigger className="-ml-1" />
     <Item>
       <ItemHeader>
         <ItemTitle>Tenant Dashboard</ItemTitle>
@@ -20,6 +23,7 @@ export default function TenantDashboard() {
         </ItemGroup>
       </ItemContent>
     </Item>
-    
+    </SidebarInset>
+    </SidebarProvider>
   )
 }
