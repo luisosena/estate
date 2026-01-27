@@ -30,6 +30,12 @@ Route::get('/tenant/{id}', function ($id){
     ]);
 })->name('tenant.dashboard');
 
+
+Route::get('/tests', function () {
+    return Inertia::render('tests');
+})->name('tests');
+
+
 Route::middleware(['auth', 'verified'])->group      (function () {
     Route::get('dashboard', function () {
         $tenants = Tenant::query()->orderBy('name')->get();
