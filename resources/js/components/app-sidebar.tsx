@@ -226,12 +226,12 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <Collapsible defaultOpen className="">
-                  <SidebarMenuItem className="flex items-center">
-                    <span className="">Collapsible</span>
-                    <CollapsibleTrigger className="ml-auto">
+                  <SidebarMenuItem className="flex flex-wrap items-center">
+                    <CollapsibleTrigger className="flex items-center">
+                      <span className="mr-auto">Collapsible</span>
                       <SidebarMenuButton className="">+</SidebarMenuButton>
                     </CollapsibleTrigger>
-                    <CollapsibleContent>
+                    <CollapsibleContent className="w-full">
                       <SidebarMenuSub>
                         <SidebarMenuSubItem>
                           <SidebarMenuSubButton>

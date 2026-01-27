@@ -1,15 +1,13 @@
-## Estate Practice
+## Estate Practice – Project Overview
 
-### Project Snapshot
+### 1. Summary
 
-**Estate Practice** is a Laravel + Inertia + React/TypeScript application for property/tenant management, with role?oriented dashboards (landlord, tenant), a mail view, and a modern glassmorphism UI.  
-It uses Laravel 12 on the backend with Fortify for authentication and Inertia for the SPA layer, and a Vite + Tailwind + React 19 front?end.
-
-For a more detailed technical overview, see `docs/OVERVIEW.md`.
+**Estate Practice** is a Laravel + Inertia + React/TypeScript application for property/tenant management, with role‑oriented dashboards (landlord, tenant), a mail view, and a modern glassmorphism UI.  
+It uses Laravel 12 on the backend with Fortify for authentication and Inertia for the SPA layer, and a Vite + Tailwind + React 19 front‑end.
 
 ---
 
-### 1. Tech Stack
+### 2. Tech Stack
 
 - **Backend**
   - **Language**: PHP ^8.2
@@ -63,7 +61,7 @@ For a more detailed technical overview, see `docs/OVERVIEW.md`.
 
 ---
 
-### 2. Project Scripts
+### 3. Project Scripts
 
 - **Composer (`composer.json`)**
   - **`setup`**: install PHP deps, create `.env` if missing, generate app key, run migrations, install npm deps, build assets.
@@ -90,7 +88,7 @@ For a more detailed technical overview, see `docs/OVERVIEW.md`.
 
 ---
 
-### 3. High-Level Directory Structure
+### 4. High-Level Directory Structure
 
 #### Root
 
@@ -104,7 +102,7 @@ For a more detailed technical overview, see `docs/OVERVIEW.md`.
 - **`.env.example`**: environment template.
 - **`phpunit.xml`**: test configuration for PHP/Pest.
 
-#### `app/` ? Laravel application
+#### `app/` – Laravel application
 
 - **`Actions/Fortify`**
   - `CreateNewUser.php`, `ResetUserPassword.php`: Fortify hooks for user creation and password reset.
@@ -160,12 +158,12 @@ For a more detailed technical overview, see `docs/OVERVIEW.md`.
 - **`css/app.css`**: Tailwind and global styles.
 - **`views/app.blade.php`**: Inertia root Blade view that mounts the React app.
 
-- **`js/`** ? main React/Inertia SPA
+- **`js/`** – main React/Inertia SPA
   - **Entry & SSR**
     - `app.tsx`: client entry point, initializes Inertia and React.
     - `ssr.tsx`: server-side rendering entry for Inertia SSR.
 
-  - **`pages/`** ? Inertia pages (mapped from Laravel routes)
+  - **`pages/`** – Inertia pages (mapped from Laravel routes)
     - `auth/confirm-password.tsx`
     - `auth/forgot-password.tsx`
     - `auth/login.tsx`
@@ -184,7 +182,7 @@ For a more detailed technical overview, see `docs/OVERVIEW.md`.
     - `settings/two-factor.tsx`
     - `welcome.tsx` (landing page; uses `canRegister` flag)
 
-  - **`components/`** ? shared React components
+  - **`components/`** – shared React components
     - App shell: `app-shell.tsx`, `app-header.tsx`, `app-sidebar.tsx`, `app-sidebar-header.tsx`, `app-content.tsx`, `site-header.tsx`.
     - Navigation: `nav-main.tsx`, `nav-secondary.tsx`, `nav-projects.tsx`, `nav-documents.tsx`, `nav-footer.tsx`, `nav-user.tsx`, `mail-sidebar.tsx`, `team-switcher.tsx`, `breadcrumbs.tsx`.
     - Domain/utility: `data-table.tsx`, `chart-area-interactive.tsx`, `section-cards.tsx`, `user-info.tsx`, `user-menu-content.tsx`.
@@ -221,28 +219,28 @@ For a more detailed technical overview, see `docs/OVERVIEW.md`.
 #### `routes/`
 
 - **`web.php`**
-  - `/` ? `welcome` Inertia page with `canRegister` flag (`home` route).
-  - `/landlorddashboard` ? `landlordDashboard`.
-  - `/testdashboard` ? `testDashboard`.
-  - `/mail` ? `mail`.
-  - `/tenant/{id}` ? `tenantDashboard`:
+  - `/` → `welcome` Inertia page with `canRegister` flag (`home` route).
+  - `/landlorddashboard` → `landlordDashboard`.
+  - `/testdashboard` → `testDashboard`.
+  - `/mail` → `mail`.
+  - `/tenant/{id}` → `tenantDashboard`:
     - Loads `Tenant::findOrFail($id)` and passes it as `tenant` prop.
   - Authenticated & verified group:
-    - `/dashboard` ? `dashboard`:
+    - `/dashboard` → `dashboard`:
       - Loads all tenants ordered by name and passes as `tenants`.
   - Includes `settings.php`.
 
 - **`settings.php`**
   - Authenticated group:
-    - Redirect `/settings` ? `/settings/profile`.
-    - `GET /settings/profile` ? `ProfileController@edit` (`profile.edit`).
-    - `PATCH /settings/profile` ? `ProfileController@update` (`profile.update`).
+    - Redirect `/settings` → `/settings/profile`.
+    - `GET /settings/profile` → `ProfileController@edit` (`profile.edit`).
+    - `PATCH /settings/profile` → `ProfileController@update` (`profile.update`).
   - Authenticated & verified:
-    - `DELETE /settings/profile` ? `ProfileController@destroy` (`profile.destroy`).
-    - `GET /settings/password` ? `PasswordController@edit` (`user-password.edit`).
-    - `PUT /settings/password` ? `PasswordController@update` (`user-password.update`) with throttling.
-    - `GET /settings/appearance` ? Inertia `settings/appearance` (`appearance.edit`).
-    - `GET /settings/two-factor` ? `TwoFactorAuthenticationController@show` (`two-factor.show`).
+    - `DELETE /settings/profile` → `ProfileController@destroy` (`profile.destroy`).
+    - `GET /settings/password` → `PasswordController@edit` (`user-password.edit`).
+    - `PUT /settings/password` → `PasswordController@update` (`user-password.update`) with throttling.
+    - `GET /settings/appearance` → Inertia `settings/appearance` (`appearance.edit`).
+    - `GET /settings/two-factor` → `TwoFactorAuthenticationController@show` (`two-factor.show`).
 
 - **`console.php`**
   - Console/Artisan routes (currently default unless extended).
@@ -271,7 +269,7 @@ For a more detailed technical overview, see `docs/OVERVIEW.md`.
 
 ---
 
-### 4. Current Functional State
+### 5. Current Functional State
 
 - **Authentication & user management**
   - Fortify-based auth including registration, login, password reset, email verification, and 2FA.
