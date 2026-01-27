@@ -35,6 +35,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarMenuAction,
 } from "@/components/ui/sidebar"
 import { 
   Collapsible,
@@ -201,8 +202,7 @@ export function AppSidebar() {
         <SidebarHeader>
           <div>ESTATE</div>
         </SidebarHeader>
-        <SidebarContent>
-          <Collapsible defaultOpen className="group/collapsible">
+        <SidebarContent >
             <SidebarGroup>
               <SidebarGroupLabel>Group 1
               </SidebarGroupLabel>
@@ -225,15 +225,11 @@ export function AppSidebar() {
                     <span>Tenants</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton>
-                    <span>Collapsible</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <Collapsible defaultOpen className="group/collapsible">
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton>+</SidebarMenuButton>
+                <Collapsible defaultOpen className="">
+                  <SidebarMenuItem className="flex items-center">
+                    <span className="">Collapsible</span>
+                    <CollapsibleTrigger className="ml-auto">
+                      <SidebarMenuButton className="">+</SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
@@ -258,7 +254,7 @@ export function AppSidebar() {
                 </Collapsible>
                 <SidebarMenuItem>
                   <SidebarMenuButton>
-                    <span>Submenu</span>
+                    <span>Documents</span>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
                     <SidebarMenuSubItem>
@@ -280,23 +276,21 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroup>
-          </Collapsible>
-          <SidebarGroup>
-            <SidebarGroupLabel>Group 1</SidebarGroupLabel>
+          <SidebarGroup className="mt-auto mb-4">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton>
-                  <span>Item 1</span>
+                  <span>Settings</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton>
-                  <span>Item 1</span>
+                  <span>Help</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton>
-                  <span>Item 1</span>
+                  <span>Contact Us</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
