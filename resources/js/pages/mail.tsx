@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import MailSidebar from "@/components/mail-sidebar"
+import { MailSidebar } from "@/components/mail-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,12 +9,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
-import {
+import {    
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { MailSidebar } from "@/components/mail-sidebar"
 
 export default function Page() {
   return (
