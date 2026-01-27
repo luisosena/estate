@@ -103,12 +103,12 @@ export default function Page() {
               <ItemGroup>
                 {tenants.map((tenant, index) => (
                   <div key={tenant.id} className="contents">
-                    <Item variant="outline" size="sm" className="w-full">
+                    <Item variant="default" size="sm" className="w-full">
                       <ItemMedia
                         variant="icon"
                         className="text-muted-foreground font-medium"
                       >
-                        {getInitials(tenant.name)}
+                      
                       </ItemMedia>
                       <ItemContent className="min-w-0">
                         <ItemTitle className="min-w-0">
