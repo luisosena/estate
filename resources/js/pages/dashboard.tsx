@@ -89,13 +89,13 @@ export default function Page() {
           */}
           <Stats07/>
           </div>
-          <div className="bg-muted/50 h-50 w-full">
-          <span className="text-2xl m-4">Summary</span>
+          <div className="bg-muted/50 h-50 w-full p-4">
+          <span className="text-xl">Summary</span>
           </div>
           <Item className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min block m-0">
             <ItemHeader className="pb-4">
               <div className="flex flex-col gap-1">
-                <ItemTitle className="text-base">Tenants</ItemTitle>
+                <ItemTitle className="text-base text-xl">Tenants</ItemTitle>
                 <ItemDescription>
                   Manage tenants, units, and quick actions.
                 </ItemDescription>
