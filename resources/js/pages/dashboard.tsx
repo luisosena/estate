@@ -85,6 +85,9 @@ export default function Page() {
             <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
             <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
           </div>
+          <div className="bg-muted/50 h-50 w-full">
+          <span className="text-2xl m-4">Summary</span>
+          </div>
           <Item className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min block m-0">
             <ItemHeader className="pb-4">
               <div className="flex flex-col gap-1">
@@ -108,15 +111,15 @@ export default function Page() {
                         variant="icon"
                         className="text-muted-foreground font-medium"
                       >
-                      
+                      <span>{tenant.unit_number}</span>
                       </ItemMedia>
                       <ItemContent className="min-w-0">
                         <ItemTitle className="min-w-0">
-                          <span className="truncate">{tenant.name}</span>
-                          <Badge variant={statusBadgeVariant(tenant.status)}>
+                          <span className="truncate text-xl">{tenant.name}</span>
+                        </ItemTitle>
+                        <Badge variant={statusBadgeVariant(tenant.status)}>
                             {tenant.status}
                           </Badge>
-                        </ItemTitle>
                         <ItemDescription className="truncate">
                           Unit {tenant.unit_number ?? "—"}
                           {tenant.email ? ` • ${tenant.email}` : ""}
