@@ -79,7 +79,7 @@ export default function Page() {
             </Breadcrumb>*/}
           </div>
         </header>
-        <span className="text-2xl pl-4">Dashbnoard</span>
+        <span className="text-2xl p-4">Dashboard</span>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <div /*className="grid auto-rows-min gap-4 md:grid-cols-3"*/>
           {/*
@@ -87,9 +87,9 @@ export default function Page() {
             <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
             <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
           */}
-          <Stats07/>
+          <Stats07 />
           </div>
-          <div className="bg-muted/50 h-50 w-full p-4">
+          <div className="bg-muted/50 rounded-xl h-50 w-full p-4">
           <span className="text-xl">Summary</span>
           </div>
           <Item className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min block m-0">

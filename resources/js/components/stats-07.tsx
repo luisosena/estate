@@ -46,7 +46,7 @@ const chartConfig = {
 
 export default function Stats07() {
   return (
-    <div className="flex items-center justify-center p-10 w-full">
+    <div className="flex items-center justify-center mt-4 w-full">
       <div className="w-full">
         <h2 className="text-xl font-medium text-foreground">Overview</h2>
         <p className="mt-1 text-sm leading-6 text-muted-foreground">
