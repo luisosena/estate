@@ -5,7 +5,7 @@ export default function SomePage() {
   return (
     <div className="p-6">
       <SectionsTable />
-      <Table05/>
+      <Table05 />
     </div>
   )
 }
