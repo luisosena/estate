@@ -36,11 +36,12 @@ Route::get('/tests', function () {
 })->name('tests');
 
 Route::get('/tests2', function () {
-    $tenants = Tenant::query()->orderBy('name')->get();
+    $tenants = Tenant::query()->orderBy('id')->get();
     return Inertia::render('tests2', [
         'tenants' => $tenants,
     ]);
 })->name('tests2');
+
 
 
 Route::middleware(['auth', 'verified'])->group      (function () {

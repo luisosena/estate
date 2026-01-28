@@ -1,6 +1,6 @@
-"use client";
-
 import { useState } from "react";
+import { Link } from "@inertiajs/react";
+import { route } from "ziggy-js";
 import {
   type ColumnDef,
   type SortingState,
@@ -18,6 +18,7 @@ import {
   Pencil,
   Trash2,
   MoreHorizontal,
+  Mail,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -46,194 +47,170 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import type { Tenant } from "@/types";
 
-type Status = "completed" | "pending" | "processing" | "cancelled";
+type TenantStatus = Tenant["status"];
 
-interface Item {
-  id: string;
-  name: string;
-  date: string;
-  status: Status;
-  amount: string;
-}
-
-const statusConfig: Record<Status, { label: string; className: string }> = {
-  completed: {
-    label: "Completed",
-    className:
-      "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
-  },
-  pending: {
-    label: "Pending",
-    className:
-      "bg-amber-500/15 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
-  },
-  processing: {
-    label: "Processing",
-    className:
-      "bg-blue-500/15 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className:
-      "bg-rose-500/15 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400",
-  },
+const statusConfig: Record<
+  TenantStatus,
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+> = {
+  Active: { label: "Active", variant: "outline" },
+  Late: { label: "Late", variant: "destructive" },
+  Vacating: { label: "Vacating", variant: "secondary" },
 };
 
-function StatusBadge({ status }: { status: Status }) {
+function TenantStatusBadge({ status }: { status: TenantStatus }) {
   const config = statusConfig[status];
-  return (
-    <Badge variant="outline" className={cn("border-0", config.className)}>
-      {config.label}
-    </Badge>
-  );
+  return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
-const columns: ColumnDef<Item>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "name",
-    header: "Name",
-    cell: ({ row }) => (
-      <span className="font-medium">{row.getValue("name")}</span>
-    ),
-  },
-  {
-    accessorKey: "date",
-    header: "Date",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
-  },
-  {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-medium">{row.getValue("amount")}</div>
-    ),
-  },
-  {
-    id: "actions",
-    cell: () => (
-      <div className="text-right">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Eye className="mr-2 h-4 w-4" />
-              View details
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    ),
-  },
-];
+function formatCurrency(value: number | string | null | undefined): string {
+  if (value == null) return "—";
+  const n = typeof value === "string" ? parseFloat(value) : value;
+  if (Number.isNaN(n)) return "—";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(n);
+}
 
-const data: Item[] = [
-  {
-    id: "1",
-    name: "Project Alpha",
-    date: "Jan 15, 2024",
-    status: "completed",
-    amount: "$2,500",
-  },
-  {
-    id: "2",
-    name: "Website Redesign",
-    date: "Feb 3, 2024",
-    status: "processing",
-    amount: "$4,200",
-  },
-  {
-    id: "3",
-    name: "Mobile App MVP",
-    date: "Feb 18, 2024",
-    status: "pending",
-    amount: "$8,750",
-  },
-  {
-    id: "4",
-    name: "Brand Identity",
-    date: "Mar 5, 2024",
-    status: "completed",
-    amount: "$1,800",
-  },
-  {
-    id: "5",
-    name: "Marketing Campaign",
-    date: "Mar 22, 2024",
-    status: "cancelled",
-    amount: "$3,400",
-  },
-  {
-    id: "6",
-    name: "Analytics Dashboard",
-    date: "Apr 8, 2024",
-    status: "processing",
-    amount: "$5,600",
-  },
-  {
-    id: "7",
-    name: "E-commerce Platform",
-    date: "Apr 25, 2024",
-    status: "pending",
-    amount: "$12,000",
-  },
-  {
-    id: "8",
-    name: "API Integration",
-    date: "May 10, 2024",
-    status: "completed",
-    amount: "$3,200",
-  },
-];
+function formatDate(value: string | null | undefined): string {
+  if (!value) return "—";
+  try {
+    return new Date(value).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return "—";
+  }
+}
 
-export default function Table05() {
+interface TenantsTableProps {
+  tenants: Tenant[];
+}
+
+export default function TenantsTable({ tenants }: TenantsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
 
+  const columns: ColumnDef<Tenant>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.getValue("name")}</span>
+      ),
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground truncate max-w-[200px] block">
+          {row.getValue("email") ?? "—"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "unit_number",
+      header: "Unit",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {row.getValue("unit_number") ?? "—"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <TenantStatusBadge status={row.getValue("status")} />
+      ),
+    },
+    {
+      accessorKey: "rent_amount",
+      header: () => <div className="text-right">Rent</div>,
+      cell: ({ row }) => (
+        <div className="text-right font-medium">
+          {formatCurrency(row.getValue("rent_amount"))}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "lease_end",
+      header: "Lease end",
+      cell: ({ row }) => formatDate(row.getValue("lease_end")),
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const tenant = row.original;
+        return (
+          <div className="text-right">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={route("tenant.dashboard", tenant.id)}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View details
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Message
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
+    },
+  ];
+
   const table = useReactTable({
-    data,
+    data: tenants,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -249,7 +226,7 @@ export default function Table05() {
       globalFilter,
     },
     initialState: {
-      pagination: { pageSize: 5 },
+      pagination: { pageSize: 10 },
     },
   });
 
@@ -257,7 +234,7 @@ export default function Table05() {
   const currentPage = table.getState().pagination.pageIndex + 1;
 
   return (
-    <div className="max-w-3xl w-full space-y-4">
+    <div className="w-full space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Show</span>
@@ -269,7 +246,7 @@ export default function Table05() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[5, 10, 20].map((size) => (
+              {[5, 10, 20, 50].map((size) => (
                 <SelectItem key={size} value={String(size)}>
                   {size}
                 </SelectItem>
@@ -279,7 +256,7 @@ export default function Table05() {
           <span className="text-sm text-muted-foreground">entries</span>
         </div>
         <Input
-          placeholder="Search..."
+          placeholder="Search tenants..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="h-8 w-full sm:w-64"
@@ -327,7 +304,7 @@ export default function Table05() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  No tenants found.
                 </TableCell>
               </TableRow>
             )}
@@ -338,9 +315,11 @@ export default function Table05() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           Showing{" "}
-          {table.getState().pagination.pageIndex *
-            table.getState().pagination.pageSize +
-            1}{" "}
+          {tenants.length === 0
+            ? 0
+            : table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
+              1}{" "}
           to{" "}
           {Math.min(
             (table.getState().pagination.pageIndex + 1) *

@@ -1,57 +1,19 @@
-import { Link } from "@inertiajs/react"
-import { route } from "ziggy-js"
 import { Tenant } from "@/types/index"
 import { AppSidebar } from "@/components/app-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import {
-  Item,
-  ItemMedia,
-  ItemContent,
-  ItemActions,
-  ItemGroup,
-  ItemSeparator,
-  ItemTitle,
-  ItemDescription,
-  ItemHeader,
-  ItemFooter,
-} from "@/components/ui/item"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { usePage } from "@inertiajs/react"
 import { type SharedData } from "@/types"
-import  Stats07  from "@/components/stats-07"
-
+import Stats07 from "@/components/stats-07"
+import TenantsTable from "@/components/tenants-table"
 
 export default function Page() {
   const { tenants } = usePage<SharedData & { tenants: Tenant[] }>().props
-
-  const getInitials = (name: string) =>
-    name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((p) => p[0] ?? "")
-      .join("")
-      .toUpperCase()
-
-  const statusBadgeVariant = (status: Tenant["status"]) => {
-    if (status === "Late") return "destructive" as const
-    if (status === "Vacating") return "secondary" as const
-    return "outline" as const
-  }
 
   return (
     <SidebarProvider>
@@ -90,63 +52,24 @@ export default function Page() {
           <Stats07 />
           </div>
           <div className="bg-muted/50 rounded-xl h-50 w-full p-4">
-          <span className="text-xl">Summary</span>
+            <span className="text-xl">Summary</span>
           </div>
-          <Item className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min block m-0">
-            <ItemHeader className="pb-4">
-              <div className="flex flex-col gap-1">
-                <ItemTitle className="text-base text-xl">Tenants</ItemTitle>
-                <ItemDescription>
-                  Manage tenants, units, and quick actions.
-                </ItemDescription>
-              </div>
-              <ItemActions>
+          <div className="bg-muted/50 min-h-0 flex-1 rounded-xl p-4">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-base text-xl font-semibold">Tenants</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Manage tenants, units, and quick actions.
+                  </p>
+                </div>
                 <Button variant="outline" size="sm">
                   Add tenant
                 </Button>
-              </ItemActions>
-            </ItemHeader>
-            <ItemContent className="self-start">
-              <ItemGroup>
-                {tenants.map((tenant, index) => (
-                  <div key={tenant.id} className="contents">
-                    <Item variant="default" size="sm" className="w-full">
-                      <ItemMedia
-                        variant="icon"
-                        className="text-muted-foreground font-medium"
-                      >
-                      <span>{tenant.unit_number}</span>
-                      </ItemMedia>
-                      <ItemContent className="min-w-0">
-                        <ItemTitle className="min-w-0">
-                          <span className="truncate text-xl">{tenant.name}</span>
-                        </ItemTitle>
-                        <Badge variant={statusBadgeVariant(tenant.status)}>
-                            {tenant.status}
-                          </Badge>
-                        <ItemDescription className="truncate">
-                          Unit {tenant.unit_number ?? "—"}
-                          {tenant.email ? ` • ${tenant.email}` : ""}
-                          {!tenant.email && tenant.phone ? ` • ${tenant.phone}` : ""}
-                        </ItemDescription>
-                      </ItemContent>
-                      <ItemActions className="ml-auto">
-                        <Link href={route('tenant.dashboard', tenant.id)}>
-                        <Button variant="ghost" size="sm">
-                          View
-                        </Button>
-                        </Link>
-                        <Button variant="outline" size="sm">
-                          Message
-                        </Button>
-                      </ItemActions>
-                    </Item>
-                    {index < tenants.length - 1 ? <ItemSeparator /> : null}
-                  </div>
-                ))}
-              </ItemGroup>
-            </ItemContent>
-          </Item>
+              </div>
+              <TenantsTable tenants={tenants} />
+            </div>
+          </div>
         </div>
         </SidebarInset>
     </SidebarProvider>
