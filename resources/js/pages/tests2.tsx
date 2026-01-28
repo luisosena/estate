@@ -10,7 +10,7 @@ export default function Table() {
     <>
     <Table05 />
     <div>
-      {tenants.map((tenant, index) => (
+      {tenants.map((tenant) => (
         <div key={tenant.id} className="contents">
           <div>{tenant.name}</div>
         </div>
