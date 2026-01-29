@@ -46,6 +46,7 @@ import { LayoutDashboard } from "./animate-ui/icons/layout-dashboard"
 import { ChartColumn } from "./animate-ui/icons/chart-column"
 import { Users } from "./animate-ui/icons/users"
 import { Sub } from "@radix-ui/react-dropdown-menu"
+import { useSidebar } from "@/components/ui/sidebar"
 
 // This is sample data.
 const data = {
@@ -177,28 +178,23 @@ const data = {
   ],
 }
 
-/* export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
-  )
-}
- */
-
 export function AppSidebar() {
+  const { state, setOpen } = useSidebar()
+
+  const expandForSubmenu = () => {
+    if (state === "collapsed") {
+      setOpen(true)
+    }
+  }
+
+  const letterIcon = (letter: string) => (
+    <span className="flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold">
+      {letter}
+    </span>
+  )
+
   return(
-      <Sidebar>
+      <Sidebar collapsible="icon" variant="floating">
         <SidebarHeader>
           <div>ESTATE</div>
         </SidebarHeader>
@@ -208,19 +204,19 @@ export function AppSidebar() {
               </SidebarGroupLabel>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
+                  <SidebarMenuButton tooltip="Dashboard">
                     <LayoutDashboard animateOnHover />
                     <span>Dashboard</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
+                  <SidebarMenuButton tooltip="Analytics">
                     <ChartColumn animateOnHover />
                     <span>Analytics</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
+                  <SidebarMenuButton tooltip="Tenants">
                     <Users animateOnHover />
                     <span>Tenants</span>
                   </SidebarMenuButton>
@@ -234,7 +230,7 @@ export function AppSidebar() {
                     <CollapsibleContent className="w-full">
                       <SidebarMenuSub>
                         <SidebarMenuSubItem>
-                          <SidebarMenuSubButton>
+                          <SidebarMenuSubButton isActive>
                             <span>Item 1</span>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -253,7 +249,11 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 </Collapsible>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
+                  <SidebarMenuButton
+                    tooltip="Documents"
+                    onClick={expandForSubmenu}
+                  >
+                    {letterIcon("D")}
                     <span>Documents</span>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
@@ -279,17 +279,20 @@ export function AppSidebar() {
           <SidebarGroup className="mt-auto mb-4">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton tooltip="Settings">
+                  {letterIcon("S")}
                   <span>Settings</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton tooltip="Help">
+                  {letterIcon("H")}
                   <span>Help</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton tooltip="Contact Us">
+                  {letterIcon("C")}
                   <span>Contact Us</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -299,6 +302,7 @@ export function AppSidebar() {
         <SidebarFooter>
           <div>FOOTER</div>
         </SidebarFooter>
+        <SidebarRail />
       </Sidebar>
   )
 }
