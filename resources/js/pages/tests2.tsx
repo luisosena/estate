@@ -20,28 +20,31 @@ import {
 } from "@/components/ui/sidebar"
 
 export default function Test() {
-  <SidebarProvider>
-    <Sidebar>
-      <SidebarHeader />
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <span>Sukuna</span>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <span>Gojo</span>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <span>Itadori</span>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter />
-    </Sidebar>
-    <SidebarInset>
-      <SidebarTrigger/>
-    </SidebarInset>
-  </SidebarProvider>
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader />
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <span>Sukuna</span>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <span>Gojo</span>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <span>Itadori</span>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter />
+        <SidebarRail />
+      </Sidebar>
+      <SidebarInset>
+        <SidebarTrigger />
+      </SidebarInset>
+    </SidebarProvider>
+  )
 }

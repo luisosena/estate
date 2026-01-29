@@ -43,7 +43,7 @@ export function AppSidebar() {
   )
 
   return(
-      <Sidebar className="" collapsible="icon" variant="floating">
+      <Sidebar className="top-15 h-[calc(100svh-1rem)]" collapsible="icon" variant="floating">
         <SidebarContent >
             <SidebarGroup>
               <SidebarGroupLabel>Group 1
@@ -67,6 +67,7 @@ export function AppSidebar() {
                     <span>Tenants</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {/*
                 <Collapsible defaultOpen className="">
                   <SidebarMenuItem className="flex flex-wrap items-center">
                     <CollapsibleTrigger className="flex items-center">
@@ -94,6 +95,7 @@ export function AppSidebar() {
                     </CollapsibleContent>
                   </SidebarMenuItem>
                 </Collapsible>
+                */}
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     tooltip="Documents"
