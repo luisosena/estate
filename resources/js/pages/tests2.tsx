@@ -39,7 +39,6 @@ export default function Test() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter />
-      <SidebarRail />
     </Sidebar>
     <SidebarInset>
       <SidebarTrigger/>
