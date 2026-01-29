@@ -1,13 +1,48 @@
-import { type SharedData } from "@/types"
-import { Tenant } from "@/types/index"
-import { usePage } from "@inertiajs/react"
-import TenantsTable from "@/components/tenants-table"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarRail,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+  SidebarGroupAction,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
+  SidebarMenuAction,
+} from "@/components/ui/sidebar"
 
-export default function Table() {
-  const { tenants } = usePage<SharedData & { tenants: Tenant[] }>().props
-  return (
-    <div className="p-4">
-      <TenantsTable tenants={tenants} />
-    </div>
-  )
+export default function Test() {
+  <SidebarProvider>
+    <Sidebar>
+      <SidebarHeader />
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <span>Sukuna</span>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <span>Gojo</span>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <span>Itadori</span>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter />
+      <SidebarRail />
+    </Sidebar>
+    <SidebarInset>
+      <SidebarTrigger/>
+    </SidebarInset>
+  </SidebarProvider>
 }
