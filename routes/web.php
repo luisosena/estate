@@ -35,6 +35,10 @@ Route::get('/tests', function () {
     return Inertia::render('tests');
 })->name('tests');
 
+Route::get('/dashboard', function () {
+    return Inertia::render('dashboard');
+})->name('dashboard');
+
 Route::get('/tests2', function () {
     $tenants = Tenant::query()->orderBy('id')->get();
     return Inertia::render('tests2', [
@@ -43,10 +47,10 @@ Route::get('/tests2', function () {
 })->name('tests2');
 
 
-
+/*
 Route::middleware(['auth', 'verified'])->group      (function () {
     Route::get('dashboard', function () {
-        $tenants = Tenant::query()->orderBy('name')->get();
+       $tenants = Tenant::query()->orderBy('name')->get();
 
         return Inertia::render('dashboard', [
             'tenants' => $tenants,
@@ -54,6 +58,6 @@ Route::middleware(['auth', 'verified'])->group      (function () {
     })->name('dashboard');
 
 });
-
+*/
 
 require __DIR__.'/settings.php';

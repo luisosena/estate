@@ -67,7 +67,7 @@ export default function Page() {
                   Add tenant
                 </Button>
               </div>
-              <TenantsTable tenants={tenants} />
+              {/*<TenantsTable tenants={tenants} />*/}
             </div>
           </div>
         </div>
