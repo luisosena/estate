@@ -43,8 +43,8 @@ export function AppSidebar() {
   )
 
   return(
-      <Sidebar className="top-15 h-[calc(100svh-1rem)]" collapsible="icon" variant="floating">
-        <SidebarContent >
+      <Sidebar collapsible="icon" variant="floating">
+        <SidebarContent className="pt-4">
             <SidebarGroup>
               <SidebarGroupLabel>Group 1
               </SidebarGroupLabel>
