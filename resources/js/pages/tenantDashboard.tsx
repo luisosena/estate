@@ -1,12 +1,13 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import {SidebarProvider, SidebarInset, SidebarTrigger} from "@/components/ui/sidebar"
 import { Item, ItemContent, ItemGroup, ItemHeader, ItemTitle } from "@/components/ui/item"
+import { TenantSidebar } from "@/components/tenant-sidebar"
 
 
 export default function TenantDashboard() {
   return (
     <SidebarProvider>
-    <AppSidebar />
+    <TenantSidebar />
     <SidebarInset>
       <SidebarTrigger className="-ml-1" />
     <Item>

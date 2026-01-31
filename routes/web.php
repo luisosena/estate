@@ -23,6 +23,10 @@ Route::get('/mail', function () {
     return Inertia::render('mail');
 })->name('mail');
 
+Route::get('/tenantdashboard', function () {
+    return Inertia::render('tenantDashboard');
+})->name('tenantdashboard');
+
 Route::get('/tenant/{id}', function ($id){
     $tenant = Tenant::findOrFail($id);
     return Inertia::render('tenantDashboard', [
