@@ -2,32 +2,40 @@
 
 namespace App\Actions\Fortify;
 
-use App\Concerns\PasswordValidationRules;
-use App\Concerns\ProfileValidationRules;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Concerns\PasswordValidationRules;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
 {
-    use PasswordValidationRules, ProfileValidationRules;
+    use PasswordValidationRules;
 
-    /**
-     * Validate and create a newly registered user.
-     *
-     * @param  array<string, string>  $input
-     */
-    public function create(array $input): User
+    public function create(array $input)
     {
         Validator::make($input, [
-            ...$this->profileRules(),
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
         ])->validate();
 
         return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
-            'password' => $input['password'],
+            'username' => $this->generateUsername($input['name']),
+            'password' => Hash::make($input['password']),
         ]);
+    }
+
+    protected function generateUsername(string $name): string
+    {
+        do {
+            $base = Str::slug($name, '.');
+            $username = $base . '_' . random_int(1000, 9999);
+        } while (User::where('username', $username)->exists());
+
+        return $username;
     }
 }
