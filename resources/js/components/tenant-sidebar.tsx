@@ -67,35 +67,6 @@ export function TenantSidebar() {
                     <span>Tenants</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {/*
-                <Collapsible defaultOpen className="">
-                  <SidebarMenuItem className="flex flex-wrap items-center">
-                    <CollapsibleTrigger className="flex items-center">
-                      <span className="mr-auto">Collapsible</span>
-                      <SidebarMenuButton className="">+</SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="w-full">
-                      <SidebarMenuSub>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton isActive>
-                            <span>Item 1</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton>
-                            <span>Item 2</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton>
-                            <span>Item 3</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-                */}
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     tooltip="Documents"
