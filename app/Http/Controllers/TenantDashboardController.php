@@ -18,7 +18,7 @@ class TenantDashboardController extends Controller
             ->with(['unit', 'payments', 'utilities'])
             ->first();
 
-        return Inertia::render('Tenant/Dashboard', [
+        return Inertia::render('tenant/dashboard', [
             'tenant' => [
                 'id' => $tenant->id,
                 'full_name' => $tenant->full_name,
