@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Models\Tenant;
+use App\Http\Controllers\TenantDashboardController;
+
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -23,13 +25,28 @@ Route::get('/mail', function () {
     return Inertia::render('mail');
 })->name('mail');
 
-
+/*
 Route::get('/tenant/{id}', function ($id){
     $tenant = Tenant::findOrFail($id);
     return Inertia::render('tenant/dashboard', [
         'tenant' => $tenant
     ]);
 })->name('tenant.dashboard');
+*/
+
+/*
+Route::get('/tenant/{id}',function($id) {
+    $tenant = Tenant::findOrFail($id);
+    return Inertia::render('tenant/dashboard', [
+        'tenant' => $tenant
+    ]);
+})->name('tenant.dashboard');
+*/
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
+        ->name('tenant.dashboard');
+});
 
 
 Route::get('/tests', function () {
@@ -46,6 +63,8 @@ Route::get('/tests2', function () {
         'tenants' => $tenants,
     ]);
 })->name('tests2');
+
+Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 
 
 /*

@@ -18,6 +18,8 @@ import {
   SidebarMenuSubButton,
   SidebarMenuAction,
 } from "@/components/ui/sidebar"
+import { Link } from "@inertiajs/react"
+import { route } from "ziggy-js"
 
 export default function Test() {
   return (
@@ -44,6 +46,8 @@ export default function Test() {
       </Sidebar>
       <SidebarInset>
         <SidebarTrigger />
+        <Link  href={route('tenant.dashboard')}
+        >Mail</Link>
       </SidebarInset>
     </SidebarProvider>
   )

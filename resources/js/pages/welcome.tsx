@@ -1,8 +1,9 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link } from "@inertiajs/react"
 
 import { dashboard, login, register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Button } from '@/components/ui/button'
+import { route } from "ziggy-js";
 
 import AnimatedText from "@/components/animated-text";
 
@@ -20,11 +21,12 @@ export default function Example() {
       </div>
       <div>
       <Link
-        href={register()}
-        className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
+        href="/tests2"
       >
         Log in
       </Link>
+      <Link  href={route('mail')}
+        >Mail</Link>
       </div>
     </>
   );

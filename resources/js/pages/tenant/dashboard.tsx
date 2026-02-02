@@ -31,6 +31,9 @@ export default function TenantDashboard() {
           <div className="flex-1 bg-green-500 h-full rounded-xl"></div>
           <div className="flex-1 bg-red-500 h-full rounded-xl"></div>
         </div>
+        <div>
+          
+        </div>
         <div className="mt-65 ">
           <span className="text-2xl font-bold border-b-2 border-gray-200">Utilities</span>
           <div className="mt-4">

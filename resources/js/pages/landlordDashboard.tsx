@@ -7,6 +7,7 @@ import {
   SidebarContent,
   SidebarFooter
 } from "@/components/ui/sidebar"
+import { Link } from "@inertiajs/react"
 
 export default function Mypage() {
   return (
@@ -32,6 +33,8 @@ export default function Mypage() {
           </SidebarFooter>
         </Sidebar>
         <SidebarTrigger />
+        <Link  href="/"
+        >Mail</Link>
       </SidebarProvider>
     </>
   )
