@@ -8,7 +8,7 @@ import AnimatedText from "@/components/animated-text";
 
 export default function Example() {
   const handleLogout = () => {
-    router.post(route('logout'));
+    router.post(route('logout4'));
   };
   return (
     <>
@@ -16,6 +16,7 @@ export default function Example() {
       <Link href="/tests2">Log in</Link>
       <Link  href={route('mail')} >Mail</Link>
       <Link  onClick={handleLogout} >Mail</Link>
+      <Link href={route('logout')}>Log out</Link>
     </>
   );
 }
