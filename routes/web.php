@@ -39,15 +39,6 @@ Route::get('/tenant/{id}', function ($id){
 })->name('tenant.dashboard');
 */
 
-/*
-Route::get('/tenant/{id}',function($id) {
-    $tenant = Tenant::findOrFail($id);
-    return Inertia::render('tenant/dashboard', [
-        'tenant' => $tenant
-    ]);
-})->name('tenant.dashboard');
-*/
-
 Route::middleware(['auth'])->group(function () {
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');
@@ -75,7 +66,7 @@ Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 /*
 Route::middleware(['auth', 'verified'])->group      (function () {
     Route::get('dashboard', function () {
-       $tenants = Tenant::query()->orderBy('name')->get();
+        $tenants = Tenant::query()->orderBy('name')->get();
 
         return Inertia::render('dashboard', [
             'tenants' => $tenants,
@@ -85,4 +76,4 @@ Route::middleware(['auth', 'verified'])->group      (function () {
 });
 */
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
