@@ -1,73 +1,60 @@
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarProvider,
-  SidebarGroupAction,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-  SidebarMenuAction,
-} from "@/components/ui/sidebar"
-import { 
-  Collapsible,
-  CollapsibleContent, 
-  CollapsibleTrigger 
-} from "@/components/ui/collapsible"
-import { LayoutDashboard } from "./animate-ui/icons/layout-dashboard"
-import { ChartColumn } from "./animate-ui/icons/chart-column"
-import { Users } from "./animate-ui/icons/users"
-import { Sub } from "@radix-ui/react-dropdown-menu"
-import { useSidebar } from "@/components/ui/sidebar"
-
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
+    useSidebar,
+} from '@/components/ui/sidebar';
+import { ChartColumn } from './animate-ui/icons/chart-column';
+import { LayoutDashboard } from './animate-ui/icons/layout-dashboard';
+import { Users } from './animate-ui/icons/users';
 
 export function AppSidebar() {
-  const { state, setOpen } = useSidebar()
+    const { state, setOpen } = useSidebar();
 
-  const expandForSubmenu = () => {
-    if (state === "collapsed") {
-      setOpen(true)
-    }
-  }
+    const expandForSubmenu = () => {
+        if (state === 'collapsed') {
+            setOpen(true);
+        }
+    };
 
-  const letterIcon = (letter: string) => (
-    <span className="flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold">
-      {letter}
-    </span>
-  )
+    const letterIcon = (letter: string) => (
+        <span className="flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold">
+            {letter}
+        </span>
+    );
 
-  return(
-      <Sidebar collapsible="icon" variant="floating">
-        <SidebarContent className="pt-4">
-            <SidebarGroup>
-              <SidebarGroupLabel>Group 1
-              </SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Dashboard">
-                    <LayoutDashboard animateOnHover />
-                    <span>Dashboard</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Analytics">
-                    <ChartColumn animateOnHover />
-                    <span>Analytics</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Tenants">
-                    <Users animateOnHover />
-                    <span>Tenants</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                {/*
+    return (
+        <Sidebar collapsible="icon" variant="floating">
+            <SidebarContent className="pt-4">
+                <SidebarGroup>
+                    <SidebarGroupLabel>Group 1</SidebarGroupLabel>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="Dashboard">
+                                <LayoutDashboard animateOnHover />
+                                <span>Dashboard</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="Analytics">
+                                <ChartColumn animateOnHover />
+                                <span>Analytics</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="Tenants">
+                                <Users animateOnHover />
+                                <span>Tenants</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        {/*
                 <Collapsible defaultOpen className="">
                   <SidebarMenuItem className="flex flex-wrap items-center">
                     <CollapsibleTrigger className="flex items-center">
@@ -96,57 +83,63 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 </Collapsible>
                 */}
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    tooltip="Documents"
-                    onClick={expandForSubmenu}
-                  >
-                    {letterIcon("D")}
-                    <span>Documents</span>
-                  </SidebarMenuButton>
-                  <SidebarMenuSub>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton>
-                        <span>Item 1</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton>
-                        <span>Item 2</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton>
-                        <span>Item 3</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  </SidebarMenuSub>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-          <SidebarGroup className="mt-auto mb-4">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Settings">
-                  {letterIcon("S")}
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Help">
-                  {letterIcon("H")}
-                  <span>Help</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Contact Us">
-                  {letterIcon("C")}
-                  <span>Contact Us</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-  )
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                tooltip="Documents"
+                                onClick={expandForSubmenu}
+                            >
+                                {letterIcon('D')}
+                                <span>Documents</span>
+                            </SidebarMenuButton>
+                            <SidebarMenuSub>
+                                <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton>
+                                        <span>Item 1</span>
+                                    </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                                <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton>
+                                        <span>Item 2</span>
+                                    </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                                <SidebarMenuSubItem>
+                                    <SidebarMenuSubButton>
+                                        <span>Item 3</span>
+                                    </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                            </SidebarMenuSub>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
+                <SidebarGroup className="mt-auto mb-4">
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="Settings">
+                                {letterIcon('S')}
+                                <span>Settings</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="Help">
+                                {letterIcon('H')}
+                                <span>Help</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="Contact Us">
+                                {letterIcon('C')}
+                                <span>Contact Us</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton>
+                                {letterIcon('L')}
+                                <span>LOG OUT</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
+            </SidebarContent>
+        </Sidebar>
+    );
 }

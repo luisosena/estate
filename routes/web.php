@@ -38,11 +38,15 @@ Route::get('/tenant/{id}', function ($id){
     ]);
 })->name('tenant.dashboard');
 */
-
+/*
 Route::middleware(['auth'])->group(function () {
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');
 });
+*/
+
+Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
+    ->name('tenant.dashboard');
 
 
 Route::get('/tests', function () {
