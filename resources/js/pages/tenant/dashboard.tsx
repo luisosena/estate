@@ -27,9 +27,7 @@ export default function TenantDashboard() {
                 <div className="p-4">
                     <div className="flex items-center">
                         <SidebarTrigger className="mr-4 ml-[-10px]" />
-                        <span className="text-2xl font-bold">
-                            Tenant Dashboard
-                        </span>
+                        <span className="text-2xl font-bold">Hello Dan!</span>
                         <MessageCircleMore className="mr-4 ml-auto" />
                         <Bell />
                         <Button className="ml-4" onClick={handleLogout}>
@@ -39,16 +37,16 @@ export default function TenantDashboard() {
           <Input placeholder="Enter text" className="w-50 h-7" />
           */}
                     </div>
-                    <div className="direction-row mt-12 flex h-28 gap-4">
-                        <div className="h-full flex-1 rounded-xl bg-white"></div>
+                    <div className="mt-12">
+                        <span className="text-2xl font-bold">Overview</span>
+                    </div>
+                    <div className="direction-row mt-8 flex h-28 gap-4">
+                        <div className="h-full flex-1 rounded-xl bg-blue-500"></div>
                         <div className="h-full flex-1 rounded-xl bg-green-500"></div>
-                        <div className="h-full flex-1 rounded-xl bg-red-500"></div>
                     </div>
                     <div></div>
-                    <div className="mt-65">
-                        <span className="border-b-2 border-gray-200 text-2xl font-bold">
-                            Utilities
-                        </span>
+                    <div className="mt-30">
+                        <span className="text-2xl font-bold">Utilities</span>
                         <div className="mt-4">
                             <Table05 />
                         </div>
