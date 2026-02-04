@@ -37,7 +37,7 @@ export function TenantSidebar() {
     return (
         <Sidebar collapsible="icon" variant="floating" className="max-h-3/5">
             <SidebarTrigger className="absolute top-2 right-2 z-10" />
-            <SidebarContent className="inline-block h-full min-h-screen w-64 bg-gray-500 pt-4">
+            <SidebarContent className="h-40bg-gray-500 inline-block h-full min-h-screen pt-4">
                 <SidebarGroup>
                     <SidebarGroupLabel>Group 1</SidebarGroupLabel>
                     <SidebarMenu>

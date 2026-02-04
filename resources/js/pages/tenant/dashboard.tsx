@@ -41,13 +41,18 @@ export default function TenantDashboard() {
                         <span className="text-2xl font-bold">Overview</span>
                     </div>
                     <div className="direction-row mt-8 flex h-28 gap-4">
-                        <div className="h-full flex-1 rounded-xl bg-blue-500"></div>
-                        <div className="h-full flex-1 rounded-xl bg-green-500"></div>
+                        <div className="h-full flex-1 rounded-xl border border-gray-600 p-4">
+                            <span className="text-xl">Rent</span>
+                        </div>
+                        <div className="h-full flex-1 rounded-xl border border-gray-600 p-4">
+                            <span className="text-xl">Utilities</span>
+                        </div>
                     </div>
                     <div></div>
                     <div className="mt-30">
                         <span className="text-2xl font-bold">Utilities</span>
                         <div className="mt-4">
+                            <Table05 />
                             <Table05 />
                         </div>
                     </div>
