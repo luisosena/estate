@@ -1,3 +1,4 @@
+import { LastPaymentsTable } from '@/components/last-payments-table';
 import Table05 from '@/components/table-05';
 import { TenantSidebar } from '@/components/tenant-sidebar';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { UtilitiesTable } from '@/components/utilities-table';
 import { router } from '@inertiajs/react';
 import { Bell, MessageCircleMore } from 'lucide-react';
 
@@ -55,6 +57,18 @@ export default function TenantDashboard() {
                             <Table05 />
                             <Table05 />
                         </div>
+                    </div>
+                </div>
+                <div className="p-4">
+                    <span className="text-2xl font-bold">Utilities</span>
+                    <div className="mt-4">
+                        <UtilitiesTable />
+                    </div>
+                </div>
+                <div className="p-4">
+                    <span className="text-2xl font-bold">Last Payments</span>
+                    <div className="mt-4">
+                        <LastPaymentsTable />
                     </div>
                 </div>
             </SidebarInset>
