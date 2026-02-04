@@ -11,7 +11,22 @@ import { UtilitiesTable } from '@/components/utilities-table';
 import { router } from '@inertiajs/react';
 import { Bell, MessageCircleMore } from 'lucide-react';
 
-export default function TenantDashboard() {
+interface Payment {
+    id: number;
+    amount: number;
+    payment_type: string;
+    payment_method: string;
+    paid_at: string | null;
+    created_at: string;
+}
+
+interface TenantDashboardProps {
+    payments?: Payment[];
+}
+
+export default function TenantDashboard({
+    payments = [],
+}: TenantDashboardProps) {
     const data = [
         { id: 1, header: 'Header 1', type: 'Type 1', status: 'Status 1' },
         { id: 2, header: 'Header 2', type: 'Type 2', status: 'Status 2' },
@@ -37,8 +52,8 @@ export default function TenantDashboard() {
                         Logout
                     </Button>
                     {/*
-                          <Input placeholder="Enter text" className="w-50 h-7" />
-                        */}
+                        <Input placeholder="Enter text" className="w-50 h-7" />
+                    */}
                 </div>
                 <div className="mt-12">
                     <span className="text-2xl font-bold">Overview</span>
@@ -67,7 +82,7 @@ export default function TenantDashboard() {
                 <div className="p-4">
                     <span className="text-2xl font-bold">Last Payments</span>
                     <div className="mt-4">
-                        <LastPaymentsTable />
+                        <LastPaymentsTable payments={payments} />
                     </div>
                 </div>
             </SidebarInset>

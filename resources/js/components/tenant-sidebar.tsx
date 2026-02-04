@@ -49,7 +49,10 @@ export function TenantSidebar() {
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton tooltip="Analytics">
-                                <ChartColumn animateOnHover />
+                                <ChartColumn
+                                    animateOnHover
+                                    className="h-10 w-10"
+                                />
                                 <span>Analytics</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

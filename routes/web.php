@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Models\Tenant;
 use App\Http\Controllers\TenantDashboardController;
+use App\Http\Controllers\TenantPaymentsController;
 
 
 Route::get('/', function () {
@@ -25,10 +26,12 @@ Route::get('/mail', function () {
     return Inertia::render('mail');
 })->name('mail');
 
+/*
 Route::post('/logout', function () {
     Auth::logout();
     return redirect('/');
 })->name('logout');
+*/
 
 /*
 Route::get('/tenant/{id}', function ($id){
@@ -45,15 +48,18 @@ Route::middleware(['auth'])->group(function () {
 });
 */
 
-
+/*
 Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
     ->name('tenant.dashboard');
+*/
+Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
+    ->name('tenant.payments');
 
-/*
+
 Route::get('/tenant/dashboard', function () {
     return Inertia::render('tenant/dashboard');
 })->name('tenant.dashboard');
-*/
+
 
 Route::get('/tests', function () {
     return Inertia::render('tests');

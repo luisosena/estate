@@ -34,7 +34,9 @@ class TenantDashboardController extends Controller
             ] : null,
 
             'payments' => $activeTenancy?->payments
-                ->sortByDesc('created_at')
+                ->sortByDesc(function ($payment) {
+                    return $payment->paid_at ?? $payment->created_at;
+                })
                 ->take(5)
                 ->values(),
 
