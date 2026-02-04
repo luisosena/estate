@@ -8,11 +8,9 @@ import {
     Sidebar,
     SidebarContent,
     SidebarGroup,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarTrigger,
     useSidebar,
 } from '@/components/ui/sidebar';
 import { ChartColumn } from './animate-ui/icons/chart-column';
@@ -35,11 +33,13 @@ export function TenantSidebar() {
     );
 
     return (
-        <Sidebar collapsible="icon" variant="floating" className="max-h-3/5">
-            <SidebarTrigger className="absolute top-2 right-2 z-10" />
-            <SidebarContent className="h-40bg-gray-500 inline-block h-full min-h-screen pt-4">
+        <Sidebar
+            collapsible="icon"
+            variant="floating"
+            className="mt-25 mr-6 ml-4 max-h-3/5"
+        >
+            <SidebarContent className="h-40bg-gray-500 inline-block h-full min-h-screen">
                 <SidebarGroup>
-                    <SidebarGroupLabel>Group 1</SidebarGroupLabel>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton tooltip="Dashboard">
