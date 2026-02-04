@@ -1,5 +1,6 @@
 import Table05 from '@/components/table-05';
 import { TenantSidebar } from '@/components/tenant-sidebar';
+import { Button } from '@/components/ui/button';
 import {
     SidebarInset,
     SidebarProvider,
@@ -7,7 +8,6 @@ import {
 } from '@/components/ui/sidebar';
 import { router } from '@inertiajs/react';
 import { Bell, MessageCircleMore } from 'lucide-react';
-import { Button } from 'node_modules/@headlessui/react/dist/components/button/button';
 
 export default function TenantDashboard() {
     const data = [

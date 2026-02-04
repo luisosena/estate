@@ -45,9 +45,15 @@ Route::middleware(['auth'])->group(function () {
 });
 */
 
+
 Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
     ->name('tenant.dashboard');
 
+/*
+Route::get('/tenant/dashboard', function () {
+    return Inertia::render('tenant/dashboard');
+})->name('tenant.dashboard');
+*/
 
 Route::get('/tests', function () {
     return Inertia::render('tests');
@@ -64,8 +70,9 @@ Route::get('/tests2', function () {
     ]);
 })->name('tests2');
 
+/*
 Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
-
+*/
 
 /*
 Route::middleware(['auth', 'verified'])->group      (function () {
