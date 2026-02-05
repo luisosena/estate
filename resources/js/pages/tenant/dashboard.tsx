@@ -7,8 +7,9 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { UtilitiesTable } from '@/components/utilities-table';
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Bell, House, MessageCircleMore, SparkleIcon } from 'lucide-react';
+import { route } from 'ziggy-js';
 
 interface Payment {
     id: number;
@@ -98,6 +99,7 @@ export default function TenantDashboard({
                     </div>
                     <div className="flex-2">
                         <span className="text-2xl font-bold">Utilities</span>
+                        <Link href={route('tenant.utilities')}>See All</Link>
                         <div className="mt-4">
                             <UtilitiesTable />
                         </div>

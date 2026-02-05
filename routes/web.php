@@ -6,6 +6,7 @@ use Laravel\Fortify\Features;
 use App\Models\Tenant;
 use App\Http\Controllers\TenantDashboardController;
 use App\Http\Controllers\TenantPaymentsController;
+use App\Http\Controllers\TenantUtilitiesController;
 
 
 Route::get('/', function () {
@@ -54,6 +55,9 @@ Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
 
 Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
     ->name('tenant.payments');
+
+Route::get('/tentant/utilities', [TenantUtilitiesController::class, 'index'])
+    ->name('tenant.utilities');
 
 Route::get('/tests', function () {
     return Inertia::render('tests');
