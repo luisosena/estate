@@ -48,18 +48,12 @@ Route::middleware(['auth'])->group(function () {
 });
 */
 
-/*
+
 Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
     ->name('tenant.dashboard');
-*/
+
 Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
     ->name('tenant.payments');
-
-
-Route::get('/tenant/dashboard', function () {
-    return Inertia::render('tenant/dashboard');
-})->name('tenant.dashboard');
-
 
 Route::get('/tests', function () {
     return Inertia::render('tests');
