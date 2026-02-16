@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes; // Make sure this is imported
 
 class Tenant extends Model
 {
-    //use SoftDeletes;
+    use SoftDeletes; // Uncomment this line
 
     protected $fillable = [
         'tenant_code',
@@ -19,7 +20,6 @@ class Tenant extends Model
     ];
 
     // Relationships
-
     public function user()
     {
         return $this->hasOne(User::class);
@@ -56,7 +56,7 @@ class Tenant extends Model
             if (!$tenant->tenant_code) {
                 $lastId = Tenant::withTrashed()->max('id') + 1;
                 $tenant->tenant_code = 'TEN-' . str_pad($lastId, 5, '0', STR_PAD_LEFT);
-        }
-    });
-}
+            }
+        });
+    }
 }
