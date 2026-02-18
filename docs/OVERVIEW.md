@@ -7,7 +7,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 
 ---
 
-### 2. Tech Stack
+### 2. Tech Stack 
 
 - **Backend**
   - **Language**: PHP ^8.2
