@@ -13,9 +13,9 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { ChartColumn } from './animate-ui/icons/chart-column';
-import { LayoutDashboard } from './animate-ui/icons/layout-dashboard';
-import { Users } from './animate-ui/icons/users';
+import { ChartColumn } from '@/components/animate-ui/icons/chart-column';
+import { LayoutDashboard } from '@/components/animate-ui/icons/layout-dashboard';
+import { Users } from '@/components/animate-ui/icons/users';
 
 export function TenantSidebar() {
     const { state, setOpen } = useSidebar();

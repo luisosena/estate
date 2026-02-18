@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
 
-import AlertError from './alert-error';
+import AlertError from '../alert-error';
 
 interface TwoFactorRecoveryCodesProps {
     recoveryCodesList: string[];
