@@ -10,42 +10,66 @@ class TenantDashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user();
-        $tenant = $user->tenant;
+        try {
+            $user = $request->user();
+            
+            if (!$user) {
+                return Inertia::render('tenant/dashboard', [
+                    'tenant' => ['id' => 0, 'full_name' => 'Guest'],
+                    'payments' => [],
+                ]);
+            }
 
-        $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
-            ->with(['unit', 'payments', 'utilities'])
-            ->first();
+            $tenant = $user->tenant;
 
-        return Inertia::render('tenant/dashboard', [
-            'tenant' => [
-                'id' => $tenant->id,
-                'full_name' => $tenant->full_name,
-                'phone' => $tenant->phone,
-                'email' => $tenant->email,
-            ],
+            if (!$tenant) {
+                return Inertia::render('tenant/dashboard', [
+                    'tenant' => ['id' => 0, 'full_name' => 'No Tenant Found'],
+                    'payments' => [],
+                ]);
+            }
 
-            'unit' => $activeTenancy?->unit,
+            $activeTenancy = $tenant->tenancies()
+                ->where('status', 'active')
+                ->with(['unit', 'payments', 'utilities'])
+                ->first();
 
-            'tenancy' => $activeTenancy ? [
-                'move_in_date' => $activeTenancy->move_in_date,
-                'status' => $activeTenancy->status,
-            ] : null,
+            return Inertia::render('tenant/dashboard', [
+                'tenant' => [
+                    'id' => $tenant->id,
+                    'full_name' => $tenant->full_name,
+                    'phone' => $tenant->phone,
+                    'email' => $tenant->email,
+                ],
 
-            'payments' => $activeTenancy?->payments
-                ->sortByDesc(function ($payment) {
-                    return $payment->paid_at ?? $payment->created_at;
-                })
-                ->take(5)
-                ->values(),
+                'unit' => $activeTenancy?->unit,
 
-            'utilities' => $activeTenancy?->utilities,
+                'tenancy' => $activeTenancy ? [
+                    'move_in_date' => $activeTenancy->move_in_date,
+                    'status' => $activeTenancy->status,
+                ] : null,
 
-            'notifications' => $tenant->notifications()
-                ->latest()
-                ->take(5)
-                ->get(),
-        ]);
+                'payments' => $activeTenancy?->payments
+                    ->sortByDesc(function ($payment) {
+                        return $payment->paid_at ?? $payment->created_at;
+                    })
+                    ->take(5)
+                    ->values() ?? [],
+
+                'utilities' => $activeTenancy?->utilities,
+
+                'notifications' => $tenant->notifications()
+                    ->latest()
+                    ->take(5)
+                    ->get(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('TenantDashboardController error: ' . $e->getMessage());
+            
+            return Inertia::render('tenant/dashboard', [
+                'tenant' => ['id' => 0, 'full_name' => 'Error'],
+                'payments' => [],
+            ]);
+        }
     }
 }

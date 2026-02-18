@@ -46,9 +46,7 @@ export default function TenantDashboard({
 
     return (
         <SidebarProvider defaultOpen={false}>
-            <div className="">
-                <TenantSidebar />
-            </div>
+            <TenantSidebar />
             <SidebarInset className="pt-4 pr-8 pl-8">
                 <div className="flex items-center">
                     <SidebarTrigger className="relative right-10 mr-4 ml-[-10px]" />
