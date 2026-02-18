@@ -1,5 +1,4 @@
-import { AppSidebar } from '@/components/app-sidebar';
-import Stats07 from '@/components/stats-07';
+import { AppSidebar } from '@/components/layout/app-sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -42,14 +41,10 @@ export default function Page() {
                 </header>
                 <span className="p-4 text-2xl">Dashboard</span>
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                    <div /*className="grid auto-rows-min gap-4 md:grid-cols-3"*/
-                    >
-                        {/*
-            <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
-            <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
-            <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
-          */}
-                        <Stats07 />
+                    <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                        <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
+                        <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
+                        <div className="bg-muted/50 aspect-video rounded-xl max-h-40" />
                     </div>
                     <div className="h-50 w-full rounded-xl bg-muted/50 p-4">
                         <span className="text-xl">Summary</span>

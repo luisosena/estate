@@ -1,12 +1,12 @@
-import { LastPaymentsTable } from '@/components/last-payments-table';
-import { TenantSidebar } from '@/components/tenant-sidebar';
+import { LastPaymentsTable } from '@/components/shared/tenant/last-payments-table';
+import { TenantSidebar } from '@/components/layout/tenant-sidebar';
 import { Button } from '@/components/ui/button';
 import {
     SidebarInset,
     SidebarProvider,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { UtilitiesTable } from '@/components/utilities-table';
+import { UtilitiesTable } from '@/components/shared/tenant/utilities-table';
 import { Link, router } from '@inertiajs/react';
 import { Bell, House, MessageCircleMore, SparkleIcon } from 'lucide-react';
 import { route } from 'ziggy-js';

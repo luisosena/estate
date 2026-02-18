@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web\Tenant;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 
-class TenantDashboardController extends Controller
+class DashboardController extends Controller
 {
     public function index(Request $request)
     {
@@ -14,7 +14,7 @@ class TenantDashboardController extends Controller
             $user = $request->user();
             
             if (!$user) {
-                return Inertia::render('tenant/dashboard', [
+                return response()->json([
                     'tenant' => ['id' => 0, 'full_name' => 'Guest'],
                     'payments' => [],
                 ]);
@@ -23,7 +23,7 @@ class TenantDashboardController extends Controller
             $tenant = $user->tenant;
 
             if (!$tenant) {
-                return Inertia::render('tenant/dashboard', [
+                return response()->json([
                     'tenant' => ['id' => 0, 'full_name' => 'No Tenant Found'],
                     'payments' => [],
                 ]);
@@ -34,7 +34,7 @@ class TenantDashboardController extends Controller
                 ->with(['unit', 'payments', 'utilities'])
                 ->first();
 
-            return Inertia::render('tenant/dashboard', [
+            return response()->json([
                 'tenant' => [
                     'id' => $tenant->id,
                     'full_name' => $tenant->full_name,
@@ -64,12 +64,12 @@ class TenantDashboardController extends Controller
                     ->get(),
             ]);
         } catch (\Exception $e) {
-            \Log::error('TenantDashboardController error: ' . $e->getMessage());
+            \Log::error('Api DashboardController error: ' . $e->getMessage());
             
-            return Inertia::render('tenant/dashboard', [
+            return response()->json([
                 'tenant' => ['id' => 0, 'full_name' => 'Error'],
                 'payments' => [],
-            ]);
+            ], 500);
         }
     }
 }

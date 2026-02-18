@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
-import AppLogoIcon from '@/components/app-logo-icon';
+import AppLogoIcon from '@/components/layout/app-logo-icon';
 import { home } from '@/routes';
 import { type SharedData } from '@/types';
 

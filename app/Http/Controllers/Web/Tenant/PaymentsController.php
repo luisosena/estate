@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web\Tenant;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class TenantPaymentsController extends Controller
+class PaymentsController extends Controller
 {
   public function index(Request $request)
   {

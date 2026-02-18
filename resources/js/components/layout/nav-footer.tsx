@@ -1,6 +1,6 @@
 import { type ComponentPropsWithoutRef } from 'react';
 
-import { Icon } from '@/components/icon';
+import { Icon } from '@/components/shared/icon';
 import {
     SidebarGroup,
     SidebarGroupContent,
