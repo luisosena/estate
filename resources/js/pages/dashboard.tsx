@@ -58,7 +58,7 @@ export default function Page() {
                         <div className="flex flex-col gap-4">
                             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
-                                    <h2 className="text-base text-xl font-semibold">
+                                    <h2 className="text-xl font-semibold">
                                         Tenants
                                     </h2>
                                     <p className="text-sm text-muted-foreground">

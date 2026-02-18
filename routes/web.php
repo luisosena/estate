@@ -41,7 +41,7 @@ Route::get('/tenant/{id}', function ($id){
         'tenant' => $tenant
     ]);
 })->name('tenant.dashboard');
-*/
+*/ 
 /*
 Route::middleware(['auth'])->group(function () {
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
