@@ -8,7 +8,7 @@ use App\Http\Controllers\Web\Tenant\TenantDashboardController;
 use App\Http\Controllers\Web\Tenant\TenantPaymentsController;
 use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
-
+use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -16,62 +16,28 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-
 //Admin Routes
-Route::get('/admin/dashboard', function () {
-    return Inertia::render('admin/dashboard');
-})->name('admin.dashboard');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
+        ->name('admin.dashboard');
 
+    Route::get('/landlord/dashboard', [LandlordDashboardController::class, 'index'])
+        ->name('landlord.dashboard');
 
-//Landlord Routes
-Route::get('/landlord/dashboard', function () {
-    return Inertia::render('landlord/dashboard');
-})->name('landlord.dashboard');
+    //Tenant Routes
+    Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
+        ->name('tenant.dashboard');
 
+    Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
+        ->name('tenant.payments');
 
-//Tenant Routes
-/*
-Route::get('/tenant/dashboard', function () {
-    return Inertia::render('tenant/dashboard');
-})->name('tenant.dashboard');
-*/
-
+    Route::get('/tenant/utilities', [TenantUtilitiesController::class, 'index'])
+        ->name('tenant.utilities');
+});
 
 Route::get('/mail', function () {
     return Inertia::render('mail');
 })->name('mail');
-
-/*
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('/');
-})->name('logout');
-*/
-
-/*
-Route::get('/tenant/{id}', function ($id){
-    $tenant = Tenant::findOrFail($id);
-    return Inertia::render('tenant/dashboard', [
-        'tenant' => $tenant
-    ]);
-})->name('tenant.dashboard');
-*/ 
-/*
-Route::middleware(['auth'])->group(function () {
-    Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
-        ->name('tenant.dashboard');
-});
-*/
-
-
-Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
-    ->name('tenant.dashboard');
-
-Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
-    ->name('tenant.payments');
-
-Route::get('/tentant/utilities', [TenantUtilitiesController::class, 'index'])
-    ->name('tenant.utilities');
 
 Route::get('/tests', function () {
     return Inertia::render('tests');
