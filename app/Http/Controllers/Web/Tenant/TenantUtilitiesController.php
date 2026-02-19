@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Web\Tenant;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 
-class UtilitiesController extends Controller
+class TenantUtilitiesController extends Controller
 {
   public function index(Request $request)
   {

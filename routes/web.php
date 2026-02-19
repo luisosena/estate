@@ -4,9 +4,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Models\Tenant;
-use App\Http\Controllers\TenantDashboardController;
-use App\Http\Controllers\TenantPaymentsController;
-use App\Http\Controllers\TenantUtilitiesController;
+use App\Http\Controllers\Web\Tenant\TenantDashboardController;
+use App\Http\Controllers\Web\Tenant\TenantPaymentsController;
+use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
+use App\Http\Controllers\Web\Admin\AdminDashboardController;
 
 
 Route::get('/', function () {
@@ -15,13 +16,26 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/landlorddashboard', function () {
-    return Inertia::render('landlordDashboard');
+
+//Admin Routes
+Route::get('/admin/dashboard', function () {
+    return Inertia::render('admin/dashboard');
+})->name('admin.dashboard');
+
+
+//Landlord Routes
+Route::get('/landlord/dashboard', function () {
+    return Inertia::render('landlord/dashboard');
 })->name('landlord.dashboard');
 
-Route::get('/testdashboard', function () {
-    return Inertia::render('testDashboard');
-})->name('testdashboard');
+
+//Tenant Routes
+/*
+Route::get('/tenant/dashboard', function () {
+    return Inertia::render('tenant/dashboard');
+})->name('tenant.dashboard');
+*/
+
 
 Route::get('/mail', function () {
     return Inertia::render('mail');

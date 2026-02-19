@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 
-class DashboardController extends Controller
+class TenantDashboardController extends Controller
 {
     public function index(Request $request)
     {
