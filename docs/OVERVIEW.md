@@ -62,7 +62,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 ---
 
 ### 3. Project Scripts
-
+ 
 - **Composer (`composer.json`)**
   - **`setup`**: install PHP deps, create `.env` if missing, generate app key, run migrations, install npm deps, build assets.
   - **`dev`**: disable Composer timeout, then run:
