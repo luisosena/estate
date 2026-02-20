@@ -11,12 +11,17 @@ class LoginResponse extends FortifyLoginResponse
     {
         $user = $request->user();
         
+        // Debug: Log the user role and redirect URL
+        \Log::info('LoginResponse called for user: ' . $user->email . ' with role: ' . $user->role);
+        
         $redirectUrl = match($user->role) {
             'admin' => '/admin/dashboard',
             'landlord' => '/landlord/dashboard', 
             'tenant' => '/tenant/dashboard',
             default => '/dashboard',
         };
+        
+        \Log::info('Redirecting to: ' . $redirectUrl);
 
         return redirect()->intended($redirectUrl);
     }

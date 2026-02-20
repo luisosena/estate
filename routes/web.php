@@ -14,7 +14,7 @@ Route::get('/', function () {
     return Inertia::render('welcome', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
-})->name('home');
+})->name('welcome');
 
 //Admin Routes
 Route::middleware(['auth'])->group(function () {
