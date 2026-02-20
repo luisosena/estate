@@ -3,8 +3,8 @@ import { Form, Head } from '@inertiajs/react';
 import { useRef } from 'react';
 
 import PasswordController from '@/actions/App/Http/Controllers/Settings/PasswordController';
-import HeadingSmall from '@/components/heading-small';
-import InputError from '@/components/input-error';
+import HeadingSmall from '@/components/shared/heading-small';
+import InputError from '@/components/shared/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
