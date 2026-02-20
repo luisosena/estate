@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use App\Helpers\RoleRedirects;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,13 +33,7 @@ class RedirectIfAuthenticatedWithRole
             if (Auth::guard($guard)->check()) {
                 $user = $request->user();
                 
-                // Role-based redirection logic
-                $redirectUrl = match($user->role) {
-                    'admin' => '/admin/dashboard',
-                    'landlord' => '/landlord/dashboard', 
-                    'tenant' => '/tenant/dashboard',
-                    default => '/dashboard',
-                };
+                $redirectUrl = RoleRedirects::urlByRole($user->role);
                 
                 return redirect($redirectUrl);
             }
