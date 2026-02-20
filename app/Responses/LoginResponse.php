@@ -23,6 +23,6 @@ class LoginResponse extends FortifyLoginResponse
         
         \Log::info('Redirecting to: ' . $redirectUrl);
 
-        return redirect()->intended($redirectUrl);
+        return redirect($redirectUrl);
     }
 }
