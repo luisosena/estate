@@ -16,13 +16,21 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
-//Admin Routes
+
 Route::middleware(['auth'])->group(function () {
+    //Admin Routes
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
 
+    //Landlord Routes
     Route::get('/landlord/dashboard', [LandlordDashboardController::class, 'index'])
         ->name('landlord.dashboard');
+
+    Route::get('/landlord/tenants/create', [LandlordDashboardController::class, 'create'])
+        ->name('landlord.tenants.create');
+        
+    Route::post('/landlord/tenants', [LandlordDashboardController::class, 'store'])
+        ->name('landlord.tenants.store');
 
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
