@@ -10,7 +10,7 @@ export default function Example() {
             <Link href="/register">Register</Link>
             <Link href="/login">Log in</Link>
             <Link href="/mail">Mail</Link>
-            <Link as="button" onClick={handleLogout}>Log out</Link>
+            <button type="button" onClick={handleLogout}>Log out</button>
         </>
     );
 }

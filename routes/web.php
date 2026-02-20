@@ -54,21 +54,4 @@ Route::get('/tests2', function () {
     ]);
 })->name('tests2');
 
-/*
-Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
-*/
-
-/*
-Route::middleware(['auth', 'verified'])->group      (function () {
-    Route::get('dashboard', function () {
-        $tenants = Tenant::query()->orderBy('name')->get();
-
-        return Inertia::render('dashboard', [
-            'tenants' => $tenants,
-        ]);
-    })->name('dashboard');
-
-});
-*/
-
 require __DIR__ . '/settings.php';
