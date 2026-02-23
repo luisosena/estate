@@ -1,108 +1,68 @@
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
     Sidebar,
     SidebarContent,
     SidebarGroup,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    useSidebar,
 } from '@/components/ui/sidebar';
-import { ChartColumn } from '@/components/animate-ui/icons/chart-column';
-import { LayoutDashboard } from '@/components/animate-ui/icons/layout-dashboard';
-import { Users } from '@/components/animate-ui/icons/users';
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard, CreditCard, Zap } from 'lucide-react';
+import { route } from 'ziggy-js';
+
+const navItems = [
+    {
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        href: () => route('tenant.dashboard'),
+        routeName: 'tenant.dashboard',
+    },
+    {
+        label: 'Payments',
+        icon: CreditCard,
+        href: () => route('tenant.payments'),
+        routeName: 'tenant.payments',
+    },
+    {
+        label: 'Utilities',
+        icon: Zap,
+        href: () => route('tenant.utilities'),
+        routeName: 'tenant.utilities',
+    },
+];
 
 export function TenantSidebar() {
-    const { state, setOpen } = useSidebar();
+    const { url } = usePage();
 
-    const expandForSubmenu = () => {
-        if (state === 'collapsed') {
-            setOpen(true);
+    const isActive = (routeName: string) => {
+        try {
+            return url.startsWith(route(routeName).replace(window.location.origin, ''));
+        } catch {
+            return false;
         }
     };
 
-    const letterIcon = (letter: string) => (
-        <span className="flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold">
-            {letter}
-        </span>
-    );
-
     return (
-        <Sidebar
-            collapsible="icon"
-            variant="floating"
-            className="mt-25 mr-6 ml-4 max-h-3/5"
-        >
-            <SidebarContent className="h-40bg-gray-500 inline-block h-full min-h-screen">
+        <Sidebar collapsible="icon" variant="floating" className="mt-25 mr-6 ml-4 max-h-3/5">
+            <SidebarContent className="inline-block h-full min-h-screen">
                 <SidebarGroup>
                     <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton tooltip="Dashboard">
-                                <LayoutDashboard animateOnHover />
-                                <span>Dashboard</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton tooltip="Analytics">
-                                <ChartColumn
-                                    animateOnHover
-                                    className="h-10 w-10"
-                                />
-                                <span>Analytics</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton tooltip="Tenants">
-                                <Users animateOnHover />
-                                <span>Tenants</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <SidebarMenuButton tooltip="Documents">
-                                        {letterIcon('D')}
-                                        <span>Documents</span>
-                                    </SidebarMenuButton>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem>Item 1</DropdownMenuItem>
-                                    <DropdownMenuItem>Item 2</DropdownMenuItem>
-                                    <DropdownMenuItem>Item 3</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </SidebarMenuItem>
+                        {navItems.map(({ label, icon: Icon, href, routeName }) => (
+                            <SidebarMenuItem key={routeName}>
+                                <SidebarMenuButton
+                                    asChild
+                                    tooltip={label}
+                                    isActive={isActive(routeName)}
+                                >
+                                    <Link href={href()}>
+                                        <Icon className="h-4 w-4" />
+                                        <span>{label}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
                     </SidebarMenu>
                 </SidebarGroup>
-                {/*
-                <SidebarGroup className="mb-4">
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                tooltip="Settings"
-                                className="hover:bg-transparent"
-                            >
-                                {letterIcon('S')}
-                                <span>Settings</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                tooltip="Logout"
-                                className="hover:bg-transparent"
-                            >
-                                {letterIcon('L')}
-                                <span>Logout</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroup>
-                */}
             </SidebarContent>
         </Sidebar>
     );

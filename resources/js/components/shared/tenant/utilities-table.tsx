@@ -2,43 +2,87 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-interface DataTableSimpleProps {
-    data: Array<{ id: number; header: string; type: string; status: string }>;
+import { Badge } from '@/components/ui/badge';
+
+export interface Utility {
+    id: number;
+    type: string;
+    amount: number;
+    billing_period: string;
+    status: string;
 }
-export function UtilitiesTable() {
+
+interface UtilitiesTableProps {
+    utilities?: Utility[];
+}
+
+const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'TZS',
+        minimumFractionDigits: 0,
+    }).format(amount);
+
+const statusVariant = (
+    status: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    switch (status.toLowerCase()) {
+        case 'paid':
+            return 'default';
+        case 'pending':
+            return 'secondary';
+        case 'overdue':
+            return 'destructive';
+        default:
+            return 'outline';
+    }
+};
+
+export function UtilitiesTable({ utilities = [] }: UtilitiesTableProps) {
     return (
-        <div className="box-content w-fit rounded-xl border border-gray-500">
-            <Table className="dark:bg-gray-00 w-80 overflow-hidden rounded-xl">
+        <div className="overflow-hidden rounded-xl border">
+            <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>Amount</TableHead>
                         <TableHead>Period</TableHead>
+                        <TableHead>Status</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <TableRow>
-                        <TableCell>Type 1</TableCell>
-                        <TableCell>Status 1</TableCell>
-                        <TableCell>Period 1</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Type 2</TableCell>
-                        <TableCell>Status 2</TableCell>
-                        <TableCell>Period 2</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Type 3</TableCell>
-                        <TableCell>Status 3</TableCell>
-                        <TableCell>Period 3</TableCell>
-                    </TableRow>
+                    {utilities.length === 0 ? (
+                        <TableRow>
+                            <TableCell
+                                colSpan={4}
+                                className="text-muted-foreground py-8 text-center text-sm"
+                            >
+                                No utilities recorded
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        utilities.map((u) => (
+                            <TableRow key={u.id}>
+                                <TableCell className="font-medium capitalize">
+                                    {u.type}
+                                </TableCell>
+                                <TableCell>{formatCurrency(u.amount)}</TableCell>
+                                <TableCell className="text-muted-foreground text-sm">
+                                    {u.billing_period}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={statusVariant(u.status)}>
+                                        {u.status}
+                                    </Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    )}
                 </TableBody>
-                <TableFooter></TableFooter>
             </Table>
         </div>
     );
