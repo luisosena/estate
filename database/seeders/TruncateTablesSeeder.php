@@ -25,6 +25,7 @@ class TruncateTablesSeeder extends Seeder
         DB::table('users')->truncate();
         DB::table('tenants')->truncate();
         DB::table('units')->truncate();
+        DB::table('properties')->truncate();
 
         // Re-enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1');

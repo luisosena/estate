@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\Tenant\TenantPaymentsController;
 use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
+use App\Http\Controllers\Web\Landlord\LandlordTenantController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -31,6 +32,13 @@ Route::middleware(['auth'])->group(function () {
         
     Route::post('/landlord/tenants', [LandlordDashboardController::class, 'store'])
         ->name('landlord.tenants.store');
+
+    // Landlord tenant management routes
+    Route::get('/landlord/tenants', [LandlordTenantController::class, 'index'])
+        ->name('landlord.tenants.index');
+
+    Route::get('/landlord/properties/{property}/tenants', [LandlordTenantController::class, 'byProperty'])
+        ->name('landlord.properties.tenants');
 
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])

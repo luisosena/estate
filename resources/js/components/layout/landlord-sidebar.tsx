@@ -1,0 +1,120 @@
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from '@/components/ui/sidebar';
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard, Users, Building2 } from 'lucide-react';
+import { route } from 'ziggy-js';
+
+interface Property {
+    id: number;
+    name: string;
+    address?: string | null;
+}
+
+interface LandlordSidebarProps {
+    properties?: Property[];
+}
+
+const mainNavItems = [
+    {
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        href: () => route('landlord.dashboard'),
+        routeName: 'landlord.dashboard',
+    },
+    {
+        label: 'All Tenants',
+        icon: Users,
+        href: () => route('landlord.tenants.index'),
+        routeName: 'landlord.tenants.index',
+    },
+];
+
+export function LandlordSidebar({ properties = [] }: LandlordSidebarProps) {
+    const { url } = usePage();
+
+    const isActive = (routeName: string) => {
+        try {
+            return url.startsWith(
+                route(routeName).replace(window.location.origin, ''),
+            );
+        } catch {
+            return false;
+        }
+    };
+
+    const isPropertyActive = (propertyId: number) => {
+        try {
+            const propertyTenantsUrl = route('landlord.properties.tenants', {
+                property: propertyId,
+            }).replace(window.location.origin, '');
+            return url.startsWith(propertyTenantsUrl);
+        } catch {
+            return false;
+        }
+    };
+
+    return (
+        <Sidebar
+            collapsible="icon"
+            variant="floating"
+            className="mt-25 mr-6 ml-4 max-h-3/5"
+        >
+            <SidebarContent className="inline-block h-full min-h-screen">
+                {/* Main navigation */}
+                <SidebarGroup>
+                    <SidebarMenu>
+                        {mainNavItems.map(({ label, icon: Icon, href, routeName }) => (
+                            <SidebarMenuItem key={routeName}>
+                                <SidebarMenuButton
+                                    asChild
+                                    tooltip={label}
+                                    isActive={isActive(routeName)}
+                                >
+                                    <Link href={href()}>
+                                        <Icon className="h-4 w-4" />
+                                        <span>{label}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </SidebarGroup>
+
+                {/* Per-property tenant views */}
+                {properties.length > 0 && (
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Properties</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {properties.map((property) => (
+                                <SidebarMenuItem key={property.id}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip={property.name}
+                                        isActive={isPropertyActive(property.id)}
+                                    >
+                                        <Link
+                                            href={route(
+                                                'landlord.properties.tenants',
+                                                { property: property.id },
+                                            )}
+                                        >
+                                            <Building2 className="h-4 w-4" />
+                                            <span>{property.name}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+            </SidebarContent>
+        </Sidebar>
+    );
+}

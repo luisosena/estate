@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Property;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Unit;
@@ -25,14 +26,58 @@ class DevelopmentSeeder extends Seeder
         $this->call(TruncateTablesSeeder::class);
 
         // ===========================================
-        // 1. CREATE UNITS
+        // 1. CREATE USERS (landlord & admin first so properties can reference them)
+        // ===========================================
+        $adminUser = User::create([
+            'name'      => 'Admin User',
+            'username'  => 'admin',
+            'email'     => 'admin@example.com',
+            'password'  => Hash::make('password'),
+            'role'      => 'admin',
+            'tenant_id' => null,
+        ]);
+
+        $landlordUser = User::create([
+            'name'      => 'Landlord User',
+            'username'  => 'landlord',
+            'email'     => 'landlord@example.com',
+            'password'  => Hash::make('password'),
+            'role'      => 'landlord',
+            'tenant_id' => null,
+        ]);
+
+        $this->command->info('Admin and Landlord users created.');
+
+        // ===========================================
+        // 2. CREATE PROPERTIES (owned by landlord)
+        // ===========================================
+        $propertyA = Property::create([
+            'owner_id'    => $landlordUser->id,
+            'name'        => 'Sunrise Apartments',
+            'total_units' => 3,
+            'address'     => '12 Sunrise Avenue, Dar es Salaam',
+        ]);
+
+        $propertyB = Property::create([
+            'owner_id'    => $landlordUser->id,
+            'name'        => 'Hilltop Residences',
+            'total_units' => 2,
+            'address'     => '45 Hilltop Road, Arusha',
+        ]);
+
+        $this->command->info('Properties created successfully.');
+
+        // ===========================================
+        // 3. CREATE UNITS (linked to properties)
         // ===========================================
         $units = [
-            ['unit_code' => 'A101', 'unit_name' => 'Studio Apartment - Ground Floor', 'status' => 'occupied'],
-            ['unit_code' => 'A102', 'unit_name' => '1 Bedroom - Ground Floor', 'status' => 'occupied'],
-            ['unit_code' => 'B201', 'unit_name' => '2 Bedroom - First Floor', 'status' => 'occupied'],
-            ['unit_code' => 'B202', 'unit_name' => '2 Bedroom - First Floor', 'status' => 'available'],
-            ['unit_code' => 'C301', 'unit_name' => '3 Bedroom Penthouse', 'status' => 'available'],
+            // Sunrise Apartments units
+            ['property_id' => $propertyA->id, 'unit_code' => 'A101', 'unit_name' => 'Studio Apartment - Ground Floor', 'status' => 'occupied'],
+            ['property_id' => $propertyA->id, 'unit_code' => 'A102', 'unit_name' => '1 Bedroom - Ground Floor', 'status' => 'occupied'],
+            ['property_id' => $propertyA->id, 'unit_code' => 'A201', 'unit_name' => '2 Bedroom - First Floor', 'status' => 'occupied'],
+            // Hilltop Residences units
+            ['property_id' => $propertyB->id, 'unit_code' => 'B101', 'unit_name' => '2 Bedroom - Ground Floor', 'status' => 'available'],
+            ['property_id' => $propertyB->id, 'unit_code' => 'B201', 'unit_name' => '3 Bedroom Penthouse', 'status' => 'available'],
         ];
 
         foreach ($units as $unitData) {
@@ -42,7 +87,7 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('Units created successfully.');
 
         // ===========================================
-        // 2. CREATE TENANTS
+        // 4. CREATE TENANTS
         // ===========================================
         $tenants = [
             [
@@ -87,9 +132,9 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('Tenants created successfully.');
 
         // ===========================================
-        // 3. CREATE USERS (with relationships to tenants)
+        // 5. CREATE TENANT USERS (linked to tenant records)
         // ===========================================
-        $users = [
+        $tenantUsers = [
             [
                 'name' => 'John Doe',
                 'username' => 'johndoe',
@@ -114,30 +159,19 @@ class DevelopmentSeeder extends Seeder
                 'role' => 'tenant',
                 'tenant_id' => $createdTenants[2]->id,
             ],
-            [
-                'name' => 'Admin User',
-                'username' => 'admin',
-                'email' => 'admin@example.com',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-                'tenant_id' => null,
-            ],
-            [
-                'name' => 'Landlord User',
-                'username' => 'landlord',
-                'email' => 'landlord@example.com',
-                'password' => Hash::make('password'),
-                'role' => 'landlord',
-                'tenant_id' => null,
-            ],
         ];
 
-        $createdUsers = [];
-        foreach ($users as $userData) {
-            $createdUsers[] = User::create($userData);
+        $createdTenantUsers = [];
+        foreach ($tenantUsers as $userData) {
+            $createdTenantUsers[] = User::create($userData);
         }
 
-        $this->command->info('Users created successfully.');
+        // Build $createdUsers array in the same order as before for message references:
+        // [0] = John Doe (tenant), [1] = Sarah Johnson (tenant), [2] = Michael Smith (tenant),
+        // [3] = Admin, [4] = Landlord
+        $createdUsers = array_merge($createdTenantUsers, [$adminUser, $landlordUser]);
+
+        $this->command->info('Tenant users created successfully.');
 
         // ===========================================
         // 4. CREATE TENANT IDENTIFICATIONS
@@ -170,7 +204,7 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('Tenant identifications created successfully.');
 
         // ===========================================
-        // 5. CREATE TENANCIES (active leases)
+        // 6. CREATE TENANCIES (active leases)
         // ===========================================
         $units = Unit::all();
         
@@ -445,6 +479,7 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('=====================================');
         $this->command->info('DEVELOPMENT SEEDER COMPLETED SUCCESSFULLY');
         $this->command->info('=====================================');
+        $this->command->info('Properties: ' . Property::count());
         $this->command->info('Units: ' . Unit::count());
         $this->command->info('Tenants: ' . Tenant::count());
         $this->command->info('Users: ' . User::count());
@@ -460,6 +495,10 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('Tenant: michaels / password');
         $this->command->info('Admin: admin / password');
         $this->command->info('Landlord: landlord / password');
+        $this->command->info('=====================================');
+        $this->command->info('Landlord tenant views:');
+        $this->command->info('  All tenants: /landlord/tenants');
+        $this->command->info('  By property: /landlord/properties/{id}/tenants');
         $this->command->info('=====================================');
     }
 }

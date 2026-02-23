@@ -1,28 +1,29 @@
-import { LastPaymentsTable, Payment } from '@/components/shared/tenant/last-payments-table';
 import { TenantSidebar } from '@/components/layout/tenant-sidebar';
-import { UtilitiesTable, Utility } from '@/components/shared/tenant/utilities-table';
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+    LastPaymentsTable,
+    Payment,
+} from '@/components/shared/tenant/last-payments-table';
+import {
+    UtilitiesTable,
+    Utility,
+} from '@/components/shared/tenant/utilities-table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     SidebarInset,
     SidebarProvider,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { router, Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     Bell,
-    House,
-    Zap,
     CalendarDays,
-    MessageCircleMore,
     CheckCircle2,
     Clock,
+    House,
+    MessageCircleMore,
+    Zap,
 } from 'lucide-react';
 import { route } from 'ziggy-js';
 
@@ -113,7 +114,7 @@ export default function TenantDashboard({
                         <h1 className="text-2xl font-bold">
                             Hello, {tenant.full_name}!
                         </h1>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-sm text-muted-foreground">
                             {tenancy
                                 ? "Here's an overview of your tenancy."
                                 : 'No active tenancy found.'}
@@ -125,17 +126,26 @@ export default function TenantDashboard({
                                 <MessageCircleMore className="h-5 w-5" />
                             </Link>
                         </Button>
-                        <Button variant="ghost" size="icon" className="relative" asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="relative"
+                            asChild
+                        >
                             <Link href="#">
                                 <Bell className="h-5 w-5" />
                                 {unreadNotifications > 0 && (
-                                    <span className="bg-destructive text-destructive-foreground absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold">
+                                    <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
                                         {unreadNotifications}
                                     </span>
                                 )}
                             </Link>
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleLogout}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleLogout}
+                        >
                             Logout
                         </Button>
                     </div>
@@ -148,13 +158,13 @@ export default function TenantDashboard({
                             <CardTitle className="text-sm font-medium">
                                 Your Unit
                             </CardTitle>
-                            <House className="text-muted-foreground h-4 w-4" />
+                            <House className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
                                 {unit?.unit_name ?? '—'}
                             </div>
-                            <p className="text-muted-foreground text-xs">
+                            <p className="text-xs text-muted-foreground">
                                 {unit?.unit_code ?? 'No unit assigned'}
                             </p>
                         </CardContent>
@@ -168,7 +178,7 @@ export default function TenantDashboard({
                             {tenancy?.status === 'active' ? (
                                 <CheckCircle2 className="h-4 w-4 text-green-500" />
                             ) : (
-                                <Clock className="text-muted-foreground h-4 w-4" />
+                                <Clock className="h-4 w-4 text-muted-foreground" />
                             )}
                         </CardHeader>
                         <CardContent>
@@ -184,7 +194,7 @@ export default function TenantDashboard({
                                     {tenancy?.status ?? 'Inactive'}
                                 </Badge>
                             </div>
-                            <p className="text-muted-foreground mt-1 text-xs">
+                            <p className="mt-1 text-xs text-muted-foreground">
                                 Since {formatDate(tenancy?.move_in_date)}
                             </p>
                         </CardContent>
@@ -195,13 +205,13 @@ export default function TenantDashboard({
                             <CardTitle className="text-sm font-medium">
                                 Utility Balance
                             </CardTitle>
-                            <Zap className="text-muted-foreground h-4 w-4" />
+                            <Zap className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
                                 {formatCurrency(totalUtilityBalance)}
                             </div>
-                            <p className="text-muted-foreground text-xs">
+                            <p className="text-xs text-muted-foreground">
                                 {pendingUtilities > 0
                                     ? `${pendingUtilities} unpaid bill${pendingUtilities > 1 ? 's' : ''}`
                                     : 'All bills settled'}
@@ -214,15 +224,17 @@ export default function TenantDashboard({
                             <CardTitle className="text-sm font-medium">
                                 Move-in Date
                             </CardTitle>
-                            <CalendarDays className="text-muted-foreground h-4 w-4" />
+                            <CalendarDays className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
                                 {tenancy?.move_in_date
-                                    ? new Date(tenancy.move_in_date).getFullYear()
+                                    ? new Date(
+                                          tenancy.move_in_date,
+                                      ).getFullYear()
                                     : '—'}
                             </div>
-                            <p className="text-muted-foreground text-xs">
+                            <p className="text-xs text-muted-foreground">
                                 {formatDate(tenancy?.move_in_date)}
                             </p>
                         </CardContent>
@@ -245,7 +257,7 @@ export default function TenantDashboard({
                                 </CardTitle>
                                 <Link
                                     href={route('tenant.utilities')}
-                                    className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                                 >
                                     See all
                                 </Link>
@@ -272,20 +284,18 @@ export default function TenantDashboard({
                                         <div
                                             key={n.id}
                                             className={`flex items-start gap-3 rounded-lg p-3 text-sm ${
-                                                !n.read_at
-                                                    ? 'bg-muted'
-                                                    : ''
+                                                !n.read_at ? 'bg-muted' : ''
                                             }`}
                                         >
                                             <div className="flex-1">
                                                 <p className="font-medium">
                                                     {n.title}
                                                 </p>
-                                                <p className="text-muted-foreground text-xs">
+                                                <p className="text-xs text-muted-foreground">
                                                     {n.message}
                                                 </p>
                                             </div>
-                                            <span className="text-muted-foreground shrink-0 text-xs">
+                                            <span className="shrink-0 text-xs text-muted-foreground">
                                                 {formatDate(n.created_at)}
                                             </span>
                                         </div>
