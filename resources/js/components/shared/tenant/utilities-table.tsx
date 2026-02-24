@@ -44,7 +44,6 @@ const statusVariant = (
 
 export function UtilitiesTable({ utilities = [] }: UtilitiesTableProps) {
     return (
-        <div className="overflow-hidden rounded-xl border">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -84,6 +83,5 @@ export function UtilitiesTable({ utilities = [] }: UtilitiesTableProps) {
                     )}
                 </TableBody>
             </Table>
-        </div>
     );
 }

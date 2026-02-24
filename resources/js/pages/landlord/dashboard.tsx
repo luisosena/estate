@@ -102,7 +102,9 @@ export default function Dashboard({ properties, stats }: LandlordDashboardProps)
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{formatCurrency(stats.monthly_revenue)}</div>
+                            <div className="text-2xl font-bold">
+                                {/*{formatCurrency(stats.monthly_revenue)}*/}
+                            </div>
                             <p className="text-xs text-muted-foreground">Expected monthly income</p>
                         </CardContent>
                     </Card>
