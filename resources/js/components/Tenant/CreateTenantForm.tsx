@@ -3,9 +3,21 @@ import { router, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, Home, Calendar, DollarSign } from 'lucide-react';
+
+interface AvailableUnit {
+    id: number;
+    unit_code: string;
+    unit_name: string;
+    property: {
+        id: number;
+        name: string;
+        address: string;
+    };
+}
 
 interface TenantFormData {
     full_name: string;
@@ -14,14 +26,20 @@ interface TenantFormData {
     emergency_contact_name: string;
     emergency_contact_phone: string;
     emergency_contact_relation: string;
+    unit_id: string;
+    move_in_date: string;
+    monthly_rent: string;
+    security_deposit: string;
+    tenancy_agreement: File | null;
 }
 
 interface CreateTenantFormProps {
+    availableUnits: AvailableUnit[];
     errors?: Record<string, string>;
     success?: string;
 }
 
-export default function CreateTenantForm({ errors = {}, success }: CreateTenantFormProps) {
+export default function CreateTenantForm({ availableUnits, errors = {}, success }: CreateTenantFormProps) {
     const { data, setData, post, processing, reset } = useForm<TenantFormData>({
         full_name: '',
         phone: '',
@@ -29,6 +47,11 @@ export default function CreateTenantForm({ errors = {}, success }: CreateTenantF
         emergency_contact_name: '',
         emergency_contact_phone: '',
         emergency_contact_relation: '',
+        unit_id: '',
+        move_in_date: '',
+        monthly_rent: '',
+        security_deposit: '',
+        tenancy_agreement: null,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -60,7 +83,7 @@ export default function CreateTenantForm({ errors = {}, success }: CreateTenantF
                     <CardHeader>
                         <CardTitle>Add New Tenant</CardTitle>
                         <CardDescription>
-                            Fill in the tenant information below. The tenant code will be generated automatically.
+                            Fill in the tenant information, select a unit, and set up the tenancy details. The tenant code will be generated automatically.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -81,10 +104,13 @@ export default function CreateTenantForm({ errors = {}, success }: CreateTenantF
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 {/* Personal Information */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                                        <Home className="mr-2 h-5 w-5" />
+                                        Personal Information
+                                    </h3>
                                     
                                     <div>
                                         <Label htmlFor="full_name">Full Name *</Label>
@@ -184,6 +210,103 @@ export default function CreateTenantForm({ errors = {}, success }: CreateTenantF
                                         {errors.emergency_contact_relation && (
                                             <p className="text-red-500 text-sm mt-1">{errors.emergency_contact_relation}</p>
                                         )}
+                                    </div>
+                                </div>
+
+                                {/* Unit Assignment & Tenancy */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                                        <Calendar className="mr-2 h-5 w-5" />
+                                        Unit & Tenancy
+                                    </h3>
+                                    
+                                    <div>
+                                        <Label htmlFor="unit_id">Select Unit *</Label>
+                                        <Select value={data.unit_id} onValueChange={(value) => setData('unit_id', value)}>
+                                            <SelectTrigger className={errors.unit_id ? 'border-red-500' : ''}>
+                                                <SelectValue placeholder="Choose a unit" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {availableUnits.map((unit) => (
+                                                    <SelectItem key={unit.id} value={unit.id.toString()}>
+                                                        {unit.unit_code} - {unit.unit_name}
+                                                        <div className="text-xs text-gray-500">
+                                                            {unit.property.name}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.unit_id && (
+                                            <p className="text-red-500 text-sm mt-1">{errors.unit_id}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="move_in_date">Move-in Date *</Label>
+                                        <Input
+                                            id="move_in_date"
+                                            type="date"
+                                            value={data.move_in_date}
+                                            onChange={(e) => setData('move_in_date', e.target.value)}
+                                            required
+                                            className={errors.move_in_date ? 'border-red-500' : ''}
+                                        />
+                                        {errors.move_in_date && (
+                                            <p className="text-red-500 text-sm mt-1">{errors.move_in_date}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="monthly_rent">Monthly Rent *</Label>
+                                        <Input
+                                            id="monthly_rent"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={data.monthly_rent}
+                                            onChange={(e) => setData('monthly_rent', e.target.value)}
+                                            placeholder="0.00"
+                                            required
+                                            className={errors.monthly_rent ? 'border-red-500' : ''}
+                                        />
+                                        {errors.monthly_rent && (
+                                            <p className="text-red-500 text-sm mt-1">{errors.monthly_rent}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="security_deposit">Security Deposit</Label>
+                                        <Input
+                                            id="security_deposit"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={data.security_deposit}
+                                            onChange={(e) => setData('security_deposit', e.target.value)}
+                                            placeholder="0.00 (optional)"
+                                            className={errors.security_deposit ? 'border-red-500' : ''}
+                                        />
+                                        {errors.security_deposit && (
+                                            <p className="text-red-500 text-sm mt-1">{errors.security_deposit}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="tenancy_agreement">Tenancy Agreement</Label>
+                                        <Input
+                                            id="tenancy_agreement"
+                                            type="file"
+                                            accept=".pdf,.doc,.docx"
+                                            onChange={(e) => setData('tenancy_agreement', e.target.files?.[0] || null)}
+                                            className={errors.tenancy_agreement ? 'border-red-500' : ''}
+                                        />
+                                        {errors.tenancy_agreement && (
+                                            <p className="text-red-500 text-sm mt-1">{errors.tenancy_agreement}</p>
+                                        )}
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            PDF or Word document (max 10MB)
+                                        </p>
                                     </div>
                                 </div>
                             </div>
