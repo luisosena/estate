@@ -113,5 +113,5 @@
         },
         "jsx": "react-jsx"
     },
-    "include": ["resources/js/**/*.ts", "resources/js/**/*.d.ts", "resources/js/**/*.tsx", "resources/js/components/sidebar-04/nav-user.tsx", "resources/js/components/sidebar-04/mail-context.tsx", "resources/js/components/sidebar-04/app-sidebar.tsx"]
+    "include": ["resources/js/**/*.ts", "resources/js/**/*.d.ts", "resources/js/**/*.tsx", "resources/js/components/sidebar-04/nav-user.tsx", "resources/js/components/sidebar-04/mail-context.tsx", "resources/js/components/sidebar-04/app-sidebar.tsx", "components/form-layout-01.tsx"]
 }

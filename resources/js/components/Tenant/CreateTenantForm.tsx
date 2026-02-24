@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Field, FieldGroup, FieldLabel, FieldDescription, FieldError, FieldSeparator } from '@/components/ui/field';
+import { Separator } from '@/components/ui/separator';
 import { Loader2, ArrowLeft, Home, Calendar, DollarSign } from 'lucide-react';
 
 interface AvailableUnit {
@@ -68,7 +69,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-6">
+        <div className="max-w-6xl mx-auto p-6">
             <div className="mb-6">
                 <Button
                     variant="ghost"
@@ -103,252 +104,239 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
                             </Alert>
                         )}
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            <FieldGroup>
                                 {/* Personal Information */}
-                                <div className="space-y-6">
-                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
-                                        Personal Information
-                                    </h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Home className="h-5 w-5" />
+                                        <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                                    </div>
                                     
-                                    <div className="space-y-2">
-                                        <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Full Name *
-                                        </Label>
-                                        <Input
-                                            id="full_name"
-                                            type="text"
-                                            value={data.full_name}
-                                            onChange={(e) => setData('full_name', e.target.value)}
-                                            placeholder="Enter tenant's full name"
-                                            required
-                                            className={`h-11 ${errors.full_name ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.full_name && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.full_name}</p>
-                                        )}
-                                    </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <Field>
+                                            <FieldLabel htmlFor="full_name">
+                                                Full Name <span className="text-red-500">*</span>
+                                            </FieldLabel>
+                                            <Input
+                                                id="full_name"
+                                                type="text"
+                                                value={data.full_name}
+                                                onChange={(e) => setData('full_name', e.target.value)}
+                                                placeholder="Enter tenant's full name"
+                                                required
+                                                aria-invalid={!!errors.full_name}
+                                            />
+                                            <FieldError>{errors.full_name}</FieldError>
+                                        </Field>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="phone" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Phone Number *
-                                        </Label>
-                                        <Input
-                                            id="phone"
-                                            type="tel"
-                                            value={data.phone}
-                                            onChange={(e) => setData('phone', e.target.value)}
-                                            placeholder="Enter phone number"
-                                            required
-                                            className={`h-11 ${errors.phone ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.phone && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.phone}</p>
-                                        )}
-                                    </div>
+                                        <Field>
+                                            <FieldLabel htmlFor="phone">
+                                                Phone Number <span className="text-red-500">*</span>
+                                            </FieldLabel>
+                                            <Input
+                                                id="phone"
+                                                type="tel"
+                                                value={data.phone}
+                                                onChange={(e) => setData('phone', e.target.value)}
+                                                placeholder="Enter phone number"
+                                                required
+                                                aria-invalid={!!errors.phone}
+                                            />
+                                            <FieldError>{errors.phone}</FieldError>
+                                        </Field>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Email Address
-                                        </Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            value={data.email}
-                                            onChange={(e) => setData('email', e.target.value)}
-                                            placeholder="Enter email address (optional)"
-                                            className={`h-11 ${errors.email ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.email && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.email}</p>
-                                        )}
+                                        <Field className="md:col-span-2">
+                                            <FieldLabel htmlFor="email">Email Address</FieldLabel>
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                value={data.email}
+                                                onChange={(e) => setData('email', e.target.value)}
+                                                placeholder="Enter email address (optional)"
+                                                aria-invalid={!!errors.email}
+                                            />
+                                            <FieldError>{errors.email}</FieldError>
+                                        </Field>
                                     </div>
                                 </div>
+
+                                <FieldSeparator>Emergency Contact</FieldSeparator>
 
                                 {/* Emergency Contact */}
-                                <div className="space-y-6">
-                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
-                                        Emergency Contact
-                                    </h3>
-                                    
-                                    <div className="space-y-2">
-                                        <Label htmlFor="emergency_contact_name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Contact Name *
-                                        </Label>
-                                        <Input
-                                            id="emergency_contact_name"
-                                            type="text"
-                                            value={data.emergency_contact_name}
-                                            onChange={(e) => setData('emergency_contact_name', e.target.value)}
-                                            placeholder="Enter emergency contact name"
-                                            required
-                                            className={`h-11 ${errors.emergency_contact_name ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.emergency_contact_name && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.emergency_contact_name}</p>
-                                        )}
-                                    </div>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <Field>
+                                            <FieldLabel htmlFor="emergency_contact_name">
+                                                Contact Name <span className="text-red-500">*</span>
+                                            </FieldLabel>
+                                            <Input
+                                                id="emergency_contact_name"
+                                                type="text"
+                                                value={data.emergency_contact_name}
+                                                onChange={(e) => setData('emergency_contact_name', e.target.value)}
+                                                placeholder="Enter emergency contact name"
+                                                required
+                                                aria-invalid={!!errors.emergency_contact_name}
+                                            />
+                                            <FieldError>{errors.emergency_contact_name}</FieldError>
+                                        </Field>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="emergency_contact_phone" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Contact Phone *
-                                        </Label>
-                                        <Input
-                                            id="emergency_contact_phone"
-                                            type="tel"
-                                            value={data.emergency_contact_phone}
-                                            onChange={(e) => setData('emergency_contact_phone', e.target.value)}
-                                            placeholder="Enter emergency contact phone"
-                                            required
-                                            className={`h-11 ${errors.emergency_contact_phone ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.emergency_contact_phone && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.emergency_contact_phone}</p>
-                                        )}
-                                    </div>
+                                        <Field>
+                                            <FieldLabel htmlFor="emergency_contact_phone">
+                                                Contact Phone <span className="text-red-500">*</span>
+                                            </FieldLabel>
+                                            <Input
+                                                id="emergency_contact_phone"
+                                                type="tel"
+                                                value={data.emergency_contact_phone}
+                                                onChange={(e) => setData('emergency_contact_phone', e.target.value)}
+                                                placeholder="Enter emergency contact phone"
+                                                required
+                                                aria-invalid={!!errors.emergency_contact_phone}
+                                            />
+                                            <FieldError>{errors.emergency_contact_phone}</FieldError>
+                                        </Field>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="emergency_contact_relation" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Relationship *
-                                        </Label>
-                                        <Input
-                                            id="emergency_contact_relation"
-                                            type="text"
-                                            value={data.emergency_contact_relation}
-                                            onChange={(e) => setData('emergency_contact_relation', e.target.value)}
-                                            placeholder="e.g., Spouse, Parent, Sibling"
-                                            required
-                                            className={`h-11 ${errors.emergency_contact_relation ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.emergency_contact_relation && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.emergency_contact_relation}</p>
-                                        )}
+                                        <Field className="md:col-span-2">
+                                            <FieldLabel htmlFor="emergency_contact_relation">
+                                                Relationship <span className="text-red-500">*</span>
+                                            </FieldLabel>
+                                            <Input
+                                                id="emergency_contact_relation"
+                                                type="text"
+                                                value={data.emergency_contact_relation}
+                                                onChange={(e) => setData('emergency_contact_relation', e.target.value)}
+                                                placeholder="e.g., Spouse, Parent, Sibling"
+                                                required
+                                                aria-invalid={!!errors.emergency_contact_relation}
+                                            />
+                                            <FieldError>{errors.emergency_contact_relation}</FieldError>
+                                        </Field>
                                     </div>
                                 </div>
 
-                                {/* Unit Assignment & Tenancy */}
-                                <div className="space-y-6">
-                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                <FieldSeparator>
+                                    <span className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4" />
                                         Unit & Tenancy
-                                    </h3>
-                                    
-                                    <div className="space-y-2">
-                                        <Label htmlFor="unit_id" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Select Unit *
-                                        </Label>
-                                        <Select value={data.unit_id} onValueChange={(value) => setData('unit_id', value)}>
-                                            <SelectTrigger className={`h-11 ${errors.unit_id ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}>
-                                                <SelectValue placeholder="Choose a unit" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {availableUnits.map((unit) => (
-                                                    <SelectItem key={unit.id} value={unit.id.toString()}>
-                                                        <div>
-                                                            <div className="font-medium">{unit.unit_code} - {unit.unit_name}</div>
-                                                            <div className="text-xs text-gray-500">{unit.property.name}</div>
-                                                        </div>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.unit_id && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.unit_id}</p>
-                                        )}
-                                    </div>
+                                    </span>
+                                </FieldSeparator>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="move_in_date" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Move-in Date *
-                                        </Label>
-                                        <Input
-                                            id="move_in_date"
-                                            type="date"
-                                            value={data.move_in_date}
-                                            onChange={(e) => setData('move_in_date', e.target.value)}
-                                            required
-                                            className={`h-11 ${errors.move_in_date ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.move_in_date && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.move_in_date}</p>
-                                        )}
-                                    </div>
+                                {/* Unit Assignment & Tenancy */}
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <Field>
+                                            <FieldLabel htmlFor="unit_id">
+                                                Select Unit <span className="text-red-500">*</span>
+                                            </FieldLabel>
+                                            <Select value={data.unit_id} onValueChange={(value) => setData('unit_id', value)}>
+                                                <SelectTrigger aria-invalid={!!errors.unit_id}>
+                                                    <SelectValue placeholder="Choose a unit" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {availableUnits.map((unit) => (
+                                                        <SelectItem key={unit.id} value={unit.id.toString()}>
+                                                            <div>
+                                                                <div>{unit.unit_code} - {unit.unit_name}</div>
+                                                                <div className="text-xs text-gray-500">
+                                                                    {unit.property?.name || 'Unknown Property'}
+                                                                </div>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FieldError>{errors.unit_id}</FieldError>
+                                        </Field>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="monthly_rent" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Monthly Rent *
-                                        </Label>
-                                        <Input
-                                            id="monthly_rent"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.monthly_rent}
-                                            onChange={(e) => setData('monthly_rent', e.target.value)}
-                                            placeholder="0.00"
-                                            required
-                                            className={`h-11 ${errors.monthly_rent ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.monthly_rent && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.monthly_rent}</p>
-                                        )}
-                                    </div>
+                                        <Field>
+                                            <FieldLabel htmlFor="move_in_date">
+                                                Move-in Date <span className="text-red-500">*</span>
+                                            </FieldLabel>
+                                            <Input
+                                                id="move_in_date"
+                                                type="date"
+                                                value={data.move_in_date}
+                                                onChange={(e) => setData('move_in_date', e.target.value)}
+                                                required
+                                                aria-invalid={!!errors.move_in_date}
+                                            />
+                                            <FieldError>{errors.move_in_date}</FieldError>
+                                        </Field>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="security_deposit" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Security Deposit
-                                        </Label>
-                                        <Input
-                                            id="security_deposit"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.security_deposit}
-                                            onChange={(e) => setData('security_deposit', e.target.value)}
-                                            placeholder="0.00 (optional)"
-                                            className={`h-11 ${errors.security_deposit ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
-                                        />
-                                        {errors.security_deposit && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.security_deposit}</p>
-                                        )}
-                                    </div>
+                                        <Field>
+                                            <FieldLabel htmlFor="monthly_rent">
+                                                Monthly Rent <span className="text-red-500">*</span>
+                                            </FieldLabel>
+                                            <Input
+                                                id="monthly_rent"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={data.monthly_rent}
+                                                onChange={(e) => setData('monthly_rent', e.target.value)}
+                                                placeholder="0.00"
+                                                required
+                                                aria-invalid={!!errors.monthly_rent}
+                                            />
+                                            <FieldError>{errors.monthly_rent}</FieldError>
+                                        </Field>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="tenancy_agreement" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Tenancy Agreement
-                                        </Label>
-                                        <div className="relative">
+                                        <Field>
+                                            <FieldLabel htmlFor="security_deposit">Security Deposit</FieldLabel>
+                                            <Input
+                                                id="security_deposit"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={data.security_deposit}
+                                                onChange={(e) => setData('security_deposit', e.target.value)}
+                                                placeholder="0.00 (optional)"
+                                                aria-invalid={!!errors.security_deposit}
+                                            />
+                                            <FieldError>{errors.security_deposit}</FieldError>
+                                        </Field>
+
+                                        <Field className="md:col-span-2">
+                                            <FieldLabel htmlFor="tenancy_agreement">Tenancy Agreement</FieldLabel>
                                             <Input
                                                 id="tenancy_agreement"
                                                 type="file"
                                                 accept=".pdf,.doc,.docx"
-                                                onChange={(e) => setData('tenancy_agreement', e.target.files?.[0] || null)}
-                                                className={`h-11 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-800 dark:file:text-gray-300 ${errors.tenancy_agreement ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file && file.size > 10 * 1024 * 1024) {
+                                                        alert('File size must be less than 10MB');
+                                                        e.target.value = '';
+                                                        return;
+                                                    }
+                                                    setData('tenancy_agreement', file || null);
+                                                }}
+                                                aria-invalid={!!errors.tenancy_agreement}
                                             />
-                                        </div>
-                                        {errors.tenancy_agreement && (
-                                            <p className="text-red-500 text-sm mt-1 font-medium">{errors.tenancy_agreement}</p>
-                                        )}
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            PDF or Word document (max 10MB)
-                                        </p>
+                                            <FieldError>{errors.tenancy_agreement}</FieldError>
+                                            <FieldDescription>
+                                                PDF or Word document (max 10MB)
+                                            </FieldDescription>
+                                        </Field>
                                     </div>
                                 </div>
-                            </div>
+                            </FieldGroup>
 
-                            <div className="flex justify-end space-x-3 pt-8 border-t border-gray-200 dark:border-gray-700">
+                            <Separator className="my-6" />
+                            <div className="flex justify-end space-x-4">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={handleBack}
                                     disabled={processing}
-                                    className="h-11 px-6"
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium"
                                 >
                                     {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Create Tenant
