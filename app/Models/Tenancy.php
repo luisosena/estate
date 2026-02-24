@@ -11,6 +11,8 @@ class Tenancy extends Model
         'unit_id',
         'move_in_date',
         'move_out_date',
+        'monthly_rent',
+        'security_deposit',
         'tenancy_agreement_path',
         'status',
     ];

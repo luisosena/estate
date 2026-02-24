@@ -27,10 +27,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/landlord/dashboard', [LandlordDashboardController::class, 'index'])
         ->name('landlord.dashboard');
 
-    Route::get('/landlord/tenants/create', [LandlordDashboardController::class, 'create'])
+    Route::get('/landlord/tenants/create', [LandlordTenantController::class, 'create'])
         ->name('landlord.tenants.create');
         
-    Route::post('/landlord/tenants', [LandlordDashboardController::class, 'store'])
+    Route::post('/landlord/tenants', [LandlordTenantController::class, 'store'])
         ->name('landlord.tenants.store');
 
     // Landlord tenant management routes

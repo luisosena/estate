@@ -4,7 +4,12 @@ namespace App\Http\Controllers\Web\Landlord;
 
 use App\Http\Controllers\Controller;
 use App\Models\Property;
+use App\Models\Tenant;
+use App\Models\Tenancy;
+use App\Models\Unit;
+use App\Http\Requests\StoreTenantWithTenancyRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class LandlordTenantController extends Controller
@@ -139,5 +144,112 @@ class LandlordTenantController extends Controller
             ],
             'properties'       => $allProperties,
         ]);
+    }
+
+    /**
+     * Show the form for creating a new tenant with unit assignment and tenancy.
+     *
+     * Route: GET /landlord/tenants/create
+     */
+    public function create(Request $request)
+    {
+        $landlord = $request->user();
+        
+        // Get available units (units without active tenancies) for this landlord
+        $availableUnits = $this->getAvailableUnitsForLandlord($landlord);
+        
+        return Inertia::render('landlord/tenants/create', [
+            'availableUnits' => $availableUnits,
+        ]);
+    }
+
+    /**
+     * Store a newly created tenant with unit assignment and tenancy.
+     *
+     * Route: POST /landlord/tenants
+     */
+    public function store(StoreTenantWithTenancyRequest $request)
+    {
+        $landlord = $request->user();
+        
+        try {
+            // Create the tenant
+            $tenant = Tenant::create([
+                'full_name' => $request->full_name,
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'emergency_contact_name' => $request->emergency_contact_name,
+                'emergency_contact_phone' => $request->emergency_contact_phone,
+                'emergency_contact_relation' => $request->emergency_contact_relation,
+            ]);
+
+            // Handle tenancy agreement upload if present
+            $agreementPath = null;
+            if ($request->hasFile('tenancy_agreement')) {
+                $agreementPath = $request->file('tenancy_agreement')->store('tenancy-agreements', 'public');
+            }
+
+            // Create the tenancy
+            $tenancy = Tenancy::create([
+                'tenant_id' => $tenant->id,
+                'unit_id' => $request->unit_id,
+                'move_in_date' => $request->move_in_date,
+                'monthly_rent' => $request->monthly_rent,
+                'security_deposit' => $request->security_deposit,
+                'tenancy_agreement_path' => $agreementPath,
+                'status' => 'active',
+            ]);
+
+            return redirect()
+                ->route('landlord.tenants.index')
+                ->with('success', "Tenant {$tenant->full_name} has been successfully added to the unit.");
+
+        } catch (\Exception $e) {
+            // If anything fails, clean up any created records
+            if (isset($tenant)) {
+                $tenant->delete();
+            }
+            if (isset($tenancy)) {
+                $tenancy->delete();
+            }
+            if ($agreementPath) {
+                Storage::disk('public')->delete($agreementPath);
+            }
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to create tenant. Please try again.');
+        }
+    }
+
+    /**
+     * Get available units for a landlord (units without active tenancies).
+     *
+     * @param \App\Models\User $landlord
+     * @return \Illuminate\Support\Collection
+     */
+    private function getAvailableUnitsForLandlord($landlord)
+    {
+        return Unit::whereHas('property', function ($query) use ($landlord) {
+            $query->where('owner_id', $landlord->id);
+        })
+        ->whereDoesntHave('tenancies', function ($query) {
+            $query->where('status', 'active');
+        })
+        ->with('property')
+        ->get()
+        ->map(function ($unit) {
+            return [
+                'id' => $unit->id,
+                'unit_code' => $unit->unit_code,
+                'unit_name' => $unit->unit_name,
+                'property' => [
+                    'id' => $unit->property->id,
+                    'name' => $unit->property->name,
+                    'address' => $unit->property->address,
+                ],
+            ];
+        });
     }
 }
