@@ -69,7 +69,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
     };
 
     return (
-        <div className="w-full p-auto">
+        <div className="w-72 p-auto">
             <div className="mb-6">
                 <Button
                     variant="ghost"
