@@ -69,7 +69,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
     };
 
     return (
-        <div className="max-w-6xl mx-auto p-6">
+        <div className="w-full p-auto">
             <div className="mb-6">
                 <Button
                     variant="ghost"
@@ -80,7 +80,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
                     Back to Dashboard
                 </Button>
                 
-                <Card>
+                <Card className="w-full mx-auto">
                     <CardHeader>
                         <CardTitle>Add New Tenant</CardTitle>
                         <CardDescription>
