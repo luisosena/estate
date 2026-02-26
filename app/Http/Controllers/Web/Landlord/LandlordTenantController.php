@@ -7,9 +7,12 @@ use App\Models\Property;
 use App\Models\Tenant;
 use App\Models\Tenancy;
 use App\Models\Unit;
+use App\Models\User;
 use App\Http\Requests\StoreTenantWithTenancyRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class LandlordTenantController extends Controller
@@ -183,6 +186,9 @@ class LandlordTenantController extends Controller
                 'emergency_contact_relation' => $request->emergency_contact_relation,
             ]);
 
+            // Create user account for the tenant
+            $user = $this->createTenantUser($tenant);
+
             // Handle tenancy agreement upload if present
             $agreementPath = null;
             if ($request->hasFile('tenancy_agreement')) {
@@ -202,11 +208,15 @@ class LandlordTenantController extends Controller
 
             return redirect()
                 ->route('landlord.tenants.index')
-                ->with('success', "Tenant {$tenant->full_name} has been successfully added to the unit.");
+                ->with('success', "Tenant {$tenant->full_name} has been successfully added to the unit. User account created with username: {$user->username}");
 
         } catch (\Exception $e) {
             // If anything fails, clean up any created records
             if (isset($tenant)) {
+                // Also delete the associated user if it was created
+                if ($tenant->user) {
+                    $tenant->user->delete();
+                }
                 $tenant->delete();
             }
             if (isset($tenancy)) {
@@ -221,6 +231,61 @@ class LandlordTenantController extends Controller
                 ->withInput()
                 ->with('error', 'Failed to create tenant. Please try again.');
         }
+    }
+
+    /**
+     * Create a user account for the tenant.
+     *
+     * @param \App\Models\Tenant $tenant
+     * @return \App\Models\User
+     */
+    private function createTenantUser(Tenant $tenant): User
+    {
+        $username = $this->generateUsername($tenant->full_name);
+        $password = $this->generatePassword();
+
+        return User::create([
+            'name' => $tenant->full_name,
+            'username' => $username,
+            'email' => $tenant->email,
+            'password' => Hash::make($password),
+            'role' => 'tenant',
+            'tenant_id' => $tenant->id,
+        ]);
+    }
+
+    /**
+     * Generate a unique username from tenant's full name.
+     *
+     * @param string $fullName
+     * @return string
+     */
+    private function generateUsername(string $fullName): string
+    {
+        do {
+            // Split the full name into parts and join with dots
+            $nameParts = explode(' ', trim($fullName));
+            $nameParts = array_filter($nameParts); // Remove empty parts
+            
+            // Take first 2-3 parts of the name
+            $usernameParts = array_slice($nameParts, 0, 3);
+            $base = strtolower(implode('.', $usernameParts));
+            
+            // Add random number for uniqueness
+            $username = $base . '_' . random_int(1000, 9999);
+        } while (User::where('username', $username)->exists());
+
+        return $username;
+    }
+
+    /**
+     * Generate a secure temporary password.
+     *
+     * @return string
+     */
+    private function generatePassword(): string
+    {
+        return Str::random(12); // 12-character random string
     }
 
     /**

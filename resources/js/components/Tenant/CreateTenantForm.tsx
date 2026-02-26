@@ -147,16 +147,22 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
                                         </Field>
 
                                         <Field className="md:col-span-2">
-                                            <FieldLabel htmlFor="email">Email Address</FieldLabel>
+                                            <FieldLabel htmlFor="email">
+                                                Email Address <span className="text-red-500">*</span>
+                                            </FieldLabel>
                                             <Input
                                                 id="email"
                                                 type="email"
                                                 value={data.email}
                                                 onChange={(e) => setData('email', e.target.value)}
-                                                placeholder="Enter email address (optional)"
+                                                placeholder="Enter email address (required for user account creation)"
+                                                required
                                                 aria-invalid={!!errors.email}
                                             />
                                             <FieldError>{errors.email}</FieldError>
+                                            <FieldDescription>
+                                                This email will be used for the tenant's user account login
+                                            </FieldDescription>
                                         </Field>
                                     </div>
                                 </div>

@@ -26,7 +26,7 @@ class StoreTenantWithTenancyRequest extends FormRequest
             // Tenant Information
             'full_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'email' => 'nullable|email|max:255|unique:tenants,email',
+            'email' => 'required|email|max:255|unique:tenants,email|unique:users,email',
             'emergency_contact_name' => 'required|string|max:255',
             'emergency_contact_phone' => 'required|string|max:20',
             'emergency_contact_relation' => 'required|string|max:100',
@@ -52,6 +52,8 @@ class StoreTenantWithTenancyRequest extends FormRequest
         return [
             'unit_id.required' => 'Please select a unit for the tenant.',
             'unit_id.exists' => 'The selected unit is invalid.',
+            'email.required' => 'Email address is required for user account creation.',
+            'email.unique' => 'This email address is already in use.',
             'move_in_date.after_or_equal' => 'Move-in date cannot be in the past.',
             'monthly_rent.min' => 'Monthly rent must be a positive number.',
             'security_deposit.min' => 'Security deposit must be a positive number.',
