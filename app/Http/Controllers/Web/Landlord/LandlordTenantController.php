@@ -178,6 +178,13 @@ class LandlordTenantController extends Controller
         // Enable query logging
         \DB::enableQueryLog();
         
+        // Initialize variables for error handling
+        $tenant = null;
+        $user = null;
+        $tenancy = null;
+        $unit = null;
+        $agreementPath = null;
+        
         try {
             // Create the tenant
             $tenant = Tenant::create([
@@ -231,6 +238,10 @@ class LandlordTenantController extends Controller
                 'status' => 'active',
             ]);
 
+            // Update unit status to 'occupied'
+            $unit = Unit::find($request->unit_id);
+            $unit->update(['status' => 'occupied']);
+
             return redirect()
                 ->route('landlord.tenants.index')
                 ->with('success', "Tenant {$tenant->full_name} has been successfully added to the unit. User account created with username: {$user->username}");
@@ -255,6 +266,10 @@ class LandlordTenantController extends Controller
             if (isset($tenancy)) {
                 $tenancy->delete();
             }
+            if (isset($unit)) {
+                // Rollback unit status to 'available'
+                $unit->update(['status' => 'available']);
+            }
             if ($agreementPath) {
                 Storage::disk('public')->delete($agreementPath);
             }
@@ -263,6 +278,48 @@ class LandlordTenantController extends Controller
                 ->back()
                 ->withInput()
                 ->with('error', 'Failed to create tenant. Please try again.');
+        }
+    }
+
+    /**
+     * End a tenancy and update unit status to available.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Tenancy $tenancy
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function endTenancy(Request $request, Tenancy $tenancy)
+    {
+        $landlord = $request->user();
+        
+        // Authorization: ensure this tenancy belongs to the landlord's property
+        if ($tenancy->unit->property->owner_id !== $landlord->id) {
+            abort(403, 'You do not have access to this tenancy.');
+        }
+
+        try {
+            // Update tenancy status and set move_out_date
+            $tenancy->update([
+                'status' => 'ended',
+                'move_out_date' => now()->toDateString(),
+            ]);
+
+            // Update unit status back to 'available'
+            $tenancy->unit->update(['status' => 'available']);
+
+            return redirect()
+                ->back()
+                ->with('success', 'Tenancy has been ended successfully. Unit is now available.');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to end tenancy', [
+                'tenancy_id' => $tenancy->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to end tenancy. Please try again.');
         }
     }
 
@@ -339,6 +396,7 @@ class LandlordTenantController extends Controller
         return Unit::whereHas('property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
+        ->where('status', 'available')  // Only show available units
         ->whereDoesntHave('tenancies', function ($query) {
             $query->where('status', 'active');
         })
