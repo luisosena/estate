@@ -175,6 +175,9 @@ class LandlordTenantController extends Controller
     {
         $landlord = $request->user();
         
+        // Enable query logging
+        \DB::enableQueryLog();
+        
         try {
             // Create the tenant
             $tenant = Tenant::create([
@@ -195,12 +198,21 @@ class LandlordTenantController extends Controller
 
             // Create user account for the tenant
             \Log::info('About to create user for tenant', ['tenant_id' => $tenant->id]);
-            $user = $this->createTenantUser($tenant);
-            \Log::info('User creation completed', [
-                'user_id' => $user->id ?? 'null',
-                'username' => $user->username ?? 'null',
-                'tenant_id' => $user->tenant_id ?? 'null'
-            ]);
+            try {
+                $user = $this->createTenantUser($tenant);
+                \Log::info('User creation completed', [
+                    'user_id' => $user->id ?? 'null',
+                    'username' => $user->username ?? 'null',
+                    'tenant_id' => $user->tenant_id ?? 'null'
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('User creation failed', [
+                    'tenant_id' => $tenant->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e; // Re-throw to be caught by outer try-catch
+            }
 
             // Handle tenancy agreement upload if present
             $agreementPath = null;
@@ -224,6 +236,14 @@ class LandlordTenantController extends Controller
                 ->with('success', "Tenant {$tenant->full_name} has been successfully added to the unit. User account created with username: {$user->username}");
 
         } catch (\Exception $e) {
+            // Log all queries
+            \Log::info('Database queries executed', [
+                'queries' => \DB::getQueryLog(),
+                'tenant_id' => $tenant->id ?? 'null',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             // If anything fails, clean up any created records
             if (isset($tenant)) {
                 // Also delete the associated user if it was created
@@ -257,11 +277,18 @@ class LandlordTenantController extends Controller
         $username = $this->generateUsername($tenant->full_name);
         $password = $this->generatePassword();
 
+        \Log::info('Creating user with data', [
+            'username' => $username,
+            'email' => $tenant->email,
+            'tenant_id' => $tenant->id,
+            'password_length' => strlen($password)
+        ]);
+
         return User::create([
             'name' => $tenant->full_name,
             'username' => $username,
             'email' => $tenant->email,
-            'password' => Hash::make($password),
+            'password' => $password, // Let the model handle hashing
             'role' => 'tenant',
             'tenant_id' => $tenant->id,
         ]);
