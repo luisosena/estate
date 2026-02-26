@@ -186,8 +186,21 @@ class LandlordTenantController extends Controller
                 'emergency_contact_relation' => $request->emergency_contact_relation,
             ]);
 
+            // DEBUG: Log tenant creation
+            \Log::info('Tenant created successfully', [
+                'tenant_id' => $tenant->id,
+                'tenant_name' => $tenant->full_name,
+                'tenant_email' => $tenant->email
+            ]);
+
             // Create user account for the tenant
+            \Log::info('About to create user for tenant', ['tenant_id' => $tenant->id]);
             $user = $this->createTenantUser($tenant);
+            \Log::info('User creation completed', [
+                'user_id' => $user->id ?? 'null',
+                'username' => $user->username ?? 'null',
+                'tenant_id' => $user->tenant_id ?? 'null'
+            ]);
 
             // Handle tenancy agreement upload if present
             $agreementPath = null;
