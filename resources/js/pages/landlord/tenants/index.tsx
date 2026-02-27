@@ -258,14 +258,16 @@ export default function LandlordTenantsIndex({
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Link
+                            <Button
+                              variant="outline"
+                              size="sm"
                               className="text-xs"
                               onClick={() =>
-                                router.visit(route('tenant.dashboard.show'))
+                                router.visit(route('tenant.dashboard.show', { tenant: tenant.id }))
                               }
                             >
                               View
-                            </Link>
+                            </Button>
                             <Button
                               variant="destructive"
                               size="sm"
