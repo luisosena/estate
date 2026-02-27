@@ -73,7 +73,7 @@ interface Props {
 
 export default function TenantShow({ tenant, tenancy, unit, property, payments, tenancy_history, properties }: Props) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editType, setEditType] = useState<'personal' | 'emergency' | 'tenancy' | 'unit' | 'property'>('personal');
+    const [editType, setEditType] = useState<'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history'>('personal');
 
     const formatDate = (dateString?: string | null) => {
         if (!dateString) return '—';
@@ -289,8 +289,8 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                    // TODO: Implement payment editing
-                                    console.log('Edit payments - not implemented yet');
+                                    setEditType('payments');
+                                    setIsEditModalOpen(true);
                                 }}
                             >
                                 <Edit className="h-4 w-4" />
@@ -357,8 +357,8 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                    // TODO: Implement tenancy history editing
-                                    console.log('Edit tenancy history - not implemented yet');
+                                    setEditType('history');
+                                    setIsEditModalOpen(true);
                                 }}
                             >
                                 <Edit className="h-4 w-4" />
