@@ -47,6 +47,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('landlord.tenants.show')
         ->where('tenant', '[A-Z0-9\-]+');
 
+    Route::put('/landlord/tenants/{tenant}', [LandlordTenantController::class, 'update'])
+        ->name('landlord.tenants.update');
+
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');

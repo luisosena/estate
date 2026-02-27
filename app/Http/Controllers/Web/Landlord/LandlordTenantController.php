@@ -527,4 +527,43 @@ class LandlordTenantController extends Controller
             'properties' => $properties,
         ]);
     }
+
+    /**
+     * Update tenant information.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Tenant $tenant
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(Request $request, Tenant $tenant)
+    {
+        $landlord = $request->user();
+        
+        // Authorization: ensure tenant belongs to landlord's property
+        $hasAccess = $tenant->tenancies()
+            ->whereHas('unit.property', function ($query) use ($landlord) {
+                $query->where('owner_id', $landlord->id);
+            })
+            ->exists();
+
+        if (!$hasAccess) {
+            abort(403, 'You do not have access to update this tenant.');
+        }
+
+        // Validate and update tenant information
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
+            'emergency_contact_relation' => 'nullable|string|max:100',
+        ]);
+
+        $tenant->update($validated);
+
+        return redirect()
+            ->route('landlord.tenants.show', ['tenant' => $tenant->tenant_code])
+            ->with('success', 'Tenant information updated successfully.');
+    }
 }

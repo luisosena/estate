@@ -1,12 +1,15 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import { ArrowLeft, Mail, Phone, Home, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Home, AlertCircle, Edit } from 'lucide-react';
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import TenantEditModal from '@/components/tenant-edit-modal';
+import { useState } from 'react';
 
 interface Tenant {
     id: number;
@@ -69,6 +72,9 @@ interface Props {
 }
 
 export default function TenantShow({ tenant, tenancy, unit, property, payments, tenancy_history, properties }: Props) {
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editType, setEditType] = useState<'personal' | 'emergency' | 'tenancy' | 'unit' | 'property'>('personal');
+
     const formatDate = (dateString?: string | null) => {
         if (!dateString) return '—';
         return new Date(dateString).toLocaleDateString();
@@ -121,8 +127,18 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
 
                 {/* Tenant Info Card */}
                 <div className="bg-white shadow rounded-lg mb-6">
-                    <div className="px-6 py-4 border-b border-gray-200">
+                    <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                         <h2 className="text-lg font-medium text-gray-900">Personal Information</h2>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setEditType('personal');
+                                setIsEditModalOpen(true);
+                            }}
+                        >
+                            <Edit className="h-4 w-4" />
+                        </Button>
                     </div>
                     <div className="px-6 py-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,11 +163,21 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                 {/* Emergency Contact Card */}
                 {hasEmergencyContact && (
                     <div className="bg-white shadow rounded-lg mb-6 border-l-4 border-blue-500">
-                        <div className="px-6 py-4 border-b border-gray-200">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h2 className="text-lg font-medium text-gray-900 flex items-center">
                                 <AlertCircle className="h-5 w-5 mr-2 text-blue-500" />
                                 Emergency Contact
                             </h2>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setEditType('emergency');
+                                    setIsEditModalOpen(true);
+                                }}
+                            >
+                                <Edit className="h-4 w-4" />
+                            </Button>
                         </div>
                         <div className="px-6 py-4">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -175,8 +201,18 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                 {/* Tenancy Info */}
                 {tenancy && unit && property && (
                     <div className="bg-white shadow rounded-lg mb-6">
-                        <div className="px-6 py-4 border-b border-gray-200">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h2 className="text-lg font-medium text-gray-900">Tenancy Information</h2>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setEditType('tenancy');
+                                    setIsEditModalOpen(true);
+                                }}
+                            >
+                                <Edit className="h-4 w-4" />
+                            </Button>
                         </div>
                         <div className="px-6 py-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -214,8 +250,18 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                 {/* Unit & Property Info */}
                 {unit && property && (
                     <div className="bg-white shadow rounded-lg mb-6">
-                        <div className="px-6 py-4 border-b border-gray-200">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h2 className="text-lg font-medium text-gray-900">Unit & Property Information</h2>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setEditType('unit');
+                                    setIsEditModalOpen(true);
+                                }}
+                            >
+                                <Edit className="h-4 w-4" />
+                            </Button>
                         </div>
                         <div className="px-6 py-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -237,8 +283,18 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                 {/* Recent Payments */}
                 {payments.length > 0 && (
                     <div className="bg-white shadow rounded-lg mb-6">
-                        <div className="px-6 py-4 border-b border-gray-200">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h2 className="text-lg font-medium text-gray-900">Recent Payments</h2>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    // TODO: Implement payment editing
+                                    console.log('Edit payments - not implemented yet');
+                                }}
+                            >
+                                <Edit className="h-4 w-4" />
+                            </Button>
                         </div>
                         <div className="overflow-hidden">
                             <table className="min-w-full divide-y divide-gray-200">
@@ -295,8 +351,18 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                 {/* Tenancy History */}
                 {tenancy_history.length > 0 && (
                     <div className="bg-white shadow rounded-lg">
-                        <div className="px-6 py-4 border-b border-gray-200">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                             <h2 className="text-lg font-medium text-gray-900">Tenancy History</h2>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    // TODO: Implement tenancy history editing
+                                    console.log('Edit tenancy history - not implemented yet');
+                                }}
+                            >
+                                <Edit className="h-4 w-4" />
+                            </Button>
                         </div>
                         <div className="overflow-hidden">
                             <table className="min-w-full divide-y divide-gray-200">
@@ -352,9 +418,38 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
+                    </div>)}
             </SidebarInset>
+            
+            {/* Edit Modal */}
+            <TenantEditModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                tenant={tenant}
+                tenancy={tenancy}
+                unit={unit}
+                property={property}
+                editType={editType}
+                onSave={(updatedData) => {
+                    // Handle different types of updates
+                    if (editType === 'personal' || editType === 'emergency') {
+                        // Update tenant information
+                        router.put(route('landlord.tenants.update', { tenant: tenant.tenant_code }), updatedData, {
+                            onSuccess: () => {
+                                console.log('Tenant updated successfully');
+                                setIsEditModalOpen(false);
+                            },
+                            onError: (errors) => {
+                                console.error('Update failed:', errors);
+                            }
+                        });
+                    } else {
+                        // TODO: Handle other edit types (tenancy, unit, property)
+                        console.log('Saving data:', { editType, data: updatedData });
+                        setIsEditModalOpen(false);
+                    }
+                }}
+            />
         </SidebarProvider>
     );
 }
