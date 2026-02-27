@@ -251,6 +251,7 @@ export default function LandlordTenantsByProperty({
                                                             variant="outline"
                                                             size="sm"
                                                             className="text-xs"
+                                                            onClick={() => router.visit(route('tenant.dashboard.show', { tenant: tenant.id }))}
                                                         >
                                                             View
                                                         </Button>
