@@ -26,6 +26,7 @@ interface Tenancy {
     id: number;
     status: string;
     move_in_date: string | null;
+    move_out_date: string | null;
     monthly_rent: number | null;
     security_deposit: number | null;
 }
@@ -230,6 +231,10 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                                     <p className="text-sm font-medium text-gray-500">Move-in Date</p>
                                     <p className="mt-1 text-sm text-gray-900">{formatDate(tenancy.move_in_date)}</p>
                                 </div>
+                                    <div>
+                                    <p className="text-sm font-medium text-gray-500">Move-out Date</p>
+                                    <p className="mt-1 text-sm text-gray-900">{formatDate(tenancy.move_out_date)}</p>
+                                </div>
                                 {tenancy.monthly_rent && (
                                     <div>
                                         <p className="text-sm font-medium text-gray-500">Monthly Rent</p>
@@ -433,8 +438,18 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                 onSave={(updatedData) => {
                     // Handle different types of updates
                     if (editType === 'personal' || editType === 'emergency') {
+                        // For emergency contact updates, include required tenant fields
+                        const dataToSend = editType === 'emergency' 
+                            ? {
+                                full_name: tenant.full_name,
+                                phone: tenant.phone,
+                                email: tenant.email,
+                                ...updatedData
+                            }
+                            : updatedData;
+                        
                         // Update tenant information
-                        router.put(route('landlord.tenants.update', { tenant: tenant.tenant_code }), updatedData, {
+                        router.put(route('landlord.tenants.update', { tenant: tenant.tenant_code }), dataToSend, {
                             onSuccess: () => {
                                 console.log('Tenant updated successfully');
                                 setIsEditModalOpen(false);
@@ -443,8 +458,26 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                                 console.error('Update failed:', errors);
                             }
                         });
+                    } else if (editType === 'tenancy') {
+                        // Update tenancy information via tenant update
+                        const dataToSend = {
+                            full_name: tenant.full_name,
+                            phone: tenant.phone,
+                            email: tenant.email,
+                            ...updatedData
+                        };
+                        
+                        router.put(route('landlord.tenants.update', { tenant: tenant.tenant_code }), dataToSend, {
+                            onSuccess: () => {
+                                console.log('Tenancy updated successfully');
+                                setIsEditModalOpen(false);
+                            },
+                            onError: (errors) => {
+                                console.error('Tenancy update failed:', errors);
+                            }
+                        });
                     } else {
-                        // TODO: Handle other edit types (tenancy, unit, property)
+                        // TODO: Handle other edit types (unit, property, payments, history)
                         console.log('Saving data:', { editType, data: updatedData });
                         setIsEditModalOpen(false);
                     }

@@ -558,9 +558,63 @@ class LandlordTenantController extends Controller
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:20',
             'emergency_contact_relation' => 'nullable|string|max:100',
+            // Tenancy fields
+            'status' => 'nullable|string|in:active,ended,pending',
+            'move_in_date' => 'nullable|date',
+            'move_out_date' => 'nullable|date',
+            'monthly_rent' => 'nullable|numeric|min:0',
+            'security_deposit' => 'nullable|numeric|min:0',
         ]);
 
-        $tenant->update($validated);
+        // Update tenant information
+        $tenantFields = [
+            'full_name' => $validated['full_name'],
+            'phone' => $validated['phone'],
+            'email' => $validated['email'],
+        ];
+
+        if (isset($validated['emergency_contact_name'])) {
+            $tenantFields['emergency_contact_name'] = $validated['emergency_contact_name'];
+        }
+        if (isset($validated['emergency_contact_phone'])) {
+            $tenantFields['emergency_contact_phone'] = $validated['emergency_contact_phone'];
+        }
+        if (isset($validated['emergency_contact_relation'])) {
+            $tenantFields['emergency_contact_relation'] = $validated['emergency_contact_relation'];
+        }
+
+        $tenant->update($tenantFields);
+
+        // Update tenancy information if provided
+        $tenancyFields = [];
+        if (isset($validated['status'])) $tenancyFields['status'] = $validated['status'];
+        if (isset($validated['move_in_date'])) $tenancyFields['move_in_date'] = $validated['move_in_date'];
+        if (isset($validated['move_out_date'])) $tenancyFields['move_out_date'] = $validated['move_out_date'];
+        if (isset($validated['monthly_rent'])) $tenancyFields['monthly_rent'] = $validated['monthly_rent'];
+        if (isset($validated['security_deposit'])) $tenancyFields['security_deposit'] = $validated['security_deposit'];
+
+        // Debug: Log what we're updating
+        \Log::info('Tenancy update attempt', [
+            'validated_data' => $validated,
+            'tenancy_fields' => $tenancyFields,
+            'tenancy_id' => $activeTenancy->id ?? 'no_active_tenancy'
+        ]);
+
+        if (!empty($tenancyFields)) {
+            // Get the active tenancy for this tenant
+            $activeTenancy = $tenant->tenancies()->where('status', 'active')->first();
+            if ($activeTenancy) {
+                $result = $activeTenancy->update($tenancyFields);
+                \Log::info('Tenancy update result', [
+                    'success' => $result,
+                    'updated_fields' => $tenancyFields
+                ]);
+            } else {
+                \Log::warning('No active tenancy found for tenant', [
+                    'tenant_id' => $tenant->id
+                ]);
+            }
+        }
 
         return redirect()
             ->route('landlord.tenants.show', ['tenant' => $tenant->tenant_code])

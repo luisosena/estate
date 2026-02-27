@@ -32,6 +32,7 @@ interface Tenancy {
   id: number;
   status: string;
   move_in_date: string | null;
+  move_out_date: string | null;
   monthly_rent: number | null;
   security_deposit: number | null;
 }
@@ -88,6 +89,7 @@ export default function TenantEditModal({
         return {
           status: tenancy?.status || '',
           move_in_date: tenancy?.move_in_date || '',
+          move_out_date: tenancy?.move_out_date || '',
           monthly_rent: tenancy?.monthly_rent || 0,
           security_deposit: tenancy?.security_deposit || 0,
         };
@@ -125,9 +127,6 @@ export default function TenantEditModal({
           full_name: tenant.full_name,
           phone: tenant.phone,
           email: tenant.email,
-          emergency_contact_name: tenant.emergency_contact_name,
-          emergency_contact_phone: tenant.emergency_contact_phone,
-          emergency_contact_relation: tenant.emergency_contact_relation,
         });
         break;
       case 'emergency':
@@ -141,6 +140,7 @@ export default function TenantEditModal({
         setFormData({
           status: tenancy?.status || '',
           move_in_date: tenancy?.move_in_date || '',
+          move_out_date: tenancy?.move_out_date || '',
           monthly_rent: tenancy?.monthly_rent || 0,
           security_deposit: tenancy?.security_deposit || 0,
         });
@@ -221,47 +221,6 @@ export default function TenantEditModal({
                 />
               </div>
             </div>
-
-            <div>
-              <Label htmlFor="emergency_contact_name">
-                Emergency Contact Name
-              </Label>
-              <Input
-                id="emergency_contact_name"
-                value={formData.emergency_contact_name || ''}
-                onChange={(e) =>
-                  handleChange('emergency_contact_name', e.target.value)
-                }
-                className="mt-1"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="emergency_contact_phone">
-                  Emergency Contact Phone
-                </Label>
-                <Input
-                  id="emergency_contact_phone"
-                  value={formData.emergency_contact_phone || ''}
-                  onChange={(e) =>
-                    handleChange('emergency_contact_phone', e.target.value)
-                  }
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="emergency_contact_relation">Relationship</Label>
-                <Input
-                  id="emergency_contact_relation"
-                  value={formData.emergency_contact_relation || ''}
-                  onChange={(e) =>
-                    handleChange('emergency_contact_relation', e.target.value)
-                  }
-                  className="mt-1"
-                />
-              </div>
-            </div>
           </>
         );
       case 'emergency':
@@ -325,6 +284,8 @@ export default function TenantEditModal({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="move_in_date">Move-in Date</Label>
                 <Input
@@ -332,6 +293,15 @@ export default function TenantEditModal({
                   type="date"
                   value={formData.move_in_date || ''}
                   onChange={(e) => handleChange('move_in_date', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="move_out_date">Move-out Date</Label>
+                <Input
+                  id="move_out_date"
+                  type="date"
+                  value={formData.move_out_date || ''}
+                  onChange={(e) => handleChange('move_out_date', e.target.value)}
                 />
               </div>
             </div>
