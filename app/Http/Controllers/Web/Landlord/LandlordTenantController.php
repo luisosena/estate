@@ -372,7 +372,7 @@ class LandlordTenantController extends Controller
     private function createTenantUser(Tenant $tenant): User
     {
         $username = $this->generateUsername($tenant->full_name);
-        $password = $this->generatePassword();
+        $password = $username;
 
         \Log::info('Creating user with data', [
             'username' => $username,
@@ -420,9 +420,10 @@ class LandlordTenantController extends Controller
      *
      * @return string
      */
+    /*
     private function generatePassword(): string
     {
-        return Str::random(12); // 12-character random string
+        return ; // 12-character random string
     }
 
     /**
@@ -454,5 +455,70 @@ class LandlordTenantController extends Controller
                 ],
             ];
         });
+    }
+
+    /**
+     * Show a specific tenant's details.
+     *
+     * Route: GET /landlord/tenants/{tenant}
+     */
+    public function show(Request $request, Tenant $tenant)
+    {
+        $landlord = $request->user();
+
+        // Authorization: ensure tenant belongs to landlord's property
+        $hasAccess = $tenant->tenancies()
+            ->whereHas('unit.property', function ($query) use ($landlord) {
+                $query->where('owner_id', $landlord->id);
+            })
+            ->exists();
+
+        if (!$hasAccess) {
+            abort(403, 'You do not have access to view this tenant.');
+        }
+
+        // Get active tenancy with all relations
+        $activeTenancy = $tenant->tenancies()
+            ->where('status', 'active')
+            ->with(['unit.property', 'payments'])
+            ->first();
+
+        // Get all tenancies (including ended) for history
+        $allTenancies = $tenant->tenancies()
+            ->with(['unit.property'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('landlord/tenants/show', [
+            'tenant' => [
+                'id' => $tenant->id,
+                'tenant_code' => $tenant->tenant_code,
+                'full_name' => $tenant->full_name,
+                'phone' => $tenant->phone,
+                'email' => $tenant->email,
+                'emergency_contact_name' => $tenant->emergency_contact_name,
+                'emergency_contact_phone' => $tenant->emergency_contact_phone,
+                'emergency_contact_relation' => $tenant->emergency_contact_relation,
+            ],
+            'tenancy' => $activeTenancy ? [
+                'id' => $activeTenancy->id,
+                'status' => $activeTenancy->status,
+                'move_in_date' => $activeTenancy->move_in_date,
+                'monthly_rent' => $activeTenancy->monthly_rent,
+                'security_deposit' => $activeTenancy->security_deposit,
+            ] : null,
+            'unit' => $activeTenancy?->unit,
+            'property' => $activeTenancy?->unit?->property,
+            'payments' => $activeTenancy?->payments ?? [],
+            'tenancy_history' => $allTenancies->map(fn ($t) => [
+                'id' => $t->id,
+                'status' => $t->status,
+                'move_in_date' => $t->move_in_date,
+                'move_out_date' => $t->move_out_date,
+                'monthly_rent' => $t->monthly_rent,
+                'unit_name' => $t->unit?->unit_name,
+                'property_name' => $t->unit?->property?->name,
+            ]),
+        ]);
     }
 }

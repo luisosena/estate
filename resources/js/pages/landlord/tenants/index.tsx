@@ -263,7 +263,7 @@ export default function LandlordTenantsIndex({
                               size="sm"
                               className="text-xs"
                               onClick={() =>
-                                router.visit(route('tenant.dashboard.show', { tenant: tenant.id }))
+                                router.visit(route('landlord.tenants.show', { tenant: tenant.tenant_code }))
                               }
                             >
                               View

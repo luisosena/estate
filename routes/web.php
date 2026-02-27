@@ -43,13 +43,15 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/landlord/tenants/{tenancy}/remove', [LandlordTenantController::class, 'removeTenant'])
         ->name('landlord.tenants.remove');
 
+    Route::get('/landlord/tenants/{tenant}', [LandlordTenantController::class, 'show'])
+        ->name('landlord.tenants.show')
+        ->where('tenant', '[A-Z0-9\-]+');
+
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');
 
-    Route::get('/tenant/{tenant}/dashboard', [TenantDashboardController::class, 'show'])
-        ->name('tenant.dashboard.show');
-
+    
     Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
         ->name('tenant.payments');
 
