@@ -1,6 +1,12 @@
 import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { ArrowLeft, Mail, Phone, Home, AlertCircle } from 'lucide-react';
+import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 
 interface Tenant {
     id: number;
@@ -59,9 +65,10 @@ interface Props {
     property?: Property;
     payments: Payment[];
     tenancy_history: TenancyHistory[];
+    properties: any[];
 }
 
-export default function TenantShow({ tenant, tenancy, unit, property, payments, tenancy_history }: Props) {
+export default function TenantShow({ tenant, tenancy, unit, property, payments, tenancy_history, properties }: Props) {
     const formatDate = (dateString?: string | null) => {
         if (!dateString) return '—';
         return new Date(dateString).toLocaleDateString();
@@ -93,19 +100,23 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
     const hasEmergencyContact = tenant.emergency_contact_name || tenant.emergency_contact_phone;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SidebarProvider defaultOpen={false}>
+            <LandlordSidebar properties={properties} />
+            <SidebarInset className="px-6 pt-4 pb-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <Link
-                        href={route('landlord.tenants.index')}
-                        className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Tenants
-                    </Link>
-                    <h1 className="text-3xl font-bold text-gray-900">Tenant Details</h1>
-                    <p className="mt-1 text-sm text-gray-500">Tenant Code: {tenant.tenant_code}</p>
+                <div className="mb-8 flex items-center gap-3">
+                    <SidebarTrigger />
+                    <div className="flex-1">
+                        <Link
+                            href={route('landlord.tenants.index')}
+                            className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4"
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Tenants
+                        </Link>
+                        <h1 className="text-3xl font-bold text-gray-900">Tenant Details</h1>
+                        <p className="mt-1 text-sm text-gray-500">Tenant Code: {tenant.tenant_code}</p>
+                    </div>
                 </div>
 
                 {/* Tenant Info Card */}
@@ -343,7 +354,7 @@ export default function TenantShow({ tenant, tenancy, unit, property, payments, 
                         </div>
                     </div>
                 )}
-            </div>
-        </div>
+            </SidebarInset>
+        </SidebarProvider>
     );
 }

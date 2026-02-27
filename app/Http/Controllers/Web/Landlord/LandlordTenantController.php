@@ -489,6 +489,11 @@ class LandlordTenantController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Get all properties for sidebar
+        $properties = Property::where('owner_id', $landlord->id)
+            ->select('id', 'name', 'address')
+            ->get();
+
         return Inertia::render('landlord/tenants/show', [
             'tenant' => [
                 'id' => $tenant->id,
@@ -519,6 +524,7 @@ class LandlordTenantController extends Controller
                 'unit_name' => $t->unit?->unit_name,
                 'property_name' => $t->unit?->property?->name,
             ]),
+            'properties' => $properties,
         ]);
     }
 }
