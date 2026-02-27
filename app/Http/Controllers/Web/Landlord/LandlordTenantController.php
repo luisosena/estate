@@ -53,8 +53,7 @@ class LandlordTenantController extends Controller
                         'full_name'       => $tenancy->tenant->full_name,
                         'phone'           => $tenancy->tenant->phone,
                         'email'           => $tenancy->tenant->email,
-                        'move_in_date'    => $tenancy->move_in_date,
-                        'move_out_date'   => $tenancy->move_out_date,
+                        'tenancy_id'      => $tenancy->id,
                         'tenancy_status'  => $tenancy->status,
                         'unit_name'       => $unit->unit_name,
                         'unit_code'       => $unit->unit_code,
@@ -115,8 +114,7 @@ class LandlordTenantController extends Controller
                     'full_name'       => $tenancy->tenant->full_name,
                     'phone'           => $tenancy->tenant->phone,
                     'email'           => $tenancy->tenant->email,
-                    'move_in_date'    => $tenancy->move_in_date,
-                    'move_out_date'   => $tenancy->move_out_date,
+                    'tenancy_id'      => $tenancy->id,
                     'tenancy_status'  => $tenancy->status,
                     'unit_name'       => $unit->unit_name,
                     'unit_code'       => $unit->unit_code,
@@ -278,6 +276,48 @@ class LandlordTenantController extends Controller
                 ->back()
                 ->withInput()
                 ->with('error', 'Failed to create tenant. Please try again.');
+        }
+    }
+
+    /**
+     * Remove a tenant (end tenancy and update unit status).
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Tenancy $tenancy
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function removeTenant(Request $request, Tenancy $tenancy)
+    {
+        $landlord = $request->user();
+        
+        // Authorization: ensure this tenancy belongs to the landlord's property
+        if ($tenancy->unit->property->owner_id !== $landlord->id) {
+            abort(403, 'You do not have access to this tenant.');
+        }
+
+        try {
+            // Update tenancy status and set move_out_date
+            $tenancy->update([
+                'status' => 'ended',
+                'move_out_date' => now()->toDateString(),
+            ]);
+
+            // Update unit status back to 'available'
+            $tenancy->unit->update(['status' => 'available']);
+
+            return redirect()
+                ->back()
+                ->with('success', 'Tenant has been removed successfully. Unit is now available.');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to remove tenant', [
+                'tenancy_id' => $tenancy->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to remove tenant. Please try again.');
         }
     }
 

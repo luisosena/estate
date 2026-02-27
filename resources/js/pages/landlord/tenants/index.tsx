@@ -25,8 +25,7 @@ export interface TenantRow {
     full_name: string;
     phone: string;
     email: string | null;
-    move_in_date: string;
-    move_out_date: string | null;
+    tenancy_id: number;
     tenancy_status: string;
     unit_name: string;
     unit_code: string;
@@ -74,6 +73,12 @@ export default function LandlordTenantsIndex({
 }: LandlordTenantsIndexProps) {
     const handleLogout = () => {
         router.post('/logout');
+    };
+
+    const handleRemoveTenant = (tenancyId: number) => {
+        if (confirm('Are you sure you want to remove this tenant? This will end their tenancy and make the unit available.')) {
+            router.delete(route('landlord.tenants.remove', { tenancy: tenancyId }));
+        }
     };
 
     return (
@@ -199,9 +204,8 @@ export default function LandlordTenantsIndex({
                                             <TableHead>Contact</TableHead>
                                             <TableHead>Property</TableHead>
                                             <TableHead>Unit</TableHead>
-                                            <TableHead>Move-in</TableHead>
-                                            <TableHead>Move-out</TableHead>
                                             <TableHead>Status</TableHead>
+                                            <TableHead>Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -268,16 +272,6 @@ export default function LandlordTenantsIndex({
                                                         </p>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-sm">
-                                                    {formatDate(
-                                                        tenant.move_in_date,
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="text-sm">
-                                                    {formatDate(
-                                                        tenant.move_out_date,
-                                                    )}
-                                                </TableCell>
                                                 <TableCell>
                                                     <Badge
                                                         variant={tenancyStatusVariant(
@@ -286,6 +280,25 @@ export default function LandlordTenantsIndex({
                                                     >
                                                         {tenant.tenancy_status}
                                                     </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="text-xs"
+                                                        >
+                                                            View
+                                                        </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            className="text-xs"
+                                                            onClick={() => handleRemoveTenant(tenant.tenancy_id)}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

@@ -40,6 +40,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/landlord/properties/{property}/tenants', [LandlordTenantController::class, 'byProperty'])
         ->name('landlord.properties.tenants');
 
+    Route::delete('/landlord/tenants/{tenancy}/remove', [LandlordTenantController::class, 'removeTenant'])
+        ->name('landlord.tenants.remove');
+
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');

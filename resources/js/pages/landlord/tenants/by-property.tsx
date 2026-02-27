@@ -69,6 +69,12 @@ export default function LandlordTenantsByProperty({
         router.post('/logout');
     };
 
+    const handleRemoveTenant = (tenancyId: number) => {
+        if (confirm('Are you sure you want to remove this tenant? This will end their tenancy and make the unit available.')) {
+            router.delete(route('landlord.tenants.remove', { tenancy: tenancyId }));
+        }
+    };
+
     // Group tenants by unit for a cleaner breakdown
     const unitGroups = tenants.reduce<Record<string, TenantRow[]>>(
         (acc, tenant) => {
@@ -183,9 +189,8 @@ export default function LandlordTenantsByProperty({
                                             <TableHead>Tenant</TableHead>
                                             <TableHead>Contact</TableHead>
                                             <TableHead>Unit</TableHead>
-                                            <TableHead>Move-in</TableHead>
-                                            <TableHead>Move-out</TableHead>
                                             <TableHead>Status</TableHead>
+                                            <TableHead>Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -231,16 +236,6 @@ export default function LandlordTenantsByProperty({
                                                         </p>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-sm">
-                                                    {formatDate(
-                                                        tenant.move_in_date,
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="text-sm">
-                                                    {formatDate(
-                                                        tenant.move_out_date,
-                                                    )}
-                                                </TableCell>
                                                 <TableCell>
                                                     <Badge
                                                         variant={tenancyStatusVariant(
@@ -249,6 +244,25 @@ export default function LandlordTenantsByProperty({
                                                     >
                                                         {tenant.tenancy_status}
                                                     </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="text-xs"
+                                                        >
+                                                            View
+                                                        </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            className="text-xs"
+                                                            onClick={() => handleRemoveTenant(tenant.tenancy_id)}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -289,10 +303,7 @@ export default function LandlordTenantsByProperty({
                                                                 {t.full_name}
                                                             </p>
                                                             <p className="text-xs text-muted-foreground">
-                                                                Since{' '}
-                                                                {formatDate(
-                                                                    t.move_in_date,
-                                                                )}
+                                                                {t.tenant_code}
                                                             </p>
                                                         </div>
                                                         <Badge
