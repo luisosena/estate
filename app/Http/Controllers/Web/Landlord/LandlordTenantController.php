@@ -509,6 +509,7 @@ class LandlordTenantController extends Controller
                 'id' => $activeTenancy->id,
                 'status' => $activeTenancy->status,
                 'move_in_date' => $activeTenancy->move_in_date,
+                'move_out_date' => $activeTenancy->move_out_date,
                 'monthly_rent' => $activeTenancy->monthly_rent,
                 'security_deposit' => $activeTenancy->security_deposit,
             ] : null,
@@ -604,15 +605,9 @@ class LandlordTenantController extends Controller
             // Get the active tenancy for this tenant
             $activeTenancy = $tenant->tenancies()->where('status', 'active')->first();
             if ($activeTenancy) {
-                $result = $activeTenancy->update($tenancyFields);
-                \Log::info('Tenancy update result', [
-                    'success' => $result,
-                    'updated_fields' => $tenancyFields
-                ]);
-            } else {
-                \Log::warning('No active tenancy found for tenant', [
-                    'tenant_id' => $tenant->id
-                ]);
+                $activeTenancy->update($tenancyFields);
+                // Refresh the tenant model to get updated data
+                $tenant->refresh();
             }
         }
 
