@@ -615,4 +615,67 @@ class LandlordTenantController extends Controller
             ->route('landlord.tenants.show', ['tenant' => $tenant->tenant_code])
             ->with('success', 'Tenant information updated successfully.');
     }
+
+    /**
+     * Change tenant's unit.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Tenancy $tenancy
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function changeUnit(Request $request, Tenancy $tenancy)
+    {
+        $landlord = $request->user();
+        
+        // Authorization: ensure tenancy belongs to landlord's property
+        if ($tenancy->unit->property->owner_id !== $landlord->id) {
+            abort(403, 'You do not have access to modify this tenancy.');
+        }
+
+        $validated = $request->validate([
+            'new_unit_id' => 'required|exists:units,id',
+        ]);
+
+        try {
+            // Get the new unit
+            $newUnit = Unit::findOrFail($validated['new_unit_id']);
+            
+            // Ensure new unit belongs to the same landlord and is available
+            if ($newUnit->property->owner_id !== $landlord->id) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'The selected unit does not belong to your properties.');
+            }
+
+            if ($newUnit->status !== 'available') {
+                return redirect()
+                    ->back()
+                    ->with('error', 'The selected unit is not available.');
+            }
+
+            // Update old unit status to available
+            $tenancy->unit->update(['status' => 'available']);
+
+            // Update tenancy with new unit
+            $tenancy->update(['unit_id' => $newUnit->id]);
+
+            // Update new unit status to occupied
+            $newUnit->update(['status' => 'occupied']);
+
+            return redirect()
+                ->route('landlord.tenants.show', ['tenant' => $tenancy->tenant->tenant_code])
+                ->with('success', 'Unit changed successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to change unit', [
+                'tenancy_id' => $tenancy->id,
+                'new_unit_id' => $validated['new_unit_id'],
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to change unit. Please try again.');
+        }
+    }
 }

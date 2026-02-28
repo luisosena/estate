@@ -50,6 +50,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/landlord/tenants/{tenant}', [LandlordTenantController::class, 'update'])
         ->name('landlord.tenants.update');
 
+    Route::put('/landlord/tenancies/{tenancy}/change-unit', [LandlordTenantController::class, 'changeUnit'])
+        ->name('landlord.tenancies.change-unit');
+
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');

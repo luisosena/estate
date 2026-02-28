@@ -1,20 +1,14 @@
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 
 interface Tenant {
@@ -41,6 +35,11 @@ interface Unit {
   id: number;
   unit_name: string;
   unit_code: string;
+  property?: {
+    id: number;
+    name: string;
+    address: string;
+  };
 }
 
 interface Property {
@@ -56,6 +55,7 @@ interface TenantEditModalProps {
   tenancy?: Tenancy;
   unit?: Unit;
   property?: Property;
+  availableUnits?: Unit[];
   onSave: (data: any) => void;
   editType?: 'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history';
 }
@@ -67,6 +67,7 @@ export default function TenantEditModal({
   tenancy,
   unit,
   property,
+  availableUnits = [],
   onSave,
   editType = 'personal',
 }: TenantEditModalProps) {
@@ -95,8 +96,7 @@ export default function TenantEditModal({
         };
       case 'unit':
         return {
-          unit_name: unit?.unit_name || '',
-          unit_code: unit?.unit_code || '',
+          unit_id: unit?.id || '',
         };
       case 'property':
         return {
@@ -118,6 +118,8 @@ export default function TenantEditModal({
         return {};
     }
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // Update form data when editType or data changes
   useEffect(() => {
@@ -147,8 +149,7 @@ export default function TenantEditModal({
         break;
       case 'unit':
         setFormData({
-          unit_name: unit?.unit_name || '',
-          unit_code: unit?.unit_code || '',
+          unit_id: unit?.id || '',
         });
         break;
       case 'property':
@@ -333,21 +334,30 @@ export default function TenantEditModal({
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="unit_name">Unit Name</Label>
-              <Input
-                id="unit_name"
-                value={formData.unit_name || ''}
-                onChange={(e) => handleChange('unit_name', e.target.value)}
-              />
+              <Label htmlFor="unit_id">Select New Unit</Label>
+              <Select value={formData.unit_id?.toString() || ''} onValueChange={(value) => handleChange('unit_id', value)}>
+                <SelectTrigger>
+                  {formData.unit_id ? 
+                    availableUnits.find(u => u.id.toString() === formData.unit_id)?.unit_name || 'Select unit'
+                    : 'Select unit'
+                  }
+                </SelectTrigger>
+                <SelectContent>
+                  {availableUnits.map((availableUnit) => (
+                    <SelectItem key={availableUnit.id} value={availableUnit.id.toString()}>
+                      {availableUnit.unit_name} ({availableUnit.unit_code}) - {availableUnit.property?.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <Label htmlFor="unit_code">Unit Code</Label>
-              <Input
-                id="unit_code"
-                value={formData.unit_code || ''}
-                onChange={(e) => handleChange('unit_code', e.target.value)}
-              />
-            </div>
+            {unit && (
+              <div className="bg-gray-50 p-3 rounded-md">
+                <p className="text-sm font-medium text-gray-700">Current Unit:</p>
+                <p className="text-sm text-gray-600">{unit.unit_name} ({unit.unit_code})</p>
+                <p className="text-sm text-gray-600">{property?.name}</p>
+              </div>
+            )}
           </div>
         );
       case 'property':

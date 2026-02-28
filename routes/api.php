@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Tenant\DashboardController;
 use App\Http\Controllers\Api\Tenant\PaymentsController;
 use App\Http\Controllers\Api\Tenant\UtilitiesController;
+use App\Http\Controllers\Api\Landlord\LandlordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('me', [AuthController::class, 'me']);
+    });
+
+    // Landlord routes
+    Route::prefix('landlord')->group(function () {
+        Route::get('available-units', [LandlordController::class, 'getAvailableUnits']);
     });
 
     // Tenant routes
