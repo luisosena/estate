@@ -21,3 +21,4 @@ Make sure to:
 3. Do NOT report issues that are speculative or low-confidence. All your conclusions should be based on a complete understanding of the codebase.
 4. Remember that if you were given a specific git commit, it may not be checked out and local code states may be different.
 5. Whenever in doubt, ask the user for clarification.
+6. Use Shadcn components where possible, utilize the MCP tools to find the right components.

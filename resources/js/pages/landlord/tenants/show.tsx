@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   SidebarInset,
   SidebarProvider,
@@ -155,13 +156,13 @@ export default function TenantShow({
           <div className="flex-1">
             <Link
               href={route('landlord.tenants.index')}
-              className="mb-4 inline-flex items-center text-gray-600 hover:text-gray-900"
+              className="mb-4 inline-flex items-center text-gray-600 hover:text-gray-200"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Tenants
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Tenant Details</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-3xl font-bold text-gray-200">Tenant Details</h1>
+            <p className="mt-1 text-sm text-gray-400">
               Tenant Code: {tenant.tenant_code}
             </p>
           </div>
@@ -185,17 +186,17 @@ export default function TenantShow({
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm font-medium text-gray-500">Full Name</p>
-                <p className="mt-1 text-sm text-gray-900">{tenant.full_name}</p>
+                <p className="text-sm font-medium text-gray-400">Full Name</p>
+                <p className="mt-1 text-sm text-gray-200">{tenant.full_name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Phone</p>
-                <p className="mt-1 text-sm text-gray-900">{tenant.phone}</p>
+                <p className="text-sm font-medium text-gray-400">Phone</p>
+                <p className="mt-1 text-sm text-gray-200">{tenant.phone}</p>
               </div>
               {tenant.email && (
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Email</p>
-                  <p className="mt-1 text-sm text-gray-900">{tenant.email}</p>
+                  <p className="text-sm font-medium text-gray-400">Email</p>
+                  <p className="mt-1 text-sm text-gray-200">{tenant.email}</p>
                 </div>
               )}
             </div>
@@ -204,10 +205,9 @@ export default function TenantShow({
 
         {/* Emergency Contact Card */}
         {hasEmergencyContact && (
-          <Card className="mb-6 border-l-4 border-blue-500">
+          <Card className="mb-6">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <div className="flex items-center">
-                <AlertCircle className="mr-2 h-5 w-5 text-blue-500" />
                 <CardTitle className="text-lg font-medium">Emergency Contact</CardTitle>
               </div>
               <Button
@@ -224,20 +224,20 @@ export default function TenantShow({
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Name</p>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="text-sm font-medium text-gray-400">Name</p>
+                  <p className="mt-1 text-sm text-gray-200">
                     {tenant.emergency_contact_name || '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Phone</p>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="text-sm font-medium text-gray-400">Phone</p>
+                  <p className="mt-1 text-sm text-gray-200">
                     {tenant.emergency_contact_phone || '—'}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Relation</p>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="mt-1 text-sm text-gray-200">
                     {tenant.emergency_contact_relation || '—'}
                   </p>
                 </div>
@@ -276,29 +276,29 @@ export default function TenantShow({
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Move-in Date</p>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="text-sm font-medium text-gray-400">Move-in Date</p>
+                  <p className="mt-1 text-sm text-gray-200">
                     {formatDate(tenancy.move_in_date)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Move-out Date</p>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="text-sm font-medium text-gray-400">Move-out Date</p>
+                  <p className="mt-1 text-sm text-gray-200">
                     {formatDate(tenancy.move_out_date)}
                   </p>
                 </div>
                 {tenancy.monthly_rent && (
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Monthly Rent</p>
-                    <p className="mt-1 text-sm text-gray-900">
+                    <p className="text-sm font-medium text-gray-400">Monthly Rent</p>
+                    <p className="mt-1 text-sm text-gray-200">
                       {formatCurrency(tenancy.monthly_rent)}
                     </p>
                   </div>
                 )}
                 {tenancy.security_deposit && (
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Security Deposit</p>
-                    <p className="mt-1 text-sm text-gray-900">
+                    <p className="text-sm font-medium text-gray-400">Security Deposit</p>
+                    <p className="mt-1 text-sm text-gray-200">
                       {formatCurrency(tenancy.security_deposit)}
                     </p>
                   </div>
@@ -327,14 +327,14 @@ export default function TenantShow({
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Unit</p>
-                  <p className="mt-1 text-sm text-gray-900">{unit.unit_name}</p>
-                  <p className="text-sm text-gray-500">{unit.unit_code}</p>
+                  <p className="text-sm font-medium text-gray-400">Unit</p>
+                  <p className="mt-1 text-sm text-gray-200">{unit.unit_name}</p>
+                  <p className="text-sm text-gray-400">{unit.unit_code}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Property</p>
-                  <p className="mt-1 text-sm text-gray-900">{property.name}</p>
-                  <p className="text-sm text-gray-500">{property.address}</p>
+                  <p className="text-sm font-medium text-gray-400">Property</p>
+                  <p className="mt-1 text-sm text-gray-200">{property.name}</p>
+                  <p className="text-sm text-gray-400">{property.address}</p>
                 </div>
               </div>
             </CardContent>
@@ -357,45 +357,29 @@ export default function TenantShow({
                 <Edit className="h-4 w-4" />
               </Button>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Type
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {payments.map((payment) => (
-                      <tr key={payment.id}>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                          {formatDate(payment.paid_at || payment.created_at)}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
-                          {payment.payment_type || 'Rent'}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                          {formatCurrency(payment.amount)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {getPaymentStatusBadge(payment.status)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-gray-400">Date</TableHead>
+                    <TableHead className="text-gray-400">Type</TableHead>
+                    <TableHead className="text-gray-400">Amount</TableHead>
+                    <TableHead className="text-gray-400">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments.map((payment) => (
+                    <TableRow key={payment.id}>
+                      <TableCell className="font-medium">
+                        {formatDate(payment.paid_at || payment.created_at)}
+                      </TableCell>
+                      <TableCell>{payment.payment_type || 'Rent'}</TableCell>
+                      <TableCell>{formatCurrency(payment.amount)}</TableCell>
+                      <TableCell>{getPaymentStatusBadge(payment.status)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         )}
@@ -405,10 +389,10 @@ export default function TenantShow({
           <Card className="mb-6">
             <CardContent className="px-6 py-12 text-center">
               <Home className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
+              <h3 className="mt-2 text-sm font-medium text-gray-200">
                 No payments
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-400">
                 This tenant has no payment records yet.
               </p>
             </CardContent>
@@ -431,65 +415,45 @@ export default function TenantShow({
                 <Edit className="h-4 w-4" />
               </Button>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Unit
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Property
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Move In
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Move Out
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Rent
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {tenancy_history.map((history) => (
-                      <tr key={history.id}>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                          {history.unit_name || '—'}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
-                          {history.property_name || '—'}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                          {formatDate(history.move_in_date)}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                          {formatDate(history.move_out_date)}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                          {history.monthly_rent
-                            ? formatCurrency(history.monthly_rent)
-                            : '—'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge 
-                            variant={history.status === 'active' ? 'default' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {history.status?.charAt(0).toUpperCase() +
-                              history.status?.slice(1)}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-gray-400">Unit</TableHead>
+                    <TableHead className="text-gray-400">Property</TableHead>
+                    <TableHead className="text-gray-400">Move In</TableHead>
+                    <TableHead className="text-gray-400">Move Out</TableHead>
+                    <TableHead className="text-gray-400">Rent</TableHead>
+                    <TableHead className="text-gray-400">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tenancy_history.map((history) => (
+                    <TableRow key={history.id}>
+                      <TableCell className="font-medium">
+                        {history.unit_name || '—'}
+                      </TableCell>
+                      <TableCell>{history.property_name || '—'}</TableCell>
+                      <TableCell>{formatDate(history.move_in_date)}</TableCell>
+                      <TableCell>{formatDate(history.move_out_date)}</TableCell>
+                      <TableCell>
+                        {history.monthly_rent
+                          ? formatCurrency(history.monthly_rent)
+                          : '—'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={history.status === 'active' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {history.status?.charAt(0).toUpperCase() +
+                            history.status?.slice(1)}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         )}

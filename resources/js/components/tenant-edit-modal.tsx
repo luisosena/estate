@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircleIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Tenant {
@@ -107,7 +108,6 @@ export default function TenantEditModal({
         return {
           payment_type: '',
           amount: 0,
-          status: 'pending',
         };
       case 'history':
         return {
@@ -162,7 +162,6 @@ export default function TenantEditModal({
         setFormData({
           payment_type: '',
           amount: 0,
-          status: 'pending',
         });
         break;
       case 'history':
@@ -176,11 +175,13 @@ export default function TenantEditModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     onSave(formData);
+    setIsLoading(false);
     onClose();
   };
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | number) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
@@ -188,78 +189,62 @@ export default function TenantEditModal({
     switch (editType) {
       case 'personal':
         return (
-          <>
+          <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name</Label>
                 <Input
                   id="full_name"
                   value={formData.full_name || ''}
                   onChange={(e) => handleChange('full_name', e.target.value)}
-                  className="mt-1"
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
                   value={formData.phone || ''}
                   onChange={(e) => handleChange('phone', e.target.value)}
-                  className="mt-1"
                 />
               </div>
             </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email || ''}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email || ''}
+                onChange={(e) => handleChange('email', e.target.value)}
+              />
             </div>
-          </>
+          </div>
         );
       case 'emergency':
         return (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="emergency_contact_name">
-                Emergency Contact Name
-              </Label>
-              <Input
-                id="emergency_contact_name"
-                value={formData.emergency_contact_name || ''}
-                onChange={(e) =>
-                  handleChange('emergency_contact_name', e.target.value)
-                }
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="emergency_contact_phone">
-                  Emergency Contact Phone
-                </Label>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="emergency_contact_name">Name</Label>
+                <Input
+                  id="emergency_contact_name"
+                  value={formData.emergency_contact_name || ''}
+                  onChange={(e) => handleChange('emergency_contact_name', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="emergency_contact_phone">Phone</Label>
                 <Input
                   id="emergency_contact_phone"
                   value={formData.emergency_contact_phone || ''}
-                  onChange={(e) =>
-                    handleChange('emergency_contact_phone', e.target.value)
-                  }
+                  onChange={(e) => handleChange('emergency_contact_phone', e.target.value)}
                 />
               </div>
-              <div>
-                <Label htmlFor="emergency_contact_relation">Relationship</Label>
+              <div className="space-y-2">
+                <Label htmlFor="emergency_contact_relation">Relation</Label>
                 <Input
                   id="emergency_contact_relation"
                   value={formData.emergency_contact_relation || ''}
-                  onChange={(e) =>
-                    handleChange('emergency_contact_relation', e.target.value)
-                  }
+                  onChange={(e) => handleChange('emergency_contact_relation', e.target.value)}
                 />
               </div>
             </div>
@@ -269,12 +254,9 @@ export default function TenantEditModal({
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status || ''}
-                  onValueChange={(value) => handleChange('status', value)}
-                >
+                <Select value={formData.status || ''} onValueChange={(value) => handleChange('status', value)}>
                   <SelectTrigger>
                     {formData.status || 'Select status'}
                   </SelectTrigger>
@@ -285,9 +267,7 @@ export default function TenantEditModal({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="move_in_date">Move-in Date</Label>
                 <Input
                   id="move_in_date"
@@ -296,7 +276,7 @@ export default function TenantEditModal({
                   onChange={(e) => handleChange('move_in_date', e.target.value)}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="move_out_date">Move-out Date</Label>
                 <Input
                   id="move_out_date"
@@ -305,26 +285,22 @@ export default function TenantEditModal({
                   onChange={(e) => handleChange('move_out_date', e.target.value)}
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="monthly_rent">Monthly Rent</Label>
                 <Input
                   id="monthly_rent"
                   type="number"
                   value={formData.monthly_rent?.toString() || ''}
-                  onChange={(e) => handleChange('monthly_rent', e.target.value)}
+                  onChange={(e) => handleChange('monthly_rent', parseFloat(e.target.value) || 0)}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="security_deposit">Security Deposit</Label>
                 <Input
                   id="security_deposit"
                   type="number"
                   value={formData.security_deposit?.toString() || ''}
-                  onChange={(e) =>
-                    handleChange('security_deposit', e.target.value)
-                  }
+                  onChange={(e) => handleChange('security_deposit', parseFloat(e.target.value) || 0)}
                 />
               </div>
             </div>
@@ -333,7 +309,7 @@ export default function TenantEditModal({
       case 'unit':
         return (
           <div className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="unit_id">Select New Unit</Label>
               <Select value={formData.unit_id?.toString() || ''} onValueChange={(value) => handleChange('unit_id', value)}>
                 <SelectTrigger>
@@ -352,18 +328,23 @@ export default function TenantEditModal({
               </Select>
             </div>
             {unit && (
-              <div className="bg-gray-50 p-3 rounded-md">
-                <p className="text-sm font-medium text-gray-700">Current Unit:</p>
-                <p className="text-sm text-gray-600">{unit.unit_name} ({unit.unit_code})</p>
-                <p className="text-sm text-gray-600">{property?.name}</p>
-              </div>
+              <Alert>
+                <AlertCircleIcon className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="mt-2">
+                    <p className="font-medium">Current Unit:</p>
+                    <p className="text-sm">{unit.unit_name} ({unit.unit_code})</p>
+                    <p className="text-sm">{property?.name}</p>
+                  </div>
+                </AlertDescription>
+              </Alert>
             )}
           </div>
         );
       case 'property':
         return (
           <div className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="name">Property Name</Label>
               <Input
                 id="name"
@@ -371,7 +352,7 @@ export default function TenantEditModal({
                 onChange={(e) => handleChange('name', e.target.value)}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="address">Address</Label>
               <Textarea
                 id="address"
@@ -385,8 +366,8 @@ export default function TenantEditModal({
       case 'payments':
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
                 <Label htmlFor="payment_type">Payment Type</Label>
                 <Select value={formData.payment_type || ''} onValueChange={(value) => handleChange('payment_type', value)}>
                   <SelectTrigger>
@@ -399,36 +380,23 @@ export default function TenantEditModal({
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
                 <Input
                   id="amount"
                   type="number"
                   value={formData.amount?.toString() || ''}
-                  onChange={(e) => handleChange('amount', e.target.value)}
+                  onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
                 />
               </div>
-            </div>
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select value={formData.status || ''} onValueChange={(value) => handleChange('status', value)}>
-                <SelectTrigger>
-                  {formData.status || 'Select status'}
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         );
       case 'history':
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select value={formData.status || ''} onValueChange={(value) => handleChange('status', value)}>
                   <SelectTrigger>
@@ -441,7 +409,7 @@ export default function TenantEditModal({
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="move_out_date">Move Out Date</Label>
                 <Input
                   id="move_out_date"
@@ -467,7 +435,7 @@ export default function TenantEditModal({
       case 'tenancy':
         return 'Edit Tenancy Information';
       case 'unit':
-        return 'Edit Unit Information';
+        return 'Change Unit';
       case 'property':
         return 'Edit Property Information';
       case 'payments':
@@ -481,14 +449,17 @@ export default function TenantEditModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{getModalTitle()}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {renderFormFields()}
+          <Separator />
           <DialogFooter>
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Save Changes'}
+            </Button>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
