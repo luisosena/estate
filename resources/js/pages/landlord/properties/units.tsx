@@ -1,0 +1,189 @@
+import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { Badge } from '@/components/ui/badge';
+import { Head, Link } from '@inertiajs/react';
+import { Building2, Home, Plus, Eye, ArrowLeft } from 'lucide-react';
+import { route } from 'ziggy-js';
+
+interface Unit {
+  id: number;
+  unit_code: string;
+  unit_name: string;
+  status: 'available' | 'occupied';
+  created_at: string;
+}
+
+interface Property {
+  id: number;
+  name: string;
+  address: string;
+  total_units: number;
+}
+
+interface PropertyUnitsProps {
+  property: Property;
+  units: Unit[];
+}
+
+export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
+  const getStatusBadge = (status: string) => {
+    return status === 'available' ? (
+      <Badge variant="secondary" className="bg-green-100 text-green-800">
+        Available
+      </Badge>
+    ) : (
+      <Badge variant="secondary" className="bg-red-100 text-red-800">
+        Occupied
+      </Badge>
+    );
+  };
+
+  const availableUnits = units.filter(unit => unit.status === 'available').length;
+  const occupiedUnits = units.filter(unit => unit.status === 'occupied').length;
+
+  return (
+    <SidebarProvider>
+      <LandlordSidebar />
+      <SidebarInset>
+        <Head title={`${property.name} - Units`} />
+        
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <div className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              <span className="text-sm font-medium">Property Units</span>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href={route('landlord.dashboard')}>
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold">{property.name}</h1>
+                <p className="text-muted-foreground">{property.address}</p>
+              </div>
+            </div>
+            <Link href={route('landlord.units.create')}>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Unit
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Units</CardTitle>
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{property.total_units}</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Available</CardTitle>
+                <div className="h-4 w-4 bg-green-500 rounded-full" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{availableUnits}</div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Occupied</CardTitle>
+                <div className="h-4 w-4 bg-red-500 rounded-full" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">{occupiedUnits}</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Units</CardTitle>
+              <CardDescription>
+                All units for {property.name}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {units.length === 0 ? (
+                <div className="text-center py-12">
+                  <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No units yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    This property doesn't have any units yet. Add your first unit to get started.
+                  </p>
+                  <Link href={route('landlord.units.create')}>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add First Unit
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {units.map((unit) => (
+                    <div
+                      key={unit.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-3">
+                          <Building2 className="h-8 w-8 text-muted-foreground" />
+                          <div>
+                            <div className="font-medium">{unit.unit_name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              Code: {unit.unit_code}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Added: {unit.created_at}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        {getStatusBadge(unit.status)}
+                        <Link href={route('landlord.units.show', unit.id)}>
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}

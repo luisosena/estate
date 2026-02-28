@@ -8,7 +8,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, Users, Building2 } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Home } from 'lucide-react';
 import { route } from 'ziggy-js';
 
 interface Property {
@@ -27,6 +27,12 @@ const mainNavItems = [
         icon: LayoutDashboard,
         href: () => route('landlord.dashboard'),
         routeName: 'landlord.dashboard',
+    },
+    {
+        label: 'Units',
+        icon: Home,
+        href: () => route('landlord.units.index'),
+        routeName: 'landlord.units.index',
     },
     {
         label: 'All Tenants',

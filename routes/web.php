@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordTenantController;
+use App\Http\Controllers\Web\Landlord\LandlordUnitController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -52,6 +53,22 @@ Route::middleware(['auth'])->group(function () {
 
     Route::put('/landlord/tenancies/{tenancy}/change-unit', [LandlordTenantController::class, 'changeUnit'])
         ->name('landlord.tenancies.change-unit');
+
+    // Unit Management Routes
+    Route::get('/landlord/units/create', [LandlordUnitController::class, 'create'])
+        ->name('landlord.units.create');
+
+    Route::post('/landlord/units', [LandlordUnitController::class, 'store'])
+        ->name('landlord.units.store');
+
+    Route::get('/landlord/units', [LandlordUnitController::class, 'index'])
+        ->name('landlord.units.index');
+
+    Route::get('/landlord/units/{unit}', [LandlordUnitController::class, 'show'])
+        ->name('landlord.units.show');
+
+    Route::get('/landlord/properties/{property}/units', [LandlordUnitController::class, 'byProperty'])
+        ->name('landlord.properties.units');
 
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])

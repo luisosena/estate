@@ -214,11 +214,11 @@ export default function Dashboard({
                         <Button asChild variant="outline" size="sm">
                           <Link
                             href={route(
-                              'landlord.properties.tenants',
+                              'landlord.properties.units',
                               property.id,
                             )}
                           >
-                            View Tenants
+                            View Units
                           </Link>
                         </Button>
                       </div>
@@ -253,9 +253,9 @@ export default function Dashboard({
                 </Link>
               </Button>
               <Button asChild variant="outline" className="justify-start">
-                <Link href={route('landlord.tenants.index')}>
+                <Link href={route('landlord.units.create')}>
                   <Home className="mr-2 h-4 w-4" />
-                  Manage Properties
+                  Add Unit
                 </Link>
               </Button>
               <Button asChild variant="outline" className="justify-start">
