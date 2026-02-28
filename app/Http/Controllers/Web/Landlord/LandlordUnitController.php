@@ -118,8 +118,8 @@ class LandlordUnitController extends Controller
             $query->where('owner_id', $landlord->id);
         })
         ->with(['property:id,name,address', 'tenancies' => function ($query) {
-            $query->select('id', 'unit_id', 'tenant_id', 'status', 'start_date', 'end_date')
-                  ->with('tenant:id,name,email');
+            $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date')
+                  ->with('tenant:id,full_name,email');
         }])
         ->findOrFail($unitId);
 
@@ -135,8 +135,8 @@ class LandlordUnitController extends Controller
                     return [
                         'id' => $tenancy->id,
                         'status' => $tenancy->status,
-                        'start_date' => $tenancy->start_date,
-                        'end_date' => $tenancy->end_date,
+                        'start_date' => $tenancy->move_in_date,
+                        'end_date' => $tenancy->move_out_date,
                         'tenant' => $tenancy->tenant,
                     ];
                 }),
