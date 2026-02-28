@@ -10,7 +10,6 @@ import {
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Head, Link } from '@inertiajs/react';
@@ -19,7 +18,7 @@ import { route } from 'ziggy-js';
 
 interface Tenant {
   id: string;
-  name: string;
+  full_name: string;
   email: string;
 }
 
@@ -66,8 +65,8 @@ export default function UnitShow({ unit }: UnitShowProps) {
     switch (status) {
       case 'active':
         return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case 'expired':
-        return <Badge variant="destructive">Expired</Badge>;
+      case 'ended':
+        return <Badge variant="destructive">Ended</Badge>;
       case 'pending':
         return <Badge variant="outline">Pending</Badge>;
       default:
@@ -81,25 +80,24 @@ export default function UnitShow({ unit }: UnitShowProps) {
       <SidebarInset>
         <Head title={`Unit - ${unit.unit_name}`} />
         
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
+        <header className="flex flex-col h-fit shrink-0 gap-2 border-b pt-4">
           <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
             <div className="flex items-center gap-2">
               <Home className="h-4 w-4" />
-              <span className="text-sm font-medium">Unit Details</span>
+              <span className="text-2xl font-medium">Unit Details</span>
             </div>
           </div>
+          <Link href={route('landlord.properties.units', unit.property.id)}>
+            <Button variant="outline" size="sm" className="ml-4 mb-4 mt-2">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Property Units
+            </Button>
+          </Link>
         </header>
 
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href={route('landlord.properties.units', unit.property.id)}>
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Property Units
-                </Button>
-              </Link>
               <div>
                 <h1 className="text-2xl font-bold">{unit.unit_name}</h1>
                 <p className="text-muted-foreground">
@@ -178,7 +176,7 @@ export default function UnitShow({ unit }: UnitShowProps) {
                           <div className="flex items-center space-x-4">
                             <Users className="h-8 w-8 text-muted-foreground" />
                             <div>
-                              <div className="font-medium">{tenancy.tenant.name}</div>
+                              <div className="font-medium">{tenancy.tenant.full_name}</div>
                               <div className="text-sm text-muted-foreground">
                                 {tenancy.tenant.email}
                               </div>

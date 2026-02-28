@@ -6,6 +6,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
 import { LayoutDashboard, Users, Building2, Home } from 'lucide-react';
@@ -73,6 +74,11 @@ export function LandlordSidebar({ properties = [] }: LandlordSidebarProps) {
             className="mt-25 mr-6 ml-4 max-h-3/5"
         >
             <SidebarContent className="inline-block h-full min-h-screen">
+                {/* Sidebar trigger at the top */}
+                <div className="p-2">
+                    <SidebarTrigger className="-ml-1" />
+                </div>
+                
                 {/* Main navigation */}
                 <SidebarGroup>
                     <SidebarMenu>
