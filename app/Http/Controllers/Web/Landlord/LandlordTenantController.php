@@ -494,6 +494,9 @@ class LandlordTenantController extends Controller
             ->select('id', 'name', 'address')
             ->get();
 
+        // Get available units for unit editing
+        $availableUnits = $this->getAvailableUnitsForLandlord($landlord);
+
         return Inertia::render('landlord/tenants/show', [
             'tenant' => [
                 'id' => $tenant->id,
@@ -526,6 +529,7 @@ class LandlordTenantController extends Controller
                 'property_name' => $t->unit?->property?->name,
             ]),
             'properties' => $properties,
+            'availableUnits' => $availableUnits,
         ]);
     }
 

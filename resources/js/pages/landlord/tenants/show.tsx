@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Link, router } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, Edit, Home } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { route } from 'ziggy-js';
 
 interface Tenant {
@@ -76,6 +76,7 @@ interface Props {
   payments: Payment[];
   tenancy_history: TenancyHistory[];
   properties: any[];
+  availableUnits: any[];
 }
 
 export default function TenantShow({
@@ -86,6 +87,7 @@ export default function TenantShow({
   payments,
   tenancy_history,
   properties,
+  availableUnits,
 }: Props) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editType, setEditType] = useState<
@@ -97,23 +99,6 @@ export default function TenantShow({
     | 'payments'
     | 'history'
   >('personal');
-  const [availableUnits, setAvailableUnits] = useState<any[]>([]);
-
-  const fetchAvailableUnits = async () => {
-    try {
-      const response = await fetch('/api/landlord/available-units');
-      const data = await response.json();
-      setAvailableUnits(data);
-    } catch (error) {
-      console.error('Failed to fetch available units:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (isEditModalOpen && editType === 'unit') {
-      fetchAvailableUnits();
-    }
-  }, [isEditModalOpen, editType]);
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '—';

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
@@ -260,7 +260,7 @@ export default function TenantEditModal({
                   <SelectTrigger>
                     {formData.status || 'Select status'}
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="ended">Ended</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
@@ -318,7 +318,7 @@ export default function TenantEditModal({
                     : 'Select unit'
                   }
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                   {availableUnits.map((availableUnit) => (
                     <SelectItem key={availableUnit.id} value={availableUnit.id.toString()}>
                       {availableUnit.unit_name} ({availableUnit.unit_code}) - {availableUnit.property?.name}
@@ -373,7 +373,7 @@ export default function TenantEditModal({
                   <SelectTrigger>
                     {formData.payment_type || 'Select payment type'}
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     <SelectItem value="rent">Rent</SelectItem>
                     <SelectItem value="deposit">Security Deposit</SelectItem>
                     <SelectItem value="utility">Utility</SelectItem>
@@ -402,7 +402,7 @@ export default function TenantEditModal({
                   <SelectTrigger>
                     {formData.status || 'Select status'}
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="ended">Ended</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
@@ -449,7 +449,7 @@ export default function TenantEditModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-hidden="false">
         <DialogHeader>
           <DialogTitle>{getModalTitle()}</DialogTitle>
         </DialogHeader>
