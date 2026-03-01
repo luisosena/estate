@@ -346,7 +346,7 @@ class LandlordTenantController extends Controller
 
         $validated = $request->validate([
             'move_out_date' => 'required|date|after_or_equal:today',
-            'end_reason' => 'required|string|in:lease_expiration,tenant_request,landlord_request,non_payment,property_sale,violation,other',
+            'end_reason' => 'required|string|in:lease_expiration,tenant_request,landlord_request,non_payment,property_sale,violation,other,automatic_expiry',
             'deposit_return_status' => 'required|string|in:pending,returned_full,returned_partial,withheld',
             'final_meter_readings' => 'nullable|string|max:1000',
         ]);

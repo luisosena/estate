@@ -16,6 +16,12 @@ return new class extends Migration
             $table->string('deposit_return_status')->nullable()->after('end_reason');
             $table->text('final_meter_readings')->nullable()->after('deposit_return_status');
         });
+
+        // Update existing records to set default end_reason for manually ended tenancies
+        \DB::table('tenancies')
+            ->where('status', 'ended')
+            ->whereNull('end_reason')
+            ->update(['end_reason' => 'manual_ending']);
     }
 
     /**
