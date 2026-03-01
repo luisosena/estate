@@ -9,8 +9,9 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, Users, Building2, Home } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Home, Bell } from 'lucide-react';
 import { route } from 'ziggy-js';
+import NotificationBell from '@/components/notification-bell';
 
 interface Property {
     id: number;
@@ -20,6 +21,7 @@ interface Property {
 
 interface LandlordSidebarProps {
     properties?: Property[];
+    unreadNotificationsCount?: number;
 }
 
 const mainNavItems = [
@@ -41,9 +43,15 @@ const mainNavItems = [
         href: () => route('landlord.tenants.index'),
         routeName: 'landlord.tenants.index',
     },
+    {
+        label: 'Notifications',
+        icon: Bell,
+        href: () => route('landlord.notifications.index'),
+        routeName: 'landlord.notifications.index',
+    },
 ];
 
-export function LandlordSidebar({ properties = [] }: LandlordSidebarProps) {
+export function LandlordSidebar({ properties = [], unreadNotificationsCount = 0 }: LandlordSidebarProps) {
     const { url } = usePage();
 
     const isActive = (routeName: string) => {
@@ -75,8 +83,9 @@ export function LandlordSidebar({ properties = [] }: LandlordSidebarProps) {
         >
             <SidebarContent className="inline-block h-full min-h-screen">
                 {/* Sidebar trigger at the top */}
-                <div className="p-2">
+                <div className="p-2 flex items-center justify-between">
                     <SidebarTrigger className="-ml-1" />
+                    <NotificationBell initialUnreadCount={unreadNotificationsCount} />
                 </div>
                 
                 {/* Main navigation */}

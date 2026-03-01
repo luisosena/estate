@@ -32,8 +32,10 @@ class LandlordDashboardController extends Controller
         // Calculate summary statistics
         $totalProperties = $properties->count();
         $totalUnits = $properties->sum('units_count');
-        $totalActiveTenants = $properties->sum('active_tenants_count');
+        $totalActiveTenants = $properties->sum('active_tenancies_count');
 
+        // Get unread notifications count
+        $unreadNotificationsCount = $landlord->unreadNotifications()->count();
 
         return Inertia::render('landlord/dashboard', [
             'properties' => $properties,
@@ -42,6 +44,7 @@ class LandlordDashboardController extends Controller
                 'total_properties' => $totalProperties,
                 'total_units' => $totalUnits,
             ],
+            'unreadNotificationsCount' => $unreadNotificationsCount,
         ]);
     }
 

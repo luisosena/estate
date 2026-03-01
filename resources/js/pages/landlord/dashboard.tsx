@@ -41,6 +41,7 @@ interface Stats {
 interface LandlordDashboardProps {
   properties: Property[];
   stats: Stats;
+  unreadNotificationsCount?: number;
 }
 
 const formatCurrency = (amount: number) =>
@@ -53,6 +54,7 @@ const formatCurrency = (amount: number) =>
 export default function Dashboard({
   properties,
   stats,
+  unreadNotificationsCount = 0,
 }: LandlordDashboardProps) {
   const handleLogout = () => {
     router.post('/logout');
@@ -64,7 +66,7 @@ export default function Dashboard({
 
   return (
     <SidebarProvider defaultOpen={false}>
-      <LandlordSidebar properties={properties} />
+      <LandlordSidebar properties={properties} unreadNotificationsCount={unreadNotificationsCount} />
       <SidebarInset className="px-6 pt-4 pb-8">
         {/* Mobile sidebar trigger */}
         <div className="mb-4 flex items-center gap-2 md:hidden">

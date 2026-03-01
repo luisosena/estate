@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordTenantController;
 use App\Http\Controllers\Web\Landlord\LandlordUnitController;
+use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
 use App\Http\Controllers\Web\Landlord\LandlordPaymentController;
 
 Route::get('/', function () {
@@ -83,6 +84,29 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/landlord/properties/{property}/units', [LandlordUnitController::class, 'byProperty'])
         ->name('landlord.properties.units');
+
+    // Notification Management Routes
+    Route::get('/landlord/notifications', [LandlordNotificationController::class, 'index'])
+        ->name('landlord.notifications.index');
+
+    Route::put('/landlord/notifications/{id}/read', [LandlordNotificationController::class, 'markAsRead'])
+        ->name('landlord.notifications.read');
+
+    Route::put('/landlord/notifications/{id}/unread', [LandlordNotificationController::class, 'markAsUnread'])
+        ->name('landlord.notifications.unread');
+
+    Route::put('/landlord/notifications/read-all', [LandlordNotificationController::class, 'markAllAsRead'])
+        ->name('landlord.notifications.read-all');
+
+    Route::delete('/landlord/notifications/{id}', [LandlordNotificationController::class, 'destroy'])
+        ->name('landlord.notifications.destroy');
+
+    // API Routes for notifications
+    Route::get('/landlord/notifications/unread-count', [LandlordNotificationController::class, 'unreadCount'])
+        ->name('landlord.notifications.unread-count');
+
+    Route::get('/landlord/notifications/recent', [LandlordNotificationController::class, 'recent'])
+        ->name('landlord.notifications.recent');
 
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
