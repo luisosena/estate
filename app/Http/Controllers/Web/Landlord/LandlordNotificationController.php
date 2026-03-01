@@ -39,20 +39,7 @@ class LandlordNotificationController extends Controller
         $unreadCount = $landlord->unreadNotifications()->count();
 
         return inertia('landlord/notifications/index', [
-            'notifications' => $notifications->through(function ($notification) {
-                $data = $notification->data;
-                
-                return [
-                    'id' => $notification->id,
-                    'type' => $notification->type,
-                    'title' => $data['title'] ?? 'Notification',
-                    'message' => $data['message'] ?? '',
-                    'priority' => $data['priority'] ?? 'medium',
-                    'created_at' => $notification->created_at,
-                    'read_at' => $notification->read_at,
-                    'data' => $data, // Include full data for detailed view
-                ];
-            }),
+            'notifications' => $notifications,
             'unreadCount' => $unreadCount,
             'filters' => [
                 'filter' => $request->filter ?? 'all',

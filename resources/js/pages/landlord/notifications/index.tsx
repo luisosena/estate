@@ -12,12 +12,14 @@ import { useEffect, useState } from 'react';
 interface Notification {
   id: string;
   type: string;
-  title: string;
-  message: string;
-  priority: 'high' | 'medium' | 'low';
   created_at: string;
   read_at: string | null;
-  data: any;
+  data: {
+    title?: string;
+    message?: string;
+    priority?: 'high' | 'medium' | 'low';
+    [key: string]: any;
+  };
 }
 
 interface NotificationsProps {
@@ -69,6 +71,22 @@ export default function Notifications({ notifications, unreadCount, filters }: N
   const [localFilters, setLocalFilters] = useState(filters);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Transform notification data on the frontend
+  const transformedNotifications = notifications.data.map((notification: any) => {
+    const data = notification.data || {};
+    
+    return {
+      id: notification.id,
+      type: notification.type,
+      title: data.title || 'Notification',
+      message: data.message || '',
+      priority: data.priority || 'medium',
+      created_at: notification.created_at,
+      read_at: notification.read_at,
+      data: data,
+    };
+  });
+
   const handleFilterChange = (filterType: string, value: string) => {
     const newFilters = { ...localFilters, [filterType]: value };
     setLocalFilters(newFilters);
@@ -84,9 +102,10 @@ export default function Notifications({ notifications, unreadCount, filters }: N
       preserveScroll: true,
       onSuccess: () => {
         // Update local state
-        const updatedNotifications = notifications.data.map(n => 
+        const updatedNotifications = transformedNotifications.map(n => 
           n.id === id ? { ...n, read_at: new Date().toISOString() } : n
         );
+        // Update the notifications data object
         notifications.data = updatedNotifications;
       },
     });
@@ -97,9 +116,10 @@ export default function Notifications({ notifications, unreadCount, filters }: N
       preserveScroll: true,
       onSuccess: () => {
         // Update local state
-        const updatedNotifications = notifications.data.map(n => 
+        const updatedNotifications = transformedNotifications.map(n => 
           n.id === id ? { ...n, read_at: null } : n
         );
+        // Update the notifications data object
         notifications.data = updatedNotifications;
       },
     });
@@ -110,9 +130,10 @@ export default function Notifications({ notifications, unreadCount, filters }: N
       preserveScroll: true,
       onSuccess: () => {
         // Update local state
-        const updatedNotifications = notifications.data.map(n => 
+        const updatedNotifications = transformedNotifications.map(n => 
           ({ ...n, read_at: new Date().toISOString() })
         );
+        // Update the notifications data object
         notifications.data = updatedNotifications;
       },
     });
@@ -124,11 +145,16 @@ export default function Notifications({ notifications, unreadCount, filters }: N
         preserveScroll: true,
         onSuccess: () => {
           // Update local state
-          const updatedNotifications = notifications.data.filter(n => n.id !== id);
+          const updatedNotifications = transformedNotifications.filter(n => n.id !== id);
+          // Update the notifications data object
           notifications.data = updatedNotifications;
         },
       });
     }
+  };
+
+  const handleLogout = () => {
+    router.post('/logout');
   };
 
   return (
@@ -169,11 +195,12 @@ export default function Notifications({ notifications, unreadCount, filters }: N
               <Bell className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{notifications.meta.total}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {notifications?.meta?.total || 0}
+              </div>
               <p className="text-xs text-muted-foreground">All notifications</p>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Unread</CardTitle>
@@ -192,7 +219,7 @@ export default function Notifications({ notifications, unreadCount, filters }: N
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {notifications.meta.total - unreadCount}
+                {(notifications?.meta?.total || 0) - unreadCount}
               </div>
               <p className="text-xs text-muted-foreground">Already viewed</p>
             </CardContent>
@@ -245,14 +272,14 @@ export default function Notifications({ notifications, unreadCount, filters }: N
           <CardHeader>
             <CardTitle>Recent Notifications</CardTitle>
             <CardDescription>
-              {notifications.data.length === 0 
+              {transformedNotifications.length === 0 
                 ? 'No notifications found' 
-                : `Showing ${notifications.data.length} of ${notifications.meta.total} notifications`
+                : `Showing ${transformedNotifications.length} of ${notifications.meta.total} notifications`
               }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {notifications.data.length === 0 ? (
+            {transformedNotifications.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground">
                 <Bell className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No notifications found</p>
@@ -260,7 +287,7 @@ export default function Notifications({ notifications, unreadCount, filters }: N
               </div>
             ) : (
               <div className="space-y-4">
-                {notifications.data.map((notification) => (
+                {transformedNotifications.map((notification) => (
                   <div
                     key={notification.id}
                     className={`flex items-start justify-between rounded-lg border p-4 transition-colors ${
@@ -273,16 +300,16 @@ export default function Notifications({ notifications, unreadCount, filters }: N
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium truncate">{notification.title}</h3>
-                          <Badge className={getPriorityColor(notification.priority)}>
-                            {notification.priority}
+                          <h3 className="font-medium truncate">{notification.data?.title || 'Notification'}</h3>
+                          <Badge className={getPriorityColor(notification.data?.priority || 'medium')}>
+                            {notification.data?.priority || 'medium'}
                           </Badge>
                           {!notification.read_at && (
                             <div className="h-2 w-2 rounded-full bg-blue-500" />
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
-                          {notification.message}
+                          {notification.data?.message || ''}
                         </p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span>{formatDate(notification.created_at)}</span>
@@ -360,6 +387,11 @@ export default function Notifications({ notifications, unreadCount, filters }: N
           </CardContent>
         </Card>
       </SidebarInset>
+      <div className="mt-8 flex justify-center">
+        <Button variant="outline" onClick={handleLogout}>
+          Log out
+        </Button>
+      </div>
     </SidebarProvider>
   );
 }

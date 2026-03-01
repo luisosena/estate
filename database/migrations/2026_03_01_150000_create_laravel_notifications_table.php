@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if table exists and drop it if it does
+        if (Schema::hasTable('notifications')) {
+            Schema::drop('notifications');
+        }
+
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary(); // Laravel uses UUID for notifications
             $table->string('type');
-            $table->morphs('notifiable'); // Polymorphic: can be User or Tenant
+            $table->morphs('notifiable'); // Polymorphic: can be User or Tenant (automatically creates index)
             $table->text('data');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
-        });
-
-        // Add indexes for performance
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->index(['notifiable_type', 'notifiable_id']);
+            
+            // Additional indexes for performance
             $table->index('read_at');
             $table->index('created_at');
         });

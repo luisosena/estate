@@ -177,7 +177,7 @@ export default function NotificationBell({ initialUnreadCount = 0 }: Notificatio
                         {notification.title}
                       </p>
                       {!notification.read_at && (
-                        <div className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0" />
+                        <div className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mb-1 line-clamp-2">

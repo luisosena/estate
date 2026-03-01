@@ -60,7 +60,7 @@ class TenantDashboardController extends Controller
 
                 'utilities' => $activeTenancy?->utilities,
 
-                'notifications' => $tenant->notifications()
+                'notifications' => $tenant->user->notifications()
                     ->latest()
                     ->take(5)
                     ->get(),

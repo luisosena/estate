@@ -47,10 +47,9 @@ interface Tenancy {
 }
 
 interface Notification {
-  id: number;
+  id: string;
   type: string;
-  title: string;
-  message: string;
+  data: any;
   read_at: string | null;
   created_at: string;
 }
@@ -269,9 +268,11 @@ export default function TenantDashboard({
                       }`}
                     >
                       <div className="flex-1">
-                        <p className="font-medium">{n.title}</p>
+                        <p className="font-medium">
+                          {n.data?.title || n.type.replace(/([A-Z])/g, ' $1').trim()}
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                          {n.message}
+                          {n.data?.message || 'New notification'}
                         </p>
                       </div>
                       <span className="shrink-0 text-xs text-muted-foreground">
