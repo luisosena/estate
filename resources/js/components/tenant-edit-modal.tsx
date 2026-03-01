@@ -12,6 +12,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircleIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+interface Payment {
+  id: number;
+  tenant_id: number;
+  tenancy_id: number;
+  amount: number;
+  payment_type: 'rent' | 'utility' | string | null;
+  payment_method: string;
+  status: 'paid' | 'partial' | 'overdue' | string;
+  paid_at?: string | null;
+  receipt_path?: string | null;
+  created_at: string;
+}
+
 interface Tenant {
   id: number;
   tenant_code: string;
@@ -57,8 +70,9 @@ interface TenantEditModalProps {
   unit?: Unit;
   property?: Property;
   availableUnits?: Unit[];
+  selectedPayment?: Payment | null;
   onSave: (data: any) => void;
-  editType?: 'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history';
+  editType?: 'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history' | 'payment' | 'add-payment';
 }
 
 export default function TenantEditModal({
@@ -69,6 +83,7 @@ export default function TenantEditModal({
   unit,
   property,
   availableUnits = [],
+  selectedPayment = null,
   onSave,
   editType = 'personal',
 }: TenantEditModalProps) {
@@ -98,6 +113,22 @@ export default function TenantEditModal({
       case 'unit':
         return {
           unit_id: unit?.id || '',
+        };
+      case 'payment':
+        return {
+          amount: selectedPayment?.amount || 0,
+          payment_type: selectedPayment?.payment_type || 'rent',
+          payment_method: selectedPayment?.payment_method || '',
+          status: selectedPayment?.status || 'paid',
+          paid_at: selectedPayment?.paid_at || '',
+        };
+      case 'add-payment':
+        return {
+          amount: 0,
+          payment_type: 'rent',
+          payment_method: '',
+          status: 'paid',
+          paid_at: new Date().toISOString().split('T')[0],
         };
       case 'property':
         return {
@@ -164,6 +195,24 @@ export default function TenantEditModal({
           amount: 0,
         });
         break;
+      case 'payment':
+        setFormData({
+          amount: selectedPayment?.amount || 0,
+          payment_type: selectedPayment?.payment_type || 'rent',
+          payment_method: selectedPayment?.payment_method || '',
+          status: selectedPayment?.status || 'paid',
+          paid_at: selectedPayment?.paid_at || '',
+        });
+        break;
+      case 'add-payment':
+        setFormData({
+          amount: 0,
+          payment_type: 'rent',
+          payment_method: '',
+          status: 'paid',
+          paid_at: new Date().toISOString().split('T')[0],
+        });
+        break;
       case 'history':
         setFormData({
           status: 'active',
@@ -171,7 +220,7 @@ export default function TenantEditModal({
         });
         break;
     }
-  }, [editType, tenant, tenancy, unit, property]);
+  }, [editType, tenant, tenancy, unit, property, selectedPayment]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -421,6 +470,130 @@ export default function TenantEditModal({
             </div>
           </div>
         );
+      case 'payment':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="payment_type">Payment Type</Label>
+                <Select value={formData.payment_type || ''} onValueChange={(value) => handleChange('payment_type', value)}>
+                  <SelectTrigger>
+                    {formData.payment_type || 'Select payment type'}
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="rent">Rent</SelectItem>
+                    <SelectItem value="utility">Utility</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  value={formData.amount?.toString() || ''}
+                  onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="payment_method">Payment Method</Label>
+                <Input
+                  id="payment_method"
+                  value={formData.payment_method || ''}
+                  onChange={(e) => handleChange('payment_method', e.target.value)}
+                  placeholder="e.g., Cash, Bank Transfer, Mobile Money"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status || ''} onValueChange={(value) => handleChange('status', value)}>
+                  <SelectTrigger>
+                    {formData.status || 'Select status'}
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="partial">Partial</SelectItem>
+                    <SelectItem value="overdue">Overdue</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="paid_at">Payment Date</Label>
+              <Input
+                id="paid_at"
+                type="date"
+                value={formData.paid_at || ''}
+                onChange={(e) => handleChange('paid_at', e.target.value)}
+              />
+            </div>
+          </div>
+        );
+      case 'add-payment':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="payment_type">Payment Type</Label>
+                <Select value={formData.payment_type || ''} onValueChange={(value) => handleChange('payment_type', value)}>
+                  <SelectTrigger>
+                    {formData.payment_type || 'Select payment type'}
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="rent">Rent</SelectItem>
+                    <SelectItem value="utility">Utility</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  value={formData.amount?.toString() || ''}
+                  onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="payment_method">Payment Method</Label>
+                <Input
+                  id="payment_method"
+                  value={formData.payment_method || ''}
+                  onChange={(e) => handleChange('payment_method', e.target.value)}
+                  placeholder="e.g., Cash, Bank Transfer, Mobile Money"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status || ''} onValueChange={(value) => handleChange('status', value)}>
+                  <SelectTrigger>
+                    {formData.status || 'Select status'}
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="partial">Partial</SelectItem>
+                    <SelectItem value="overdue">Overdue</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="paid_at">Payment Date</Label>
+              <Input
+                id="paid_at"
+                type="date"
+                value={formData.paid_at || ''}
+                onChange={(e) => handleChange('paid_at', e.target.value)}
+              />
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -440,6 +613,10 @@ export default function TenantEditModal({
         return 'Edit Property Information';
       case 'payments':
         return 'Edit Payment Information';
+      case 'payment':
+        return 'Edit Payment Record';
+      case 'add-payment':
+        return 'Add Payment Record';
       case 'history':
         return 'Edit Tenancy History';
       default:

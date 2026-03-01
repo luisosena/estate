@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordTenantController;
 use App\Http\Controllers\Web\Landlord\LandlordUnitController;
+use App\Http\Controllers\Web\Landlord\LandlordPaymentController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -53,6 +54,16 @@ Route::middleware(['auth'])->group(function () {
 
     Route::put('/landlord/tenancies/{tenancy}/change-unit', [LandlordTenantController::class, 'changeUnit'])
         ->name('landlord.tenancies.change-unit');
+
+    // Payment Management Routes
+    Route::post('/landlord/tenants/{tenant}/payments', [LandlordPaymentController::class, 'store'])
+        ->name('landlord.tenants.payments.store');
+
+    Route::put('/landlord/payments/{payment}', [LandlordPaymentController::class, 'update'])
+        ->name('landlord.payments.update');
+
+    Route::delete('/landlord/payments/{payment}', [LandlordPaymentController::class, 'destroy'])
+        ->name('landlord.payments.destroy');
 
     // Unit Management Routes
     Route::get('/landlord/units/create', [LandlordUnitController::class, 'create'])

@@ -51,10 +51,14 @@ interface Property {
 
 interface Payment {
   id: number;
+  tenant_id: number;
+  tenancy_id: number;
   amount: number;
-  status: string;
-  payment_type: string | null;
-  paid_at?: string;
+  payment_type: 'rent' | 'utility' | string | null;
+  payment_method: string;
+  status: 'paid' | 'partial' | 'overdue' | string;
+  paid_at?: string | null;
+  receipt_path?: string | null;
   created_at: string;
 }
 
@@ -98,7 +102,10 @@ export default function TenantShow({
     | 'property'
     | 'payments'
     | 'history'
+    | 'payment'
+    | 'add-payment'
   >('personal');
+  const [selectedPayment, setSelectedPayment] = useState<any>(null);
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '—';
@@ -335,11 +342,12 @@ export default function TenantShow({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setEditType('payments');
+                  setSelectedPayment(null);
+                  setEditType('add-payment');
                   setIsEditModalOpen(true);
                 }}
               >
-                <Edit className="h-4 w-4" />
+                Add Payment
               </Button>
             </CardHeader>
             <CardContent>
@@ -350,6 +358,7 @@ export default function TenantShow({
                     <TableHead className="text-gray-400">Type</TableHead>
                     <TableHead className="text-gray-400">Amount</TableHead>
                     <TableHead className="text-gray-400">Status</TableHead>
+                    <TableHead className="text-gray-400">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -361,6 +370,19 @@ export default function TenantShow({
                       <TableCell>{payment.payment_type || 'Rent'}</TableCell>
                       <TableCell>{formatCurrency(payment.amount)}</TableCell>
                       <TableCell>{getPaymentStatusBadge(payment.status)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPayment(payment);
+                            setEditType('payment');
+                            setIsEditModalOpen(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -380,6 +402,17 @@ export default function TenantShow({
               <p className="mt-1 text-sm text-gray-400">
                 This tenant has no payment records yet.
               </p>
+              <div className="mt-4">
+                <Button
+                  onClick={() => {
+                    setSelectedPayment(null);
+                    setEditType('add-payment');
+                    setIsEditModalOpen(true);
+                  }}
+                >
+                  Add First Payment
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -453,6 +486,7 @@ export default function TenantShow({
         unit={unit}
         property={property}
         availableUnits={availableUnits}
+        selectedPayment={selectedPayment}
         editType={editType}
         onSave={(updatedData) => {
           // Handle different types of updates
@@ -522,8 +556,40 @@ export default function TenantShow({
                 },
               },
             );
+          } else if (editType === 'payment') {
+            // Handle payment edit
+            router.put(
+              route('landlord.payments.update', { payment: selectedPayment?.id }),
+              updatedData,
+              {
+                onSuccess: () => {
+                  console.log('Payment updated successfully');
+                  setIsEditModalOpen(false);
+                  window.location.reload(); // Reload to show updated payment info
+                },
+                onError: (errors) => {
+                  console.error('Payment update failed:', errors);
+                },
+              },
+            );
+          } else if (editType === 'add-payment') {
+            // Handle payment addition
+            router.post(
+              route('landlord.tenants.payments.store', { tenant: tenant.tenant_code }),
+              updatedData,
+              {
+                onSuccess: () => {
+                  console.log('Payment added successfully');
+                  setIsEditModalOpen(false);
+                  window.location.reload(); // Reload to show new payment
+                },
+                onError: (errors) => {
+                  console.error('Payment addition failed:', errors);
+                },
+              },
+            );
           } else {
-            // TODO: Handle other edit types (property, payments, history)
+            // Handle other edit types (property, history)
             console.log('Saving data:', { editType, data: updatedData });
             setIsEditModalOpen(false);
           }
