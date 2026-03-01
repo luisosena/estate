@@ -1,4 +1,5 @@
 import { TenantSidebar } from '@/components/layout/tenant-sidebar';
+import TenantNotificationBell from '@/components/tenant-notification-bell';
 import {
   LastPaymentsTable,
   Payment,
@@ -116,23 +117,14 @@ export default function TenantDashboard({
                 ? "Here's an overview of your tenancy."
                 : 'No active tenancy found.'}
             </p>
-          </div>
+                      </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" asChild>
               <Link href="#">
                 <MessageCircleMore className="h-5 w-5" />
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" className="relative" asChild>
-              <Link href="#">
-                <Bell className="h-5 w-5" />
-                {unreadNotifications > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                    {unreadNotifications}
-                  </span>
-                )}
-              </Link>
-            </Button>
+            <TenantNotificationBell initialUnreadCount={unreadNotifications} />
             <Button variant="outline" size="sm" onClick={handleLogout}>
               Logout
             </Button>

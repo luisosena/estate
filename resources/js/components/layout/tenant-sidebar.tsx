@@ -7,7 +7,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, CreditCard, Zap } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Zap, Bell } from 'lucide-react';
 import { route } from 'ziggy-js';
 
 const navItems = [
@@ -28,6 +28,12 @@ const navItems = [
         icon: Zap,
         href: () => route('tenant.utilities'),
         routeName: 'tenant.utilities',
+    },
+    {
+        label: 'Notifications',
+        icon: Bell,
+        href: () => route('tenant.notifications.index'),
+        routeName: 'tenant.notifications.index',
     },
 ];
 
