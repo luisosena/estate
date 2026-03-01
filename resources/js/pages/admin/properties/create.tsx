@@ -11,7 +11,8 @@ import { useState } from 'react';
 
 interface Landlord {
   id: number;
-  tenant: {
+  name: string;
+  tenant?: {
     id: number;
     full_name: string;
   };
@@ -147,7 +148,7 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
                     <SelectContent>
                       {landlords.map((landlord) => (
                         <SelectItem key={landlord.id} value={landlord.id.toString()}>
-                          {landlord.tenant.full_name}
+                          {landlord.tenant?.full_name || landlord.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

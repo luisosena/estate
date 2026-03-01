@@ -16,7 +16,18 @@ class AdminPropertyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Property::with(['landlord.user']);
+        try {
+            $user = $request->user();
+
+            if (!$user || $user->role !== 'admin') {
+                return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
+            }
+        } catch (\Exception $e) {
+            \Log::error('Admin properties index error: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Access denied.');
+        }
+
+        $query = Property::with(['landlord.tenant']);
 
         // Search functionality
         if ($request->search) {
@@ -28,12 +39,12 @@ class AdminPropertyController extends Controller
         }
 
         // Filter by status
-        if ($request->status) {
+        if ($request->status && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
         // Filter by landlord
-        if ($request->landlord_id) {
+        if ($request->landlord_id && $request->landlord_id !== 'all') {
             $query->where('landlord_id', $request->landlord_id);
         }
 
@@ -56,6 +67,17 @@ class AdminPropertyController extends Controller
      */
     public function create()
     {
+        try {
+            $user = request()->user();
+
+            if (!$user || $user->role !== 'admin') {
+                return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
+            }
+        } catch (\Exception $e) {
+            \Log::error('Admin properties create error: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Access denied.');
+        }
+
         $landlords = User::where('role', 'landlord')->with('tenant')->get();
 
         return Inertia::render('admin/properties/create', [
@@ -98,7 +120,7 @@ class AdminPropertyController extends Controller
      */
     public function show(Property $property)
     {
-        $property->load(['landlord.user', 'units', 'units.tenant']);
+        $property->load(['landlord.tenant', 'units', 'units.tenant']);
 
         return Inertia::render('admin/properties/show', [
             'property' => $property,
@@ -110,7 +132,7 @@ class AdminPropertyController extends Controller
      */
     public function edit(Property $property)
     {
-        $property->load(['landlord.user']);
+        $property->load(['landlord.tenant']);
         $landlords = User::where('role', 'landlord')->with('tenant')->get();
 
         return Inertia::render('admin/properties/edit', [

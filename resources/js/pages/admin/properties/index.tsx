@@ -10,7 +10,8 @@ import { useState } from 'react';
 
 interface Landlord {
   id: number;
-  tenant: {
+  name: string;
+  tenant?: {
     id: number;
     full_name: string;
   };
@@ -33,8 +34,13 @@ interface Property {
 interface AdminPropertiesProps {
   properties: {
     data: Property[];
-    links: any;
-    meta: any;
+    links: any[];
+    meta: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    };
   };
   landlords: Landlord[];
   filters: {
@@ -73,7 +79,18 @@ const getPropertyTypeIcon = (type: string) => {
 };
 
 export default function AdminProperties({ properties, landlords, filters }: AdminPropertiesProps) {
-  const [localFilters, setLocalFilters] = useState(filters);
+  const [localFilters, setLocalFilters] = useState({
+    search: filters?.search || '',
+    status: filters?.status || 'all',
+    landlord_id: filters?.landlord_id || 'all'
+  });
+  
+  // Ensure properties has default structure
+  const safeProperties = properties || {
+    data: [],
+    links: [],
+    meta: { current_page: 1, last_page: 1, per_page: 10, total: 0 }
+  };
 
   const handleFilterChange = (key: string, value: string) => {
     const newFilters = { ...localFilters, [key]: value };
@@ -161,7 +178,7 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
                   <SelectItem value="maintenance">Maintenance</SelectItem>
@@ -172,10 +189,10 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
                   <SelectValue placeholder="Landlord" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Landlords</SelectItem>
+                  <SelectItem value="all">All Landlords</SelectItem>
                   {landlords.map((landlord) => (
                     <SelectItem key={landlord.id} value={landlord.id.toString()}>
-                      {landlord.tenant.full_name}
+                      {landlord.tenant?.full_name || landlord.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -189,11 +206,11 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
           <CardHeader>
             <CardTitle>All Properties</CardTitle>
             <CardDescription>
-              {properties.meta.total} propert{properties.meta.total !== 1 ? 'ies' : 'y'} found
+              {safeProperties?.meta?.total || 0} propert{(safeProperties?.meta?.total || 0) !== 1 ? 'ies' : 'y'} found
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {properties.data.length === 0 ? (
+            {(!safeProperties?.data || safeProperties.data.length === 0) ? (
               <div className="py-12 text-center text-muted-foreground">
                 <Building className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>No properties found</p>
@@ -207,7 +224,7 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
               </div>
             ) : (
               <div className="space-y-4">
-                {properties.data.map((property) => (
+                {safeProperties?.data?.map((property) => (
                   <div
                     key={property.id}
                     className="flex items-center justify-between rounded-lg border p-4 hover:bg-gray-50"
@@ -260,10 +277,10 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
             )}
 
             {/* Pagination */}
-            {properties.links && properties.links.length > 3 && (
+            {safeProperties?.links && safeProperties.links.length > 3 && (
               <div className="mt-6 flex justify-center">
                 <div className="flex gap-1">
-                  {properties.links.map((link: any, index: number) => (
+                  {safeProperties.links.map((link: any, index: number) => (
                     <Link
                       key={index}
                       href={link.url || '#'}

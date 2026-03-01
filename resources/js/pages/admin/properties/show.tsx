@@ -7,7 +7,8 @@ import { route } from 'ziggy-js';
 
 interface Landlord {
   id: number;
-  tenant: {
+  name: string;
+  tenant?: {
     id: number;
     full_name: string;
     phone?: string;
@@ -300,11 +301,11 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <h3 className="font-medium">{property.landlord.tenant.full_name}</h3>
-                    {property.landlord.tenant.phone && (
+                    <h3 className="font-medium">{property.landlord.tenant?.full_name || property.landlord.name}</h3>
+                    {property.landlord.tenant?.phone && (
                       <p className="text-sm text-gray-600">{property.landlord.tenant.phone}</p>
                     )}
-                    {property.landlord.tenant.email && (
+                    {property.landlord.tenant?.email && (
                       <p className="text-sm text-gray-600">{property.landlord.tenant.email}</p>
                     )}
                   </div>
