@@ -130,7 +130,7 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -227,7 +227,7 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
                 {safeProperties?.data?.map((property) => (
                   <div
                     key={property.id}
-                    className="flex items-center justify-between rounded-lg border p-4 hover:bg-gray-50"
+                    className="flex items-center justify-between rounded-lg border p-4 hover:bg-accent"
                   >
                     <div className="flex items-start gap-4 flex-1">
                       <div className="mt-1">
