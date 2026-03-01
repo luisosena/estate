@@ -337,28 +337,59 @@ class LandlordTenantController extends Controller
             abort(403, 'You do not have access to this tenancy.');
         }
 
+        // Ensure tenancy is currently active
+        if ($tenancy->status !== 'active') {
+            return redirect()
+                ->back()
+                ->with('error', 'This tenancy is already ended.');
+        }
+
+        $validated = $request->validate([
+            'move_out_date' => 'required|date|after_or_equal:today',
+            'end_reason' => 'required|string|in:lease_expiration,tenant_request,landlord_request,non_payment,property_sale,violation,other',
+            'deposit_return_status' => 'required|string|in:pending,returned_full,returned_partial,withheld',
+            'final_meter_readings' => 'nullable|string|max:1000',
+        ]);
+
         try {
             // Update tenancy status and set move_out_date
             $tenancy->update([
                 'status' => 'ended',
-                'move_out_date' => now()->toDateString(),
+                'move_out_date' => $validated['move_out_date'],
+                'end_reason' => $validated['end_reason'],
+                'deposit_return_status' => $validated['deposit_return_status'],
+                'final_meter_readings' => $validated['final_meter_readings'],
             ]);
 
             // Update unit status back to 'available'
             $tenancy->unit->update(['status' => 'available']);
 
+            // Log additional ending information
+            \Log::info('Tenancy ended with details', [
+                'tenancy_id' => $tenancy->id,
+                'tenant_id' => $tenancy->tenant_id,
+                'unit_id' => $tenancy->unit_id,
+                'move_out_date' => $validated['move_out_date'],
+                'end_reason' => $validated['end_reason'],
+                'deposit_return_status' => $validated['deposit_return_status'],
+                'final_meter_readings' => $validated['final_meter_readings'],
+                'landlord_id' => $landlord->id,
+            ]);
+
             return redirect()
-                ->back()
+                ->route('landlord.tenants.show', ['tenant' => $tenancy->tenant->tenant_code])
                 ->with('success', 'Tenancy has been ended successfully. Unit is now available.');
 
         } catch (\Exception $e) {
             \Log::error('Failed to end tenancy', [
                 'tenancy_id' => $tenancy->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'validated_data' => $validated,
             ]);
 
             return redirect()
                 ->back()
+                ->withInput()
                 ->with('error', 'Failed to end tenancy. Please try again.');
         }
     }

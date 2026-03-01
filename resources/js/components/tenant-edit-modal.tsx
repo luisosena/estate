@@ -72,7 +72,7 @@ interface TenantEditModalProps {
   availableUnits?: Unit[];
   selectedPayment?: Payment | null;
   onSave: (data: any) => void;
-  editType?: 'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history' | 'payment' | 'add-payment';
+  editType?: 'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history' | 'payment' | 'add-payment' | 'end-tenancy' | 'move-tenant';
 }
 
 export default function TenantEditModal({
@@ -114,6 +114,10 @@ export default function TenantEditModal({
         return {
           unit_id: unit?.id || '',
         };
+      case 'move-tenant':
+        return {
+          unit_id: unit?.id || '',
+        };
       case 'payment':
         return {
           amount: selectedPayment?.amount || 0,
@@ -129,6 +133,13 @@ export default function TenantEditModal({
           payment_method: '',
           status: 'paid',
           paid_at: new Date().toISOString().split('T')[0],
+        };
+      case 'end-tenancy':
+        return {
+          move_out_date: new Date().toISOString().split('T')[0],
+          end_reason: '',
+          deposit_return_status: 'pending',
+          final_meter_readings: '',
         };
       case 'property':
         return {
@@ -183,6 +194,11 @@ export default function TenantEditModal({
           unit_id: unit?.id || '',
         });
         break;
+      case 'move-tenant':
+        setFormData({
+          unit_id: unit?.id || '',
+        });
+        break;
       case 'property':
         setFormData({
           name: property?.name || '',
@@ -211,6 +227,14 @@ export default function TenantEditModal({
           payment_method: '',
           status: 'paid',
           paid_at: new Date().toISOString().split('T')[0],
+        });
+        break;
+      case 'end-tenancy':
+        setFormData({
+          move_out_date: new Date().toISOString().split('T')[0],
+          end_reason: '',
+          deposit_return_status: 'pending',
+          final_meter_readings: '',
         });
         break;
       case 'history':
@@ -359,7 +383,7 @@ export default function TenantEditModal({
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="unit_id">Select New Unit</Label>
+              <Label htmlFor="unit_id">New Unit</Label>
               <Select value={formData.unit_id?.toString() || ''} onValueChange={(value) => handleChange('unit_id', value)}>
                 <SelectTrigger>
                   {formData.unit_id ? 
@@ -376,18 +400,38 @@ export default function TenantEditModal({
                 </SelectContent>
               </Select>
             </div>
-            {unit && (
-              <Alert>
-                <AlertCircleIcon className="h-4 w-4" />
-                <AlertDescription>
-                  <div className="mt-2">
-                    <p className="font-medium">Current Unit:</p>
-                    <p className="text-sm">{unit.unit_name} ({unit.unit_code})</p>
-                    <p className="text-sm">{property?.name}</p>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            )}
+          </div>
+        );
+      case 'move-tenant':
+        return (
+          <div className="space-y-4">
+            <Alert>
+              <AlertCircleIcon className="h-4 w-4" />
+              <AlertDescription>
+                Moving this tenant will transfer them to a new unit. Their current unit will become available for new tenants.
+              </AlertDescription>
+            </Alert>
+            <div className="space-y-2">
+              <Label htmlFor="unit_id">Move To Unit</Label>
+              <Select value={formData.unit_id?.toString() || ''} onValueChange={(value) => handleChange('unit_id', value)}>
+                <SelectTrigger>
+                  {formData.unit_id ? 
+                    availableUnits.find(u => u.id.toString() === formData.unit_id)?.unit_name || 'Select unit'
+                    : 'Select unit'
+                  }
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  {availableUnits.map((availableUnit) => (
+                    <SelectItem key={availableUnit.id} value={availableUnit.id.toString()}>
+                      {availableUnit.unit_name} ({availableUnit.unit_code}) - {availableUnit.property?.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="text-sm text-gray-500">
+              <strong>Current Unit:</strong> {unit?.unit_name} ({unit?.unit_code})
+            </div>
           </div>
         );
       case 'property':
@@ -594,6 +638,72 @@ export default function TenantEditModal({
             </div>
           </div>
         );
+      case 'end-tenancy':
+        return (
+          <div className="space-y-4">
+            <Alert>
+              <AlertCircleIcon className="h-4 w-4" />
+              <AlertDescription>
+                Ending this tenancy will change the status to "ended" and set the move-out date. 
+                The tenant will no longer be considered actively renting this property.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="space-y-2">
+              <Label htmlFor="move_out_date">Move Out Date</Label>
+              <Input
+                id="move_out_date"
+                type="date"
+                value={formData.move_out_date || ''}
+                onChange={(e) => handleChange('move_out_date', e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="end_reason">End Reason</Label>
+              <Select value={formData.end_reason || ''} onValueChange={(value) => handleChange('end_reason', value)}>
+                <SelectTrigger>
+                  {formData.end_reason || 'Select end reason'}
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="lease_expiration">Lease Expiration</SelectItem>
+                  <SelectItem value="tenant_request">Tenant Request</SelectItem>
+                  <SelectItem value="landlord_request">Landlord Request</SelectItem>
+                  <SelectItem value="non_payment">Non Payment</SelectItem>
+                  <SelectItem value="property_sale">Property Sale</SelectItem>
+                  <SelectItem value="violation">Lease Violation</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="deposit_return_status">Security Deposit Return Status</Label>
+              <Select value={formData.deposit_return_status || ''} onValueChange={(value) => handleChange('deposit_return_status', value)}>
+                <SelectTrigger>
+                  {formData.deposit_return_status || 'Select deposit status'}
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="returned_full">Returned in Full</SelectItem>
+                  <SelectItem value="returned_partial">Returned Partially</SelectItem>
+                  <SelectItem value="withheld">Withheld</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="final_meter_readings">Final Meter Readings (Optional)</Label>
+              <Textarea
+                id="final_meter_readings"
+                value={formData.final_meter_readings || ''}
+                onChange={(e) => handleChange('final_meter_readings', e.target.value)}
+                placeholder="Enter final utility meter readings (electricity, water, gas, etc.)"
+                rows={3}
+              />
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -617,6 +727,10 @@ export default function TenantEditModal({
         return 'Edit Payment Record';
       case 'add-payment':
         return 'Add Payment Record';
+      case 'end-tenancy':
+        return 'End Tenancy';
+      case 'move-tenant':
+        return 'Move Tenant';
       case 'history':
         return 'Edit Tenancy History';
       default:

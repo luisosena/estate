@@ -55,6 +55,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/landlord/tenancies/{tenancy}/change-unit', [LandlordTenantController::class, 'changeUnit'])
         ->name('landlord.tenancies.change-unit');
 
+    Route::put('/landlord/tenancies/{tenancy}/end', [LandlordTenantController::class, 'endTenancy'])
+        ->name('landlord.tenancies.end');
+
     // Payment Management Routes
     Route::post('/landlord/tenants/{tenant}/payments', [LandlordPaymentController::class, 'store'])
         ->name('landlord.tenants.payments.store');

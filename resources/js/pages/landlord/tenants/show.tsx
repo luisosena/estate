@@ -104,6 +104,8 @@ export default function TenantShow({
     | 'history'
     | 'payment'
     | 'add-payment'
+    | 'end-tenancy'
+    | 'move-tenant'
   >('personal');
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
 
@@ -243,16 +245,42 @@ export default function TenantShow({
           <Card className="mb-6">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <CardTitle className="text-lg font-medium">Tenancy Information</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setEditType('tenancy');
-                  setIsEditModalOpen(true);
-                }}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                {tenancy.status === 'active' && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditType('move-tenant');
+                        setIsEditModalOpen(true);
+                      }}
+                    >
+                      Move Tenant
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setEditType('end-tenancy');
+                        setIsEditModalOpen(true);
+                      }}
+                    >
+                      End Tenancy
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditType('tenancy');
+                    setIsEditModalOpen(true);
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -421,7 +449,12 @@ export default function TenantShow({
         {tenancy_history.length > 0 && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-lg font-medium">Tenancy History</CardTitle>
+              <div>
+                <CardTitle className="text-lg font-medium">Tenancy History</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">
+                  Complete rental history for this tenant
+                </p>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -437,41 +470,99 @@ export default function TenantShow({
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="text-gray-400">Period</TableHead>
                     <TableHead className="text-gray-400">Unit</TableHead>
                     <TableHead className="text-gray-400">Property</TableHead>
-                    <TableHead className="text-gray-400">Move In</TableHead>
-                    <TableHead className="text-gray-400">Move Out</TableHead>
-                    <TableHead className="text-gray-400">Rent</TableHead>
+                    <TableHead className="text-gray-400">Duration</TableHead>
+                    <TableHead className="text-gray-400">Monthly Rent</TableHead>
                     <TableHead className="text-gray-400">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tenancy_history.map((history) => (
-                    <TableRow key={history.id}>
-                      <TableCell className="font-medium">
-                        {history.unit_name || '—'}
-                      </TableCell>
-                      <TableCell>{history.property_name || '—'}</TableCell>
-                      <TableCell>{formatDate(history.move_in_date)}</TableCell>
-                      <TableCell>{formatDate(history.move_out_date)}</TableCell>
-                      <TableCell>
-                        {history.monthly_rent
-                          ? formatCurrency(history.monthly_rent)
-                          : '—'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={history.status === 'active' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {history.status?.charAt(0).toUpperCase() +
-                            history.status?.slice(1)}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {tenancy_history.map((history) => {
+                    const moveIn = new Date(history.move_in_date || '');
+                    const moveOut = history.move_out_date ? new Date(history.move_out_date) : new Date();
+                    const duration = Math.floor((moveOut.getTime() - moveIn.getTime()) / (1000 * 60 * 60 * 24));
+                    const durationText = duration > 0 
+                      ? `${Math.floor(duration / 30)} months ${duration % 30} days`
+                      : 'Less than 1 day';
+                    
+                    return (
+                      <TableRow key={history.id} className={history.status === 'active' ? 'bg-green-50/5' : ''}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {formatDate(history.move_in_date)} - {formatDate(history.move_out_date) || 'Present'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {durationText}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">
+                            {history.unit_name || '—'}
+                          </div>
+                        </TableCell>
+                        <TableCell>{history.property_name || '—'}</TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {durationText}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">
+                            {history.monthly_rent
+                              ? formatCurrency(history.monthly_rent)
+                              : '—'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={history.status === 'active' ? 'default' : 'secondary'}
+                            className="text-xs"
+                          >
+                            {history.status === 'active' ? (
+                              <>
+                                <span className="w-2 h-2 bg-green-500 rounded-full mr-1 inline-block"></span>
+                                Active
+                              </>
+                            ) : (
+                              <>
+                                <span className="w-2 h-2 bg-gray-400 rounded-full mr-1 inline-block"></span>
+                                Ended
+                              </>
+                            )}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
+              
+              {/* Tenancy Summary */}
+              <div className="mt-6 p-4 bg-gray-50/5 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-300 mb-2">Tenancy Summary</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Total Tenancies:</span>
+                    <span className="ml-2 font-medium">{tenancy_history.length}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Active Tenancies:</span>
+                    <span className="ml-2 font-medium text-green-400">
+                      {tenancy_history.filter(t => t.status === 'active').length}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Completed Tenancies:</span>
+                    <span className="ml-2 font-medium text-gray-400">
+                      {tenancy_history.filter(t => t.status === 'ended').length}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -585,6 +676,40 @@ export default function TenantShow({
                 },
                 onError: (errors) => {
                   console.error('Payment addition failed:', errors);
+                },
+              },
+            );
+          } else if (editType === 'move-tenant') {
+            // Handle tenant move (reuse existing unit change logic)
+            router.put(
+              route('landlord.tenancies.change-unit', { tenancy: tenancy?.id }),
+              {
+                new_unit_id: updatedData.unit_id,
+              },
+              {
+                onSuccess: () => {
+                  console.log('Tenant moved successfully');
+                  setIsEditModalOpen(false);
+                  window.location.reload(); // Reload to show updated unit info
+                },
+                onError: (errors) => {
+                  console.error('Tenant move failed:', errors);
+                },
+              },
+            );
+          } else if (editType === 'end-tenancy') {
+            // Handle tenancy ending
+            router.put(
+              route('landlord.tenancies.end', { tenancy: tenancy?.id }),
+              updatedData,
+              {
+                onSuccess: () => {
+                  console.log('Tenancy ended successfully');
+                  setIsEditModalOpen(false);
+                  window.location.reload(); // Reload to show updated tenancy status
+                },
+                onError: (errors) => {
+                  console.error('Tenancy ending failed:', errors);
                 },
               },
             );
