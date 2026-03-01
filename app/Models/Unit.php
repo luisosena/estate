@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Unit extends Model
 {
@@ -23,5 +24,11 @@ class Unit extends Model
     public function tenancies(): HasMany
     {
         return $this->hasMany(Tenancy::class);
+    }
+
+    public function tenant()
+    {
+        return $this->hasOneThrough(Tenant::class, Tenancy::class, 'unit_id', 'id', 'id', 'tenant_id')
+            ->where('tenancies.status', 'active');
     }
 }

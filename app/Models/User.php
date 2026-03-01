@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->belongsTo(Tenant::class);
     }
 
+    public function user()
+    {
+        return $this->hasOne(Tenant::class);
+    }
+
 
     public function getTenantCodeAttribute()
     {

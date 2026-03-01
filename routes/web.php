@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\Tenant\TenantPaymentsController;
 use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
 use App\Http\Controllers\Web\Tenant\TenantNotificationController;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
+use App\Http\Controllers\Web\Admin\AdminPropertyController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordTenantController;
 use App\Http\Controllers\Web\Landlord\LandlordUnitController;
@@ -26,6 +27,31 @@ Route::middleware(['auth'])->group(function () {
     //Admin Routes
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
+
+    // Admin Property Management Routes
+    Route::get('/admin/properties', [AdminPropertyController::class, 'index'])
+        ->name('admin.properties.index');
+
+    Route::get('/admin/properties/create', [AdminPropertyController::class, 'create'])
+        ->name('admin.properties.create');
+
+    Route::post('/admin/properties', [AdminPropertyController::class, 'store'])
+        ->name('admin.properties.store');
+
+    Route::get('/admin/properties/{property}', [AdminPropertyController::class, 'show'])
+        ->name('admin.properties.show');
+
+    Route::get('/admin/properties/{property}/edit', [AdminPropertyController::class, 'edit'])
+        ->name('admin.properties.edit');
+
+    Route::put('/admin/properties/{property}', [AdminPropertyController::class, 'update'])
+        ->name('admin.properties.update');
+
+    Route::delete('/admin/properties/{property}', [AdminPropertyController::class, 'destroy'])
+        ->name('admin.properties.destroy');
+
+    Route::get('/admin/properties/stats', [AdminPropertyController::class, 'stats'])
+        ->name('admin.properties.stats');
 
     //Landlord Routes
     Route::get('/landlord/dashboard', [LandlordDashboardController::class, 'index'])
