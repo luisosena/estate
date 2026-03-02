@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Link, router, useForm } from '@inertiajs/react';
 import { Building, Home, Plus, Settings, Users, ArrowLeft, X } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { useState } from 'react';
 
 interface Landlord {
   id: number;
@@ -51,42 +52,15 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
     policies: [''],
   });
 
-  const updateAmenity = (index: number, value: string) => {
-    const newAmenities = [...data.amenities];
-    newAmenities[index] = value;
-    setData('amenities', newAmenities);
-  };
-
-  const addAmenity = () => {
-    setData('amenities', [...data.amenities, '']);
-  };
-
-  const removeAmenity = (index: number) => {
-    const newAmenities = data.amenities.filter((_, i) => i !== index);
-    setData('amenities', newAmenities);
-  };
-
-  const updatePolicy = (index: number, value: string) => {
-    const newPolicies = [...data.policies];
-    newPolicies[index] = value;
-    setData('policies', newPolicies);
-  };
-
-  const addPolicy = () => {
-    setData('policies', [...data.policies, '']);
-  };
-
-  const removePolicy = (index: number) => {
-    const newPolicies = data.policies.filter((_, i) => i !== index);
-    setData('policies', newPolicies);
-  };
+  const [amenities, setAmenities] = useState(['']);
+  const [policies, setPolicies] = useState(['']);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Filter out empty amenities and policies
-    const filteredAmenities = data.amenities.filter(a => a.trim() !== '');
-    const filteredPolicies = data.policies.filter(p => p.trim() !== '');
+    const filteredAmenities = amenities.filter(a => a.trim() !== '');
+    const filteredPolicies = policies.filter(p => p.trim() !== '');
     
     const formData = {
       ...data,
@@ -99,6 +73,36 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
         reset();
       },
     });
+  };
+
+  const addAmenity = () => {
+    setAmenities([...amenities, '']);
+  };
+
+  const removeAmenity = (index: number) => {
+    const newAmenities = amenities.filter((_, i) => i !== index);
+    setAmenities(newAmenities);
+  };
+
+  const updateAmenity = (index: number, value: string) => {
+    const newAmenities = [...amenities];
+    newAmenities[index] = value;
+    setAmenities(newAmenities);
+  };
+
+  const addPolicy = () => {
+    setPolicies([...policies, '']);
+  };
+
+  const removePolicy = (index: number) => {
+    const newPolicies = policies.filter((_, i) => i !== index);
+    setPolicies(newPolicies);
+  };
+
+  const updatePolicy = (index: number, value: string) => {
+    const newPolicies = [...policies];
+    newPolicies[index] = value;
+    setPolicies(newPolicies);
   };
 
   return (
@@ -341,14 +345,14 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
               <CardDescription>List the amenities available at this property</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {data.amenities.map((amenity, index) => (
+              {amenities.map((amenity, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
                     value={amenity}
                     onChange={(e) => updateAmenity(index, e.target.value)}
                     placeholder="e.g., Swimming Pool, Parking, Gym"
                   />
-                  {data.amenities.length > 1 && (
+                  {amenities.length > 1 && (
                     <Button
                       type="button"
                       variant="outline"
@@ -374,14 +378,14 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
               <CardDescription>Define property policies and rules</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {data.policies.map((policy, index) => (
+              {policies.map((policy, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
                     value={policy}
                     onChange={(e) => updatePolicy(index, e.target.value)}
                     placeholder="e.g., No pets allowed, Quiet hours 10 PM - 6 AM"
                   />
-                  {data.policies.length > 1 && (
+                  {policies.length > 1 && (
                     <Button
                       type="button"
                       variant="outline"
