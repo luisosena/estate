@@ -37,7 +37,7 @@ const statuses = [
 
 export default function AdminPropertyCreate({ landlords }: AdminPropertyCreateProps) {
   const { data, setData, post, processing, errors, reset } = useForm({
-    landlord_id: '',
+    owner_id: '',
     name: '',
     address: '',
     city: '',
@@ -140,8 +140,8 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="landlord_id">Landlord *</Label>
-                  <Select value={data.landlord_id} onValueChange={(value) => setData('landlord_id', value)}>
+                  <Label htmlFor="owner_id">Landlord *</Label>
+                  <Select value={data.owner_id} onValueChange={(value) => setData('owner_id', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a landlord" />
                     </SelectTrigger>
@@ -153,8 +153,8 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.landlord_id && (
-                    <p className="text-sm text-red-600 mt-1">{errors.landlord_id}</p>
+                  {errors.owner_id && (
+                    <p className="text-sm text-red-600 mt-1">{errors.owner_id}</p>
                   )}
                 </div>
 

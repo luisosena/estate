@@ -11,9 +11,19 @@ class Property extends Model
 {
     protected $fillable = [
         'owner_id',
+        'landlord_id',
         'name',
         'total_units',
         'address',
+        'city',
+        'state',
+        'postal_code',
+        'country',
+        'property_type',
+        'status',
+        'description',
+        'amenities',
+        'policies',
     ];
 
     public function owner(): BelongsTo

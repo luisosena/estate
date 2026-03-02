@@ -19,7 +19,7 @@ interface Landlord {
 
 interface Property {
   id: number;
-  landlord_id: number;
+  owner_id: number;
   name: string;
   address: string;
   city: string;
@@ -46,7 +46,7 @@ interface AdminPropertiesProps {
   filters: {
     search: string;
     status: string;
-    landlord_id: string;
+    owner_id: string;
   };
 }
 
@@ -82,7 +82,7 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
   const [localFilters, setLocalFilters] = useState({
     search: filters?.search || '',
     status: filters?.status || 'all',
-    landlord_id: filters?.landlord_id || 'all'
+    owner_id: filters?.owner_id || 'all'
   });
   
   // Ensure properties has default structure
@@ -184,7 +184,7 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
                   <SelectItem value="maintenance">Maintenance</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={localFilters.landlord_id} onValueChange={(value) => handleFilterChange('landlord_id', value)}>
+              <Select value={localFilters.owner_id} onValueChange={(value) => handleFilterChange('owner_id', value)}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Landlord" />
                 </SelectTrigger>

@@ -44,8 +44,8 @@ class AdminPropertyController extends Controller
         }
 
         // Filter by landlord
-        if ($request->landlord_id && $request->landlord_id !== 'all') {
-            $query->where('landlord_id', $request->landlord_id);
+        if ($request->owner_id && $request->owner_id !== 'all') {
+            $query->where('owner_id', $request->owner_id);
         }
 
         $properties = $query->orderBy('created_at', 'desc')->paginate(10);
@@ -57,7 +57,7 @@ class AdminPropertyController extends Controller
             'filters' => [
                 'search' => $request->search,
                 'status' => $request->status,
-                'landlord_id' => $request->landlord_id,
+                'owner_id' => $request->owner_id,
             ],
         ]);
     }
@@ -91,7 +91,7 @@ class AdminPropertyController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'landlord_id' => 'required|exists:users,id',
+            'owner_id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:100',
@@ -147,7 +147,7 @@ class AdminPropertyController extends Controller
     public function update(Request $request, Property $property)
     {
         $validated = $request->validate([
-            'landlord_id' => 'required|exists:users,id',
+            'owner_id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:100',
