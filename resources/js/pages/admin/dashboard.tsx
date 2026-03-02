@@ -54,14 +54,16 @@ export default function Dashboard({ stats }: AdminDashboardProps) {
                         </Link>
                     </Card>
 
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-50">
-                        <CardHeader className="text-center">
-                            <Users className="mx-auto h-8 w-8 text-green-600 mb-2" />
-                            <CardTitle className="text-lg">Landlords</CardTitle>
-                            <CardDescription>
-                                Manage landlords (Coming Soon)
-                            </CardDescription>
-                        </CardHeader>
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                        <Link href={route('admin.users.index')}>
+                            <CardHeader className="text-center">
+                                <Users className="mx-auto h-8 w-8 text-green-600 mb-2" />
+                                <CardTitle className="text-lg">Landlords</CardTitle>
+                                <CardDescription>
+                                    Manage landlords
+                                </CardDescription>
+                            </CardHeader>
+                        </Link>
                     </Card>
 
                     <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-50">

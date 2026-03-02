@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
 use App\Http\Controllers\Web\Tenant\TenantNotificationController;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Admin\AdminPropertyController;
+use App\Http\Controllers\Web\Admin\AdminUserController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordPropertyController;
 use App\Http\Controllers\Web\Landlord\LandlordTenantController;
@@ -53,6 +54,31 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/properties/stats', [AdminPropertyController::class, 'stats'])
         ->name('admin.properties.stats');
+
+    // Admin User Management Routes
+    Route::get('/admin/users', [AdminUserController::class, 'index'])
+        ->name('admin.users.index');
+
+    Route::get('/admin/users/create', [AdminUserController::class, 'create'])
+        ->name('admin.users.create');
+
+    Route::post('/admin/users', [AdminUserController::class, 'store'])
+        ->name('admin.users.store');
+
+    Route::get('/admin/users/{landlord}', [AdminUserController::class, 'show'])
+        ->name('admin.users.show');
+
+    Route::get('/admin/users/{landlord}/edit', [AdminUserController::class, 'edit'])
+        ->name('admin.users.edit');
+
+    Route::put('/admin/users/{landlord}', [AdminUserController::class, 'update'])
+        ->name('admin.users.update');
+
+    Route::delete('/admin/users/{landlord}', [AdminUserController::class, 'destroy'])
+        ->name('admin.users.destroy');
+
+    Route::post('/admin/users/{landlord}/toggle-status', [AdminUserController::class, 'toggleStatus'])
+        ->name('admin.users.toggle-status');
 
     //Landlord Routes
     Route::get('/landlord/dashboard', [LandlordDashboardController::class, 'index'])
