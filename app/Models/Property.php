@@ -33,6 +33,6 @@ class Property extends Model
 
     public function tenancies(): HasManyThrough
     {
-        return $this->hasManyThrough(Tenancy::class, Unit::class);
+        return $this->hasManyThrough(Tenancy::class, Unit::class, 'property_id', 'unit_id');
     }
 }

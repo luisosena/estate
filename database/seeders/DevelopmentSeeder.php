@@ -214,18 +214,24 @@ class DevelopmentSeeder extends Seeder
                 'unit_id' => $units[0]->id, // A101
                 'move_in_date' => now()->subMonths(6),
                 'status' => 'active',
+                'monthly_rent' => 1200.00,
+                'security_deposit' => 2400.00,
             ],
             [
                 'tenant_id' => $createdTenants[1]->id,
                 'unit_id' => $units[1]->id, // A102
                 'move_in_date' => now()->subMonths(3),
                 'status' => 'active',
+                'monthly_rent' => 950.00,
+                'security_deposit' => 1900.00,
             ],
             [
                 'tenant_id' => $createdTenants[2]->id,
                 'unit_id' => $units[2]->id, // B201
                 'move_in_date' => now()->subMonths(1),
                 'status' => 'active',
+                'monthly_rent' => 1500.00,
+                'security_deposit' => 3000.00,
             ],
         ];
 

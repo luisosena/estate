@@ -1,10 +1,19 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, router } from '@inertiajs/react';
 import { Building, Users, Home, Settings, LogOut, Plus } from 'lucide-react';
 import { route } from 'ziggy-js';
 
-export default function Dashboard() {
+interface AdminDashboardProps {
+    stats?: {
+        total_properties: number;
+        total_units: number;
+        active_tenancies: number;
+    };
+}
+
+export default function Dashboard({ stats }: AdminDashboardProps) {
     const handleLogout = () => {
         router.post('/logout');
     };
@@ -83,7 +92,7 @@ export default function Dashboard() {
                             <CardTitle className="text-sm font-medium text-gray-600">Total Properties</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">0</div>
+                            <div className="text-2xl font-bold">{stats?.total_properties || 0}</div>
                             <p className="text-xs text-gray-500">Properties in system</p>
                         </CardContent>
                     </Card>
@@ -93,7 +102,7 @@ export default function Dashboard() {
                             <CardTitle className="text-sm font-medium text-gray-600">Total Units</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">0</div>
+                            <div className="text-2xl font-bold">{stats?.total_units || 0}</div>
                             <p className="text-xs text-gray-500">Units across all properties</p>
                         </CardContent>
                     </Card>
@@ -103,7 +112,7 @@ export default function Dashboard() {
                             <CardTitle className="text-sm font-medium text-gray-600">Active Tenancies</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">0</div>
+                            <div className="text-2xl font-bold">{stats?.active_tenancies || 0}</div>
                             <p className="text-xs text-gray-500">Currently active</p>
                         </CardContent>
                     </Card>
