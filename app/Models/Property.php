@@ -26,6 +26,11 @@ class Property extends Model
         'policies',
     ];
 
+    protected $casts = [
+        'amenities' => 'array',
+        'policies' => 'array',
+    ];
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
