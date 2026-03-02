@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Head, Link, router } from '@inertiajs/react';
-import { Building2, Home, Plus, Eye, Filter } from 'lucide-react';
+import { Building2, Home, Plus, Eye, Filter, BedDouble, Users, TrendingUp } from 'lucide-react';
 import { route } from 'ziggy-js';
 import { useState } from 'react';
 
@@ -36,22 +36,34 @@ interface Property {
   name: string;
 }
 
+interface Metrics {
+  total_units: number;
+  available_units: number;
+  occupied_units: number;
+  occupancy_rate: number;
+  total_properties: number;
+}
+
 interface UnitsIndexProps {
   units: Unit[];
   properties: Property[];
   selectedProperty: string;
+  metrics: Metrics;
+  propertyMetrics: Metrics | null;
 }
 
-export default function UnitsIndex({ units, properties, selectedProperty }: UnitsIndexProps) {
+export default function UnitsIndex({ units, properties, selectedProperty, metrics, propertyMetrics }: UnitsIndexProps) {
   const [currentProperty, setCurrentProperty] = useState(selectedProperty);
 
   const handlePropertyChange = (value: string) => {
     setCurrentProperty(value);
-    router.get(route('landlord.units.index'), { property: value }, {
+    router.get('/landlord/units', { property: value }, {
       preserveState: true,
       preserveScroll: true,
     });
   };
+
+  const currentMetrics = propertyMetrics || metrics;
 
   const getStatusBadge = (status: string) => {
     return status === 'available' ? (
@@ -109,12 +121,70 @@ export default function UnitsIndex({ units, properties, selectedProperty }: Unit
                 Manage all your property units
               </p>
             </div>
-            <Link href={route('landlord.units.create')}>
+            <Link href="/landlord/units/create">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Unit
               </Button>
             </Link>
+          </div>
+
+          {/* Metrics Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Units</CardTitle>
+                <Home className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetrics.total_units}</div>
+                <p className="text-xs text-muted-foreground">Across all properties</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Available Units</CardTitle>
+                <BedDouble className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetrics.available_units}</div>
+                <p className="text-xs text-muted-foreground">Ready for tenants</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Occupied Units</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetrics.occupied_units}</div>
+                <p className="text-xs text-muted-foreground">Currently rented</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetrics.occupancy_rate}%</div>
+                <p className="text-xs text-muted-foreground">Of total units</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Properties</CardTitle>
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetrics.total_properties}</div>
+                <p className="text-xs text-muted-foreground">Total properties</p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Property Filter */}
@@ -153,7 +223,7 @@ export default function UnitsIndex({ units, properties, selectedProperty }: Unit
                     : `No units found for the selected property.`
                   }
                 </p>
-                <Link href={route('landlord.units.create')}>
+                <Link href="/landlord/units/create">
                   <Button>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Your First Unit
@@ -209,7 +279,7 @@ export default function UnitsIndex({ units, properties, selectedProperty }: Unit
                               
                               <div className="flex items-center space-x-3">
                                 {getStatusBadge(unit.status)}
-                                <Link href={route('landlord.units.show', unit.id)}>
+                                <Link href={`/landlord/units/${unit.id}`}>
                                   <Button variant="outline" size="sm">
                                     <Eye className="h-4 w-4 mr-2" />
                                     View
@@ -248,7 +318,7 @@ export default function UnitsIndex({ units, properties, selectedProperty }: Unit
                         
                         <div className="flex items-center space-x-3">
                           {getStatusBadge(unit.status)}
-                          <Link href={route('landlord.units.show', unit.id)}>
+                          <Link href={`/landlord/units/${unit.id}`}>
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4 mr-2" />
                               View

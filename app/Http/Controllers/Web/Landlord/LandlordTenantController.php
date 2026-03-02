@@ -26,21 +26,35 @@ class LandlordTenantController extends Controller
     {
         $landlord = $request->user();
 
-        // Fetch all properties owned by this landlord, with their units,
-        // each unit's active tenancies, and each tenancy's tenant.
+        // Get selected property filter
+        $selectedPropertyId = $request->get('property');
+        
+        // Get all properties for categorization
         $properties = Property::where('owner_id', $landlord->id)
+            ->select('id', 'name', 'address')
+            ->orderBy('name')
+            ->get();
+
+        // Build the base query
+        $query = Property::where('owner_id', $landlord->id)
             ->with([
                 'units.tenancies' => function ($query) {
                     $query->where('status', 'active')
                           ->with('tenant');
                 },
-            ])
-            ->get();
+            ]);
+
+        // Apply property filter if selected
+        if ($selectedPropertyId && $selectedPropertyId !== 'all') {
+            $query->where('id', $selectedPropertyId);
+        }
+
+        $propertiesData = $query->get();
 
         // Flatten into a list of tenant rows for the view.
         $tenants = [];
 
-        foreach ($properties as $property) {
+        foreach ($propertiesData as $property) {
             foreach ($property->units as $unit) {
                 foreach ($unit->tenancies as $tenancy) {
                     if (!$tenancy->tenant) {
@@ -65,6 +79,41 @@ class LandlordTenantController extends Controller
             }
         }
 
+        // Calculate breakdown metrics
+        $totalTenants = count($tenants);
+        $totalProperties = $properties->count();
+        $totalUnits = $properties->sum(function ($property) {
+            return $property->units()->count();
+        });
+        $occupiedUnits = $properties->sum(function ($property) {
+            return $property->units()->whereHas('tenancies', function ($query) {
+                $query->where('status', 'active');
+            })->count();
+        });
+        $occupancyRate = $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0;
+
+        // If a specific property is selected, calculate property-specific metrics
+        $propertyMetrics = null;
+        if ($selectedPropertyId && $selectedPropertyId !== 'all') {
+            $selectedProperty = $properties->firstWhere('id', (int)$selectedPropertyId);
+            if ($selectedProperty) {
+                $propertyTenants = array_filter($tenants, fn($t) => $t['property_id'] == $selectedPropertyId);
+                $propertyUnits = $propertiesData->firstWhere('id', (int)$selectedPropertyId)->units;
+                $propertyOccupiedUnits = $propertyUnits->filter(function ($unit) {
+                    return $unit->tenancies->isNotEmpty();
+                })->count();
+                
+                $propertyMetrics = [
+                    'total_tenants' => count($propertyTenants),
+                    'total_units' => $propertyUnits->count(),
+                    'occupied_units' => $propertyOccupiedUnits,
+                    'occupancy_rate' => $propertyUnits->count() > 0 
+                        ? round(($propertyOccupiedUnits / $propertyUnits->count()) * 100, 1) 
+                        : 0,
+                ];
+            }
+        }
+
         // Build a lightweight properties list for the navigation/filter sidebar.
         $propertiesList = $properties->map(fn ($p) => [
             'id'      => $p->id,
@@ -75,6 +124,15 @@ class LandlordTenantController extends Controller
         return Inertia::render('landlord/tenants/index', [
             'tenants'    => $tenants,
             'properties' => $propertiesList,
+            'selectedProperty' => $selectedPropertyId ?: 'all',
+            'metrics' => [
+                'total_tenants' => $totalTenants,
+                'total_properties' => $totalProperties,
+                'total_units' => $totalUnits,
+                'occupied_units' => $occupiedUnits,
+                'occupancy_rate' => $occupancyRate,
+            ],
+            'propertyMetrics' => $propertyMetrics,
         ]);
     }
 

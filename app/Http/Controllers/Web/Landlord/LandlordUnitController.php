@@ -89,10 +89,51 @@ class LandlordUnitController extends Controller
                 ];
             });
 
+        // Calculate breakdown metrics
+        $totalUnits = $units->count();
+        $availableUnits = $units->filter(function ($unit) {
+            return $unit['status'] === 'available';
+        })->count();
+        $occupiedUnits = $units->filter(function ($unit) {
+            return $unit['status'] === 'occupied';
+        })->count();
+        $occupancyRate = $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0;
+
+        // If a specific property is selected, calculate property-specific metrics
+        $propertyMetrics = null;
+        if ($selectedPropertyId && $selectedPropertyId !== 'all') {
+            $propertyUnits = $units->filter(function ($unit) use ($selectedPropertyId) {
+                return $unit['property']['id'] == $selectedPropertyId;
+            });
+            $propertyAvailableUnits = $propertyUnits->filter(function ($unit) {
+                return $unit['status'] === 'available';
+            })->count();
+            $propertyOccupiedUnits = $propertyUnits->filter(function ($unit) {
+                return $unit['status'] === 'occupied';
+            })->count();
+            
+            $propertyMetrics = [
+                'total_units' => $propertyUnits->count(),
+                'available_units' => $propertyAvailableUnits,
+                'occupied_units' => $propertyOccupiedUnits,
+                'occupancy_rate' => $propertyUnits->count() > 0 
+                    ? round(($propertyOccupiedUnits / $propertyUnits->count()) * 100, 1) 
+                    : 0,
+            ];
+        }
+
         return Inertia::render('landlord/units/index', [
             'units' => $units,
             'properties' => $properties,
             'selectedProperty' => $selectedPropertyId ?: 'all',
+            'metrics' => [
+                'total_units' => $totalUnits,
+                'available_units' => $availableUnits,
+                'occupied_units' => $occupiedUnits,
+                'occupancy_rate' => $occupancyRate,
+                'total_properties' => $properties->count(),
+            ],
+            'propertyMetrics' => $propertyMetrics,
         ]);
     }
 

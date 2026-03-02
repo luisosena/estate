@@ -201,7 +201,7 @@ export default function LandlordProperties({ properties, stats }: LandlordProper
                           size="sm"
                           asChild
                         >
-                          <Link href={`/landlord/units?property=${property.id}`}>
+                          <Link href={`/landlord/properties/${property.id}/units`}>
                             <Home className="h-4 w-4 mr-2" />
                             View Units
                           </Link>
