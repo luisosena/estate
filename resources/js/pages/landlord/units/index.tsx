@@ -13,9 +13,11 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
-import { Head, Link } from '@inertiajs/react';
-import { Building2, Home, Plus, Eye } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Head, Link, router } from '@inertiajs/react';
+import { Building2, Home, Plus, Eye, Filter } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { useState } from 'react';
 
 interface Unit {
   id: number;
@@ -29,11 +31,28 @@ interface Unit {
   created_at: string;
 }
 
-interface UnitsIndexProps {
-  units: Unit[];
+interface Property {
+  id: number;
+  name: string;
 }
 
-export default function UnitsIndex({ units }: UnitsIndexProps) {
+interface UnitsIndexProps {
+  units: Unit[];
+  properties: Property[];
+  selectedProperty: string;
+}
+
+export default function UnitsIndex({ units, properties, selectedProperty }: UnitsIndexProps) {
+  const [currentProperty, setCurrentProperty] = useState(selectedProperty);
+
+  const handlePropertyChange = (value: string) => {
+    setCurrentProperty(value);
+    router.get(route('landlord.units.index'), { property: value }, {
+      preserveState: true,
+      preserveScroll: true,
+    });
+  };
+
   const getStatusBadge = (status: string) => {
     return status === 'available' ? (
       <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -45,6 +64,26 @@ export default function UnitsIndex({ units }: UnitsIndexProps) {
       </Badge>
     );
   };
+
+  // Group units by property when "all" is selected
+  const groupedUnits = currentProperty === 'all' 
+    ? units.reduce((groups, unit) => {
+      const propertyName = unit.property.name;
+      if (!groups[propertyName]) {
+        groups[propertyName] = [];
+      }
+      groups[propertyName].push(unit);
+      return groups;
+    }, {} as Record<string, Unit[]>)
+    : null;
+
+  const PropertySeparator = () => (
+    <div className="flex items-center justify-center py-4">
+      <div className="border-t border-gray-200 flex-1"></div>
+      <div className="px-4 text-sm text-gray-500">•</div>
+      <div className="border-t border-gray-200 flex-1"></div>
+    </div>
+  );
 
   return (
     <SidebarProvider>
@@ -78,13 +117,41 @@ export default function UnitsIndex({ units }: UnitsIndexProps) {
             </Link>
           </div>
 
+          {/* Property Filter */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Filter by Property:</span>
+                  <Select value={currentProperty} onValueChange={handlePropertyChange}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Select property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Properties</SelectItem>
+                      {properties.map((property) => (
+                        <SelectItem key={property.id} value={property.id.toString()}>
+                          {property.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {units.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No units yet</h3>
+                <h3 className="text-lg font-semibold mb-2">No units found</h3>
                 <p className="text-muted-foreground text-center mb-4">
-                  Get started by adding your first unit to a property.
+                  {currentProperty === 'all' 
+                    ? "Get started by adding your first unit to a property."
+                    : `No units found for the selected property.`
+                  }
                 </p>
                 <Link href={route('landlord.units.create')}>
                   <Button>
@@ -97,45 +164,101 @@ export default function UnitsIndex({ units }: UnitsIndexProps) {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>All Units</CardTitle>
+                <CardTitle>
+                  {currentProperty === 'all' ? 'All Units' : `Units - ${properties.find(p => p.id.toString() === currentProperty)?.name}`}
+                </CardTitle>
                 <CardDescription>
-                  A complete list of all units across your properties
+                  {currentProperty === 'all' 
+                    ? 'All units across your properties, grouped by property'
+                    : `Units for the selected property`
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {units.map((unit) => (
-                    <div
-                      key={unit.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-3">
-                          <Building2 className="h-8 w-8 text-muted-foreground" />
-                          <div>
-                            <div className="font-medium">{unit.unit_name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              Code: {unit.unit_code}
+                {currentProperty === 'all' && groupedUnits ? (
+                  <div className="space-y-6">
+                    {Object.entries(groupedUnits).map(([propertyName, propertyUnits], index) => (
+                      <div key={propertyName}>
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <Building2 className="h-5 w-5" />
+                            {propertyName}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {propertyUnits.length} unit{propertyUnits.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {propertyUnits.map((unit) => (
+                            <div
+                              key={unit.id}
+                              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-3">
+                                  <Home className="h-8 w-8 text-muted-foreground" />
+                                  <div>
+                                    <div className="font-medium">{unit.unit_name}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                      Code: {unit.unit_code}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-3">
+                                {getStatusBadge(unit.status)}
+                                <Link href={route('landlord.units.show', unit.id)}>
+                                  <Button variant="outline" size="sm">
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View
+                                  </Button>
+                                </Link>
+                              </div>
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              Property: {unit.property.name}
+                          ))}
+                        </div>
+                        
+                        {index < Object.entries(groupedUnits).length - 1 && <PropertySeparator />}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {units.map((unit) => (
+                      <div
+                        key={unit.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-3">
+                            <Home className="h-8 w-8 text-muted-foreground" />
+                            <div>
+                              <div className="font-medium">{unit.unit_name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                Code: {unit.unit_code}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Property: {unit.property.name}
+                              </div>
                             </div>
                           </div>
                         </div>
+                        
+                        <div className="flex items-center space-x-3">
+                          {getStatusBadge(unit.status)}
+                          <Link href={route('landlord.units.show', unit.id)}>
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        {getStatusBadge(unit.status)}
-                        <Link href={route('landlord.units.show', unit.id)}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

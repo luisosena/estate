@@ -52,29 +52,47 @@ class LandlordUnitController extends Controller
     {
         $landlord = $request->user();
         
-        $units = Unit::whereHas('property', function ($query) use ($landlord) {
+        // Get all properties for categorization
+        $properties = Property::where('owner_id', $landlord->id)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+        
+        // Get selected property filter
+        $selectedPropertyId = $request->get('property');
+        
+        $query = Unit::whereHas('property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
         ->with('property:id,name')
-        ->select('id', 'unit_code', 'unit_name', 'status', 'property_id', 'created_at')
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function ($unit) {
-            return [
-                'id' => $unit->id,
-                'unit_code' => $unit->unit_code,
-                'unit_name' => $unit->unit_name,
-                'status' => $unit->status,
-                'property' => [
-                    'id' => $unit->property->id,
-                    'name' => $unit->property->name,
-                ],
-                'created_at' => $unit->created_at->format('Y-m-d H:i'),
-            ];
-        });
+        ->select('id', 'unit_code', 'unit_name', 'status', 'property_id', 'created_at');
+        
+        // Apply property filter if selected
+        if ($selectedPropertyId && $selectedPropertyId !== 'all') {
+            $query->where('property_id', $selectedPropertyId);
+        }
+        
+        $units = $query->orderBy('property_id')
+            ->orderBy('unit_code')
+            ->get()
+            ->map(function ($unit) {
+                return [
+                    'id' => $unit->id,
+                    'unit_code' => $unit->unit_code,
+                    'unit_name' => $unit->unit_name,
+                    'status' => $unit->status,
+                    'property' => [
+                        'id' => $unit->property->id,
+                        'name' => $unit->property->name,
+                    ],
+                    'created_at' => $unit->created_at->format('Y-m-d H:i'),
+                ];
+            });
 
         return Inertia::render('landlord/units/index', [
             'units' => $units,
+            'properties' => $properties,
+            'selectedProperty' => $selectedPropertyId ?: 'all',
         ]);
     }
 

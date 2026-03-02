@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\Tenant\TenantNotificationController;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Admin\AdminPropertyController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
+use App\Http\Controllers\Web\Landlord\LandlordPropertyController;
 use App\Http\Controllers\Web\Landlord\LandlordTenantController;
 use App\Http\Controllers\Web\Landlord\LandlordUnitController;
 use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
@@ -56,6 +57,9 @@ Route::middleware(['auth'])->group(function () {
     //Landlord Routes
     Route::get('/landlord/dashboard', [LandlordDashboardController::class, 'index'])
         ->name('landlord.dashboard');
+
+    Route::get('/landlord/properties', [LandlordPropertyController::class, 'index'])
+        ->name('landlord.properties.index');
 
     Route::get('/landlord/tenants/create', [LandlordTenantController::class, 'create'])
         ->name('landlord.tenants.create');

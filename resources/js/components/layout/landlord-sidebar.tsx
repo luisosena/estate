@@ -32,6 +32,12 @@ const mainNavItems = [
         routeName: 'landlord.dashboard',
     },
     {
+        label: 'Properties',
+        icon: Building2,
+        href: () => route('landlord.properties.index'),
+        routeName: 'landlord.properties.index',
+    },
+    {
         label: 'Units',
         icon: Home,
         href: () => route('landlord.units.index'),
