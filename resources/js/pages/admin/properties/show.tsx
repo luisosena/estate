@@ -241,9 +241,6 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                             <Badge className={getUnitStatusColor(unit.status)}>
                               {unit.status}
                             </Badge>
-                            <span className="text-sm text-muted-foreground">
-                              {unit.rent_amount ? `$${unit.rent_amount}/month` : 'No rent set'}
-                            </span>
                           </div>
                         </div>
                       </div>
@@ -304,7 +301,7 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                     <h3 className="font-medium">{property.landlord.name}</h3>
                     <p className="text-sm text-muted-foreground">{property.landlord.email}</p>
                   </div>
-                </div>@
+                </div>
               </CardContent>
             </Card>
 
@@ -345,7 +342,7 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                     Edit Property
                   </Button>
                 </Link>
-                <Button variant="destructive" onClick={deleteProperty} className="w-full">
+                <Button variant="destructive" onClick={deleteProperty} className="w-full mt-2">
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete Property
                 </Button>
