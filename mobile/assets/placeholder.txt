@@ -1,0 +1,11 @@
+# Assets Placeholder
+
+This folder should contain:
+- icon.png (app icon)
+- splash-icon.png (splash screen icon)
+- adaptive-icon.png (Android adaptive icon)
+- favicon.png (web favicon)
+
+You can generate these using:
+npx expo install @expo/xcpretty
+# Or use Expo's icon generator
