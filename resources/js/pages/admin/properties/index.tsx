@@ -11,10 +11,6 @@ import { useState } from 'react';
 interface Landlord {
   id: number;
   name: string;
-  tenant?: {
-    id: number;
-    full_name: string;
-  };
 }
 
 interface Property {
@@ -246,7 +242,7 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span>{property.total_units} units</span>
                           <span>{property.property_type}</span>
-                          <span>Landlord: {property.landlord?.tenant?.full_name || 'Unknown'}</span>
+                          <span>Landlord: {property.landlord?.name || 'Unknown'}</span>
                         </div>
                       </div>
                     </div>

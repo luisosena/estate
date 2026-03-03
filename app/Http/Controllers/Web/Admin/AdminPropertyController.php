@@ -27,7 +27,7 @@ class AdminPropertyController extends Controller
             return redirect()->route('login')->with('error', 'Access denied.');
         }
 
-        $query = Property::with(['landlord.tenant']);
+        $query = Property::with(['landlord']);
 
         // Search functionality
         if ($request->search) {
