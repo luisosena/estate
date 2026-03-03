@@ -24,7 +24,7 @@ export default function Dashboard({ stats }: AdminDashboardProps) {
             <div className="bg-card border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
+                        <h1 className="text-xl font-semibold text-foreground">Admin Dashboard</h1>
                         <Button variant="outline" onClick={handleLogout}>
                             <LogOut className="mr-2 h-4 w-4" />
                             Logout
@@ -36,8 +36,8 @@ export default function Dashboard({ stats }: AdminDashboardProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Welcome Section */}
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900">Welcome, Admin</h2>
-                    <p className="text-gray-600">Manage your properties, landlords, and tenants from here.</p>
+                    <h2 className="text-2xl font-bold text-foreground">Welcome, Admin</h2>
+                    <p className="text-muted-foreground">Manage your properties, landlords, and tenants from here.</p>
                 </div>
 
                 {/* Quick Actions */}
@@ -91,31 +91,31 @@ export default function Dashboard({ stats }: AdminDashboardProps) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium text-gray-600">Total Properties</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Total Properties</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats?.total_properties || 0}</div>
-                            <p className="text-xs text-gray-500">Properties in system</p>
+                            <div className="text-2xl font-bold text-foreground">{stats?.total_properties || 0}</div>
+                            <p className="text-xs text-muted-foreground">Properties in system</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium text-gray-600">Total Units</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Total Units</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats?.total_units || 0}</div>
-                            <p className="text-xs text-gray-500">Units across all properties</p>
+                            <div className="text-2xl font-bold text-foreground">{stats?.total_units || 0}</div>
+                            <p className="text-xs text-muted-foreground">Units across all properties</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium text-gray-600">Active Tenancies</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Active Tenancies</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats?.active_tenancies || 0}</div>
-                            <p className="text-xs text-gray-500">Currently active</p>
+                            <div className="text-2xl font-bold text-foreground">{stats?.active_tenancies || 0}</div>
+                            <p className="text-xs text-muted-foreground">Currently active</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -129,7 +129,7 @@ export default function Dashboard({ stats }: AdminDashboardProps) {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-center py-8 text-gray-500">
+                        <div className="text-center py-8 text-muted-foreground">
                             <p>No recent activity to display</p>
                         </div>
                     </CardContent>

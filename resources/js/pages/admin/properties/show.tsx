@@ -123,11 +123,11 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
             <div className="flex items-center">
               <Link
                 href={route('admin.properties.index')}
-                className="text-gray-600 hover:text-gray-900 mr-4"
+                className="text-muted-foreground hover:text-foreground mr-4"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Link>
-              <h1 className="text-xl font-semibold text-gray-900">{property.name}</h1>
+              <h1 className="text-xl font-semibold text-foreground">{property.name}</h1>
             </div>
             <div className="flex items-center gap-2">
               <Link href={route('admin.properties.edit', property.id)}>
@@ -160,29 +160,29 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h3 className="font-medium text-gray-900">Property Name</h3>
-                    <p className="text-gray-600">{property.name}</p>
+                    <h3 className="font-medium text-foreground">Property Name</h3>
+                    <p className="text-muted-foreground">{property.name}</p>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Status</h3>
+                    <h3 className="font-medium text-foreground">Status</h3>
                     <Badge className={getStatusColor(property.status)}>
                       {property.status}
                     </Badge>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Property Type</h3>
-                    <p className="text-gray-600 capitalize">{property.property_type}</p>
+                    <h3 className="font-medium text-foreground">Property Type</h3>
+                    <p className="text-muted-foreground capitalize">{property.property_type}</p>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Total Units</h3>
-                    <p className="text-gray-600">{property.total_units}</p>
+                    <h3 className="font-medium text-foreground">Total Units</h3>
+                    <p className="text-muted-foreground">{property.total_units}</p>
                   </div>
                 </div>
 
                 {property.description && (
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Description</h3>
-                    <p className="text-gray-600">{property.description}</p>
+                    <h3 className="font-medium text-foreground mb-2">Description</h3>
+                    <p className="text-muted-foreground">{property.description}</p>
                   </div>
                 )}
               </CardContent>
@@ -198,11 +198,11 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-gray-900 font-medium">{property.address}</p>
-                  <p className="text-gray-600">
+                  <p className="text-foreground font-medium">{property.address}</p>
+                  <p className="text-muted-foreground">
                     {property.city}, {property.state} {property.postal_code}
                   </p>
-                  <p className="text-gray-600">{property.country}</p>
+                  <p className="text-muted-foreground">{property.country}</p>
                 </div>
               </CardContent>
             </Card>
@@ -212,7 +212,7 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Units</span>
-                  <span className="text-sm font-normal text-gray-500">
+                  <span className="text-sm font-normal text-muted-foreground">
                     {property.units.length} of {property.total_units} units
                   </span>
                 </CardTitle>
@@ -224,8 +224,8 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                 {property.units.length === 0 ? (
                   <div className="text-center py-8">
                     <Building className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                    <p className="text-gray-600">No units found</p>
-                    <p className="text-sm text-gray-500">Add units to this property to get started</p>
+                    <p className="text-muted-foreground">No units found</p>
+                    <p className="text-sm text-muted-foreground">Add units to this property to get started</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -236,16 +236,16 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                       >
                         <div>
                           <h4 className="font-medium">{unit.unit_name}</h4>
-                          <p className="text-sm text-gray-600">{unit.unit_code}</p>
-                          {unit.tenant && (
-                            <p className="text-sm text-gray-500">
-                              Tenant: {unit.tenant.full_name}
-                            </p>
-                          )}
+                          <p className="text-sm text-muted-foreground">{unit.unit_code}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={getUnitStatusColor(unit.status)}>
+                              {unit.status}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              {unit.rent_amount ? `$${unit.rent_amount}/month` : 'No rent set'}
+                            </span>
+                          </div>
                         </div>
-                        <Badge className={getUnitStatusColor(unit.status)}>
-                          {unit.status}
-                        </Badge>
                       </div>
                     ))}
                   </div>
@@ -281,8 +281,8 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                   <ul className="space-y-2">
                     {property.policies.map((policy, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <span className="text-gray-400 mt-1">•</span>
-                        <span className="text-gray-600">{policy}</span>
+                        <span className="text-muted-foreground mt-1">•</span>
+                        <span className="text-muted-foreground">{policy}</span>
                       </li>
                     ))}
                   </ul>
@@ -302,9 +302,9 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                 <div className="space-y-3">
                   <div>
                     <h3 className="font-medium">{property.landlord.name}</h3>
-                    <p className="text-sm text-gray-600">{property.landlord.email}</p>
+                    <p className="text-sm text-muted-foreground">{property.landlord.email}</p>
                   </div>
-                </div>
+                </div>@
               </CardContent>
             </Card>
 
@@ -315,24 +315,20 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Units</span>
-                  <span className="font-medium">{property.total_units}</span>
+                  <span className="text-muted-foreground">Total Units</span>
+                  <span>{property.total_units}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Created</span>
-                  <span className="font-medium">{formatDate(property.created_at)}</span>
+                  <span className="text-muted-foreground">Created</span>
+                  <span>{new Date(property.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Occupied Units</span>
-                  <span className="font-medium">
-                    {property.units.filter(u => u.status === 'occupied').length}
-                  </span>
+                  <span className="text-muted-foreground">Occupied Units</span>
+                  <span>{property.units.filter(u => u.status === 'occupied').length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Available Units</span>
-                  <span className="font-medium">
-                    {property.units.filter(u => u.status === 'available').length}
-                  </span>
+                  <span className="text-muted-foreground">Available Units</span>
+                  <span>{property.units.filter(u => u.status === 'available').length}</span>
                 </div>
               </CardContent>
             </Card>

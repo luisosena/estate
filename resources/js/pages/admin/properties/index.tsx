@@ -134,11 +134,11 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
             <div className="flex items-center">
               <Link
                 href={route('admin.dashboard')}
-                className="text-gray-600 hover:text-gray-900 mr-4"
+                className="text-muted-foreground hover:text-foreground mr-4"
               >
                 <Home className="h-5 w-5" />
               </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Properties</h1>
+              <h1 className="text-xl font-semibold text-foreground">Properties</h1>
             </div>
             <Link href={route('admin.properties.create')}>
               <Button>
@@ -202,7 +202,7 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
           <CardHeader>
             <CardTitle>All Properties</CardTitle>
             <CardDescription>
-              {safeProperties?.meta?.total || 0} propert{(safeProperties?.meta?.total || 0) !== 1 ? 'ies' : 'y'} found
+              {safeProperties?.data?.length || 0} propert{(safeProperties?.data?.length || 0) !== 1 ? 'ies' : 'y'} found
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -236,10 +236,10 @@ export default function AdminProperties({ properties, landlords, filters }: Admi
                             {property.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mb-1">
+                        <p className="text-sm text-muted-foreground mb-1">
                           {property.address}, {property.city}, {property.state}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span>{property.total_units} units</span>
                           <span>{property.property_type}</span>
                           <span>Landlord: {property.landlord?.name || 'Unknown'}</span>

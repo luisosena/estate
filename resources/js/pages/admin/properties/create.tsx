@@ -114,11 +114,11 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
             <div className="flex items-center">
               <Link
                 href={route('admin.properties.index')}
-                className="text-gray-600 hover:text-gray-900 mr-4"
+                className="text-muted-foreground hover:text-foreground mr-4"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Add New Property</h1>
+              <h1 className="text-xl font-semibold text-foreground">Add New Property</h1>
             </div>
             <Link href={route('admin.properties.index')}>
               <Button variant="outline">
