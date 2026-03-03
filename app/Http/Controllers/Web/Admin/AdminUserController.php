@@ -47,7 +47,7 @@ class AdminUserController extends Controller
             }
         }
 
-        $landlords = $query->orderBy('created_at', 'desc')->paginate(10);
+        $landlords = $query->withCount('properties')->orderBy('created_at', 'desc')->paginate(10);
 
         // Get statistics
         $stats = [
