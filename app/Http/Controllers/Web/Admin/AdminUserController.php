@@ -134,9 +134,11 @@ class AdminUserController extends Controller
         $stats = [
             'total_properties' => $landlord->properties->count(),
             'total_units' => $landlord->properties->sum('total_units'),
-            'occupied_units' => $landlord->properties->join('units', 'properties.id', '=', 'units.property_id')
+            'occupied_units' => $landlord->properties()
+                ->join('units', 'properties.id', '=', 'units.property_id')
                 ->where('units.status', 'occupied')->count(),
-            'active_tenancies' => $landlord->properties->join('units', 'properties.id', '=', 'units.property_id')
+            'active_tenancies' => $landlord->properties()
+                ->join('units', 'properties.id', '=', 'units.property_id')
                 ->join('tenancies', 'units.id', '=', 'tenancies.unit_id')
                 ->where('tenancies.status', 'active')->count(),
         ];
