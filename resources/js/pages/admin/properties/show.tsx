@@ -301,13 +301,8 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <h3 className="font-medium">{property.landlord.tenant?.full_name || property.landlord.name}</h3>
-                    {property.landlord.tenant?.phone && (
-                      <p className="text-sm text-gray-600">{property.landlord.tenant.phone}</p>
-                    )}
-                    {property.landlord.tenant?.email && (
-                      <p className="text-sm text-gray-600">{property.landlord.tenant.email}</p>
-                    )}
+                    <h3 className="font-medium">{property.landlord.name}</h3>
+                    <p className="text-sm text-gray-600">{property.landlord.email}</p>
                   </div>
                 </div>
               </CardContent>

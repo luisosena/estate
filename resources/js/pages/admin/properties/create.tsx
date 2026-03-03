@@ -148,7 +148,7 @@ export default function AdminPropertyCreate({ landlords }: AdminPropertyCreatePr
                     <SelectContent>
                       {landlords.map((landlord) => (
                         <SelectItem key={landlord.id} value={landlord.id.toString()}>
-                          {landlord.tenant?.full_name || landlord.name}
+                          {landlord.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
