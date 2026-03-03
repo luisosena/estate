@@ -8,12 +8,9 @@ import { route } from 'ziggy-js';
 interface Landlord {
   id: number;
   name: string;
-  tenant?: {
-    id: number;
-    full_name: string;
-    phone?: string;
-    email?: string;
-  };
+  username: string;
+  email: string;
+  role: string;
 }
 
 interface Unit {
