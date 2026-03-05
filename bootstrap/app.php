@@ -26,6 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        
+        $middleware->api(append: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
         $middleware->alias([
             'auth.api' => AuthenticateApiToken::class,
             'auth.role' => RedirectIfAuthenticatedWithRole::class,
