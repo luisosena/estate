@@ -18,22 +18,31 @@ use App\Http\Controllers\Api\Tenant\UtilitiesController;
 |
 */
 
-Route::middleware('auth:web')->group(function () {
-    // Authentication routes
+$defineApiRoutes = function (): void {
+    Route::middleware('auth.api')->group(function () {
+        // Authentication routes
+        Route::prefix('auth')->group(function () {
+            Route::post('logout', [AuthController::class, 'logout']);
+            Route::get('me', [AuthController::class, 'me']);
+        });
+
+        // Tenant routes
+        Route::prefix('tenant')->group(function () {
+            Route::get('dashboard', [DashboardController::class, 'index']);
+            Route::get('payments', [PaymentsController::class, 'index']);
+            Route::get('utilities', [UtilitiesController::class, 'index']);
+        });
+    });
+
+    // Public authentication routes
     Route::prefix('auth')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::get('me', [AuthController::class, 'me']);
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('refresh', [AuthController::class, 'refresh']);
     });
+};
 
-    // Tenant routes
-    Route::prefix('tenant')->group(function () {
-        Route::get('dashboard', [DashboardController::class, 'index']);
-        Route::get('payments', [PaymentsController::class, 'index']);
-        Route::get('utilities', [UtilitiesController::class, 'index']);
-    });
-});
+// Unversioned routes (e.g. /api/auth/login)
+$defineApiRoutes();
 
-// Public authentication routes
-Route::prefix('auth')->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
-});
+// Versioned routes for mobile/web clients (e.g. /api/v1/auth/login)
+Route::prefix('v1')->group($defineApiRoutes);

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable; 
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Tenant extends Model
 {
@@ -43,7 +45,7 @@ class Tenant extends Model
 
     public function notifications()
     {
-        return $this->hasMany(Notification::class);
+        return $this->morphMany(DatabaseNotification::class, 'notifiable');
     }
 
     public function getRouteKeyName()
