@@ -13,9 +13,6 @@
     "android": {
       "package": "com.estatepractice.app"
     },
-    "plugins": [
-      "expo-secure-store"
-    ],
     "extra": {
       "eas": {
         "projectId": "estate-practice-mobile"
