@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../context/AuthContext';
 import { LoadingScreen } from '../components/common/LoadingScreen';
+import { tabBarScreenOptions } from '../constants/styles';
 
 // Auth Screens
 import { LoginScreen } from '../screens/auth/LoginScreen';
@@ -20,9 +21,6 @@ import { LandlordPropertiesScreen } from '../screens/landlord/PropertiesScreen';
 import { LandlordTenantsScreen } from '../screens/landlord/TenantsScreen';
 import { LandlordPaymentsScreen } from '../screens/landlord/PaymentsScreen';
 import { LandlordProfileScreen } from '../screens/landlord/ProfileScreen';
-
-// Common
-import { colors } from '../constants/colors';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -56,11 +54,7 @@ const LandlordTab = createBottomTabNavigator<LandlordTabParamList>();
 
 function AuthNavigator() {
   return (
-    <AuthStack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
     </AuthStack.Navigator>
@@ -69,76 +63,31 @@ function AuthNavigator() {
 
 function TenantNavigator() {
   return (
-    <TenantTab.Navigator
-      screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.gray[500],
-        tabBarStyle: {
-          paddingBottom: 5,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-        },
-      }}
-    >
-      <TenantTab.Screen 
-        name="Dashboard" 
+    <TenantTab.Navigator screenOptions={tabBarScreenOptions}>
+      <TenantTab.Screen
+        name="Dashboard"
         component={TenantDashboardScreen}
         options={{ title: 'Home' }}
       />
-      <TenantTab.Screen 
-        name="Payments" 
-        component={TenantPaymentsScreen}
-      />
-      <TenantTab.Screen 
-        name="Utilities" 
-        component={TenantUtilitiesScreen}
-      />
-      <TenantTab.Screen 
-        name="Profile" 
-        component={TenantProfileScreen}
-      />
+      <TenantTab.Screen name="Payments" component={TenantPaymentsScreen} />
+      <TenantTab.Screen name="Utilities" component={TenantUtilitiesScreen} />
+      <TenantTab.Screen name="Profile" component={TenantProfileScreen} />
     </TenantTab.Navigator>
   );
 }
 
 function LandlordNavigator() {
   return (
-    <LandlordTab.Navigator
-      screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.gray[500],
-        tabBarStyle: {
-          paddingBottom: 5,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-        },
-      }}
-    >
-      <LandlordTab.Screen 
-        name="Dashboard" 
+    <LandlordTab.Navigator screenOptions={tabBarScreenOptions}>
+      <LandlordTab.Screen
+        name="Dashboard"
         component={LandlordDashboardScreen}
         options={{ title: 'Home' }}
       />
-      <LandlordTab.Screen 
-        name="Properties" 
-        component={LandlordPropertiesScreen}
-      />
-      <LandlordTab.Screen 
-        name="Tenants" 
-        component={LandlordTenantsScreen}
-      />
-      <LandlordTab.Screen 
-        name="Payments" 
-        component={LandlordPaymentsScreen}
-      />
-      <LandlordTab.Screen 
-        name="Profile" 
-        component={LandlordProfileScreen}
-      />
+      <LandlordTab.Screen name="Properties" component={LandlordPropertiesScreen} />
+      <LandlordTab.Screen name="Tenants" component={LandlordTenantsScreen} />
+      <LandlordTab.Screen name="Payments" component={LandlordPaymentsScreen} />
+      <LandlordTab.Screen name="Profile" component={LandlordProfileScreen} />
     </LandlordTab.Navigator>
   );
 }
@@ -155,15 +104,10 @@ export function AppNavigator() {
       {!isAuthenticated || !user ? (
         <RootStack.Screen name="Auth" component={AuthNavigator} />
       ) : (
-        <RootStack.Screen name="Main">
-          {() => {
-            // Route based on user role
-            if (user.role === 'tenant') {
-              return <TenantNavigator />;
-            }
-            return <LandlordNavigator />;
-          }}
-        </RootStack.Screen>
+        <RootStack.Screen
+          name="Main"
+          component={user.role === 'tenant' ? TenantNavigator : LandlordNavigator}
+        />
       )}
     </RootStack.Navigator>
   );

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { deleteItem, getItem, setItem } from '../utils/storage';
-import { authApi, AuthUser, LoginCredentials, RegisterData } from '../api/auth';
+import { authApi } from '../api/auth';
+import type { AuthUser, LoginCredentials, RegisterData, AuthResponse } from '../types';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -14,15 +15,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
+/** Persist auth tokens to secure storage. */
+async function saveTokens(response: AuthResponse): Promise<void> {
+  await setItem('auth_token', response.token);
+  if (response.refresh_token) {
+    await setItem('refresh_token', response.refresh_token);
+  }
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
+/** Clear all auth tokens from secure storage. */
+async function clearTokens(): Promise<void> {
+  await deleteItem('auth_token');
+  await deleteItem('refresh_token');
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing auth token on mount
   useEffect(() => {
     checkAuth();
   }, []);
@@ -36,38 +46,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.log('Auth check failed:', error);
-      // Clear invalid tokens
-      await deleteItem('auth_token');
-      await deleteItem('refresh_token');
+      await clearTokens();
     } finally {
       setIsLoading(false);
     }
   };
 
   const login = async (credentials: LoginCredentials) => {
-    try {
-      const response = await authApi.login(credentials);
-      await setItem('auth_token', response.token);
-      if (response.refresh_token) {
-        await setItem('refresh_token', response.refresh_token);
-      }
-      setUser(response.user);
-    } catch (error) {
-      throw error;
-    }
+    const response = await authApi.login(credentials);
+    await saveTokens(response);
+    setUser(response.user);
   };
 
   const register = async (data: RegisterData) => {
-    try {
-      const response = await authApi.register(data);
-      await setItem('auth_token', response.token);
-      if (response.refresh_token) {
-        await setItem('refresh_token', response.refresh_token);
-      }
-      setUser(response.user);
-    } catch (error) {
-      throw error;
-    }
+    const response = await authApi.register(data);
+    await saveTokens(response);
+    setUser(response.user);
   };
 
   const logout = async () => {
@@ -76,14 +70,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.log('Logout API error:', error);
     } finally {
-      await deleteItem('auth_token');
-      await deleteItem('refresh_token');
+      await clearTokens();
       setUser(null);
     }
-  };
-
-  const updateUser = (updatedUser: AuthUser) => {
-    setUser(updatedUser);
   };
 
   return (
@@ -95,7 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         login,
         register,
         logout,
-        updateUser,
+        updateUser: setUser,
       }}
     >
       {children}

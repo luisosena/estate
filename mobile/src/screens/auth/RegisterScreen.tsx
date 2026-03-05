@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { TextInput, Button, Text, HelperText } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
-import { colors } from '../../constants/colors';
+import { getErrorMessage } from '../../utils/errors';
+import { authStyles as styles } from './authStyles';
 
 export function RegisterScreen() {
   const { register } = useAuth();
+  const navigation = useNavigation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,15 +38,15 @@ export function RegisterScreen() {
 
     try {
       await register({ name, email, password, password_confirmation: confirmPassword });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Registration failed. Please try again.'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
@@ -122,10 +125,10 @@ export function RegisterScreen() {
           <View style={styles.footer}>
             <Text variant="bodyMedium" style={styles.footerText}>
               Already have an account?{' '}
-              <Text 
-                variant="bodyMedium" 
+              <Text
+                variant="bodyMedium"
                 style={styles.link}
-                onPress={() => {}}
+                onPress={() => navigation.navigate('Login' as never)}
               >
                 Sign In
               </Text>
@@ -136,52 +139,3 @@ export function RegisterScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    color: colors.primary,
-    fontWeight: 'bold',
-  },
-  subtitle: {
-    color: colors.text.secondary,
-    marginTop: 8,
-  },
-  form: {
-    width: '100%',
-  },
-  input: {
-    marginBottom: 16,
-    backgroundColor: colors.white,
-  },
-  button: {
-    marginTop: 8,
-    backgroundColor: colors.primary,
-  },
-  buttonContent: {
-    paddingVertical: 8,
-  },
-  footer: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  footerText: {
-    color: colors.text.secondary,
-  },
-  link: {
-    color: colors.secondary,
-    fontWeight: 'bold',
-  },
-});

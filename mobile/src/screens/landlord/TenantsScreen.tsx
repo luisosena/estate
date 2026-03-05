@@ -1,27 +1,74 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, RefreshControl } from 'react-native';
 import { Text, Card } from 'react-native-paper';
-import { colors } from '../../constants/colors';
+import { landlordApi } from '../../api/landlord';
+import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { screenStyles } from '../../constants/styles';
+import type { Tenant } from '../../types';
 
 export function LandlordTenantsScreen() {
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+
+  const fetchTenants = async () => {
+    try {
+      const data = await landlordApi.getTenants();
+      setTenants(data.data);
+    } catch (error) {
+      console.error('Failed to fetch tenants:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTenants();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTenants();
+  };
+
+  if (loading) return <LoadingScreen />;
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text variant="headlineSmall" style={styles.title}>Tenants</Text>
+    <ScrollView
+      style={screenStyles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
+      <View style={screenStyles.header}>
+        <Text variant="headlineSmall" style={screenStyles.title}>Tenants</Text>
+        <Text variant="bodyMedium" style={screenStyles.subtitle}>
+          {tenants.length} {tenants.length === 1 ? 'tenant' : 'tenants'}
+        </Text>
       </View>
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text variant="bodyMedium" style={styles.placeholder}>Tenants list will be loaded from API</Text>
-        </Card.Content>
-      </Card>
+
+      {tenants.length > 0 ? (
+        tenants.map((tenant) => (
+          <Card key={tenant.id} style={screenStyles.card}>
+            <Card.Title title={tenant.full_name} titleVariant="titleMedium" />
+            <Card.Content>
+              <View style={screenStyles.listItem}>
+                <Text variant="bodyMedium" style={screenStyles.date}>Email</Text>
+                <Text variant="bodyMedium">{tenant.email}</Text>
+              </View>
+              <View style={screenStyles.listItem}>
+                <Text variant="bodyMedium" style={screenStyles.date}>Phone</Text>
+                <Text variant="bodyMedium">{tenant.phone}</Text>
+              </View>
+            </Card.Content>
+          </Card>
+        ))
+      ) : (
+        <Card style={screenStyles.card}>
+          <Card.Content>
+            <Text variant="bodyMedium" style={screenStyles.empty}>No tenants yet</Text>
+          </Card.Content>
+        </Card>
+      )}
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 16, paddingTop: 24 },
-  title: { color: colors.text.primary, fontWeight: 'bold' },
-  card: { marginHorizontal: 16, marginBottom: 16, backgroundColor: colors.white },
-  placeholder: { color: colors.text.secondary, textAlign: 'center', paddingVertical: 40 },
-});

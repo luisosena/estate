@@ -1,212 +1,98 @@
 import api from './client';
+import type {
+  Property,
+  Unit,
+  Tenant,
+  Tenancy,
+  Payment,
+  Notification,
+  LandlordDashboard,
+  PaginatedResponse,
+} from '../types';
 
-// Types matching Laravel models
-export interface Property {
-  id: number;
-  name: string;
-  address: string;
-  total_units: number;
-  occupied_units: number;
-  vacant_units: number;
-  created_at: string;
-}
-
-export interface Unit {
-  id: number;
-  unit_number: string;
-  property_id: number;
-  property_name: string;
-  bedrooms: number;
-  bathrooms: number;
-  rent_amount: number;
-  status: 'occupied' | 'vacant' | 'maintenance';
-}
-
-export interface Tenant {
-  id: number;
-  full_name: string;
-  phone: string;
-  email: string;
-  identification_type?: string;
-  identification_number?: string;
-}
-
-export interface Tenancy {
-  id: number;
-  tenant: Tenant;
-  unit: Unit;
-  move_in_date: string;
-  move_out_date: string | null;
-  status: 'active' | 'expired' | 'terminated';
-  rent_amount: number;
-  rent_due_day: number;
-  deposit_amount: number;
-}
-
-export interface Payment {
-  id: number;
-  tenant_name: string;
-  unit_number: string;
-  property_name: string;
-  amount: number;
-  paid_at: string | null;
-  due_date: string;
-  status: 'pending' | 'paid' | 'overdue';
-  payment_method: string | null;
-  reference_number: string | null;
-}
-
-export interface Notification {
-  id: number;
-  title: string;
-  message: string;
-  type: 'payment' | 'lease' | 'tenant' | 'system';
-  read_at: string | null;
-  created_at: string;
-}
-
-export interface LandlordDashboard {
-  total_properties: number;
-  total_units: number;
-  occupied_units: number;
-  vacant_units: number;
-  total_tenants: number;
-  pending_payments: number;
-  recent_payments: Payment[];
-  expiring_leases: Tenancy[];
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-}
-
-// Landlord Dashboard API
 export const landlordApi = {
-  getDashboard: async (): Promise<LandlordDashboard> => {
-    const response = await api.get<LandlordDashboard>('/landlord/dashboard');
-    return response;
-  },
+  // Dashboard
+  getDashboard: (): Promise<LandlordDashboard> =>
+    api.get<LandlordDashboard>('/landlord/dashboard'),
 
   // Properties
-  getProperties: async (page = 1): Promise<PaginatedResponse<Property>> => {
-    const response = await api.get<PaginatedResponse<Property>>('/landlord/properties', { page });
-    return response;
-  },
+  getProperties: (page = 1): Promise<PaginatedResponse<Property>> =>
+    api.get<PaginatedResponse<Property>>('/landlord/properties', { page }),
 
-  getProperty: async (propertyId: number): Promise<Property> => {
-    const response = await api.get<Property>(`/landlord/properties/${propertyId}`);
-    return response;
-  },
+  getProperty: (propertyId: number): Promise<Property> =>
+    api.get<Property>(`/landlord/properties/${propertyId}`),
 
-  createProperty: async (data: Partial<Property>): Promise<Property> => {
-    const response = await api.post<Property>('/landlord/properties', data);
-    return response;
-  },
+  createProperty: (data: Partial<Property>): Promise<Property> =>
+    api.post<Property>('/landlord/properties', data),
 
-  updateProperty: async (propertyId: number, data: Partial<Property>): Promise<Property> => {
-    const response = await api.put<Property>(`/landlord/properties/${propertyId}`, data);
-    return response;
-  },
+  updateProperty: (propertyId: number, data: Partial<Property>): Promise<Property> =>
+    api.put<Property>(`/landlord/properties/${propertyId}`, data),
 
-  deleteProperty: async (propertyId: number): Promise<void> => {
-    await api.delete(`/landlord/properties/${propertyId}`);
-  },
+  deleteProperty: (propertyId: number): Promise<void> =>
+    api.delete(`/landlord/properties/${propertyId}`),
 
   // Units
-  getUnits: async (propertyId?: number, page = 1): Promise<PaginatedResponse<Unit>> => {
-    const response = await api.get<PaginatedResponse<Unit>>('/landlord/units', { 
-      ...(propertyId && { property_id: propertyId }), 
-      page 
-    });
-    return response;
-  },
+  getUnits: (propertyId?: number, page = 1): Promise<PaginatedResponse<Unit>> =>
+    api.get<PaginatedResponse<Unit>>('/landlord/units', {
+      ...(propertyId && { property_id: propertyId }),
+      page,
+    }),
 
-  getUnit: async (unitId: number): Promise<Unit> => {
-    const response = await api.get<Unit>(`/landlord/units/${unitId}`);
-    return response;
-  },
+  getUnit: (unitId: number): Promise<Unit> =>
+    api.get<Unit>(`/landlord/units/${unitId}`),
 
-  createUnit: async (data: Partial<Unit>): Promise<Unit> => {
-    const response = await api.post<Unit>('/landlord/units', data);
-    return response;
-  },
+  createUnit: (data: Partial<Unit>): Promise<Unit> =>
+    api.post<Unit>('/landlord/units', data),
 
-  updateUnit: async (unitId: number, data: Partial<Unit>): Promise<Unit> => {
-    const response = await api.put<Unit>(`/landlord/units/${unitId}`, data);
-    return response;
-  },
+  updateUnit: (unitId: number, data: Partial<Unit>): Promise<Unit> =>
+    api.put<Unit>(`/landlord/units/${unitId}`, data),
 
-  deleteUnit: async (unitId: number): Promise<void> => {
-    await api.delete(`/landlord/units/${unitId}`);
-  },
+  deleteUnit: (unitId: number): Promise<void> =>
+    api.delete(`/landlord/units/${unitId}`),
 
   // Tenants
-  getTenants: async (page = 1): Promise<PaginatedResponse<Tenant>> => {
-    const response = await api.get<PaginatedResponse<Tenant>>('/landlord/tenants', { page });
-    return response;
-  },
+  getTenants: (page = 1): Promise<PaginatedResponse<Tenant>> =>
+    api.get<PaginatedResponse<Tenant>>('/landlord/tenants', { page }),
 
-  getTenant: async (tenantId: string): Promise<Tenant> => {
-    const response = await api.get<Tenant>(`/landlord/tenants/${tenantId}`);
-    return response;
-  },
+  getTenant: (tenantId: string): Promise<Tenant> =>
+    api.get<Tenant>(`/landlord/tenants/${tenantId}`),
 
-  createTenant: async (data: Partial<Tenant>): Promise<Tenant> => {
-    const response = await api.post<Tenant>('/landlord/tenants', data);
-    return response;
-  },
+  createTenant: (data: Partial<Tenant>): Promise<Tenant> =>
+    api.post<Tenant>('/landlord/tenants', data),
 
-  updateTenant: async (tenantId: string, data: Partial<Tenant>): Promise<Tenant> => {
-    const response = await api.put<Tenant>(`/landlord/tenants/${tenantId}`, data);
-    return response;
-  },
+  updateTenant: (tenantId: string, data: Partial<Tenant>): Promise<Tenant> =>
+    api.put<Tenant>(`/landlord/tenants/${tenantId}`, data),
 
-  deleteTenant: async (tenancyId: number): Promise<void> => {
-    await api.delete(`/landlord/tenants/${tenancyId}/remove`);
-  },
+  deleteTenant: (tenancyId: number): Promise<void> =>
+    api.delete(`/landlord/tenants/${tenancyId}/remove`),
 
   // Tenancies
-  getTenancies: async (page = 1): Promise<PaginatedResponse<Tenancy>> => {
-    const response = await api.get<PaginatedResponse<Tenancy>>('/landlord/tenancies', { page });
-    return response;
-  },
+  getTenancies: (page = 1): Promise<PaginatedResponse<Tenancy>> =>
+    api.get<PaginatedResponse<Tenancy>>('/landlord/tenancies', { page }),
 
-  getTenancy: async (tenancyId: number): Promise<Tenancy> => {
-    const response = await api.get<Tenancy>(`/landlord/tenancies/${tenancyId}`);
-    return response;
-  },
+  getTenancy: (tenancyId: number): Promise<Tenancy> =>
+    api.get<Tenancy>(`/landlord/tenancies/${tenancyId}`),
 
-  createTenancy: async (data: {
+  createTenancy: (data: {
     tenant_id: number;
     unit_id: number;
     move_in_date: string;
     rent_amount: number;
     rent_due_day: number;
     deposit_amount: number;
-  }): Promise<Tenancy> => {
-    const response = await api.post<Tenancy>('/landlord/tenancies', data);
-    return response;
-  },
+  }): Promise<Tenancy> =>
+    api.post<Tenancy>('/landlord/tenancies', data),
 
   // Payments
-  getPayments: async (page = 1): Promise<PaginatedResponse<Payment>> => {
-    const response = await api.get<PaginatedResponse<Payment>>('/landlord/payments', { page });
-    return response;
-  },
+  getPayments: (page = 1): Promise<PaginatedResponse<Payment>> =>
+    api.get<PaginatedResponse<Payment>>('/landlord/payments', { page }),
 
   // Notifications
-  getNotifications: async (): Promise<{ notifications: Notification[] }> => {
-    const response = await api.get<{ notifications: Notification[] }>('/landlord/notifications');
-    return response;
-  },
+  getNotifications: (): Promise<{ notifications: Notification[] }> =>
+    api.get<{ notifications: Notification[] }>('/landlord/notifications'),
 
-  markNotificationRead: async (notificationId: number): Promise<void> => {
-    await api.put(`/landlord/notifications/${notificationId}/read`);
-  },
+  markNotificationRead: (notificationId: number): Promise<void> =>
+    api.put(`/landlord/notifications/${notificationId}/read`),
 };
 
 export default landlordApi;
