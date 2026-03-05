@@ -1,9 +1,27 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 import { deleteItem, getItem, setItem } from '../utils/storage';
 
-// API Base URL - Update this to your production URL when deploying
-// For development, use your local server IP (e.g., http://192.168.1.x:8000)
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000/api/v1';
+// API Base URL - Platform-aware configuration
+// For development, use appropriate URL based on platform
+const getApiBaseUrl = () => {
+  // Check if custom URL is provided via environment variable
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+  
+  // Platform-specific URLs
+  if (typeof window !== 'undefined') {
+    // Web platform - use localhost for same machine, or actual IP if backend on different machine
+    return 'http://localhost:8000/api/v1';
+  } else {
+    // Native platforms - use emulator-specific URLs
+    // 10.0.2.2 for Android emulator (special host loopback)
+    // For iOS simulator, you might use 'http://localhost:8000/api/v1' or your machine's IP
+    return 'http://10.0.2.2:8000/api/v1';
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiClient {
   private client: AxiosInstance;
