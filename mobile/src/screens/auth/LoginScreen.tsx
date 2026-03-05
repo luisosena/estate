@@ -12,9 +12,36 @@ export function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const isValidEmail = (value: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  };
+
+  const getErrorMessage = (err: any): string => {
+    const responseData = err?.response?.data;
+    const errors = responseData?.errors;
+    if (errors && typeof errors === 'object') {
+      const firstKey = Object.keys(errors)[0];
+      const firstMessage = firstKey ? errors[firstKey]?.[0] : null;
+      if (typeof firstMessage === 'string' && firstMessage.length > 0) {
+        return firstMessage;
+      }
+    }
+
+    if (typeof responseData?.message === 'string' && responseData.message.length > 0) {
+      return responseData.message;
+    }
+
+    return 'Login failed. Please try again.';
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
       setError('Please enter both email and password');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -24,7 +51,7 @@ export function LoginScreen() {
     try {
       await login({ email, password });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

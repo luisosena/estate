@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
+import { Platform } from 'react-native';
 import { deleteItem, getItem, setItem } from '../utils/storage';
 
 // API Base URL - Platform-aware configuration
@@ -10,7 +11,7 @@ const getApiBaseUrl = () => {
   }
   
   // Platform-specific URLs
-  if (typeof window !== 'undefined') {
+  if (Platform.OS === 'web') {
     // Web platform - use localhost for same machine, or actual IP if backend on different machine
     return 'http://localhost:8000/api/v1';
   } else {
