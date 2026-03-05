@@ -72,7 +72,7 @@ function TenantNavigator() {
     <TenantTab.Navigator
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.gray,
+        tabBarInactiveTintColor: colors.gray[500],
         tabBarStyle: {
           paddingBottom: 5,
           height: 60,
@@ -108,7 +108,7 @@ function LandlordNavigator() {
     <LandlordTab.Navigator
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.gray,
+        tabBarInactiveTintColor: colors.gray[500],
         tabBarStyle: {
           paddingBottom: 5,
           height: 60,

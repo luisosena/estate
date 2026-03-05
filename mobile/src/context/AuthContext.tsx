@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { deleteItem, getItem, setItem } from '../utils/storage';
 import { authApi, AuthUser, LoginCredentials, RegisterData } from '../api/auth';
 
 interface AuthContextType {
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuth = async () => {
     try {
-      const token = await SecureStore.getItemAsync('auth_token');
+      const token = await getItem('auth_token');
       if (token) {
         const userData = await authApi.me();
         setUser(userData);
@@ -37,8 +37,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.log('Auth check failed:', error);
       // Clear invalid tokens
-      await SecureStore.deleteItemAsync('auth_token');
-      await SecureStore.deleteItemAsync('refresh_token');
+      await deleteItem('auth_token');
+      await deleteItem('refresh_token');
     } finally {
       setIsLoading(false);
     }
@@ -47,9 +47,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (credentials: LoginCredentials) => {
     try {
       const response = await authApi.login(credentials);
-      await SecureStore.setItemAsync('auth_token', response.token);
+      await setItem('auth_token', response.token);
       if (response.refresh_token) {
-        await SecureStore.setItemAsync('refresh_token', response.refresh_token);
+        await setItem('refresh_token', response.refresh_token);
       }
       setUser(response.user);
     } catch (error) {
@@ -60,9 +60,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const register = async (data: RegisterData) => {
     try {
       const response = await authApi.register(data);
-      await SecureStore.setItemAsync('auth_token', response.token);
+      await setItem('auth_token', response.token);
       if (response.refresh_token) {
-        await SecureStore.setItemAsync('refresh_token', response.refresh_token);
+        await setItem('refresh_token', response.refresh_token);
       }
       setUser(response.user);
     } catch (error) {
@@ -76,8 +76,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.log('Logout API error:', error);
     } finally {
-      await SecureStore.deleteItemAsync('auth_token');
-      await SecureStore.deleteItemAsync('refresh_token');
+      await deleteItem('auth_token');
+      await deleteItem('refresh_token');
       setUser(null);
     }
   };

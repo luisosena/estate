@@ -17,6 +17,9 @@
       "eas": {
         "projectId": "estate-practice-mobile"
       }
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
