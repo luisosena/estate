@@ -7,7 +7,6 @@ import { deleteItem, getItem, setItem } from '../utils/storage';
 const getApiBaseUrl = () => {
   // Check if custom URL is provided via environment variable
   // For physical devices, set EXPO_PUBLIC_API_URL in mobile/.env to your PC's Wi-Fi IP
-  // e.g. EXPO_PUBLIC_API_URL=http://192.168.1.105:8000/api/v1
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
