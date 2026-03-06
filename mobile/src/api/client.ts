@@ -6,19 +6,27 @@ import { deleteItem, getItem, setItem } from '../utils/storage';
 // For development, use appropriate URL based on platform
 const getApiBaseUrl = () => {
   // Check if custom URL is provided via environment variable
+  // For physical devices, set EXPO_PUBLIC_API_URL in mobile/.env to your PC's Wi-Fi IP
+  // e.g. EXPO_PUBLIC_API_URL=http://192.168.1.105:8000/api/v1
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
-  
-  // Platform-specific URLs
+
+  // Platform-specific fallback URLs
   if (Platform.OS === 'web') {
-    // Web platform - use localhost for same machine, or actual IP if backend on different machine
     return 'http://localhost:8000/api/v1';
-  } else {
-    // Native platforms - use emulator-specific URLs
-    // 10.0.2.2 for Android emulator (special host loopback)
-    // For iOS simulator, you might use 'http://localhost:8000/api/v1' or your machine's IP
+  } else if (Platform.OS === 'android') {
+    // 10.0.2.2 is the Android emulator's alias for the host machine's loopback.
+    // This does NOT work on physical devices — set EXPO_PUBLIC_API_URL in .env instead.
+    console.warn(
+      '[API] No EXPO_PUBLIC_API_URL set. Falling back to Android emulator address (10.0.2.2). ' +
+      'If you are on a physical device, create mobile/.env with:\n' +
+      'EXPO_PUBLIC_API_URL=http://<YOUR_PC_WIFI_IP>:8000/api/v1'
+    );
     return 'http://10.0.2.2:8000/api/v1';
+  } else {
+    // iOS simulator can use localhost
+    return 'http://localhost:8000/api/v1';
   }
 };
 
