@@ -96,6 +96,8 @@ class ApiClient {
               throw new Error('No refresh token');
             }
 
+            // Use direct axios.post to avoid sending potentially expired token in interceptor
+            // The refresh endpoint doesn't require authentication - it uses the refresh_token grant
             const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
               refresh_token: refreshToken,
             });

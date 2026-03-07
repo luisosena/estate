@@ -26,8 +26,8 @@ $defineApiRoutes = function (): void {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
 
-            // Session management - with rate limiting to prevent enumeration
-            Route::middleware('throttle:10,1')->group(function () {
+            // Session management - balanced rate limiting (30/min) for mobile app usage while still providing enumeration protection
+            Route::middleware('throttle:30,1')->group(function () {
                 Route::get('sessions', [SessionController::class, 'index']);
                 Route::get('sessions/{tokenId}', [SessionController::class, 'show']);
                 Route::post('sessions/{tokenId}/activity', [SessionController::class, 'updateActivity']);
