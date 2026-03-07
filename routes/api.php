@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Tenant\DashboardController;
 use App\Http\Controllers\Api\Tenant\PaymentsController;
 use App\Http\Controllers\Api\Tenant\UtilitiesController;
@@ -24,6 +25,13 @@ $defineApiRoutes = function (): void {
         Route::prefix('auth')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
+
+            // Session management
+            Route::get('sessions', [SessionController::class, 'index']);
+            Route::get('sessions/{tokenId}', [SessionController::class, 'show']);
+            Route::post('sessions/{tokenId}/activity', [SessionController::class, 'updateActivity']);
+            Route::delete('sessions/{tokenId}', [SessionController::class, 'terminate']);
+            Route::delete('sessions/terminate-all', [SessionController::class, 'terminateAll']);
         });
 
         // Tenant routes
