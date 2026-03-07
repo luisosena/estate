@@ -15,7 +15,7 @@ export const authApi = {
 
   logout: async (): Promise<void> => {
     await api.post('/auth/logout');
-    api.clearTokens();
+    await api.clearTokens();
   },
 
   me: (): Promise<AuthUser> =>

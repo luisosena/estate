@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Device from 'expo-device';
+import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
 import { getItem, setItem, deleteItem } from '../utils/storage';
@@ -78,23 +79,15 @@ class SessionManager {
   // ──────────────────────────────────────────
 
   /**
-   * Generate a SHA256 hash of the given string
+   * Generate a SHA-256 hash of the given string for device fingerprinting
    */
   private async generateFingerprint(data: string): Promise<string> {
-    // Simple hash function for fingerprinting
-    // In production, you might want to use a proper crypto library
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    
-    // Convert to hex and pad
-    const hashHex = Math.abs(hash).toString(16).padStart(8, '0');
-    // Add some randomness based on platform
-    const platformHash = Platform.OS.charCodeAt(0).toString(16);
-    return `${hashHex}${platformHash}${data.length.toString(16)}`;
+    // Use expo-crypto for proper SHA-256 hashing
+    const hash = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      data
+    );
+    return hash;
   }
 
   /**

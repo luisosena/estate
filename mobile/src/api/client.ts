@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 import { Platform } from 'react-native';
-import { deleteItem, getItem, setItem } from '../utils/storage';
+import * as SecureStore from 'expo-secure-store';
 
 // API Base URL - Platform-aware configuration
 // For development, use appropriate URL based on platform
@@ -56,7 +56,7 @@ class ApiClient {
     // Request interceptor - Add auth token
     this.client.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
-        const token = await getItem('auth_token');
+        const token = await SecureStore.getItemAsync('auth_token');
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -91,7 +91,7 @@ class ApiClient {
           this.isRefreshing = true;
 
           try {
-            const refreshToken = await getItem('refresh_token');
+            const refreshToken = await SecureStore.getItemAsync('refresh_token');
             if (!refreshToken) {
               throw new Error('No refresh token');
             }
@@ -100,8 +100,12 @@ class ApiClient {
               refresh_token: refreshToken,
             });
 
-            const { token } = response.data;
-            await setItem('auth_token', token);
+            const { token, refresh_token } = response.data;
+            await SecureStore.setItemAsync('auth_token', token);
+            // Handle refresh token rotation - update if server provides new one
+            if (refresh_token) {
+              await SecureStore.setItemAsync('refresh_token', refresh_token);
+            }
 
             this.processQueue(null, token);
             this.isRefreshing = false;
@@ -114,8 +118,8 @@ class ApiClient {
             this.processQueue(refreshError as Error, null);
             this.isRefreshing = false;
             // Clear tokens and trigger re-login
-            await deleteItem('auth_token');
-            await deleteItem('refresh_token');
+            await SecureStore.deleteItemAsync('auth_token');
+            await SecureStore.deleteItemAsync('refresh_token');
             return Promise.reject(refreshError);
           }
         }
@@ -163,14 +167,14 @@ class ApiClient {
   }
 
   // Set token manually (for after login)
-  setToken(token: string): void {
-    setItem('auth_token', token);
+  async setToken(token: string): Promise<void> {
+    await SecureStore.setItemAsync('auth_token', token);
   }
 
   // Clear tokens (for logout)
-  clearTokens(): void {
-    deleteItem('auth_token');
-    deleteItem('refresh_token');
+  async clearTokens(): Promise<void> {
+    await SecureStore.deleteItemAsync('auth_token');
+    await SecureStore.deleteItemAsync('refresh_token');
   }
 }
 

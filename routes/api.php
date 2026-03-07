@@ -26,12 +26,14 @@ $defineApiRoutes = function (): void {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
 
-            // Session management
-            Route::get('sessions', [SessionController::class, 'index']);
-            Route::get('sessions/{tokenId}', [SessionController::class, 'show']);
-            Route::post('sessions/{tokenId}/activity', [SessionController::class, 'updateActivity']);
-            Route::delete('sessions/{tokenId}', [SessionController::class, 'terminate']);
-            Route::delete('sessions/terminate-all', [SessionController::class, 'terminateAll']);
+            // Session management - with rate limiting to prevent enumeration
+            Route::middleware('throttle:10,1')->group(function () {
+                Route::get('sessions', [SessionController::class, 'index']);
+                Route::get('sessions/{tokenId}', [SessionController::class, 'show']);
+                Route::post('sessions/{tokenId}/activity', [SessionController::class, 'updateActivity']);
+                Route::delete('sessions/{tokenId}', [SessionController::class, 'terminate']);
+                Route::delete('sessions/terminate-all', [SessionController::class, 'terminateAll']);
+            });
         });
 
         // Tenant routes
