@@ -19,29 +19,31 @@ class PropertyController extends Controller
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
 
-        // Get base query with relationships
-        $query = Property::where('owner_id', $landlord->id)
-            ->withCount(['units'])
-            ->with(['tenancies' => function ($query) {
+        // Calculate stats using efficient COUNT queries (not loading all records)
+        $totalProperties = Property::where('owner_id', $landlord->id)->count();
+        $totalUnits = Property::where('owner_id', $landlord->id)->sum('total_units');
+        $totalOccupiedUnits = Property::where('owner_id', $landlord->id)
+            ->withCount(['tenancies' => function ($query) {
                 $query->where('tenancies.status', '=', 'active');
-            }]);
-
-        // Get all properties for stats calculation
-        $allProperties = $query->get();
-        
-        // Calculate summary statistics
-        $totalProperties = $allProperties->count();
-        $totalUnits = $allProperties->sum('units_count');
-        $totalOccupiedUnits = $allProperties->sum(function ($property) {
-            return $property->tenancies->count();
-        });
+            }])
+            ->get()
+            ->sum('tenancies_count');
         $totalAvailableUnits = $totalUnits - $totalOccupiedUnits;
         $overallOccupancyRate = $totalUnits > 0 
             ? round(($totalOccupiedUnits / $totalUnits) * 100, 1) 
             : 0;
 
+        // Use database-level pagination with proper eager loading
+        $properties = Property::where('owner_id', $landlord->id)
+            ->withCount(['units'])
+            ->with(['tenancies' => function ($query) {
+                $query->where('tenancies.status', '=', 'active');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
         // Format properties
-        $formattedProperties = $allProperties->map(function ($property) {
+        $formattedProperties = $properties->getCollection()->map(function ($property) {
             return [
                 'id' => $property->id,
                 'name' => $property->name,
@@ -60,19 +62,13 @@ class PropertyController extends Controller
             ];
         });
 
-        // Use database-level pagination
-        $totalItems = $formattedProperties->count();
-        $totalPages = ceil($totalItems / $perPage);
-        $offset = ($page - 1) * $perPage;
-        $paginatedProperties = $formattedProperties->slice($offset, $perPage)->values();
-
         return response()->json([
-            'data' => $paginatedProperties,
+            'data' => $formattedProperties,
             'meta' => [
-                'current_page' => (int) $page,
-                'per_page' => (int) $perPage,
-                'total' => $totalItems,
-                'total_pages' => $totalPages,
+                'current_page' => $properties->currentPage(),
+                'per_page' => $properties->perPage(),
+                'total' => $properties->total(),
+                'total_pages' => $properties->lastPage(),
             ],
             'stats' => [
                 'total_properties' => $totalProperties,

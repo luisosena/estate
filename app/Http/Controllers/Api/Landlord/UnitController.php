@@ -21,24 +21,24 @@ class UnitController extends Controller
         $perPage = $request->get('per_page', 15);
         $propertyId = $request->get('property_id');
 
-        $query = Unit::whereHas('property', function ($query) use ($landlord) {
+        // Build base query for filtering
+        $baseQuery = Unit::whereHas('property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
-        })
-        ->with('property:id,name');
+        });
 
         if ($propertyId) {
-            $query->where('property_id', $propertyId);
+            $baseQuery->where('property_id', $propertyId);
         }
 
-        // Get total counts for stats before pagination
-        $allUnits = $query->get();
-        $totalUnits = $allUnits->count();
-        $availableUnits = $allUnits->where('status', 'available')->count();
-        $occupiedUnits = $allUnits->where('status', 'occupied')->count();
+        // Calculate stats using efficient COUNT queries (not loading all records)
+        $totalUnits = (clone $baseQuery)->count();
+        $availableUnits = (clone $baseQuery)->where('status', 'available')->count();
+        $occupiedUnits = (clone $baseQuery)->where('status', 'occupied')->count();
         $occupancyRate = $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0;
 
         // Use database-level pagination
-        $units = $query->orderBy('property_id')
+        $units = $baseQuery->with('property:id,name')
+            ->orderBy('property_id')
             ->orderBy('unit_code')
             ->paginate($perPage, ['*'], 'page', $page);
 
