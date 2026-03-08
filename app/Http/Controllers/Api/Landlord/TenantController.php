@@ -10,7 +10,6 @@ use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class TenantController extends Controller
@@ -224,13 +223,12 @@ class TenantController extends Controller
 
         // Create user account for tenant
         $username = $this->generateUsername($tenant->full_name);
-        $password = $username; // Use username as default password
 
         $user = User::create([
             'name' => $tenant->full_name,
             'username' => $username,
             'email' => $tenant->email,
-            'password' => $password,
+            'password' => $username, // Will be hashed automatically by User model's 'password' => 'hashed' cast
             'role' => 'tenant',
             'tenant_id' => $tenant->id,
         ]);
@@ -253,7 +251,6 @@ class TenantController extends Controller
             ],
             'user' => [
                 'username' => $username,
-                'password' => $password, // Note: In production, send this via email instead
             ],
         ], 201);
     }

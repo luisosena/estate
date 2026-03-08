@@ -19,43 +19,52 @@ class PropertyController extends Controller
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
 
-        $properties = Property::where('owner_id', $landlord->id)
+        // Get base query with relationships
+        $query = Property::where('owner_id', $landlord->id)
             ->withCount(['units'])
             ->with(['tenancies' => function ($query) {
                 $query->where('tenancies.status', '=', 'active');
-            }])
-            ->get()
-            ->map(function ($property) {
-                return [
-                    'id' => $property->id,
-                    'name' => $property->name,
-                    'address' => $property->address,
-                    'total_units' => $property->total_units,
-                    'units_count' => $property->units_count,
-                    'active_tenants_count' => $property->tenancies->count(),
-                    'occupied_units' => $property->tenancies->count(),
-                    'available_units' => $property->units_count - $property->tenancies->count(),
-                    'occupancy_rate' => $property->units_count > 0 
-                        ? round(($property->tenancies->count() / $property->units_count) * 100, 1) 
-                        : 0,
-                    'created_at' => $property->created_at,
-                ];
-            });
+            }]);
 
+        // Get all properties for stats calculation
+        $allProperties = $query->get();
+        
         // Calculate summary statistics
-        $totalProperties = $properties->count();
-        $totalUnits = $properties->sum('units_count');
-        $totalOccupiedUnits = $properties->sum('occupied_units');
-        $totalAvailableUnits = $properties->sum('available_units');
+        $totalProperties = $allProperties->count();
+        $totalUnits = $allProperties->sum('units_count');
+        $totalOccupiedUnits = $allProperties->sum(function ($property) {
+            return $property->tenancies->count();
+        });
+        $totalAvailableUnits = $totalUnits - $totalOccupiedUnits;
         $overallOccupancyRate = $totalUnits > 0 
             ? round(($totalOccupiedUnits / $totalUnits) * 100, 1) 
             : 0;
 
-        // Paginate manually
-        $totalItems = $properties->count();
+        // Format properties
+        $formattedProperties = $allProperties->map(function ($property) {
+            return [
+                'id' => $property->id,
+                'name' => $property->name,
+                'address' => $property->address,
+                'total_units' => $property->total_units,
+                'units_count' => $property->units_count,
+                'active_tenants_count' => $property->tenancies->count(),
+                'occupied_units' => $property->tenancies->count(),
+                'available_units' => $property->units_count > 0 
+                    ? $property->units_count - $property->tenancies->count() 
+                    : 0,
+                'occupancy_rate' => $property->units_count > 0 
+                    ? round(($property->tenancies->count() / $property->units_count) * 100, 1) 
+                    : 0,
+                'created_at' => $property->created_at,
+            ];
+        });
+
+        // Use database-level pagination
+        $totalItems = $formattedProperties->count();
         $totalPages = ceil($totalItems / $perPage);
         $offset = ($page - 1) * $perPage;
-        $paginatedProperties = $properties->slice($offset, $perPage)->values();
+        $paginatedProperties = $formattedProperties->slice($offset, $perPage)->values();
 
         return response()->json([
             'data' => $paginatedProperties,

@@ -24,53 +24,45 @@ class UnitController extends Controller
         $query = Unit::whereHas('property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
-        ->with('property:id,name')
-        ->select('id', 'unit_code', 'unit_name', 'status', 'property_id', 'created_at');
+        ->with('property:id,name');
 
         if ($propertyId) {
             $query->where('property_id', $propertyId);
         }
 
-        $units = $query->orderBy('property_id')
-            ->orderBy('unit_code')
-            ->get()
-            ->map(function ($unit) {
-                return [
-                    'id' => $unit->id,
-                    'unit_code' => $unit->unit_code,
-                    'unit_name' => $unit->unit_name,
-                    'status' => $unit->status,
-                    'property' => [
-                        'id' => $unit->property->id,
-                        'name' => $unit->property->name,
-                    ],
-                    'created_at' => $unit->created_at->format('Y-m-d H:i'),
-                ];
-            });
-
-        // Calculate breakdown metrics
-        $totalUnits = $units->count();
-        $availableUnits = $units->filter(function ($unit) {
-            return $unit['status'] === 'available';
-        })->count();
-        $occupiedUnits = $units->filter(function ($unit) {
-            return $unit['status'] === 'occupied';
-        })->count();
+        // Get total counts for stats before pagination
+        $allUnits = $query->get();
+        $totalUnits = $allUnits->count();
+        $availableUnits = $allUnits->where('status', 'available')->count();
+        $occupiedUnits = $allUnits->where('status', 'occupied')->count();
         $occupancyRate = $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0;
 
-        // Paginate manually
-        $totalItems = $units->count();
-        $totalPages = ceil($totalItems / $perPage);
-        $offset = ($page - 1) * $perPage;
-        $paginatedUnits = $units->slice($offset, $perPage)->values();
+        // Use database-level pagination
+        $units = $query->orderBy('property_id')
+            ->orderBy('unit_code')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $formattedUnits = $units->getCollection()->map(function ($unit) {
+            return [
+                'id' => $unit->id,
+                'unit_code' => $unit->unit_code,
+                'unit_name' => $unit->unit_name,
+                'status' => $unit->status,
+                'property' => [
+                    'id' => $unit->property->id,
+                    'name' => $unit->property->name,
+                ],
+                'created_at' => $unit->created_at->format('Y-m-d H:i'),
+            ];
+        });
 
         return response()->json([
-            'data' => $paginatedUnits,
+            'data' => $formattedUnits,
             'meta' => [
-                'current_page' => (int) $page,
-                'per_page' => (int) $perPage,
-                'total' => $totalItems,
-                'total_pages' => $totalPages,
+                'current_page' => $units->currentPage(),
+                'per_page' => $units->perPage(),
+                'total' => $units->total(),
+                'total_pages' => $units->lastPage(),
             ],
             'stats' => [
                 'total_units' => $totalUnits,
