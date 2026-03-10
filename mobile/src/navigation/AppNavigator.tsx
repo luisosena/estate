@@ -22,6 +22,11 @@ import { LandlordTenantsScreen } from '../screens/landlord/TenantsScreen';
 import { LandlordPaymentsScreen } from '../screens/landlord/PaymentsScreen';
 import { LandlordProfileScreen } from '../screens/landlord/ProfileScreen';
 
+// Detail Screens
+import { PropertyDetailsScreen } from '../screens/landlord/PropertyDetailsScreen';
+import { UnitDetailsScreen } from '../screens/landlord/UnitDetailsScreen';
+import { TenantDetailsScreen } from '../screens/landlord/TenantDetailsScreen';
+
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
@@ -47,10 +52,25 @@ export type LandlordTabParamList = {
   Profile: undefined;
 };
 
+// New Nested Stack Params
+export type LandlordPropertiesStackParamList = {
+  PropertiesList: undefined;
+  PropertyDetails: { propertyId: number };
+  UnitDetails: { unitId: number };
+};
+
+export type LandlordTenantsStackParamList = {
+  TenantsList: undefined;
+  TenantDetails: { tenantId: number };
+};
+
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const TenantTab = createBottomTabNavigator<TenantTabParamList>();
 const LandlordTab = createBottomTabNavigator<LandlordTabParamList>();
+
+const PropertiesStack = createNativeStackNavigator<LandlordPropertiesStackParamList>();
+const TenantsStack = createNativeStackNavigator<LandlordTenantsStackParamList>();
 
 function AuthNavigator() {
   return (
@@ -76,6 +96,25 @@ function TenantNavigator() {
   );
 }
 
+function LandlordPropertiesNavigator() {
+  return (
+    <PropertiesStack.Navigator screenOptions={{ headerShown: false }}>
+      <PropertiesStack.Screen name="PropertiesList" component={LandlordPropertiesScreen} />
+      <PropertiesStack.Screen name="PropertyDetails" component={PropertyDetailsScreen} />
+      <PropertiesStack.Screen name="UnitDetails" component={UnitDetailsScreen} />
+    </PropertiesStack.Navigator>
+  );
+}
+
+function LandlordTenantsNavigator() {
+  return (
+    <TenantsStack.Navigator screenOptions={{ headerShown: false }}>
+      <TenantsStack.Screen name="TenantsList" component={LandlordTenantsScreen} />
+      <TenantsStack.Screen name="TenantDetails" component={TenantDetailsScreen} />
+    </TenantsStack.Navigator>
+  );
+}
+
 function LandlordNavigator() {
   return (
     <LandlordTab.Navigator screenOptions={tabBarScreenOptions}>
@@ -84,8 +123,8 @@ function LandlordNavigator() {
         component={LandlordDashboardScreen}
         options={{ title: 'Home' }}
       />
-      <LandlordTab.Screen name="Properties" component={LandlordPropertiesScreen} />
-      <LandlordTab.Screen name="Tenants" component={LandlordTenantsScreen} />
+      <LandlordTab.Screen name="Properties" component={LandlordPropertiesNavigator} />
+      <LandlordTab.Screen name="Tenants" component={LandlordTenantsNavigator} />
       <LandlordTab.Screen name="Payments" component={LandlordPaymentsScreen} />
       <LandlordTab.Screen name="Profile" component={LandlordProfileScreen} />
     </LandlordTab.Navigator>

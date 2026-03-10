@@ -5,8 +5,14 @@ import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import type { Tenant } from '../../types';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
+
+type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList, 'TenantsList'>;
 
 export function LandlordTenantsScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -48,7 +54,11 @@ export function LandlordTenantsScreen() {
 
       {tenants.length > 0 ? (
         tenants.map((tenant) => (
-          <Card key={tenant.id} style={screenStyles.card}>
+          <Card 
+            key={tenant.id} 
+            style={screenStyles.card}
+            onPress={() => navigation.navigate('TenantDetails', { tenantId: tenant.id })}
+          >
             <Card.Title title={tenant.full_name} titleVariant="titleMedium" />
             <Card.Content>
               <View style={screenStyles.listItem}>

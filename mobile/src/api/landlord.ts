@@ -54,7 +54,7 @@ export const landlordApi = {
   getTenants: (page = 1): Promise<PaginatedResponse<Tenant>> =>
     api.get<PaginatedResponse<Tenant>>('/landlord/tenants', { page }),
 
-  getTenant: (tenantId: string): Promise<Tenant> =>
+  getTenant: (tenantId: number | string): Promise<Tenant> =>
     api.get<Tenant>(`/landlord/tenants/${tenantId}`),
 
   createTenant: (data: Partial<Tenant>): Promise<Tenant> =>

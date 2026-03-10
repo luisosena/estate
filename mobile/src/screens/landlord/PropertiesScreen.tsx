@@ -6,6 +6,11 @@ import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
 import type { Property } from '../../types';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
+
+type NavigationProp = NativeStackNavigationProp<LandlordPropertiesStackParamList, 'PropertiesList'>;
 
 const getOccupancyColor = (occupied: number, total: number): string => {
   if (total === 0) return colors.gray[400];
@@ -16,6 +21,7 @@ const getOccupancyColor = (occupied: number, total: number): string => {
 };
 
 export function LandlordPropertiesScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -57,7 +63,11 @@ export function LandlordPropertiesScreen() {
 
       {properties.length > 0 ? (
         properties.map((property) => (
-          <Card key={property.id} style={screenStyles.card}>
+          <Card 
+            key={property.id} 
+            style={screenStyles.card}
+            onPress={() => navigation.navigate('PropertyDetails', { propertyId: property.id })}
+          >
             <Card.Title title={property.name} subtitle={property.address} titleVariant="titleMedium" />
             <Card.Content>
               <View style={screenStyles.listItem}>
