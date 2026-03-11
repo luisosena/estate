@@ -20,6 +20,13 @@ class UtilitiesController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
+        if (!$tenant) {
+            return response()->json([
+                'tenant' => ['id' => 0, 'full_name' => 'No Tenant Found'],
+                'utilities' => [],
+            ]);
+        }
+
         $utilities = $this->utilityService->getTenantUtilities($tenant);
 
         return response()->json([
@@ -32,9 +39,7 @@ class UtilitiesController extends Controller
                     'id' => $utility->id,
                     'type' => $utility->type,
                     'amount' => $utility->amount,
-                    'due_date' => $utility->due_date,
                     'status' => $utility->status,
-                    'reading' => $utility->reading,
                     'period' => $utility->billing_period,
                 ];
             })
