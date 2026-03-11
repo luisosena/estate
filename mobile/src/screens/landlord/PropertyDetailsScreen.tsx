@@ -8,6 +8,7 @@ import { colors } from '../../constants/colors';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
+import { formatCurrency } from '../../utils/formatters';
 import type { Property, Unit } from '../../types';
 
 type PropertyDetailsRouteProp = RouteProp<LandlordPropertiesStackParamList, 'PropertyDetails'>;
@@ -96,7 +97,7 @@ export function PropertyDetailsScreen() {
               <View style={screenStyles.listItem}>
                  <Text variant="bodyMedium" style={screenStyles.date}>Rent Amount</Text>
                  <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                    ${unit.rent_amount ?? 0}
+                    {formatCurrency(unit.rent_amount ?? 0)}
                  </Text>
               </View>
             </Card.Content>

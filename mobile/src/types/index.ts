@@ -54,17 +54,37 @@ export interface Tenant {
   email: string;
   identification_type?: string;
   identification_number?: string;
+  tenant_code?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relation?: string;
+  tenancies?: Tenancy[];
 }
 
 export interface Unit {
   id: number;
   unit_number: string;
+  unit_name?: string;
+  unit_code?: string;
   property_id: number;
-  property_name: string;
+  property_name?: string;
   bedrooms?: number;
   bathrooms?: number;
   rent_amount?: number;
-  status?: 'occupied' | 'vacant' | 'maintenance';
+  status?: 'occupied' | 'vacant' | 'maintenance' | 'available';
+  tenancies?: UnitTenancy[];
+}
+
+export interface UnitTenancy {
+  id: number;
+  status: string;
+  start_date?: string;
+  end_date?: string | null;
+  tenant?: {
+    id: number;
+    full_name: string;
+    email: string;
+  };
 }
 
 export interface Tenancy {
@@ -73,10 +93,12 @@ export interface Tenancy {
   unit?: Unit;
   move_in_date: string;
   move_out_date?: string | null;
-  status: 'active' | 'expired' | 'terminated';
+  status: 'active' | 'expired' | 'terminated' | 'ended';
   rent_amount: number;
   rent_due_day: number;
   deposit_amount?: number;
+  monthly_rent?: number;
+  security_deposit?: number;
 }
 
 export interface Payment {
