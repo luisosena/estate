@@ -1,0 +1,896 @@
+# Business Logic Documentation
+
+## Overview
+This document provides comprehensive documentation of all business logic, domain-specific rules, operational workflows, user roles, permissions, and data flow in the Estate Practice property management system.
+
+---
+
+## User Roles and Hierarchy
+
+### Role Definitions
+
+The system supports three distinct user roles with a hierarchical permission structure:
+
+```mermaid
+graph TD
+    Admin[Admin<br/>System Administrator] --> Landlord[Landlord<br/>Property Manager]
+    Landlord --> Tenant[Tenant<br/>Rental Occupant]
+```
+
+| Role | Description | Scope |
+|------|-------------|-------|
+| **admin** | System Administrator | Full system access, can manage all properties and users |
+| **landlord** | Property Owner/Manager | Can manage their own properties, units, tenants |
+| **tenant** | Rental Occupant | Can only access personal data and make payments |
+
+### Role Assignment
+
+Roles are stored in the `users.role` column as an ENUM:
+```php
+enum Role: string
+{
+    case ADMIN = 'admin';
+    case LANDLORD = 'landlord';
+    case TENANT = 'tenant';
+}
+```
+
+---
+
+## Permissions and Access Control
+
+### Permission Matrix
+
+| Permission | Admin | Landlord | Tenant |
+|------------|:-----:|:--------:|:------:|
+| **User Management** |
+| View all users | ✅ | ❌ | ❌ |
+| Create users | ✅ | ❌ | ❌ |
+| Edit users | ✅ | ❌ | ❌ |
+| Delete users | ✅ | ❌ | ❌ |
+| Toggle user status | ✅ | ❌ | ❌ |
+| **Property Management** |
+| View all properties | ✅ | Own only | ❌ |
+| Create properties | ✅ | ✅ | ❌ |
+| Edit properties | ✅ | Own only | ❌ |
+| Delete properties | ✅ | Own only | ❌ |
+| View property analytics | ✅ | Own only | ❌ |
+| **Unit Management** |
+| View all units | ✅ | Property units | ❌ |
+| Create units | ✅ | Own properties | ❌ |
+| Edit units | ✅ | Own units | ❌ |
+| Delete units | ✅ | Own units | ❌ |
+| **Tenant Management** |
+| View all tenants | ✅ | Own tenants | ❌ |
+| Create tenants | ✅ | ✅ | ❌ |
+| Edit tenants | ✅ | Own tenants | ❌ |
+| Delete/end tenancies | ✅ | Own tenancies | ❌ |
+| View tenant details | ✅ | Own tenants | Own |
+| **Payment Management** |
+| View all payments | ✅ | Related | Own |
+| Record payments | ✅ | ✅ | ❌ |
+| View payment history | ✅ | Own tenants | Own |
+| **Utility Management** |
+| Manage utilities | ✅ | Own units | Own |
+| View utility data | ✅ | Own tenants | Own |
+| **Notification Management** |
+| Send notifications | ✅ | ✅ | ❌ |
+| View notifications | All | Own | Own |
+| **Settings** |
+| Profile settings | Own | Own | Own |
+| Password change | Own | Own | Own |
+| Two-factor auth | Own | Own | Own |
+
+---
+
+## User Relationships and Associations
+
+### Relationship Diagram
+
+```mermaid
+erDiagram
+    USER_ADMIN {
+        bigint id PK
+        string name
+        string email
+        enum role="admin"
+    }
+    
+    USER_LANDLORD {
+        bigint id PK
+        string name
+        string email
+        enum role="landlord"
+    }
+    
+    USER_TENANT {
+        bigint id PK
+        string name
+        string email
+        enum role="tenant"
+        bigint tenant_id FK
+    }
+    
+    TENANT {
+        bigint id PK
+        bigint user_id FK
+        string first_name
+        string last_name
+    }
+    
+    PROPERTY {
+        bigint id PK
+        bigint owner_id FK
+    }
+    
+    UNIT {
+        bigint id PK
+        bigint property_id FK
+    }
+    
+    TENANCY {
+        bigint id PK
+        bigint tenant_id FK
+        bigint unit_id FK
+    }
+    
+    USER_ADMIN --|> USER_LANDLORD : "inherits from"
+    USER_ADMIN --|> USER_TENANT : "inherits from"
+    USER_LANDLORD ||--o{ PROPERTY : "owns"
+    USER_TENANT ||--|| TENANT : "is"
+    PROPERTY ||--o{ UNIT : "contains"
+    TENANT ||--o{ TENANCY : "has"
+    UNIT ||--o{ TENANCY : "has"
+```
+
+### User Type Relationships
+
+#### 1. Admin User
+```php
+// Admin can:
+// - Access all properties (regardless of owner)
+// - Access all users
+// - Manage system settings
+// - View all payment data
+
+User::where('role', 'admin')->first();
+// Has access to everything via role check
+```
+
+#### 2. Landlord User
+```php
+// Landlord can:
+// - Own multiple properties
+// - Manage units within their properties
+// - Create and manage tenants for their units
+
+$landlord = User::where('role', 'landlord')->first();
+$properties = $landlord->properties; // Their properties
+$tenants = $properties->units->tenancies->tenants; // Their tenants
+```
+
+#### 3. Tenant User
+```php
+// Tenant:
+// - Is linked to a Tenant record
+// - Has one active tenancy at a time
+// - Can view their own payments and utilities
+
+$tenant = Tenant::where('user_id', auth()->id())->first();
+$user = $tenant->user;
+$activeTenancy = $tenant->tenancies()->where('status', 'active')->first();
+```
+
+---
+
+## CRUD Operations
+
+### 1. Property Management
+
+#### Create Property
+**Who**: Admin, Landlord
+
+**Flow**:
+```mermaid
+sequenceDiagram
+    participant User as Landlord/Admin
+    participant Controller as PropertyController
+    participant Request as StorePropertyRequest
+    participant Model as Property
+    participant DB as Database
+    
+    User->>Controller: POST /properties (data)
+    Controller->>Request: Validate data
+    Request->>Controller: Valid
+    Controller->>Model: Create property
+    Model->>DB: INSERT
+    DB->>Model: Property created
+    Controller->>User: Redirect with success
+```
+
+**Validation Rules**:
+```php
+'name' => 'required|string|max:255',
+'address' => 'required|string',
+'type' => 'required|in:apartment,house,commercial,mixed',
+'description' => 'nullable|string',
+```
+
+**Example Request**:
+```json
+POST /landlord/properties
+{
+  "name": "Sunset Apartments",
+  "address": "123 Main Street, City",
+  "type": "apartment",
+  "description": "Modern apartment complex with 20 units"
+}
+```
+
+#### Read Properties
+**Who**: Admin (all), Landlord (own only)
+
+**Example**:
+```php
+// Admin sees all
+$properties = Property::all();
+
+// Landlord sees own
+$properties = Property::where('owner_id', auth()->id())->paginate();
+```
+
+#### Update Property
+**Who**: Admin, Owner Landlord
+
+**Example**:
+```php
+// Update with ownership check
+$property = Property::findOrFail($id);
+if ($property->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
+    abort(403);
+}
+$property->update($request->validated());
+```
+
+#### Delete Property
+**Who**: Admin, Owner Landlord
+
+**Constraints**:
+- Cannot delete property with active tenancies
+- Must end all tenancies first
+
+**Example**:
+```php
+$property = Property::with('units.tenancies')->findOrFail($id);
+
+$hasActiveTenancies = $property->units->flatMap->tenancies
+    ->where('status', 'active')->isNotEmpty();
+
+if ($hasActiveTenancies) {
+    return back()->with('error', 'Cannot delete property with active tenancies');
+}
+
+$property->delete();
+```
+
+---
+
+### 2. Unit Management
+
+#### Create Unit
+**Who**: Admin, Landlord (for own properties)
+
+**Validation**:
+```php
+'property_id' => 'required|exists:properties,id',
+'unit_number' => 'required|string|max:50',
+'type' => 'required|in:studio,1bedroom,2bedroom,3bedroom,commercial',
+'floor' => 'nullable|integer|min:0',
+'size_sqm' => 'nullable|numeric|min:1',
+'bedrooms' => 'nullable|integer|min:0',
+'bathrooms' => 'nullable|numeric|min:0',
+'rent_amount' => 'required|numeric|min:0',
+'description' => 'nullable|string',
+'features' => 'nullable|array',
+```
+
+**Ownership Check**:
+```php
+$property = Property::findOrFail($request->property_id);
+if ($property->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
+    abort(403);
+}
+```
+
+#### Unit Status Management
+| Status | Description |
+|--------|-------------|
+| available | Unit is ready for rent |
+| occupied | Unit has active tenancy |
+| maintenance | Unit is under maintenance |
+| unavailable | Unit not available for rent |
+
+**State Transition**:
+```
+available → occupied (when tenancy starts)
+occupied → available (when tenancy ends)
+available → maintenance
+maintenance → available
+any → unavailable
+```
+
+---
+
+### 3. Tenant Management
+
+#### Create Tenant
+**Who**: Admin, Landlord
+
+This is a complex operation that creates:
+1. Tenant record
+2. User account (with auto-generated credentials)
+3. Optional tenancy
+
+**Flow**:
+```mermaid
+sequenceDiagram
+    participant Landlord
+    participant Controller
+    participant Request as StoreTenantRequest
+    participant TenantService
+    participant DB as Database
+    
+    Landlord->>Controller: POST /tenants
+    Controller->>Request: Validate
+    Request->>Controller: Valid
+    Controller->>TenantService: createWithUser()
+    TenantService->>DB: Begin Transaction
+    DB->>DB: Create Tenant
+    DB->>DB: Create User (role=tenant)
+    DB->>DB: Create Tenancy (if provided)
+    DB->>DB: Update Unit status (if tenancy)
+    DB->>TenantService: Commit
+    Controller->>Landlord: Redirect with credentials
+```
+
+**Validation** (StoreTenantRequest):
+```php
+'first_name' => 'required|string|max:255',
+'last_name' => 'required|string|max:255',
+'email' => 'required|email|unique:tenants',
+'phone' => 'nullable|string|max:50',
+'emergency_contact' => 'nullable|string|max:255',
+```
+
+**Validation** (StoreTenantWithTenancyRequest extends StoreTenantRequest):
+```php
+'unit_id' => 'required|exists:units,id',
+'start_date' => 'required|date|after_or_equal:today',
+'end_date' => 'nullable|date|after:start_date',
+'rent_amount' => 'required|numeric|min:0',
+'security_deposit' => 'nullable|numeric|min:0',
+```
+
+**Auto-Generated Username**:
+The system auto-generates usernames using the format:
+```
+firstname.lastname{randomNumber}
+```
+Example: `john.doe837`
+
+**Service Implementation**:
+```php
+public function createWithUser(array $data): array
+{
+    return DB::transaction(function () use ($data) {
+        // Generate unique username
+        $username = strtolower($data['first_name'] . '.' . $data['last_name']);
+        $baseUsername = $username;
+        $counter = 1;
+        
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername . $counter;
+            $counter++;
+        }
+        
+        // Create tenant
+        $tenant = Tenant::create([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'] ?? null,
+            'emergency_contact' => $data['emergency_contact'] ?? null,
+        ]);
+        
+        // Generate temporary password
+        $tempPassword = Str::random(12);
+        
+        // Create user account
+        $user = User::create([
+            'name' => $data['first_name'] . ' ' . $data['last_name'],
+            'username' => $username,
+            'email' => $data['email'],
+            'password' => Hash::make($tempPassword),
+            'role' => 'tenant',
+            'tenant_id' => $tenant->id,
+        ]);
+        
+        // Link user to tenant
+        $tenant->update(['user_id' => $user->id]);
+        
+        // Create tenancy if provided
+        $tenancy = null;
+        if (isset($data['unit_id'])) {
+            $tenancy = Tenancy::create([
+                'tenant_id' => $tenant->id,
+                'unit_id' => $data['unit_id'],
+                'start_date' => $data['start_date'],
+                'end_date' => $data['end_date'] ?? null,
+                'rent_amount' => $data['rent_amount'],
+                'security_deposit' => $data['security_deposit'] ?? null,
+                'status' => 'active',
+            ]);
+            
+            // Update unit status
+            Unit::where('id', $data['unit_id'])->update(['status' => 'occupied']);
+        }
+        
+        return [
+            'tenant' => $tenant,
+            'user' => $user,
+            'temporary_password' => $tempPassword,
+            'tenancy' => $tenancy,
+        ];
+    });
+}
+```
+
+#### End Tenancy (Delete Tenant)
+**Who**: Admin, Landlord (own tenants)
+
+**Flow**:
+```mermaid
+sequenceDiagram
+    participant Landlord
+    participant Controller
+    participant Model as Tenancy
+    participant DB as Database
+    
+    Landlord->>Controller: DELETE /tenants/{id}
+    Controller->>Model: Find with relations
+    Controller->>Model: End active tenancy
+    Model->>DB: UPDATE status='ended'
+    Model->>DB: UPDATE terminated_at=NOW()
+    Model->>DB: UPDATE unit status='available'
+    Controller->>Landlord: Redirect
+```
+
+**Code**:
+```php
+public function destroy(Tenant $tenant)
+{
+    // End active tenancy
+    $activeTenancy = $tenant->tenancies()
+        ->where('status', 'active')
+        ->first();
+    
+    if ($activeTenancy) {
+        $activeTenancy->update([
+            'status' => 'ended',
+            'terminated_at' => now(),
+        ]);
+        
+        // Make unit available again
+        $activeTenancy->unit->update(['status' => 'available']);
+    }
+    
+    // Soft delete tenant (optional)
+    $tenant->delete();
+    
+    return redirect()->back()->with('success', 'Tenant tenancy ended successfully');
+}
+```
+
+---
+
+### 4. Payment Management
+
+#### Record Payment
+**Who**: Admin, Landlord
+
+**Validation**:
+```php
+'tenancy_id' => 'required|exists:tenancies,id',
+'amount' => 'required|numeric|min:0.01',
+'type' => 'required|in:rent,deposit,utility,penalty,other',
+'method' => 'required|in:cash,bank_transfer,mobile_money,card,other',
+'payment_date' => 'required|date',
+'due_date' => 'required|date',
+'reference_number' => 'nullable|string|max:100',
+'notes' => 'nullable|string',
+```
+
+#### Payment Status Flow
+```
+pending → completed (successful payment)
+pending → failed (failed payment)
+completed → refunded (payment refunded)
+```
+
+---
+
+## State Machines
+
+### Tenancy State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending: Create tenancy
+    pending --> active: Start date reached
+    active --> expired: End date passed
+    active --> ended: Manual termination
+    expired --> ended: Process termination
+    ended --> [*]
+    pending --> ended: Cancelled
+```
+
+**States**:
+| State | Description | Valid Transitions |
+|-------|-------------|------------------|
+| pending | Tenancy created, not yet started | → active, → ended |
+| active | Tenancy is ongoing | → expired, → ended |
+| expired | End date passed automatically | → ended |
+| ended | Tenancy terminated | → (terminal) |
+
+**State Validation Rules**:
+1. Can only create payment for active tenancies
+2. Can only add utilities to active tenancies
+3. Unit status must be 'occupied' when tenancy is active
+4. Cannot delete unit with active tenancy
+
+### Unit State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> available: New unit
+    available --> occupied: Tenancy starts
+    available --> maintenance: Mark for repair
+    available --> unavailable: Remove from market
+    occupied --> available: Tenancy ends
+    maintenance --> available: Repairs complete
+    unavailable --> available: Put back on market
+```
+
+---
+
+## Business Validation Rules
+
+### 1. Tenant Creation Validation
+```php
+// Email must be unique in tenants table
+'email' => 'unique:tenants,email'
+
+// Phone format validation
+'phone' => 'regex:/^[0-9+\-\s()]*$/'
+
+// Emergency contact should not be the same as tenant
+'emergency_contact' => 'different:phone'
+```
+
+### 2. Tenancy Validation
+```php
+// End date must be after start date
+'end_date' => 'after:start_date'
+
+// Cannot create tenancy for occupied unit
+'unit_id' => function ($attribute, $value, $fail) {
+    $unit = Unit::find($value);
+    if ($unit && $unit->status === 'occupied') {
+        $fail('This unit is already occupied');
+    }
+}
+
+// Rent amount cannot be zero for active tenancy
+'rent_amount' => 'required|numeric|min:0.01'
+```
+
+### 3. Payment Validation
+```php
+// Payment cannot exceed remaining balance
+'amount' => function ($attribute, $value, $fail) use ($tenancy) {
+    $remainingBalance = $tenancy->rent_amount - $tenancy->payments()
+        ->where('type', 'rent')
+        ->where('status', 'completed')
+        ->sum('amount');
+    
+    if ($value > $remainingBalance) {
+        $fail('Payment exceeds remaining balance of ' . $remainingBalance);
+    }
+}
+
+// Cannot record future payments
+'payment_date' => 'before_or_equal:today'
+```
+
+### 4. Property Ownership Validation
+```php
+// User can only edit their own properties
+public function update(Request $request, Property $property)
+{
+    if ($property->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
+        abort(403, 'You do not own this property');
+    }
+    
+    $property->update($request->validated());
+}
+```
+
+---
+
+## Workflows
+
+### 1. Onboarding a New Tenant
+
+```mermaid
+flowchart TD
+    A[Landlord clicks Add Tenant] --> B[Fill tenant form]
+    B --> C{Fill tenancy details?}
+    C -->|Yes| D[Select unit]
+    C -->|No| E[Create tenant only]
+    D --> F[Set start date, rent, deposit]
+    F --> G[System validates data]
+    E --> G
+    G --> H{Valid?}
+    H -->|No| I[Show validation errors]
+    I --> B
+    H -->|Yes| J[Create tenant record]
+    J --> K[Generate user account]
+    K --> L[Generate temporary password]
+    L --> M[Create tenancy record]
+    M --> N[Update unit status to occupied]
+    N --> O[Send welcome email with credentials]
+    O --> P[Redirect with success message]
+```
+
+**Steps**:
+1. Landlord navigates to Tenant management
+2. Fills in tenant personal details (first name, last name, email, phone)
+3. Optionally selects a unit and tenancy details
+4. System validates all data
+5. System creates:
+   - Tenant record
+   - User account with tenant role
+   - Tenancy (if unit selected)
+6. Unit status changes to 'occupied'
+7. Temporary password generated and emailed to tenant
+
+---
+
+### 2. Processing Rent Payment
+
+```mermaid
+flowchart TD
+    A[Tenant logs in] --> B[View dashboard]
+    B --> C[Click Make Payment]
+    C --> D[Select payment type]
+    D --> E[Enter amount]
+    E --> F[Select payment method]
+    F --> G[Confirm payment]
+    G --> H{Confirm?}
+    H -->|No| B
+    H -->|Yes| I[Process payment]
+    I --> J{Payment successful?}
+    J -->|No| K[Show error message]
+    K --> G
+    J -->|Yes| L[Update payment status]
+    L --> M[Generate receipt]
+    M --> N[Send confirmation notification]
+    N --> O[Redirect to payment history]
+```
+
+---
+
+### 3. Ending a Tenancy
+
+```mermaid
+flowchart TD
+    A[Landlord selects tenant] --> B[Click End Tenancy]
+    B --> C[Confirm action]
+    C --> D{Confirm?}
+    D -->|No| E[Cancel]
+    D -->|Yes| F[Check for pending payments]
+    F --> G{Any pending?}
+    G -->|Yes| H[Warn landlord]
+    H --> I[Process remaining payments first]
+    I --> J[Set tenancy status to ended]
+    J --> K[Set terminated_at timestamp]
+    K --> L[Update unit status to available]
+    L --> M[Send termination notification to tenant]
+    M --> N[Redirect with success]
+```
+
+---
+
+## Role Interaction Examples
+
+### Example 1: Landlord Creating a Tenant
+
+```php
+// Landlord creates a new tenant with tenancy
+$request = new Request([
+    'first_name' => 'John',
+    'last_name' => 'Doe',
+    'email' => 'john.doe@example.com',
+    'phone' => '+255712345678',
+    'unit_id' => 5,
+    'start_date' => '2024-01-01',
+    'end_date' => '2024-12-31',
+    'rent_amount' => 500.00,
+    'security_deposit' => 1000.00,
+]);
+
+// Validation passes because:
+// 1. User is landlord (role check)
+// 2. Unit 5 belongs to landlord's property (ownership check)
+// 3. All required fields present
+// 4. Email unique in tenants table
+
+// Result:
+// - Tenant record created
+// - User account created with username: john.doe[random]
+// - Tenancy created for unit 5
+// - Unit 5 status changed to 'occupied'
+```
+
+### Example 2: Tenant Accessing Their Data
+
+```php
+// Tenant user logs in
+$tenantUser = User::where('role', 'tenant')->first();
+
+// Can only access their own data
+$tenant = $tenantUser->tenant;
+
+// Get active tenancy
+$activeTenancy = $tenant->tenancies()
+    ->where('status', 'active')
+    ->with('unit.property')
+    ->first();
+
+// Get payment history
+$payments = $tenant->payments()
+    ->orderBy('payment_date', 'desc')
+    ->paginate(10);
+
+// CANNOT access:
+// - Other tenants' data
+// - Property list
+// - Other tenants' payment history
+```
+
+### Example 3: Admin Managing All Properties
+
+```php
+// Admin user logs in
+$admin = User::where('role', 'admin')->first();
+
+// Can view all properties
+$allProperties = Property::with('units')->paginate();
+
+// Can view all tenants
+$allTenants = Tenant::with('user', 'tenancies')->paginate();
+
+// Can view all payments
+$allPayments = Payment::with('tenant', 'tenancy')->paginate();
+
+// Can modify any property
+$property = Property::find(1);
+$property->update(['name' => 'Updated Name']);
+```
+
+---
+
+## Security Events
+
+The system tracks security events for audit purposes:
+
+### Event Types
+| Event | Description | Severity |
+|-------|-------------|----------|
+| password_changed | User changed password | low |
+| password_reset_requested | Password reset requested | medium |
+| suspicious_activity | Suspicious activity detected | high |
+| unusual_location | Login from unusual location | medium |
+| multiple_failed_attempts | Multiple failed login attempts | high |
+| token_revoked | API token revoked | low |
+| session_terminated | Session terminated | low |
+| device_added | New device registered | medium |
+| device_removed | Device removed | medium |
+
+### Logging Security Events
+```php
+// In any controller or service
+SecurityEvent::log(
+    user: auth()->user(),
+    type: 'password_changed',
+    data: ['ip' => request()->ip()],
+    severity: 'low'
+);
+```
+
+---
+
+## Notifications
+
+### Notification Types
+
+1. **TenancyExpiringNotification**
+   - Sent 30 days before tenancy ends
+   - To: Tenant
+   - From: System
+
+2. **TenancyEndedNotification**
+   - Sent when tenancy is ended
+   - To: Tenant
+   - From: Landlord
+
+### Notification Flow
+```mermaid
+sequenceDiagram
+    participant System
+    participant Tenancy
+    participant Notification
+    participant User
+    
+    System->>Tenancy: Check daily (scheduler)
+    Tenancy->>Tenancy: Find expiring tenancies
+    Tenancy->>Notification: Create notification
+    Notification->>User: Send via mail/database
+```
+
+---
+
+## Command Scheduler
+
+The application includes scheduled commands:
+
+### 1. EndExpiredTenancies
+```bash
+# Runs daily at midnight
+php artisan schedule:run
+# Or manually
+php artisan tenancies:end-expired
+```
+
+**Functionality**:
+- Finds tenancies where end_date < today
+- Updates status from 'active' to 'expired'
+- Updates unit status to 'available'
+- Sends notification to tenant
+
+### 2. TestTenancyNotifications
+```bash
+# Manual testing
+php artisan tenancies:test-notifications
+```
+
+**Functionality**:
+- Tests the notification system
+- Can send test notifications to verify email configuration
+
+---
+
+## Summary
+
+This business logic documentation covers:
+
+1. **Three-tier role hierarchy**: Admin → Landlord → Tenant
+2. **Comprehensive permission matrix**: Details what each role can/cannot do
+3. **User relationships**: How users relate to tenants, properties, units
+4. **CRUD operations**: With validation, ownership checks, and examples
+5. **State machines**: For tenancies and units
+6. **Business validation rules**: Domain-specific validation beyond simple field validation
+7. **Workflows**: Onboarding tenants, processing payments, ending tenancies
+8. **Security events**: Audit logging for security-sensitive actions
+9. **Notifications**: Automated notifications for tenancy lifecycle
+10. **Scheduled commands**: Automated background tasks
