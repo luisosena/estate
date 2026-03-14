@@ -5,7 +5,9 @@
       "args": [
         "shadcn@latest",
         "mcp"
-      ]
+      ],
+      "disabled": true,
+      "alwaysAllow": []
     }
   }
 }
