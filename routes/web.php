@@ -173,6 +173,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
         ->name('tenant.payments');
 
+    Route::get('/tenant/payments/make', [TenantPaymentsController::class, 'makePayment'])
+        ->name('tenant.payments.make');
+
+    Route::post('/tenant/payments', [TenantPaymentsController::class, 'storePayment'])
+        ->name('tenant.payments.store')
+        ->middleware('throttle:5,1');
+
+    Route::patch('/tenant/payments/{payment}', [TenantPaymentsController::class, 'storePayment'])
+        ->name('tenant.payments.update')
+        ->middleware('throttle:5,1');
+
     Route::get('/tenant/utilities', [TenantUtilitiesController::class, 'index'])
         ->name('tenant.utilities');
 
