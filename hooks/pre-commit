@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Documentation Sync Pre-Commit Hook
+# This hook runs the documentation sync before each commit
+
+echo "🔍 Running documentation sync check..."
+
+# Get the PHP binary
+PHP_BIN=$(which php 2>/dev/null)
+
+if [ -z "$PHP_BIN" ]; then
+    echo "⚠️  PHP not found, skipping documentation sync"
+    exit 0
+fi
+
+# Change to the project root
+cd "$(dirname "$0")/.." || exit 1
+
+# Track sync status
+SYNC_STATUS=0
+
+# Check if DOCSYNC_ENABLED is set
+if [ "$DOCSYNC_ENABLED" = "true" ]; then
+    echo "📝 Running documentation sync..."
+    $PHP_BIN artisan docs:sync --check
+    SYNC_STATUS=$?
+    
+    if [ $SYNC_STATUS -ne 0 ]; then
+        echo "❌ Documentation sync failed"
+        exit 1
+    fi
+    
+    # Check if there are documentation changes (only auto-add if explicitly enabled)
+    if [ "$DOCSYNC_AUTO_ADD" = "true" ] && ! git diff --quiet docs/; then
+        echo "📄 Documentation updates detected. Adding to commit..."
+        git add docs/
+    fi
+else
+    # Just check and warn
+    $PHP_BIN artisan docs:sync --check 2>/dev/null
+    SYNC_STATUS=$?
+    
+    if [ $SYNC_STATUS -eq 0 ]; then
+        echo "✅ Documentation is in sync"
+    else
+        echo "⚠️  Run 'php artisan docs:sync' to update documentation"
+    fi
+fi
+
+exit 0

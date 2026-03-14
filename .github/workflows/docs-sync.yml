@@ -1,0 +1,90 @@
+name: Documentation Sync
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'app/Http/Controllers/**/*.php'
+      - 'app/Models/**/*.php'
+      - 'database/migrations/**/*.php'
+      - 'config/**/*.php'
+      - 'routes/**/*.php'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'app/Http/Controllers/**/*.php'
+      - 'app/Models/**/*.php'
+      - 'database/migrations/**/*.php'
+      - 'config/**/*.php'
+      - 'routes/**/*.php'
+
+jobs:
+  sync-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, mysql
+      
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist
+      
+      - name: Run documentation sync
+        run: php artisan docs:sync --check
+        env:
+          DOCSYNC_ENABLED: true
+      
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet docs/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create PR with docs changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          # Use GitHub's official noreply email for bot commits
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "Documentation Sync Bot"
+          
+          # Check if PR already exists for this branch
+          existing_pr=$(gh pr list --head docs/autosync-${{ github.run_id }} --state open --json number -q '.[0].number' 2>/dev/null || echo "")
+          
+          if [ -n "$existing_pr" ]; then
+            echo "PR #$existing_pr already exists for this run"
+            exit 0
+          fi
+          
+          # Check if any docs-autosync PR exists that we can update
+          base_branch="main"
+          
+          # Create branch FIRST (before any commits)
+          git checkout -b docs/autosync-${{ github.run_id }}
+          
+          # Now add and commit the changes
+          git add docs/
+          git commit -m "docs: auto-sync documentation from code changes"
+          
+          # Push the new branch (no force push)
+          git push -u origin docs/autosync-${{ github.run_id }}
+          
+          # Create PR
+          gh pr create --title "Documentation Auto-Sync" --body "Automated documentation updates from code changes" --base main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: No changes needed
+        if: steps.changes.outputs.changed == 'false'
+        run: echo "No documentation updates needed"
