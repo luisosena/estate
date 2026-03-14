@@ -6,22 +6,22 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
-// Custom theme based on your web app's design
+// Custom theme - Sophisticated Deep Teal & Gold (accessibility optimized)
 const theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#0f172a',    // Slate 900
-    secondary: '#3b82f6',  // Blue 500
-    tertiary: '#10b981',   // Emerald 500
-    error: '#ef4444',      // Red 500
-    background: '#f8fafc', // Slate 50
+    primary: '#0f4c4c',    // Deep Teal - lighter for better contrast
+    secondary: '#d4a853',  // Rich Gold
+    tertiary: '#c46d5e',   // Terracotta
+    error: '#c75146',      // Muted Red
+    background: '#faf8f5', // Warm cream
     surface: '#ffffff',
-    surfaceVariant: '#f1f5f9',
+    surfaceVariant: '#f0ebe5',
     onPrimary: '#ffffff',
-    onSecondary: '#ffffff',
-    onBackground: '#0f172a',
-    onSurface: '#0f172a',
+    onSecondary: '#1a1a1a',
+    onBackground: '#1a1a1a',
+    onSurface: '#1a1a1a',
   },
 };
 

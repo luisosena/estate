@@ -5,6 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import { LoadingScreen } from '../components/common/LoadingScreen';
 import { tabBarScreenOptions } from '../constants/styles';
 
+// Icons
+import { Ionicons } from '@expo/vector-icons';
+
 // Auth Screens
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
@@ -87,11 +90,40 @@ function TenantNavigator() {
       <TenantTab.Screen
         name="Dashboard"
         component={TenantDashboardScreen}
-        options={{ title: 'Home' }}
+        options={{ 
+          title: 'Home',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+          ),
+        }}
       />
-      <TenantTab.Screen name="Payments" component={TenantPaymentsScreen} />
-      <TenantTab.Screen name="Utilities" component={TenantUtilitiesScreen} />
-      <TenantTab.Screen name="Profile" component={TenantProfileScreen} />
+      <TenantTab.Screen 
+        name="Payments" 
+        component={TenantPaymentsScreen}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'card' : 'card-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <TenantTab.Screen 
+        name="Utilities" 
+        component={TenantUtilitiesScreen}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'flash' : 'flash-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <TenantTab.Screen 
+        name="Profile" 
+        component={TenantProfileScreen}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
+          ),
+        }}
+      />
     </TenantTab.Navigator>
   );
 }
@@ -121,12 +153,49 @@ function LandlordNavigator() {
       <LandlordTab.Screen
         name="Dashboard"
         component={LandlordDashboardScreen}
-        options={{ title: 'Home' }}
+        options={{ 
+          title: 'Home',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+          ),
+        }}
       />
-      <LandlordTab.Screen name="Properties" component={LandlordPropertiesNavigator} />
-      <LandlordTab.Screen name="Tenants" component={LandlordTenantsNavigator} />
-      <LandlordTab.Screen name="Payments" component={LandlordPaymentsScreen} />
-      <LandlordTab.Screen name="Profile" component={LandlordProfileScreen} />
+      <LandlordTab.Screen 
+        name="Properties" 
+        component={LandlordPropertiesNavigator}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'business' : 'business-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <LandlordTab.Screen 
+        name="Tenants" 
+        component={LandlordTenantsNavigator}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'people' : 'people-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <LandlordTab.Screen 
+        name="Payments" 
+        component={LandlordPaymentsScreen}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'card' : 'card-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <LandlordTab.Screen 
+        name="Profile" 
+        component={LandlordProfileScreen}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
+          ),
+        }}
+      />
     </LandlordTab.Navigator>
   );
 }

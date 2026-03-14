@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { colors } from './colors';
 
 /**
@@ -56,15 +56,36 @@ export const screenStyles = StyleSheet.create({
 
 /**
  * Tab bar options shared between Tenant and Landlord navigators.
+ * Floating tab bar design with accessibility and performance optimizations.
+ * Uses responsive spacing and accessible labels.
  */
 export const tabBarScreenOptions = {
   tabBarActiveTintColor: colors.primary,
-  tabBarInactiveTintColor: colors.gray[500],
+  tabBarInactiveTintColor: colors.gray[600], // Better contrast for inactive
   tabBarStyle: {
-    paddingBottom: 5,
-    height: 60,
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 28 : 24, // Account for iOS home indicator
+    left: 16,
+    right: 16,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    borderTopWidth: 0,
+    // Performance-optimized shadow
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabBarLabelStyle: {
-    fontSize: 12,
+    fontSize: 10,
+    fontWeight: '600',
+    marginTop: 4,
+    // Ensure accessibility - labels always visible for screen readers
   },
+  tabBarItemStyle: {
+    paddingVertical: 6,
+  },
+  tabBarShowLabel: true,
 } as const;
