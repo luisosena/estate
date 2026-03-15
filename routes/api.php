@@ -46,6 +46,9 @@ $defineApiRoutes = function (): void {
         Route::prefix('tenant')->group(function () {
             Route::get('dashboard', [DashboardController::class, 'index']);
             Route::get('payments', [PaymentsController::class, 'index']);
+            Route::middleware('throttle:10,1')->group(function () {
+                Route::post('payments', [PaymentsController::class, 'store']);
+            });
             Route::get('utilities', [UtilitiesController::class, 'index']);
         });
 

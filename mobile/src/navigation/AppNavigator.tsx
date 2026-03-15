@@ -17,6 +17,7 @@ import { TenantDashboardScreen } from '../screens/tenant/DashboardScreen';
 import { TenantPaymentsScreen } from '../screens/tenant/PaymentsScreen';
 import { TenantUtilitiesScreen } from '../screens/tenant/UtilitiesScreen';
 import { TenantProfileScreen } from '../screens/tenant/ProfileScreen';
+import { MakePaymentScreen } from '../screens/tenant/MakePaymentScreen';
 
 // Landlord Screens
 import { LandlordDashboardScreen } from '../screens/landlord/DashboardScreen';
@@ -47,6 +48,11 @@ export type TenantTabParamList = {
   Profile: undefined;
 };
 
+export type TenantPaymentsStackParamList = {
+  PaymentsList: undefined;
+  MakePayment: { monthlyRent?: number; pendingAmount?: number };
+};
+
 export type LandlordTabParamList = {
   Dashboard: undefined;
   Properties: undefined;
@@ -72,6 +78,8 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const TenantTab = createBottomTabNavigator<TenantTabParamList>();
 const LandlordTab = createBottomTabNavigator<LandlordTabParamList>();
 
+const TenantPaymentsStack = createNativeStackNavigator<TenantPaymentsStackParamList>();
+
 const PropertiesStack = createNativeStackNavigator<LandlordPropertiesStackParamList>();
 const TenantsStack = createNativeStackNavigator<LandlordTenantsStackParamList>();
 
@@ -81,6 +89,15 @@ function AuthNavigator() {
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
     </AuthStack.Navigator>
+  );
+}
+
+function TenantPaymentsNavigator() {
+  return (
+    <TenantPaymentsStack.Navigator screenOptions={{ headerShown: false }}>
+      <TenantPaymentsStack.Screen name="PaymentsList" component={TenantPaymentsScreen} />
+      <TenantPaymentsStack.Screen name="MakePayment" component={MakePaymentScreen} />
+    </TenantPaymentsStack.Navigator>
   );
 }
 
@@ -99,7 +116,7 @@ function TenantNavigator() {
       />
       <TenantTab.Screen 
         name="Payments" 
-        component={TenantPaymentsScreen}
+        component={TenantPaymentsNavigator}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'card' : 'card-outline'} size={size} color={color} />

@@ -108,10 +108,21 @@ export interface Payment {
   property_name?: string;
   amount: number;
   paid_at: string | null;
-  due_date: string;
-  status: 'pending' | 'paid' | 'overdue';
-  payment_method: string | null;
+  due_date: string | null;
+  status: 'pending' | 'paid' | 'partial' | 'overdue' | 'cancelled';
+  payment_type: 'rent' | 'utility';
+  payment_method: 'mobile_money' | 'bank_transfer' | null;
   reference_number: string | null;
+  notes: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Pending amount - calculated from monthly rent minus payments made
+export interface PendingAmount {
+  pendingAmount: number;
+  monthlyRent: number;
+  totalPaid: number;
 }
 
 export interface Notification {

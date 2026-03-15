@@ -9,12 +9,39 @@ import type {
   TenantDashboard,
 } from '../types';
 
+export interface PaymentFormData {
+  amount: number;
+  payment_type: 'rent' | 'utility';
+  payment_method: 'mobile_money' | 'bank_transfer';
+  reference_number?: string;
+  notes?: string;
+}
+
+export interface PaymentsResponse {
+  payments: Payment[];
+  tenant: Tenant;
+  tenancy: {
+    id: number;
+    monthly_rent: number;
+  } | null;
+  pendingAmount: number;
+}
+
+export interface CreatePaymentResponse {
+  success: boolean;
+  message: string;
+  payment: Payment;
+}
+
 export const tenantApi = {
   getDashboard: (): Promise<TenantDashboard> =>
     api.get<TenantDashboard>('/tenant/dashboard'),
 
-  getPayments: (): Promise<{ payments: Payment[]; tenant: Tenant }> =>
-    api.get<{ payments: Payment[]; tenant: Tenant }>('/tenant/payments'),
+  getPayments: (): Promise<PaymentsResponse> =>
+    api.get<PaymentsResponse>('/tenant/payments'),
+
+  createPayment: (data: PaymentFormData): Promise<CreatePaymentResponse> =>
+    api.post<CreatePaymentResponse>('/tenant/payments', data),
 
   getUtilities: (): Promise<{ utilities: Utility[]; tenant: Tenant }> =>
     api.get<{ utilities: Utility[]; tenant: Tenant }>('/tenant/utilities'),
