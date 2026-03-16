@@ -198,7 +198,7 @@ export default function HeroSection() {
                                                     className="flex-1 rounded-t"
                                                     style={{
                                                         height: `${h}%`,
-                                                        backgroundColor: i === 11 ? '#D4A853' : '#D4A853' + '30',
+                                                        backgroundColor: i === 11 ? '#D4A853' : '#D4A8534D',
                                                     }}
                                                     initial={{ scaleY: 0 }}
                                                     animate={{ scaleY: 1 }}

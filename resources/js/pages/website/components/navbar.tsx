@@ -1,13 +1,20 @@
 import { Link } from '@inertiajs/react';
 import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Navbar() {
     const { scrollY } = useScroll();
     const [scrolled, setScrolled] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useMotionValueEvent(scrollY, 'change', (latest) => {
-        setScrolled(latest > 60);
+        if (mounted) {
+            setScrolled(latest > 60);
+        }
     });
 
     return (
