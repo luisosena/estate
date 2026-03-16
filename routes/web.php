@@ -19,6 +19,11 @@ use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
 use App\Http\Controllers\Web\Landlord\LandlordPaymentController;
 
 Route::get('/', function () {
+    return Inertia::render('website/home');
+})->name('home');
+
+// Keep welcome as a fallback route for now
+Route::get('/welcome', function () {
     return Inertia::render('welcome', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
