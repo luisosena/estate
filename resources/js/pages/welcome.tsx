@@ -31,31 +31,25 @@ export default function Welcome() {
         <div className="relative flex min-h-screen flex-col bg-background text-foreground overflow-hidden">
             {/* Animated ESTATE logo */}
             <motion.h1
-                className="pointer-events-none fixed z-50 select-none font-sans font-extralight uppercase"
-                style={{ letterSpacing: '0.3em' }}
+                className="pointer-events-none fixed z-50 select-none font-sans font-light uppercase"
                 initial={{
                     opacity: 0,
-                    top: '50%',
-                    left: '50%',
-                    x: '-50%',
-                    y: '-50%',
-                    fontSize: '4.5rem',
+                    scale: 0.5,
                 }}
                 animate={{
                     opacity: 1,
-                    top: shouldMove ? '1.5rem' : '50%',
-                    left: shouldMove ? '2rem' : '50%',
-                    x: shouldMove ? '0%' : '-50%',
-                    y: shouldMove ? '0%' : '-50%',
-                    fontSize: shouldMove ? '1.25rem' : '4.5rem',
+                    scale: 1,
+                }}
+                style={{
+                    position: 'fixed',
+                    top: '1.5rem',
+                    left: '2rem',
+                    letterSpacing: '0.3em',
+                    fontSize: '1.25rem',
                 }}
                 transition={{
-                    opacity: { duration: 1.2, ease: 'easeOut' },
-                    top: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-                    left: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-                    x: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-                    y: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-                    fontSize: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+                    opacity: { duration: 0.8, ease: 'easeOut' },
+                    scale: { duration: 0.8, ease: 'easeOut' },
                 }}
             >
                 Estate
