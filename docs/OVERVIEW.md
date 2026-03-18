@@ -37,7 +37,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
     - `@inertiajs/react` ^2.3.7
   - **Styling & UI**:
     - Tailwind CSS ^4.0.0 with `@tailwindcss/vite`
-    - Glassmorphism component libraries: `@yhooi2/shadcn-glass-ui`, `glasscn-ui`
+    - Glassmorphism component libraries: `@yhooi2/shadcn-glass-ui`
     - Animation: `framer-motion`, `motion`, `tw-animate-css`
     - Theming: `next-themes`
     - Icons: `lucide-react`, `@tabler/icons-react`
@@ -287,7 +287,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - React layouts and components for a cohesive settings experience.
 
 - **UI/UX**
-  - Modern glassmorphism UI built on Tailwind + shadcn/glasscn-inspired components.
+  - Modern glassmorphism UI built on Tailwind + shadcn-inspired components.
   - App shell with sidebar/header/navigation, responsive behavior, and dark/light theming.
   - Reusable components for tables, charts, cards, navigation, forms, and notifications.
 
