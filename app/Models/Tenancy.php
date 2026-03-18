@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tenancy extends Model
 {
@@ -42,8 +43,26 @@ class Tenancy extends Model
         return $this->hasMany(Payment::class);
     }
 
+    /**
+     * Legacy utilities relationship - points to old utilities table.
+     * Note: This should be renamed or removed after data migration.
+     */
     public function utilities()
     {
         return $this->hasMany(Utility::class);
+    }
+
+    /**
+     * New utility relationships for the refactored utility system.
+     * These link to tenancy_utilities (which utilities apply to this tenancy).
+     */
+    public function tenancyUtilities(): HasMany
+    {
+        return $this->hasMany(TenancyUtility::class);
+    }
+
+    public function activeUtilities(): HasMany
+    {
+        return $this->hasMany(TenancyUtility::class)->where('status', 'active');
     }
 }

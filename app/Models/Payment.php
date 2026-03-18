@@ -3,14 +3,49 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
 {
     use SoftDeletes;
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (Payment $payment) {
+            if ($payment->utility_bill_id === null) {
+                return; // non-utility payments — nothing to check
+            }
+
+            // Skip validation if utility_bill_id wasn't changed
+            if (!$payment->isDirty('utility_bill_id')) {
+                return;
+            }
+
+            $bill = $payment->utilityBill;
+
+            if (!$bill) {
+                throw new \InvalidArgumentException(
+                    "utility_bill_id {$payment->utility_bill_id} does not exist."
+                );
+            }
+
+            if (!$bill->tenancyUtility || $bill->tenancyUtility->tenancy_id !== $payment->tenancy_id) {
+                throw new \InvalidArgumentException(
+                    "Payment tenancy_id ({$payment->tenancy_id}) does not match " .
+                    "the tenancy of utility_bill_id ({$payment->utility_bill_id}). " .
+                    "Tenancy mismatch detected."
+                );
+            }
+        });
+    }
+
     protected $fillable = [
         'tenant_id',
         'tenancy_id',
+        'utility_bill_id',
         'amount',
         'payment_type',
         'payment_method',
@@ -44,6 +79,14 @@ class Payment extends Model
     public function tenancy()
     {
         return $this->belongsTo(Tenancy::class);
+    }
+
+    /**
+     * Link to the utility bill this payment covers (for utility payments).
+     */
+    public function utilityBill(): BelongsTo
+    {
+        return $this->belongsTo(UtilityBill::class);
     }
 
     /**
