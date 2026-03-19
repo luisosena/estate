@@ -479,8 +479,10 @@ Add to crontab:
 
 | Command | Schedule | Description |
 |---------|----------|-------------|
-| `tenancies:end-expired` | Daily at midnight | End expired tenancies |
+| `tenancies:end-expired` | Daily at 02:00 | End expired tenancies |
 | `tenancies:test-notifications` | On demand | Test notification system |
+| `utility-bills:mark-overdue` | Daily (see Kernel.php) | Mark pending/partial bills as overdue |
+| `utility-bills:generate-monthly` | 1st of every month at 00:01 | Generate monthly utility bills |
 
 ---
 

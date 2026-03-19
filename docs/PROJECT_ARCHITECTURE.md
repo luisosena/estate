@@ -275,6 +275,8 @@ The application uses environment variables for configuration:
 Laravel scheduler handles:
 - `EndExpiredTenancies` - Automatically ends expired tenancies
 - `TestTenancyNotifications` - Tests expiry notifications
+- `MarkOverdueUtilityBills` - Marks pending/partial bills as overdue (daily)
+- `GenerateMonthlyUtilityBills` - Creates monthly bills for active utilities (monthly)
 
 ## Summary
 

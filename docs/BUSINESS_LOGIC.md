@@ -878,6 +878,33 @@ php artisan tenancies:test-notifications
 - Tests the notification system
 - Can send test notifications to verify email configuration
 
+### 3. MarkOverdueUtilityBills
+```bash
+# Runs daily (configured in Kernel.php - see schedule)
+php artisan schedule:run
+# Or manually
+php artisan utility-bills:mark-overdue
+```
+
+**Functionality**:
+- Marks pending and partial utility bills as overdue
+- Updates status to 'overdue' when due_date < today
+- Runs automatically daily (configured in app/Console/Kernel.php)
+
+### 4. GenerateMonthlyUtilityBills
+```bash
+# Runs on the 1st of every month at 00:01 (via scheduler)
+php artisan schedule:run
+# Or manually
+php artisan utility-bills:generate-monthly
+```
+
+**Functionality**:
+- Creates monthly utility bills for all active tenancy_utilities
+- Uses firstOrCreate to avoid duplicates
+- Sets billing_month to current month, due_date to end of month
+- Status defaults to 'pending'
+
 ---
 
 ## Summary
