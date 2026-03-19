@@ -16,6 +16,7 @@ import { RegisterScreen } from '../screens/auth/RegisterScreen';
 import { TenantDashboardScreen } from '../screens/tenant/DashboardScreen';
 import { TenantPaymentsScreen } from '../screens/tenant/PaymentsScreen';
 import { TenantUtilitiesScreen } from '../screens/tenant/UtilitiesScreen';
+import { TenantUtilityBillsScreen } from '../screens/tenant/UtilityBillsScreen';
 import { TenantProfileScreen } from '../screens/tenant/ProfileScreen';
 import { MakePaymentScreen } from '../screens/tenant/MakePaymentScreen';
 
@@ -25,6 +26,8 @@ import { LandlordPropertiesScreen } from '../screens/landlord/PropertiesScreen';
 import { LandlordTenantsScreen } from '../screens/landlord/TenantsScreen';
 import { LandlordPaymentsScreen } from '../screens/landlord/PaymentsScreen';
 import { LandlordProfileScreen } from '../screens/landlord/ProfileScreen';
+import { LandlordUtilityBillsScreen } from '../screens/landlord/UtilityBillsScreen';
+import { TenancyUtilitiesScreen } from '../screens/landlord/TenancyUtilitiesScreen';
 
 // Detail Screens
 import { PropertyDetailsScreen } from '../screens/landlord/PropertyDetailsScreen';
@@ -46,6 +49,11 @@ export type TenantTabParamList = {
   Payments: undefined;
   Utilities: undefined;
   Profile: undefined;
+};
+
+export type TenantUtilitiesStackParamList = {
+  UtilitiesList: undefined;
+  UtilityBills: undefined;
 };
 
 export type TenantPaymentsStackParamList = {
@@ -71,6 +79,12 @@ export type LandlordPropertiesStackParamList = {
 export type LandlordTenantsStackParamList = {
   TenantsList: undefined;
   TenantDetails: { tenantId: number };
+  TenancyUtilities: { tenancyId: number; tenantName: string };
+};
+
+export type LandlordPaymentsStackParamList = {
+  PaymentsList: undefined;
+  UtilityBills: undefined;
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -79,6 +93,7 @@ const TenantTab = createBottomTabNavigator<TenantTabParamList>();
 const LandlordTab = createBottomTabNavigator<LandlordTabParamList>();
 
 const TenantPaymentsStack = createNativeStackNavigator<TenantPaymentsStackParamList>();
+const TenantUtilitiesStack = createNativeStackNavigator<TenantUtilitiesStackParamList>();
 
 const PropertiesStack = createNativeStackNavigator<LandlordPropertiesStackParamList>();
 const TenantsStack = createNativeStackNavigator<LandlordTenantsStackParamList>();
@@ -98,6 +113,15 @@ function TenantPaymentsNavigator() {
       <TenantPaymentsStack.Screen name="PaymentsList" component={TenantPaymentsScreen} />
       <TenantPaymentsStack.Screen name="MakePayment" component={MakePaymentScreen} />
     </TenantPaymentsStack.Navigator>
+  );
+}
+
+function TenantUtilitiesNavigator() {
+  return (
+    <TenantUtilitiesStack.Navigator screenOptions={{ headerShown: false }}>
+      <TenantUtilitiesStack.Screen name="UtilitiesList" component={TenantUtilitiesScreen} />
+      <TenantUtilitiesStack.Screen name="UtilityBills" component={TenantUtilityBillsScreen} />
+    </TenantUtilitiesStack.Navigator>
   );
 }
 
@@ -125,7 +149,7 @@ function TenantNavigator() {
       />
       <TenantTab.Screen 
         name="Utilities" 
-        component={TenantUtilitiesScreen}
+        component={TenantUtilitiesNavigator}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'flash' : 'flash-outline'} size={size} color={color} />
@@ -160,7 +184,20 @@ function LandlordTenantsNavigator() {
     <TenantsStack.Navigator screenOptions={{ headerShown: false }}>
       <TenantsStack.Screen name="TenantsList" component={LandlordTenantsScreen} />
       <TenantsStack.Screen name="TenantDetails" component={TenantDetailsScreen} />
+      <TenantsStack.Screen name="TenancyUtilities" component={TenancyUtilitiesScreen} />
     </TenantsStack.Navigator>
+  );
+}
+
+// Create Payments stack navigator for landlord
+const PaymentsStack = createNativeStackNavigator<LandlordPaymentsStackParamList>();
+
+function LandlordPaymentsNavigator() {
+  return (
+    <PaymentsStack.Navigator screenOptions={{ headerShown: false }}>
+      <PaymentsStack.Screen name="PaymentsList" component={LandlordPaymentsScreen} />
+      <PaymentsStack.Screen name="UtilityBills" component={LandlordUtilityBillsScreen} />
+    </PaymentsStack.Navigator>
   );
 }
 
@@ -197,7 +234,7 @@ function LandlordNavigator() {
       />
       <LandlordTab.Screen 
         name="Payments" 
-        component={LandlordPaymentsScreen}
+        component={LandlordPaymentsNavigator}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'card' : 'card-outline'} size={size} color={color} />

@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card, Chip } from 'react-native-paper';
+import { Text, Card, Chip, Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { tenantApi } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
 import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
 import type { Utility } from '../../types';
+import type { TenantUtilitiesStackParamList } from '../../navigation/AppNavigator';
+
+type NavigationProp = NativeStackNavigationProp<TenantUtilitiesStackParamList>;
 
 /**
  * Returns the color for utility status display.
@@ -23,6 +28,7 @@ const getUtilityStatusColor = (status: string): string => {
 };
 
 export function TenantUtilitiesScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [utilities, setUtilities] = useState<Utility[]>([]);
@@ -57,8 +63,17 @@ export function TenantUtilitiesScreen() {
     >
       <View style={screenStyles.header}>
         <Text variant="headlineSmall" style={screenStyles.title}>Utilities</Text>
-        <Text variant="bodyMedium" style={screenStyles.subtitle}>Track your utility bills</Text>
+        <Text variant="bodyMedium" style={screenStyles.subtitle}>Track your utility connections</Text>
       </View>
+
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('UtilityBills')}
+        style={{ marginHorizontal: 16, marginBottom: 16 }}
+        icon="file-document"
+      >
+        View Utility Bills
+      </Button>
 
       <Card style={screenStyles.card}>
         <Card.Content>

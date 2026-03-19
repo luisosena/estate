@@ -515,14 +515,19 @@ GET /api/landlord/tenants?page=2&per_page=25
 #### Utility Bills
 
 ##### GET /api/landlord/utility-bills
-**Description**: List all utility bills
+**Description**: List all utility bills with pagination and filtering
 **Auth Required**: Yes
 
 **Query Parameters**:
 | Parameter | Type | Description |
 |-----------|------|-------------|
+| page | int | Page number (default: 1) |
 | status | string | Filter by status (pending, paid, partial, overdue) |
-| per_page | int | Items per page |
+| property_id | int | Filter by property |
+| billing_month | string | Filter by billing month (YYYY-MM) |
+| from_month | string | Filter from month (YYYY-MM) |
+| to_month | string | Filter to month (YYYY-MM) |
+| per_page | int | Items per page (default: 15) |
 
 **Response** (200):
 ```json
@@ -531,14 +536,41 @@ GET /api/landlord/tenants?page=2&per_page=25
     {
       "id": 1,
       "tenancy_utility_id": 1,
+      "tenancy_utility": {
+        "id": 1,
+        "utility_type": {
+          "id": 1,
+          "name": "Water",
+          "unit": "cubic metres"
+        },
+        "tenancy": {
+          "id": 1,
+          "unit": {
+            "unit_number": "101"
+          },
+          "tenant": {
+            "first_name": "John",
+            "last_name": "Doe"
+          }
+        }
+      },
       "billing_month": "2026-03-01",
       "units_consumed": 25.5,
       "amount_due": 150.00,
       "amount_paid": 0,
       "due_date": "2026-03-25",
-      "status": "pending"
+      "status": "pending",
+      "notes": null,
+      "created_at": "2026-03-01T00:00:00Z",
+      "updated_at": "2026-03-01T00:00:00Z"
     }
-  ]
+  ],
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "total": 50,
+    "total_pages": 4
+  }
 }
 ```
 
@@ -550,6 +582,61 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 ##### POST /api/landlord/utility-bills/{id}/waive
 **Description**: Waive a utility bill
+
+**Response** (200):
+```json
+{
+  "message": "Utility bill waived successfully",
+  "data": {
+    "id": 1,
+    "status": "waived",
+    ...
+  }
+}
+```
+
+---
+
+#### Utility Types
+
+##### GET /api/landlord/utility-types
+**Description**: List all available utility types
+**Auth Required**: Yes
+
+**Response** (200):
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Water",
+      "unit": "cubic metres",
+      "description": "Water supply and sewage",
+      "is_metered": true,
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "name": "Electricity",
+      "unit": "kWh",
+      "description": "Electricity supply",
+      "is_metered": true,
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "name": "Security",
+      "unit": "flat rate",
+      "description": "Security services",
+      "is_metered": false,
+      "is_active": true
+    }
+  ]
+}
+```
+
+##### GET /api/landlord/utility-types/{id}
+**Description**: Get utility type details
 
 ---
 
@@ -616,17 +703,58 @@ GET /api/landlord/tenants?page=2&per_page=25
 **Response** (200):
 ```json
 {
-  "data": [
-    {
-      "id": 1,
-      "amount": 500.00,
-      "type": "rent",
-      "status": "completed",
-      "payment_date": "2024-01-15",
-      "due_date": "2024-01-01"
-    }
-  ],
+  "payments": [...],
+  "tenant": {...},
+  "tenancy": {
+    "id": 1,
+    "monthly_rent": 500.00
+  },
+  "pendingAmount": 0,
   "meta": {...}
+}
+```
+
+##### POST /api/tenant/payments
+**Description**: Create a new payment (rent or utility)
+**Auth Required**: Yes (tenant role)
+
+**Request**:
+```json
+{
+  "amount": 150.00,
+  "payment_type": "utility",
+  "payment_method": "mobile_money",
+  "utility_bill_id": 1,
+  "reference_number": "TXN123456",
+  "notes": "Water bill payment"
+}
+```
+
+**Fields**:
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| amount | number | Yes | Payment amount |
+| payment_type | string | Yes | 'rent' or 'utility' |
+| payment_method | string | Yes | 'mobile_money' or 'bank_transfer' |
+| utility_bill_id | number | No* | Required when payment_type is 'utility' |
+| reference_number | string | No | External payment reference |
+| notes | string | No | Payment notes |
+
+*When payment_type is 'utility', utility_bill_id is required to link the payment to a specific utility bill.
+
+**Response** (201):
+```json
+{
+  "success": true,
+  "message": "Payment recorded successfully",
+  "payment": {
+    "id": 1,
+    "amount": 150.00,
+    "type": "utility",
+    "status": "completed",
+    "payment_date": "2026-03-19",
+    "utility_bill_id": 1
+  }
 }
 ```
 
@@ -644,23 +772,38 @@ GET /api/landlord/tenants?page=2&per_page=25
   "data": [
     {
       "id": 1,
+      "tenancy_id": 1,
+      "utility_type_id": 1,
       "utility_type": {
+        "id": 1,
         "name": "Water",
-        "unit": "cubic metres"
+        "unit": "cubic metres",
+        "is_metered": true
       },
       "amount": 50.00,
       "billing_cycle": "monthly",
       "provider": "DAWASCO",
       "account_number": "WATER123",
-      "status": "active"
+      "meter_number": "M12345",
+      "status": "active",
+      "notes": null
     }
-  ]
+  ],
+  "tenancy": {
+    "id": 1,
+    "monthly_rent": 500.00
+  }
 }
 ```
 
 ##### GET /api/tenant/utility-bills
-**Description**: Get tenant's utility bills
+**Description**: Get tenant's utility bills with summary
 **Auth Required**: Yes (tenant role)
+
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| status | string | Filter by status (pending, paid, partial, overdue) |
 
 **Response** (200):
 ```json
@@ -668,15 +811,35 @@ GET /api/landlord/tenants?page=2&per_page=25
   "data": [
     {
       "id": 1,
-      "utility_type": "Water",
+      "tenancy_utility_id": 1,
+      "tenancy_utility": {
+        "id": 1,
+        "utility_type": {
+          "id": 1,
+          "name": "Water",
+          "unit": "cubic metres"
+        }
+      },
       "billing_month": "2026-03-01",
       "units_consumed": 25.5,
       "amount_due": 150.00,
-      "amount_paid": 0,
+      "amount_paid": 100.00,
       "due_date": "2026-03-25",
-      "status": "pending"
+      "status": "partial",
+      "notes": null,
+      "created_at": "2026-03-01T00:00:00Z",
+      "updated_at": "2026-03-15T00:00:00Z"
     }
-  ]
+  ],
+  "summary": {
+    "total_due": 450.00,
+    "total_paid": 200.00,
+    "total_outstanding": 250.00,
+    "bill_count": 3,
+    "pending_count": 2,
+    "overdue_count": 1,
+    "paid_count": 0
+  }
 }
 ```
 

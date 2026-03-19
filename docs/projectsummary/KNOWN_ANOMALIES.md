@@ -91,19 +91,26 @@ php artisan make:resource PropertyCollection
 
 ---
 
-### 3. Incomplete Mobile App
+### 3. Mobile App (Partially Implemented)
 
-**Issue**: Mobile app is partially implemented
+**Issue**: Mobile app has core screens but may be missing some features
 
 **Location**: `mobile/`
+
+**Implemented Screens**:
+- **Auth**: Login, Register screens
+- **Tenant**: Dashboard, Payments, MakePayment, Utilities, UtilityBills, Profile
+- **Landlord**: Dashboard, Properties, PropertyDetails, Units, Tenants, TenantDetails, TenancyUtilities, Payments, UtilityBills, Profile
 
 **Status**:
 - Basic API client implemented
 - Auth module implemented
 - Landlord API module implemented
-- No UI screens fully implemented
+- Tenant API module implemented
+- Core UI screens implemented for both roles
+- Navigation with bottom tabs and nested stacks
 
-**Impact**: Mobile app not production-ready
+**Impact**: Core functionality available, additional features may be added over time
 
 ---
 

@@ -21,7 +21,8 @@ import { tenantApi, PaymentFormData } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import type { UtilityBill } from '../../types';
 
 type RootStackParamList = {
   TenantTabs: undefined;
@@ -49,17 +50,62 @@ export function MakePaymentScreen() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [utilityBills, setUtilityBills] = useState<UtilityBill[]>([]);
+  const [loadingBills, setLoadingBills] = useState(false);
 
   // Form state
   const [amount, setAmount] = useState('');
   const [paymentType, setPaymentType] = useState<'rent' | 'utility'>('rent');
   const [paymentMethod, setPaymentMethod] = useState<'mobile_money' | 'bank_transfer'>('mobile_money');
+  const [selectedBillId, setSelectedBillId] = useState<number | null>(null);
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
 
   // Form errors
   const [errors, setErrors] = useState<Record<string, string>>({});
   const isInitialMount = useRef(true);
+
+  // Track whether we should auto-select a bill (only on first load when paymentType changes to utility)
+  const shouldAutoSelectBill = useRef(true);
+
+  // Reset auto-select flag on mount to ensure proper behavior on revisit
+  useEffect(() => {
+    shouldAutoSelectBill.current = true;
+  }, []);
+
+  // Fetch utility bills when payment type changes to utility
+  useEffect(() => {
+    const fetchBills = async () => {
+      if (paymentType === 'utility') {
+        setLoadingBills(true);
+        try {
+          const response = await tenantApi.getUtilityBills();
+          // Filter to show only pending, partial, or overdue bills
+          const pendingBills = response.data.filter(
+            (bill) => bill.status === 'pending' || bill.status === 'partial' || bill.status === 'overdue'
+          );
+          setUtilityBills(pendingBills);
+          
+          // Auto-select first bill if none selected (only on initial fetch)
+          if (pendingBills.length > 0 && shouldAutoSelectBill.current) {
+            setSelectedBillId(pendingBills[0].id);
+            setAmount(pendingBills[0].amount_due.toString());
+            shouldAutoSelectBill.current = false;
+          }
+        } catch (error) {
+          console.error('Failed to fetch utility bills:', error);
+        } finally {
+          setLoadingBills(false);
+        }
+      } else {
+        setUtilityBills([]);
+        setSelectedBillId(null);
+        shouldAutoSelectBill.current = true; // Reset for next time payment type changes to utility
+      }
+    };
+
+    fetchBills();
+  }, [paymentType]);
 
   // Set default amount to pending amount only on initial mount
   useEffect(() => {
@@ -79,6 +125,10 @@ export function MakePaymentScreen() {
       newErrors.amount = 'Amount must be at least 1';
     } else if (numAmount > 100000000) {
       newErrors.amount = 'Amount is too large';
+    }
+
+    if (paymentType === 'utility' && !selectedBillId) {
+      newErrors.bill = 'Please select a utility bill';
     }
 
     if (!paymentMethod) {
@@ -106,6 +156,7 @@ export function MakePaymentScreen() {
         amount: parseFloat(amount),
         payment_type: paymentType,
         payment_method: paymentMethod,
+        utility_bill_id: selectedBillId || undefined,
         reference_number: referenceNumber || undefined,
         notes: notes || undefined,
       };
@@ -138,6 +189,10 @@ export function MakePaymentScreen() {
     const paymentMethodLabel =
       paymentMethod === 'mobile_money' ? 'Mobile Money' : 'Bank Transfer';
 
+    // Find selected bill info
+    const selectedBill = utilityBills.find(bill => bill.id === selectedBillId);
+    const utilityName = selectedBill?.tenancy_utility?.utility_type?.name;
+
     return (
       <View style={[screenStyles.container, { padding: 16 }]}>
         <Card style={screenStyles.card}>
@@ -167,6 +222,17 @@ export function MakePaymentScreen() {
                   {paymentTypeLabel}
                 </Text>
               </View>
+
+              {paymentType === 'utility' && selectedBill && (
+                <View style={styles.row}>
+                  <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
+                    Utility:
+                  </Text>
+                  <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
+                    {utilityName || 'Unknown'}
+                  </Text>
+                </View>
+              )}
 
               <View style={styles.row}>
                 <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
@@ -254,6 +320,67 @@ export function MakePaymentScreen() {
             />
           </Card.Content>
         </Card>
+
+        {/* Utility Bill Selection - only show when payment type is utility */}
+        {paymentType === 'utility' && (
+          <Card style={screenStyles.card}>
+            <Card.Content>
+              <Text variant="titleMedium" style={screenStyles.title}>
+                Select Utility Bill
+              </Text>
+              {loadingBills ? (
+                <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
+                  Loading bills...
+                </Text>
+              ) : utilityBills.length > 0 ? (
+                <>
+                  {utilityBills.map((bill) => {
+                    const utilityName = bill.tenancy_utility?.utility_type?.name || 'Unknown';
+                    const outstanding = bill.amount_due - bill.amount_paid;
+                    return (
+                      <View
+                        key={bill.id}
+                        style={[
+                          styles.billOption,
+                          selectedBillId === bill.id && styles.billOptionSelected,
+                        ]}
+                      >
+                        <RadioButton.Android
+                          value={bill.id.toString()}
+                          status={selectedBillId === bill.id ? 'checked' : 'unchecked'}
+                          onPress={() => {
+                            setSelectedBillId(bill.id);
+                            setAmount(outstanding.toString());
+                          }}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
+                            {utilityName}
+                          </Text>
+                          <Text variant="bodySmall" style={screenStyles.date}>
+                            {formatDate(bill.billing_month)} • Due: {formatDate(bill.due_date)}
+                          </Text>
+                          <Text variant="bodySmall" style={{ color: bill.status === 'overdue' ? colors.status.overdue : colors.text.secondary }}>
+                            Status: {bill.status} • Outstanding: {formatCurrency(outstanding)}
+                          </Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+                  {errors.bill && (
+                    <Text variant="bodySmall" style={{ color: colors.error, marginTop: 8 }}>
+                      {errors.bill}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
+                  No pending utility bills found
+                </Text>
+              )}
+            </Card.Content>
+          </Card>
+        )}
 
         {/* Payment Method Card */}
         <Card style={screenStyles.card}>
@@ -354,6 +481,19 @@ const styles = StyleSheet.create({
   },
   segmented: {
     marginTop: 4,
+  },
+  billOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    marginVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  billOptionSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '10',
   },
   radioRow: {
     flexDirection: 'row',

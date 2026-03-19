@@ -15,6 +15,7 @@ export interface PaymentFormData {
   amount: number;
   payment_type: 'rent' | 'utility';
   payment_method: 'mobile_money' | 'bank_transfer';
+  utility_bill_id?: number;
   reference_number?: string;
   notes?: string;
 }

@@ -21,6 +21,106 @@ This is a Laravel 12 + React 19 full-stack property management application calle
 ### Mobile (React Native/Expo)
 - **Framework**: React Native with Expo
 - **Target**: iOS and Android
+- **State Management**: React Context for auth, React Query for server state
+- **Navigation**: React Navigation with bottom tabs and nested stacks
+
+## Mobile App Screens
+
+### Tenant Screens
+```
+mobile/src/screens/tenant/
+├── DashboardScreen.tsx         # Tenant dashboard with tenancy overview
+├── PaymentsScreen.tsx          # Payment history and status
+├── MakePaymentScreen.tsx       # Make rent or utility payments
+├── UtilitiesScreen.tsx         # List of assigned utilities
+├── UtilityBillsScreen.tsx      # View utility bills with summary
+├── ProfileScreen.tsx          # Tenant profile management
+└── LoginScreen.tsx            # Authentication
+```
+
+### Landlord Screens
+```
+mobile/src/screens/landlord/
+├── DashboardScreen.tsx         # Landlord dashboard with metrics
+├── PropertiesScreen.tsx        # Property management
+├── PropertyDetailsScreen.tsx  # Property details and units
+├── UnitsScreen.tsx            # Unit management
+├── TenantsScreen.tsx          # Tenant list
+├── TenantDetailsScreen.tsx    # Tenant details with utilities button
+├── TenancyUtilitiesScreen.tsx # Manage utilities for a tenancy
+├── PaymentsScreen.tsx         # Payment history
+├── UtilityBillsScreen.tsx    # View and manage tenant utility bills
+├── ProfileScreen.tsx         # Landlord profile management
+└── LoginScreen.tsx           # Authentication
+```
+
+### Navigation Structure
+- Bottom tab navigation for main sections
+- Nested stack navigators for detail screens
+- Modal screens for forms (add/edit utilities, bills)
+
+### API Client Structure
+```
+mobile/src/
+├── api/
+│   ├── client.ts              # Axios instance with interceptors
+│   ├── landlord.ts            # Landlord API endpoints
+│   └── tenant.ts              # Tenant API endpoints
+└── types/
+    └── index.ts               # TypeScript type definitions
+```
+
+### Key API Endpoints Used by Mobile
+
+**Tenant API** (`/api/tenant/*`):
+- `GET /tenant/dashboard` - Dashboard data
+- `GET /tenant/payments` - Payment history with pending amount
+- `POST /tenant/payments` - Create payment (rent/utility)
+- `GET /tenant/utilities` - List assigned utilities with tenancy info
+- `GET /tenant/utility-bills` - List utility bills with summary
+
+**Landlord API** (`/api/landlord/*`):
+- `GET /landlord/dashboard` - Dashboard metrics
+- `GET /landlord/utility-types` - List all utility types
+- `GET /landlord/utility-bills` - List all utility bills (paginated)
+- `PUT /landlord/utility-bills/{id}` - Update utility bill
+- `POST /landlord/utility-bills/{id}/waive` - Waive a bill
+- `GET /landlord/tenancies/{id}/utilities` - List tenancy utilities
+- `POST /landlord/tenancies/{id}/utilities` - Add utility to tenancy
+- `PUT /landlord/tenancy-utilities/{id}` - Update tenancy utility
+- `DELETE /landlord/tenancy-utilities/{id}` - Remove utility from tenancy
+
+### Mobile TypeScript Types
+
+Key types defined in `mobile/src/types/index.ts`:
+
+```typescript
+// Utility Bill - represents a monthly charge for a utility
+interface UtilityBill {
+  id: number;
+  tenancy_utility_id: number;
+  billing_month: string;
+  units_consumed: number | null;
+  amount_due: number;
+  amount_paid: number;
+  due_date: string;
+  status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
+  notes: string | null;
+  tenancy_utility?: {
+    id: number;
+    utility_type: UtilityType | null;
+    // ... other tenancy utility fields
+  };
+}
+
+// Utility Bill Summary - aggregated statistics for tenant
+interface UtilityBillSummary {
+  total_due: number;
+  total_paid: number;
+  total_outstanding: number;
+  bill_count: number;
+}
+```
 
 ## System Architecture Diagram
 

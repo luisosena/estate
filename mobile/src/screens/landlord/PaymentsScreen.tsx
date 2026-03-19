@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card, Chip } from 'react-native-paper';
+import { Text, Card, Chip, Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import type { Payment } from '../../types';
+import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
+
+type NavigationProp = NativeStackNavigationProp<LandlordPaymentsStackParamList>;
 
 const getPaymentStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
@@ -20,6 +25,7 @@ const getPaymentStatusColor = (status: string): string => {
 };
 
 export function LandlordPaymentsScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -56,6 +62,15 @@ export function LandlordPaymentsScreen() {
         <Text variant="headlineSmall" style={screenStyles.title}>Payments</Text>
         <Text variant="bodyMedium" style={screenStyles.subtitle}>Track all tenant payments</Text>
       </View>
+
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('UtilityBills')}
+        style={{ marginHorizontal: 16, marginBottom: 16 }}
+        icon="file-document"
+      >
+        Manage Utility Bills
+      </Button>
 
       <Card style={screenStyles.card}>
         <Card.Content>

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card } from 'react-native-paper';
+import { Text, Card, Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
@@ -10,9 +12,12 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
 import type { Tenant } from '../../types';
 
+type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList>;
+
 type TenantDetailsRouteProp = RouteProp<LandlordTenantsStackParamList, 'TenantDetails'>;
 
 export function TenantDetailsScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const route = useRoute<TenantDetailsRouteProp>();
   const { tenantId } = route.params;
 
@@ -130,6 +135,20 @@ export function TenantDetailsScreen() {
                 {activeTenancy.status.charAt(0).toUpperCase() + activeTenancy.status.slice(1)}
               </Text>
             </View>
+            
+            {activeTenancy.status === 'active' && (
+              <Button
+                mode="contained"
+                onPress={() => navigation.navigate('TenancyUtilities', { 
+                  tenancyId: activeTenancy.id, 
+                  tenantName: tenant?.full_name || 'Tenant' 
+                })}
+                style={{ marginTop: 16 }}
+                icon="flash"
+              >
+                Manage Utilities
+              </Button>
+            )}
           </Card.Content>
         </Card>
       )}

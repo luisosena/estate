@@ -220,6 +220,9 @@ export interface UtilityBillSummary {
   total_paid: number;
   total_outstanding: number;
   bill_count: number;
+  pending_count?: number;
+  overdue_count?: number;
+  paid_count?: number;
 }
 
 export interface TenantDashboard {
