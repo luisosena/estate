@@ -98,7 +98,11 @@ export function LandlordDashboardScreen() {
                 <View>
                   <Text variant="bodyMedium">{payment.tenant_name}</Text>
                   <Text variant="bodySmall" style={screenStyles.date}>
-                    {payment.unit_number} • {payment.paid_at ? formatDate(payment.paid_at) : `Due: ${formatDate(payment.due_date)}`}
+                    {payment.unit_number} • {payment.paid_at
+                      ? formatDate(payment.paid_at)
+                      : payment.due_date
+                      ? `Due: ${formatDate(payment.due_date)}`
+                      : '-'}
                   </Text>
                 </View>
                 <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>

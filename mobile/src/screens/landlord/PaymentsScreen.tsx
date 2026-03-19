@@ -11,8 +11,10 @@ import type { Payment } from '../../types';
 const getPaymentStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
     paid: colors.status.paid,
+    partial: colors.status.pending,
     overdue: colors.status.overdue,
     pending: colors.status.pending,
+    cancelled: colors.status.expired,
   };
   return statusColors[status] ?? colors.gray[400];
 };
@@ -57,13 +59,17 @@ export function LandlordPaymentsScreen() {
 
       <Card style={screenStyles.card}>
         <Card.Content>
-          {payments.length > 0 ? (
+          {payments?.length > 0 ? (
             payments.map((payment) => (
               <View key={payment.id} style={screenStyles.listItem}>
                 <View>
                   <Text variant="bodyMedium">{payment.tenant_name}</Text>
                   <Text variant="bodySmall" style={screenStyles.date}>
-                    {payment.unit_number} • {payment.paid_at ? formatDate(payment.paid_at) : `Due: ${formatDate(payment.due_date)}`}
+                    {payment.unit_number} • {payment.paid_at
+                      ? formatDate(payment.paid_at)
+                      : payment.due_date
+                      ? `Due: ${formatDate(payment.due_date)}`
+                      : '-'}
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>

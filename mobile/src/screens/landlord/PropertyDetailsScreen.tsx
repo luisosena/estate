@@ -82,7 +82,7 @@ export function PropertyDetailsScreen() {
         <Text variant="titleMedium">Units</Text>
       </View>
       
-      {units.length > 0 ? (
+      {units?.length > 0 ? (
         units.map((unit) => (
           <Card 
             key={unit.id} 

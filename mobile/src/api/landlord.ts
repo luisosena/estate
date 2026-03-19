@@ -8,6 +8,9 @@ import type {
   Notification,
   LandlordDashboard,
   PaginatedResponse,
+  UtilityType,
+  Utility,
+  UtilityBill,
 } from '../types';
 
 export const landlordApi = {
@@ -93,6 +96,81 @@ export const landlordApi = {
 
   markNotificationRead: (notificationId: number): Promise<void> =>
     api.put(`/landlord/notifications/${notificationId}/read`),
+
+  // Utility Types
+  getUtilityTypes: (): Promise<{ data: UtilityType[] }> =>
+    api.get<{ data: UtilityType[] }>('/landlord/utility-types'),
+
+  getUtilityType: (utilityTypeId: number): Promise<{ data: UtilityType }> =>
+    api.get<{ data: UtilityType }>(`/landlord/utility-types/${utilityTypeId}`),
+
+  // Tenancy Utilities
+  getTenancyUtilities: (tenancyId: number): Promise<{ data: Utility[] }> =>
+    api.get<{ data: Utility[] }>(`/landlord/tenancies/${tenancyId}/utilities`),
+
+  createTenancyUtility: (
+    tenancyId: number,
+    data: {
+      utility_type_id: number;
+      amount: number;
+      billing_cycle: 'monthly' | 'quarterly' | 'annual';
+      provider?: string;
+      account_number?: string;
+      meter_number?: string;
+      notes?: string;
+    }
+  ): Promise<{ data: Utility }> =>
+    api.post<{ data: Utility }>(`/landlord/tenancies/${tenancyId}/utilities`, data),
+
+  getTenancyUtility: (tenancyUtilityId: number): Promise<{ data: Utility }> =>
+    api.get<{ data: Utility }>(`/landlord/tenancy-utilities/${tenancyUtilityId}`),
+
+  updateTenancyUtility: (
+    tenancyUtilityId: number,
+    data: Partial<{
+      utility_type_id: number;
+      amount: number;
+      billing_cycle: 'monthly' | 'quarterly' | 'annual';
+      provider: string;
+      account_number: string;
+      meter_number: string;
+      status: 'active' | 'suspended' | 'disconnected';
+      notes: string;
+    }>
+  ): Promise<{ data: Utility }> =>
+    api.put<{ data: Utility }>(`/landlord/tenancy-utilities/${tenancyUtilityId}`, data),
+
+  deleteTenancyUtility: (tenancyUtilityId: number): Promise<void> =>
+    api.delete(`/landlord/tenancy-utilities/${tenancyUtilityId}`),
+
+  // Utility Bills
+  getUtilityBills: (params?: {
+    page?: number;
+    status?: string;
+    property_id?: number;
+    billing_month?: string;
+    from_month?: string;
+    to_month?: string;
+  }): Promise<{ data: UtilityBill[]; meta: { current_page: number; per_page: number; total: number; total_pages: number } }> =>
+    api.get<{ data: UtilityBill[]; meta: { current_page: number; per_page: number; total: number; total_pages: number } }>('/landlord/utility-bills', params),
+
+  getUtilityBill: (utilityBillId: number): Promise<{ data: UtilityBill }> =>
+    api.get<{ data: UtilityBill }>(`/landlord/utility-bills/${utilityBillId}`),
+
+  updateUtilityBill: (
+    utilityBillId: number,
+    data: Partial<{
+      amount_due: number;
+      units_consumed: number;
+      due_date: string;
+      status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
+      notes: string;
+    }>
+  ): Promise<{ message: string; data: UtilityBill }> =>
+    api.put<{ message: string; data: UtilityBill }>(`/landlord/utility-bills/${utilityBillId}`, data),
+
+  waiveUtilityBill: (utilityBillId: number): Promise<{ message: string; data: UtilityBill }> =>
+    api.post<{ message: string; data: UtilityBill }>(`/landlord/utility-bills/${utilityBillId}/waive`, {}),
 };
 
 export default landlordApi;

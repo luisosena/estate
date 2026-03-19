@@ -186,6 +186,42 @@ export interface Utility {
   utility_type: UtilityType | null;
 }
 
+export interface UtilityBill {
+  id: number;
+  tenancy_utility_id: number;
+  billing_month: string;
+  units_consumed: number | null;
+  amount_due: number;
+  amount_paid: number;
+  due_date: string;
+  status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
+  notes: string | null;
+  created_at?: string;
+  updated_at?: string;
+  tenancy_utility?: {
+    id: number;
+    tenancy_id: number;
+    utility_type_id: number;
+    amount: number;
+    billing_cycle: 'monthly' | 'quarterly' | 'annual';
+    provider: string | null;
+    account_number: string | null;
+    meter_number: string | null;
+    status: 'active' | 'suspended' | 'disconnected';
+    notes: string | null;
+    utility_type: UtilityType | null;
+  };
+  // Only populated for landlord endpoints
+  payments?: Payment[];
+}
+
+export interface UtilityBillSummary {
+  total_due: number;
+  total_paid: number;
+  total_outstanding: number;
+  bill_count: number;
+}
+
 export interface TenantDashboard {
   tenant: Tenant;
   unit: Unit | null;

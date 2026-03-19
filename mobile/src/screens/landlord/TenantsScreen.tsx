@@ -48,11 +48,11 @@ export function LandlordTenantsScreen() {
       <View style={screenStyles.header}>
         <Text variant="headlineSmall" style={screenStyles.title}>Tenants</Text>
         <Text variant="bodyMedium" style={screenStyles.subtitle}>
-          {tenants.length} {tenants.length === 1 ? 'tenant' : 'tenants'}
+          {tenants?.length} {tenants?.length === 1 ? 'tenant' : 'tenants'}
         </Text>
       </View>
 
-      {tenants.length > 0 ? (
+      {tenants?.length > 0 ? (
         tenants.map((tenant) => (
           <Card 
             key={tenant.id} 

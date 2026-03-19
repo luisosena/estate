@@ -8,11 +8,16 @@ import { colors } from '../../constants/colors';
 import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
 import type { Utility } from '../../types';
 
-const getStatusColor = (status: string): string => {
+/**
+ * Returns the color for utility status display.
+ * @param status - Utility status: 'active', 'suspended', or 'disconnected'
+ * @returns Hex color string for the given status
+ */
+const getUtilityStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
-    paid: colors.status.paid,
-    overdue: colors.status.overdue,
-    pending: colors.status.pending,
+    active: colors.status.active,
+    suspended: colors.status.pending,
+    disconnected: colors.status.overdue,
   };
   return statusColors[status] ?? colors.gray[400];
 };
@@ -25,7 +30,7 @@ export function TenantUtilitiesScreen() {
   const fetchUtilities = async () => {
     try {
       const data = await tenantApi.getUtilities();
-      setUtilities(data.utilities);
+      setUtilities(data.data);
     } catch (error) {
       console.error('Failed to fetch utilities:', error);
     } finally {
@@ -57,19 +62,19 @@ export function TenantUtilitiesScreen() {
 
       <Card style={screenStyles.card}>
         <Card.Content>
-          {utilities.length > 0 ? (
+          {utilities?.length > 0 ? (
             utilities.map((utility) => (
               <View key={utility.id} style={screenStyles.listItem}>
                 <View>
                   <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
-                    {capitalize(utility.type)}
+                    {capitalize(utility.utility_type?.name || 'Unknown')}
                   </Text>
                   <Text variant="bodySmall" style={screenStyles.date}>
-                    Due: {formatDate(utility.due_date)}
+                    Billing: {utility.billing_cycle}
                   </Text>
-                  {utility.period && (
+                  {utility.provider && (
                     <Text variant="bodySmall" style={screenStyles.date}>
-                      Period: {utility.period}
+                      Provider: {utility.provider}
                     </Text>
                   )}
                 </View>
@@ -80,7 +85,7 @@ export function TenantUtilitiesScreen() {
                   <Chip
                     mode="flat"
                     compact
-                    style={[screenStyles.chip, { backgroundColor: getStatusColor(utility.status) + '20' }]}
+                    style={[screenStyles.chip, { backgroundColor: getUtilityStatusColor(utility.status) + '20' }]}
                   >
                     {utility.status}
                   </Chip>

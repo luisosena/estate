@@ -134,7 +134,7 @@ export function TenantPaymentsScreen() {
           <Text variant="titleMedium" style={screenStyles.title}>
             Payment History
           </Text>
-          {payments.length > 0 ? (
+          {payments?.length > 0 ? (
             payments.map((payment) => (
               <View key={payment.id} style={screenStyles.listItem}>
                 <View>

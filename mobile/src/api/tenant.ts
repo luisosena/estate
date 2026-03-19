@@ -5,6 +5,8 @@ import type {
   Tenancy,
   Payment,
   Utility,
+  UtilityBill,
+  UtilityBillSummary,
   Notification,
   TenantDashboard,
 } from '../types';
@@ -43,8 +45,17 @@ export const tenantApi = {
   createPayment: (data: PaymentFormData): Promise<CreatePaymentResponse> =>
     api.post<CreatePaymentResponse>('/tenant/payments', data),
 
-  getUtilities: (): Promise<{ utilities: Utility[]; tenant: Tenant }> =>
-    api.get<{ utilities: Utility[]; tenant: Tenant }>('/tenant/utilities'),
+  /**
+   * Fetches utilities for the authenticated tenant.
+   * @returns Promise resolving to utilities array and tenancy info including monthly rent
+   */
+  getUtilities: (): Promise<{ data: Utility[]; tenancy: { id: number; monthly_rent: number } }> =>
+    api.get<{ data: Utility[]; tenancy: { id: number; monthly_rent: number } }>('/tenant/utilities'),
+
+  getUtilityBills: (status?: string): Promise<{ data: UtilityBill[]; summary: UtilityBillSummary }> =>
+    api.get<{ data: UtilityBill[]; summary: UtilityBillSummary }>('/tenant/utility-bills', {
+      ...(status && { status }),
+    }),
 
   getProfile: (): Promise<{ tenant: Tenant }> =>
     api.get<{ tenant: Tenant }>('/tenant/profile'),

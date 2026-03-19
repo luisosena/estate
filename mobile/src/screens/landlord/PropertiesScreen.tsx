@@ -57,11 +57,11 @@ export function LandlordPropertiesScreen() {
       <View style={screenStyles.header}>
         <Text variant="headlineSmall" style={screenStyles.title}>Properties</Text>
         <Text variant="bodyMedium" style={screenStyles.subtitle}>
-          {properties.length} {properties.length === 1 ? 'property' : 'properties'}
+          {properties?.length} {properties?.length === 1 ? 'property' : 'properties'}
         </Text>
       </View>
 
-      {properties.length > 0 ? (
+      {properties?.length > 0 ? (
         properties.map((property) => (
           <Card 
             key={property.id} 

@@ -123,7 +123,11 @@ export function TenantDashboardScreen() {
                 <View>
                   <Text variant="bodyMedium">{formatCurrency(payment.amount)}</Text>
                   <Text variant="bodySmall" style={screenStyles.date}>
-                    {payment.paid_at ? formatDate(payment.paid_at) : `Due: ${formatDate(payment.due_date)}`}
+                    {payment.paid_at
+                      ? formatDate(payment.paid_at)
+                      : payment.due_date
+                      ? `Due: ${formatDate(payment.due_date)}`
+                      : '-'}
                   </Text>
                 </View>
                 <Chip
@@ -149,10 +153,10 @@ export function TenantDashboardScreen() {
               <View key={utility.id} style={screenStyles.listItem}>
                 <View>
                   <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
-                    {capitalize(utility.type)}
+                    {capitalize(utility.utility_type?.name || 'Unknown')}
                   </Text>
                   <Text variant="bodySmall" style={screenStyles.date}>
-                    Due: {formatDate(utility.due_date)}
+                    Billing: {utility.billing_cycle}
                   </Text>
                 </View>
                 <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
