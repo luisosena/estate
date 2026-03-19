@@ -13,6 +13,10 @@ use App\Http\Controllers\Api\Landlord\UnitController;
 use App\Http\Controllers\Api\Landlord\TenantController;
 use App\Http\Controllers\Api\Landlord\PaymentController;
 use App\Http\Controllers\Api\Landlord\NotificationController;
+use App\Http\Controllers\Api\Landlord\UtilityTypeController;
+use App\Http\Controllers\Api\Landlord\TenancyUtilityController;
+use App\Http\Controllers\Api\Landlord\UtilityBillController;
+use App\Http\Controllers\Api\Tenant\UtilitiesController as TenantUtilitiesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +54,7 @@ $defineApiRoutes = function (): void {
                 Route::post('payments', [PaymentsController::class, 'store']);
             });
             Route::get('utilities', [UtilitiesController::class, 'index']);
+            Route::get('utility-bills', [TenantUtilitiesController::class, 'bills']);
         });
 
         // Landlord routes
@@ -84,6 +89,21 @@ $defineApiRoutes = function (): void {
             Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
             Route::put('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
             Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
+            
+            // Utility Management
+            Route::get('utility-types', [UtilityTypeController::class, 'index']);
+            Route::get('utility-types/{utilityType}', [UtilityTypeController::class, 'show']);
+            
+            Route::get('tenancies/{tenancy}/utilities', [TenancyUtilityController::class, 'index']);
+            Route::post('tenancies/{tenancy}/utilities', [TenancyUtilityController::class, 'store']);
+            Route::get('tenancy-utilities/{tenancyUtility}', [TenancyUtilityController::class, 'show']);
+            Route::put('tenancy-utilities/{tenancyUtility}', [TenancyUtilityController::class, 'update']);
+            Route::delete('tenancy-utilities/{tenancyUtility}', [TenancyUtilityController::class, 'destroy']);
+            
+            Route::get('utility-bills', [UtilityBillController::class, 'index']);
+            Route::get('utility-bills/{utilityBill}', [UtilityBillController::class, 'show']);
+            Route::put('utility-bills/{utilityBill}', [UtilityBillController::class, 'update']);
+            Route::post('utility-bills/{utilityBill}/waive', [UtilityBillController::class, 'waive']);
         });
     });
 

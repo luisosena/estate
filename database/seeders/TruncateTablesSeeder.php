@@ -18,7 +18,9 @@ class TruncateTablesSeeder extends Seeder
         // Truncate tables in correct order (respecting foreign keys)
         DB::table('messages')->truncate();
         DB::table('notifications')->truncate();
-        DB::table('utilities')->truncate();
+        DB::table('utility_bills')->truncate();
+        DB::table('tenancy_utilities')->truncate();
+        DB::table('utility_types')->truncate();
         DB::table('payments')->truncate();
         DB::table('tenant_identifications')->truncate();
         DB::table('tenancies')->truncate();

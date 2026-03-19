@@ -9,7 +9,9 @@ use App\Models\Unit;
 use App\Models\Tenancy;
 use App\Models\TenantIdentification;
 use App\Models\Payment;
-use App\Models\Utility;
+use App\Models\UtilityType;
+use App\Models\TenancyUtility;
+use App\Models\UtilityBill;
 use App\Models\Notification;
 use App\Models\Message;
 use Illuminate\Database\Seeder;
@@ -323,80 +325,199 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('Payments created successfully.');
 
         // ===========================================
-        // 7. CREATE UTILITIES
+        // 7. CREATE UTILITY TYPES
         // ===========================================
-        $utilities = [
+        $utilityTypes = [
+            ['name' => 'Water', 'unit' => 'cubic meter', 'description' => 'Water supply and usage', 'is_metered' => true, 'is_active' => true],
+            ['name' => 'Electricity', 'unit' => 'kWh', 'description' => 'Electricity supply and consumption', 'is_metered' => true, 'is_active' => true],
+            ['name' => 'Gas', 'unit' => 'cubic meter', 'description' => 'Gas supply and usage', 'is_metered' => true, 'is_active' => true],
+            ['name' => 'Internet', 'unit' => 'month', 'description' => 'Internet service (flat rate)', 'is_metered' => false, 'is_active' => true],
+            ['name' => 'Security', 'unit' => 'month', 'description' => 'Security services (flat rate)', 'is_metered' => false, 'is_active' => true],
+        ];
+
+        $createdUtilityTypes = [];
+        foreach ($utilityTypes as $typeData) {
+            $createdUtilityTypes[] = UtilityType::create($typeData);
+        }
+
+        $this->command->info('Utility types created successfully.');
+
+        // ===========================================
+        // 8. CREATE TENANCY UTILITIES
+        // ===========================================
+        $tenancyUtilities = [
             // Tenant 1 utilities
             [
                 'tenancy_id' => $createdTenancies[0]->id,
-                'type' => 'water',
+                'utility_type_id' => $createdUtilityTypes[0]->id, // Water
                 'amount' => 45.50,
-                'billing_period' => 'March 2026',
-                'status' => 'paid',
+                'billing_cycle' => 'monthly',
+                'provider' => 'DAWASA',
+                'account_number' => 'WTR-001-2026',
+                'meter_number' => 'MTR-W-001',
+                'status' => 'active',
             ],
             [
                 'tenancy_id' => $createdTenancies[0]->id,
-                'type' => 'electricity',
+                'utility_type_id' => $createdUtilityTypes[1]->id, // Electricity
                 'amount' => 89.75,
-                'billing_period' => 'March 2026',
-                'status' => 'paid',
+                'billing_cycle' => 'monthly',
+                'provider' => 'TANESCO',
+                'account_number' => 'ELC-001-2026',
+                'meter_number' => 'MTR-E-001',
+                'status' => 'active',
             ],
             [
                 'tenancy_id' => $createdTenancies[0]->id,
-                'type' => 'internet',
+                'utility_type_id' => $createdUtilityTypes[3]->id, // Internet
                 'amount' => 60.00,
-                'billing_period' => 'March 2026',
-                'status' => 'paid',
+                'billing_cycle' => 'monthly',
+                'provider' => 'Zuku Communications',
+                'account_number' => 'INT-001-2026',
+                'meter_number' => null,
+                'status' => 'active',
             ],
-            
             // Tenant 2 utilities
             [
                 'tenancy_id' => $createdTenancies[1]->id,
-                'type' => 'water',
+                'utility_type_id' => $createdUtilityTypes[0]->id, // Water
                 'amount' => 38.25,
-                'billing_period' => 'March 2026',
-                'status' => 'paid',
+                'billing_cycle' => 'monthly',
+                'provider' => 'DAWASA',
+                'account_number' => 'WTR-002-2026',
+                'meter_number' => 'MTR-W-002',
+                'status' => 'active',
             ],
             [
                 'tenancy_id' => $createdTenancies[1]->id,
-                'type' => 'electricity',
+                'utility_type_id' => $createdUtilityTypes[1]->id, // Electricity
                 'amount' => 67.80,
-                'billing_period' => 'March 2026',
-                'status' => 'paid',
+                'billing_cycle' => 'monthly',
+                'provider' => 'TANESCO',
+                'account_number' => 'ELC-002-2026',
+                'meter_number' => 'MTR-E-002',
+                'status' => 'active',
             ],
-            
-            // Tenant 3 utilities - unpaid
+            // Tenant 3 utilities
             [
                 'tenancy_id' => $createdTenancies[2]->id,
-                'type' => 'water',
+                'utility_type_id' => $createdUtilityTypes[0]->id, // Water
                 'amount' => 52.30,
-                'billing_period' => 'March 2026',
-                'status' => 'unpaid',
+                'billing_cycle' => 'monthly',
+                'provider' => 'DAWASA',
+                'account_number' => 'WTR-003-2026',
+                'meter_number' => 'MTR-W-003',
+                'status' => 'active',
             ],
             [
                 'tenancy_id' => $createdTenancies[2]->id,
-                'type' => 'electricity',
+                'utility_type_id' => $createdUtilityTypes[1]->id, // Electricity
                 'amount' => 112.45,
-                'billing_period' => 'March 2026',
-                'status' => 'unpaid',
+                'billing_cycle' => 'monthly',
+                'provider' => 'TANESCO',
+                'account_number' => 'ELC-003-2026',
+                'meter_number' => 'MTR-E-003',
+                'status' => 'active',
             ],
             [
                 'tenancy_id' => $createdTenancies[2]->id,
-                'type' => 'gas',
+                'utility_type_id' => $createdUtilityTypes[2]->id, // Gas
                 'amount' => 35.20,
-                'billing_period' => 'March 2026',
-                'status' => 'unpaid',
+                'billing_cycle' => 'monthly',
+                'provider' => 'TPGas',
+                'account_number' => 'GAS-003-2026',
+                'meter_number' => 'MTR-G-003',
+                'status' => 'active',
             ],
         ];
 
-        foreach ($utilities as $utilityData) {
-            Utility::create($utilityData);
+        $createdTenancyUtilities = [];
+        foreach ($tenancyUtilities as $utilityData) {
+            $createdTenancyUtilities[] = TenancyUtility::create($utilityData);
         }
 
-        $this->command->info('Utilities created successfully.');
+        $this->command->info('Tenancy utilities created successfully.');
 
         // ===========================================
-        // 8. CREATE NOTIFICATIONS
+        // 9. CREATE UTILITY BILLS
+        // ===========================================
+        $utilityBills = [
+            // Tenant 1 - all paid
+            [
+                'tenancy_utility_id' => $createdTenancyUtilities[0]->id,
+                'billing_month' => '2026-03-01',
+                'units_consumed' => 12.5,
+                'amount_due' => 45.50,
+                'amount_paid' => 45.50,
+                'due_date' => '2026-03-15',
+                'status' => 'paid',
+            ],
+            [
+                'tenancy_utility_id' => $createdTenancyUtilities[1]->id,
+                'billing_month' => '2026-03-01',
+                'units_consumed' => 89.75,
+                'amount_due' => 89.75,
+                'amount_paid' => 89.75,
+                'due_date' => '2026-03-15',
+                'status' => 'paid',
+            ],
+            // Tenant 2 - all paid
+            [
+                'tenancy_utility_id' => $createdTenancyUtilities[3]->id,
+                'billing_month' => '2026-03-01',
+                'units_consumed' => 10.2,
+                'amount_due' => 38.25,
+                'amount_paid' => 38.25,
+                'due_date' => '2026-03-15',
+                'status' => 'paid',
+            ],
+            [
+                'tenancy_utility_id' => $createdTenancyUtilities[4]->id,
+                'billing_month' => '2026-03-01',
+                'units_consumed' => 67.80,
+                'amount_due' => 67.80,
+                'amount_paid' => 67.80,
+                'due_date' => '2026-03-15',
+                'status' => 'paid',
+            ],
+            // Tenant 3 - unpaid
+            [
+                'tenancy_utility_id' => $createdTenancyUtilities[5]->id,
+                'billing_month' => '2026-03-01',
+                'units_consumed' => 14.8,
+                'amount_due' => 52.30,
+                'amount_paid' => 0,
+                'due_date' => '2026-03-15',
+                'status' => 'pending',
+            ],
+            [
+                'tenancy_utility_id' => $createdTenancyUtilities[6]->id,
+                'billing_month' => '2026-03-01',
+                'units_consumed' => 112.45,
+                'amount_due' => 112.45,
+                'amount_paid' => 0,
+                'due_date' => '2026-03-15',
+                'status' => 'pending',
+            ],
+            [
+                'tenancy_utility_id' => $createdTenancyUtilities[7]->id,
+                'billing_month' => '2026-03-01',
+                'units_consumed' => 8.0,
+                'amount_due' => 35.20,
+                'amount_paid' => 0,
+                'due_date' => '2026-03-15',
+                'status' => 'pending',
+            ],
+        ];
+
+        foreach ($utilityBills as $billData) {
+            UtilityBill::create($billData);
+        }
+
+        $this->command->info('Utility bills created successfully.');
+
+        // ===========================================
+        // 10. CREATE NOTIFICATIONS
         // ===========================================
         $notifications = [
             [
@@ -491,7 +612,9 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('Users: ' . User::count());
         $this->command->info('Tenancies: ' . Tenancy::count());
         $this->command->info('Payments: ' . Payment::count());
-        $this->command->info('Utilities: ' . Utility::count());
+        $this->command->info('Utility Types: ' . UtilityType::count());
+        $this->command->info('Tenancy Utilities: ' . TenancyUtility::count());
+        $this->command->info('Utility Bills: ' . UtilityBill::count());
         $this->command->info('Notifications: ' . Notification::count());
         $this->command->info('Messages: ' . Message::count());
         $this->command->info('=====================================');

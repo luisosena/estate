@@ -13,7 +13,7 @@ class TenantService
     {
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
-            ->with(['unit', 'payments', 'utilities'])
+            ->with(['unit', 'payments', 'tenancyUtilities'])
             ->first();
 
         return [
@@ -34,7 +34,7 @@ class TenantService
                 })
                 ->take(5)
                 ->values() ?? [],
-            'utilities' => $activeTenancy?->utilities,
+            'utilities' => $activeTenancy?->tenancyUtilities,
             'notifications' => $tenant->notifications()
                 ->latest()
                 ->take(5)
@@ -46,7 +46,7 @@ class TenantService
     {
         return $tenant->tenancies()
             ->where('status', 'active')
-            ->with(['unit', 'payments', 'utilities'])
+            ->with(['unit', 'payments', 'tenancyUtilities'])
             ->first();
     }
 }

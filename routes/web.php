@@ -17,6 +17,8 @@ use App\Http\Controllers\Web\Landlord\LandlordTenantController;
 use App\Http\Controllers\Web\Landlord\LandlordUnitController;
 use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
 use App\Http\Controllers\Web\Landlord\LandlordPaymentController;
+use App\Http\Controllers\Web\Landlord\LandlordUtilityController;
+use App\Http\Controllers\Web\Landlord\LandlordUtilityBillController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -165,6 +167,41 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/landlord/notifications/recent', [LandlordNotificationController::class, 'recent'])
         ->name('landlord.notifications.recent');
 
+    // Landlord Utility Management Routes
+    // IMPORTANT: index route must come BEFORE parameterized routes
+    Route::get('/landlord/utilities', [LandlordUtilityController::class, 'index'])
+        ->name('landlord.utilities.index');
+
+    Route::get('/landlord/tenancies/{tenancy}/utilities/create', [LandlordUtilityController::class, 'create'])
+        ->name('landlord.utilities.create');
+
+    Route::post('/landlord/tenancies/{tenancy}/utilities', [LandlordUtilityController::class, 'store'])
+        ->name('landlord.utilities.store');
+
+    // Show route must come AFTER index to avoid "utilities" being matched as tenancy ID
+    Route::get('/landlord/utilities/{tenancy}', [LandlordUtilityController::class, 'show'])
+        ->name('landlord.utilities.show');
+
+    Route::get('/landlord/tenancy-utilities/{tenancyUtility}/edit', [LandlordUtilityController::class, 'edit'])
+        ->name('landlord.utilities.edit');
+
+    Route::put('/landlord/tenancy-utilities/{tenancyUtility}', [LandlordUtilityController::class, 'update'])
+        ->name('landlord.utilities.update');
+
+    Route::delete('/landlord/tenancy-utilities/{tenancyUtility}', [LandlordUtilityController::class, 'destroy'])
+        ->name('landlord.utilities.destroy');
+
+    // Landlord Utility Bills Routes
+    // IMPORTANT: index route must come BEFORE parameterized routes
+    Route::get('/landlord/utility-bills', [LandlordUtilityBillController::class, 'index'])
+        ->name('landlord.utility-bills.index');
+
+    Route::get('/landlord/utility-bills/{utilityBill}', [LandlordUtilityBillController::class, 'show'])
+        ->name('landlord.utility-bills.show');
+
+    Route::post('/landlord/utility-bills/{utilityBill}/waive', [LandlordUtilityBillController::class, 'waive'])
+        ->name('landlord.utility-bills.waive');
+
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');
@@ -186,6 +223,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/tenant/utilities', [TenantUtilitiesController::class, 'index'])
         ->name('tenant.utilities');
+
+    Route::get('/tenant/utilities/bills', [TenantUtilitiesController::class, 'bills'])
+        ->name('tenant.utilities.bills');
 
     // Tenant Notification Management Routes
     Route::get('/tenant/notifications', [TenantNotificationController::class, 'index'])

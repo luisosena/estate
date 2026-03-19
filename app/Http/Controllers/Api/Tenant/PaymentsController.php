@@ -8,6 +8,8 @@ use App\Models\Payment;
 use App\Models\Tenancy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\UtilityService;
+use App\Models\UtilityBill;
 
 class PaymentsController extends Controller
 {
@@ -66,6 +68,7 @@ class PaymentsController extends Controller
             'amount' => 'required|numeric|min:1|max:100000000',
             'payment_type' => 'required|in:rent,utility',
             'payment_method' => 'required|in:mobile_money,bank_transfer',
+            'utility_bill_id' => 'required_if:payment_type,utility|nullable|exists:utility_bills,id',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
         ]);
@@ -132,7 +135,7 @@ class PaymentsController extends Controller
                 }
 
                 // Create payment
-                $payment = Payment::create([
+                $paymentData = [
                     'tenant_id' => $tenant->id,
                     'tenancy_id' => $activeTenancy->id,
                     'amount' => $validated['amount'],
@@ -142,7 +145,44 @@ class PaymentsController extends Controller
                     'paid_at' => now(),
                     'reference_number' => $validated['reference_number'] ?? null,
                     'notes' => $validated['notes'] ?? null,
-                ]);
+                ];
+
+                // Link to utility bill if provided
+                if ($validated['payment_type'] === 'utility' && !empty($validated['utility_bill_id'])) {
+                    $utilityBill = UtilityBill::with('tenancyUtility.tenancy.unit.property')
+                        ->find($validated['utility_bill_id']);
+                    
+                    // Verify the bill exists and belongs to this tenant's tenancy
+                    if (!$utilityBill) {
+                        return response()->json([
+                            'error' => 'Utility bill not found.',
+                        ], 422);
+                    }
+                    
+                    if ($utilityBill->tenancyUtility->tenancy_id !== $activeTenancy->id) {
+                        return response()->json([
+                            'error' => 'This utility bill does not belong to your active tenancy.',
+                        ], 422);
+                    }
+                    
+                    // Verify the bill is payable (not already paid or waived)
+                    if (in_array($utilityBill->status, ['paid', 'waived'])) {
+                        return response()->json([
+                            'error' => 'This utility bill has already been ' . $utilityBill->status . '.',
+                        ], 422);
+                    }
+                    
+                    $paymentData['utility_bill_id'] = $utilityBill->id;
+                    
+                    // Process the utility bill payment
+                    try {
+                        app(UtilityService::class)->processUtilityPayment($utilityBill, $validated['amount']);
+                    } catch (\InvalidArgumentException $e) {
+                        return response()->json(['error' => $e->getMessage()], 422);
+                    }
+                }
+
+                $payment = Payment::create($paymentData);
 
                 Log::info('Payment created via API by tenant', [
                     'payment_id' => $payment->id,

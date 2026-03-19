@@ -163,14 +163,27 @@ export interface LandlordDashboard {
 // Tenant-Specific Types
 // ──────────────────────────────────────────
 
+export interface UtilityType {
+  id: number;
+  name: string;
+  unit: string;
+  description: string | null;
+  is_metered: boolean;
+  is_active: boolean;
+}
+
 export interface Utility {
   id: number;
-  type: 'water' | 'electricity' | 'gas' | 'internet' | 'other';
+  tenancy_id: number;
+  utility_type_id: number;
   amount: number;
-  due_date: string;
-  status: 'pending' | 'paid' | 'overdue';
-  reading: number | null;
-  period: string | null;
+  billing_cycle: 'monthly' | 'quarterly' | 'annual';
+  provider: string | null;
+  account_number: string | null;
+  meter_number: string | null;
+  status: 'active' | 'suspended' | 'disconnected';
+  notes: string | null;
+  utility_type: UtilityType | null;
 }
 
 export interface TenantDashboard {

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Tenant;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -31,7 +30,7 @@ class DashboardController extends Controller
 
             $activeTenancy = $tenant->tenancies()
                 ->where('status', 'active')
-                ->with(['unit', 'payments', 'utilities'])
+                ->with(['unit', 'payments', 'tenancyUtilities.utilityType'])
                 ->first();
 
             return response()->json([
@@ -56,7 +55,7 @@ class DashboardController extends Controller
                     ->take(5)
                     ->values() ?? [],
 
-                'utilities' => $activeTenancy?->utilities,
+                'utilities' => $activeTenancy?->tenancyUtilities,
 
                 'notifications' => $tenant->notifications()
                     ->latest()

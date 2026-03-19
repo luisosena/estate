@@ -33,7 +33,7 @@ class TenantDashboardController extends Controller
 
             $activeTenancy = $tenant->tenancies()
                 ->where('status', 'active')
-                ->with(['unit', 'payments', 'utilities'])
+                ->with(['unit', 'payments', 'tenancyUtilities.utilityType', 'tenancyUtilities.bills'])
                 ->first();
 
             return Inertia::render('tenant/dashboard', [
@@ -58,7 +58,20 @@ class TenantDashboardController extends Controller
                     ->take(5)
                     ->values() ?? [],
 
-                'utilities' => $activeTenancy?->utilities,
+                'utilities' => $activeTenancy?->tenancyUtilities
+                    ?->map(function ($u) {
+                        $pendingBills = $u->bills
+                            ?->filter(fn($b) => in_array($b->status, ['pending', 'partial', 'overdue'])) ?? collect();
+                        return [
+                            'id' => $u->id,
+                            'amount' => $u->amount,
+                            'billing_cycle' => $u->billing_cycle,
+                            'status' => $pendingBills->isEmpty() ? 'paid' : $pendingBills->first()->status,
+                            'utility_type' => $u->utilityType?->name,
+                            'pending_balance' => $pendingBills->sum(fn($b) => $b->amount_due - $b->amount_paid),
+                        ];
+                    })
+                    ?->values() ?? [],
 
                 'notifications' => $tenant->user->notifications()
                     ->latest()

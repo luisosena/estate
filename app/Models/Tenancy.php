@@ -44,15 +44,6 @@ class Tenancy extends Model
     }
 
     /**
-     * Legacy utilities relationship - points to old utilities table.
-     * Note: This should be renamed or removed after data migration.
-     */
-    public function utilities()
-    {
-        return $this->hasMany(Utility::class);
-    }
-
-    /**
      * New utility relationships for the refactored utility system.
      * These link to tenancy_utilities (which utilities apply to this tenancy).
      */
