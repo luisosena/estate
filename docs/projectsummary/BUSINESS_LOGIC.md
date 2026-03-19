@@ -510,12 +510,109 @@ public function destroy(Tenant $tenant)
 'notes' => 'nullable|string',
 ```
 
+#### Record Utility Payment
+**Who**: Admin, Landlord
+
+**Additional Validation for utility payments**:
+```php
+'utility_bill_id' => 'required_if:type,utility|exists:utility_bills,id',
+```
+
+**Flow**:
+```mermaid
+sequenceDiagram
+    participant Landlord
+    participant Controller
+    participant Request
+    participant UtilityBill
+    participant Payment
+    
+    Landlord->>Controller: POST /payments (type=utility, utility_bill_id)
+    Controller->>Request: Validate
+    Request->>Controller: Valid
+    Controller->>UtilityBill: Find utility bill
+    Controller->>Payment: Create payment
+    Payment->>UtilityBill: Update amount_paid
+    UtilityBill->>UtilityBill: Check if fully paid, update status
+    Controller->>Landlord: Redirect with success
+```
+
 #### Payment Status Flow
 ```
 pending → completed (successful payment)
 pending → failed (failed payment)
 completed → refunded (payment refunded)
 ```
+
+---
+
+### 5. Utility Management
+
+The utility system has been refactored to use a three-table pattern: `utility_types` → `tenancy_utilities` → `utility_bills`.
+
+#### Add Utility to Tenancy
+**Who**: Admin, Landlord
+
+**Flow**:
+```mermaid
+sequenceDiagram
+    participant Landlord
+    participant Controller
+    participant TenancyUtility
+    participant UtilityBill
+    
+    Landlord->>Controller: POST /tenancies/{id}/utilities
+    Controller->>TenancyUtility: Create tenancy_utility record
+    TenancyUtility->>Controller: Created
+    Controller->>Landlord: Redirect with success
+```
+
+**Validation**:
+```php
+'utility_type_id' => 'required|exists:utility_types,id',
+'amount' => 'required|numeric|min:0',
+'billing_cycle' => 'required|in:monthly,quarterly,annual',
+'provider' => 'nullable|string|max:255',
+'meter_number' => 'nullable|string|max:100',
+'status' => 'required|in:active,suspended,disconnected',
+```
+
+#### Generate Monthly Utility Bills
+**Who**: System (scheduled command)
+
+**Console Command**: `php artisan utility-bills:generate-monthly`
+
+**Flow**:
+1. Gets all active tenancy_utilities
+2. For each, creates a utility_bill for the current month
+3. Uses firstOrCreate to avoid duplicates
+4. Sets amount_due from tenancy_utility.amount
+5. Sets due_date to end of month
+6. Status defaults to 'pending'
+
+#### Mark Bills Overdue
+**Who**: System (scheduled command)
+
+**Console Command**: `php artisan utility-bills:mark-overdue`
+
+**Flow**:
+1. Finds all utility_bills where status is 'pending' or 'partial'
+2. Checks if due_date < today()
+3. Updates status to 'overdue'
+
+#### Utility Bill Status Flow
+```
+pending → partial (partial payment received)
+partial → paid (full payment received)
+partial → overdue (due_date passed)
+pending → overdue (due_date passed without payment)
+overdue → paid (late payment received)
+overdue → waived (bill waived by landlord)
+```
+
+---
+
+## State Machines
 
 ---
 

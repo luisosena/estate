@@ -126,6 +126,16 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 - **`Models`**
   - `User.php`: main auth user model (Fortify enabled).
   - `Tenant.php`: domain model for tenants.
+  - `UtilityType.php`: utility category catalog (water, electricity, security, etc.).
+  - `TenancyUtility.php`: links tenancies to utility types with billing amounts.
+  - `UtilityBill.php`: monthly charge records for utilities.
+  - `Payment.php`: tracks all payments including utility payments.
+
+- **`Services`**
+  - `UtilityService.php`: service for managing utility connections (legacy system).
+
+- **`Rules`**
+  - `UtilityBillBelongsToTenancy.php`: validation rule ensuring utility bills belong to the correct tenancy.
 
 - **`Providers`**
   - `AppServiceProvider.php`: app bootstrapping and bindings.
@@ -150,8 +160,13 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - `0001_01_01_000002_create_jobs_table.php`: queue jobs.
   - `2025_08_26_100418_add_two_factor_columns_to_users_table.php`: 2FA columns on `users`.
   - `2026_01_21_102634_create_tenants_table.php`: tenants schema.
+  - `2026_03_20_000001_create_utility_types_table.php`: utility types catalog.
+  - `2026_03_20_000002_create_tenancy_utilities_table.php`: tenancy utility assignments.
+  - `2026_03_20_000003_create_utility_bills_table.php`: monthly utility bills.
+  - `2026_03_20_000004_add_utility_bill_id_to_payments_table.php`: links payments to utility bills.
 - **`factories/UserFactory.php`**: user factory.
 - **`seeders/DatabaseSeeder.php`**: database seeding entrypoint.
+- **`seeders/UtilityTypeSeeder.php`**: seeds default utility types (Water, Electricity, Gas, Internet, Security, Janitor, Garbage, Parking).
 
 #### `resources/`
 
