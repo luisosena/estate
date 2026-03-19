@@ -131,11 +131,22 @@ app/Notifications/
 
 ### Utility Module
 ```
+app/Http/Controllers/Web/Landlord/LandlordUtilityController.php
+app/Http/Controllers/Web/Landlord/LandlordUtilityBillController.php
 app/Http/Controllers/Web/Tenant/TenantUtilitiesController.php
-app/Models/Utility.php
+app/Http/Controllers/Api/Landlord/TenancyUtilityController.php
+app/Http/Controllers/Api/Landlord/UtilityBillController.php
+app/Http/Controllers/Api/Landlord/UtilityTypeController.php
+app/Models/UtilityType.php
+app/Models/TenancyUtility.php
+app/Models/UtilityBill.php
 app/Services/UtilityService.php
 ```
-- **Features**: Utility tracking (water, electricity, etc.)
+- **Features**: Utility tracking (water, electricity, etc.), utility bill management, utility type catalog
+- **New Three-Table System**: Replaced the old single `utilities` table with:
+  - `UtilityType` - Catalog of utility categories (admin-managed)
+  - `TenancyUtility` - Links tenancies to utility types with billing details
+  - `UtilityBill` - Individual monthly charge records
 
 ### Security Module
 ```
@@ -212,13 +223,16 @@ sequenceDiagram
 /landlord/properties   -> LandlordPropertyController
 /landlord/units       -> LandlordUnitController
 /landlord/tenants     -> LandlordTenantController
-/landlord/payments    -> LandlordPaymentController
-/landlord/notifications -> LandlordNotificationController
+/landlord/payments       -> LandlordPaymentController
+/landlord/utilities      -> LandlordUtilityController
+/landlord/utility-bills  -> LandlordUtilityBillController
+/landlord/notifications  -> LandlordNotificationController
 
-/tenant/dashboard     -> TenantDashboardController
-/tenant/payments     -> TenantPaymentsController
-/tenant/utilities    -> TenantUtilitiesController
-/tenant/notifications -> TenantNotificationController
+/tenant/dashboard      -> TenantDashboardController
+/tenant/payments      -> TenantPaymentsController
+/tenant/utilities     -> TenantUtilitiesController
+/tenant/utilities/bills -> TenantUtilitiesController (bills)
+/tenant/notifications  -> TenantNotificationController
 
 /settings/profile     -> ProfileController
 /settings/password   -> PasswordController
@@ -232,16 +246,20 @@ sequenceDiagram
 /api/auth/me          -> AuthController@me
 /api/auth/sessions    -> SessionController
 
-/api/tenant/dashboard -> Tenant\DashboardController
-/api/tenant/payments  -> Tenant\PaymentsController
-/api/tenant/utilities -> Tenant\UtilitiesController
+/api/tenant/dashboard    -> Tenant\DashboardController
+/api/tenant/payments     -> Tenant\PaymentsController
+/api/tenant/utilities    -> Tenant\UtilitiesController
+/api/tenant/utility-bills -> Tenant\UtilitiesController (bills)
 
-/api/landlord/dashboard   -> Landlord\DashboardController
-/api/landlord/properties  -> Landlord\PropertyController
-/api/landlord/units       -> Landlord\UnitController
-/api/landlord/tenants     -> Landlord\TenantController
-/api/landlord/payments    -> Landlord\PaymentController
-/api/landlord/notifications -> Landlord\NotificationController
+/api/landlord/dashboard        -> Landlord\DashboardController
+/api/landlord/properties       -> Landlord\PropertyController
+/api/landlord/units            -> Landlord\UnitController
+/api/landlord/tenants         -> Landlord\TenantController
+/api/landlord/payments        -> Landlord\PaymentController
+/api/landlord/utility-types   -> Landlord\UtilityTypeController
+/api/landlord/tenancy-utilities -> Landlord\TenancyUtilityController
+/api/landlord/utility-bills   -> Landlord\UtilityBillController
+/api/landlord/notifications    -> Landlord\NotificationController
 ```
 
 ## Middleware Stack

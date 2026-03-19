@@ -465,6 +465,94 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 ---
 
+#### Utility Types
+
+##### GET /api/landlord/utility-types
+**Description**: List all utility types
+**Auth Required**: Yes
+
+**Response** (200):
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Water",
+      "unit": "cubic metres",
+      "description": "Water supply",
+      "is_metered": true,
+      "is_active": true
+    }
+  ]
+}
+```
+
+##### GET /api/landlord/utility-types/{id}
+**Description**: Get utility type details
+
+---
+
+#### Tenancy Utilities (New Three-Table System)
+
+##### GET /api/landlord/tenancies/{tenancy}/utilities
+**Description**: List utilities for a tenancy
+**Auth Required**: Yes
+
+##### POST /api/landlord/tenancies/{tenancy}/utilities
+**Description**: Create a new utility for a tenancy
+
+##### GET /api/landlord/tenancy-utilities/{id}
+**Description**: Get tenancy utility details
+
+##### PUT /api/landlord/tenancy-utilities/{id}
+**Description**: Update tenancy utility
+
+##### DELETE /api/landlord/tenancy-utilities/{id}
+**Description**: Delete/remove utility from tenancy
+
+---
+
+#### Utility Bills
+
+##### GET /api/landlord/utility-bills
+**Description**: List all utility bills
+**Auth Required**: Yes
+
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| status | string | Filter by status (pending, paid, partial, overdue) |
+| per_page | int | Items per page |
+
+**Response** (200):
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "tenancy_utility_id": 1,
+      "billing_month": "2026-03-01",
+      "units_consumed": 25.5,
+      "amount_due": 150.00,
+      "amount_paid": 0,
+      "due_date": "2026-03-25",
+      "status": "pending"
+    }
+  ]
+}
+```
+
+##### GET /api/landlord/utility-bills/{id}
+**Description**: Get utility bill details
+
+##### PUT /api/landlord/utility-bills/{id}
+**Description**: Update utility bill (e.g., record units consumed)
+
+##### POST /api/landlord/utility-bills/{id}/waive
+**Description**: Waive a utility bill
+
+---
+
 #### Notifications
 
 ##### GET /api/landlord/notifications
@@ -547,7 +635,7 @@ GET /api/landlord/tenants?page=2&per_page=25
 #### Utilities
 
 ##### GET /api/tenant/utilities
-**Description**: Get tenant's utilities
+**Description**: Get tenant's utilities (from new tenancy_utilities table)
 **Auth Required**: Yes (tenant role)
 
 **Response** (200):
@@ -556,10 +644,37 @@ GET /api/landlord/tenants?page=2&per_page=25
   "data": [
     {
       "id": 1,
-      "type": "water",
+      "utility_type": {
+        "name": "Water",
+        "unit": "cubic metres"
+      },
+      "amount": 50.00,
+      "billing_cycle": "monthly",
       "provider": "DAWASCO",
       "account_number": "WATER123",
       "status": "active"
+    }
+  ]
+}
+```
+
+##### GET /api/tenant/utility-bills
+**Description**: Get tenant's utility bills
+**Auth Required**: Yes (tenant role)
+
+**Response** (200):
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "utility_type": "Water",
+      "billing_month": "2026-03-01",
+      "units_consumed": 25.5,
+      "amount_due": 150.00,
+      "amount_paid": 0,
+      "due_date": "2026-03-25",
+      "status": "pending"
     }
   ]
 }
@@ -621,6 +736,16 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
 | DELETE | /landlord/tenants/{id} | LandlordTenantController | End tenancy |
 | GET | /landlord/payments | LandlordPaymentController | Payment list |
 | POST | /landlord/payments | LandlordPaymentController | Create payment |
+| GET | /landlord/utilities | LandlordUtilityController | Utility list |
+| GET | /landlord/utilities/{tenancy} | LandlordUtilityController | View tenancy utilities |
+| GET | /landlord/tenancies/{tenancy}/utilities/create | LandlordUtilityController | Create utility form |
+| POST | /landlord/tenancies/{tenancy}/utilities | LandlordUtilityController | Create utility |
+| GET | /landlord/tenancy-utilities/{id}/edit | LandlordUtilityController | Edit utility form |
+| PUT | /landlord/tenancy-utilities/{id} | LandlordUtilityController | Update utility |
+| DELETE | /landlord/tenancy-utilities/{id} | LandlordUtilityController | Delete utility |
+| GET | /landlord/utility-bills | LandlordUtilityBillController | Utility bill list |
+| GET | /landlord/utility-bills/{id} | LandlordUtilityBillController | View utility bill |
+| POST | /landlord/utility-bills/{id}/waive | LandlordUtilityBillController | Waive utility bill |
 | GET | /landlord/notifications | LandlordNotificationController | Notifications |
 
 ### Tenant Routes
@@ -629,6 +754,7 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
 | GET | /tenant/dashboard | TenantDashboardController | Tenant dashboard |
 | GET | /tenant/payments | TenantPaymentsController | Payment history |
 | GET | /tenant/utilities | TenantUtilitiesController | Utility list |
+| GET | /tenant/utilities/bills | TenantUtilitiesController | Utility bills |
 | GET | /tenant/notifications | TenantNotificationController | Notifications |
 
 ### Settings Routes

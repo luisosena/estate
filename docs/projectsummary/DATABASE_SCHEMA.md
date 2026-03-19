@@ -385,19 +385,17 @@ erDiagram
 
 ---
 
-### 10. utilities (Legacy)
+### 10. utilities (DROPPED)
 
-**Purpose**: **DEPRECATED** - Original utility tracking table. Being replaced by the utility_types + tenancy_utilities + utility_bills system.
+**Purpose**: **DROPPED** - Original utility tracking table. Has been replaced by the utility_types + tenancy_utilities + utility_bills system.
 
-> **Note**: The old `utilities` table will eventually be replaced by the new three-table utility system. Do not create new records in this table; use the new utility management system instead.
+> **Warning**: This table was dropped in migration `database/migrations/2026_03_19_120000_drop_deprecated_utilities_table.php`. The new three-table utility system (utility_types, tenancy_utilities, utility_bills) should be used instead.
 
-**Migration**: `database/migrations/2026_01_30_120843_create_utilities_table.php`
+**Migration**: `database/migrations/2026_01_30_120843_create_utilities_table.php` (original creation)
 
-**Attributes**:
+**Dropped Migration**: `database/migrations/2026_03_19_120000_drop_deprecated_utilities_table.php`
 
-**Migration**: `database/migrations/2026_01_30_120843_create_utilities_table.php`
-
-**Attributes**:
+**Historical Attributes** (for reference only):
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
@@ -420,7 +418,7 @@ erDiagram
 
 ---
 
-### 8. tenant_identifications
+### 11. tenant_identifications
 
 **Purpose**: Stores tenant identification documents.
 
@@ -449,7 +447,7 @@ erDiagram
 
 ---
 
-### 9. notifications
+### 12. notifications
 
 **Purpose**: In-app notifications for users.
 
@@ -477,7 +475,7 @@ erDiagram
 
 ---
 
-### 10. messages
+### 13. messages
 
 **Purpose**: Internal messaging between users.
 
@@ -506,7 +504,7 @@ erDiagram
 
 ---
 
-### 11. api_tokens
+### 14. api_tokens
 
 **Purpose**: API authentication tokens for mobile/web API access.
 
@@ -539,7 +537,7 @@ erDiagram
 
 ---
 
-### 12. security_events
+### 15. security_events
 
 **Purpose**: Audit log for security-related events.
 
@@ -582,7 +580,7 @@ erDiagram
 
 ---
 
-### 13. Laravel System Tables
+### 16. Laravel System Tables
 
 The following tables are created by Laravel framework:
 
