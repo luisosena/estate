@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Services\RentBillService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,13 @@ use Illuminate\Validation\Rule;
 
 class LandlordPaymentController extends Controller
 {
+    protected RentBillService $rentBillService;
+
+    public function __construct(RentBillService $rentBillService)
+    {
+        $this->rentBillService = $rentBillService;
+    }
+
     /**
      * Store a new payment record for a tenant.
      *
@@ -41,6 +49,7 @@ class LandlordPaymentController extends Controller
             'payment_method' => 'required|string|max:255',
             'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
             'paid_at' => 'required|date',
+            'rent_bill_id' => 'nullable|exists:rent_bills,id',
         ]);
 
         try {
@@ -53,16 +62,46 @@ class LandlordPaymentController extends Controller
                     ->with('error', 'This tenant has no active tenancy.');
             }
 
-            // Create the payment record
-            $payment = Payment::create([
+            // Handle rent_bill_id for rent payments using the service
+            $rentBillId = null;
+            if ($validated['payment_type'] === 'rent') {
+                $billLinkResult = $this->rentBillService->linkPaymentToBill(
+                    $activeTenancy->id,
+                    !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                    false // Not required - allows payments without bill
+                );
+                $rentBillId = $billLinkResult['rent_bill_id'];
+            }
+
+            // Prepare payment data
+            $paymentData = [
                 'tenant_id' => $tenant->id,
                 'tenancy_id' => $activeTenancy->id,
+                'rent_bill_id' => $rentBillId,
                 'amount' => $validated['amount'],
                 'payment_type' => $validated['payment_type'],
                 'payment_method' => $validated['payment_method'],
                 'status' => $validated['status'],
                 'paid_at' => $validated['paid_at'],
-            ]);
+            ];
+
+            // Create payment with transactional rent bill processing if applicable
+            $payment = null;
+            if ($validated['payment_type'] === 'rent' && $rentBillId && in_array($validated['status'], ['paid', 'partial'])) {
+                try {
+                    $payment = $this->rentBillService->createPaymentWithRentBill(
+                        $paymentData,
+                        $rentBillId,
+                        $validated['amount']
+                    );
+                } catch (\InvalidArgumentException $e) {
+                    // Bill already processed, continue with payment but warn
+                    $payment = Payment::create($paymentData);
+                }
+            } else {
+                // No rent bill linked or not applicable - create payment normally
+                $payment = Payment::create($paymentData);
+            }
 
             Log::info('Payment record created', [
                 'payment_id' => $payment->id,

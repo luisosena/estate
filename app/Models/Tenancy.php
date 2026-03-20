@@ -56,4 +56,12 @@ class Tenancy extends Model
     {
         return $this->hasMany(TenancyUtility::class)->where('status', 'active');
     }
+
+    /**
+     * Rent bills for this tenancy.
+     */
+    public function rentBills(): HasMany
+    {
+        return $this->hasMany(RentBill::class);
+    }
 }

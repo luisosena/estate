@@ -30,6 +30,19 @@ class Kernel extends ConsoleKernel
             ->monthlyOn(1, '00:01')
             ->withoutOverlapping()
             ->description('Generate monthly utility bills for active tenancy utilities');
+
+        // Daily at 00:30 - Mark pending and partial rent bills as overdue
+        $schedule->command('rent-bills:mark-overdue')
+            ->daily()
+            ->at('00:30')
+            ->withoutOverlapping()
+            ->description('Mark pending and partial rent bills as overdue when due date passes');
+
+        // Monthly on the 1st at 00:02 - Generate monthly rent bills for all active tenancies
+        $schedule->command('rent-bills:generate-monthly')
+            ->monthlyOn(1, '00:02')
+            ->withoutOverlapping()
+            ->description('Generate monthly rent bills for active tenancies');
     }
 
     /**

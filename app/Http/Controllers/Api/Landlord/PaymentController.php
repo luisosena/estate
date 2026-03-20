@@ -5,12 +5,21 @@ namespace App\Http\Controllers\Api\Landlord;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenant;
+use App\Models\RentBill;
+use App\Services\RentBillService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 
 class PaymentController extends Controller
 {
+    protected RentBillService $rentBillService;
+
+    public function __construct(RentBillService $rentBillService)
+    {
+        $this->rentBillService = $rentBillService;
+    }
+
     /**
      * Get all payments for the landlord.
      * GET /api/v1/landlord/payments
@@ -24,7 +33,7 @@ class PaymentController extends Controller
         $query = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
                 $query->where('owner_id', $landlord->id);
             })
-            ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name'])
+            ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name', 'rentBill:id,billing_month,status'])
             ->orderBy('paid_at', 'desc');
 
         $totalItems = $query->count();
@@ -45,6 +54,12 @@ class PaymentController extends Controller
                     'tenant_code' => $payment->tenant?->tenant_code,
                     'unit_number' => $payment->tenancy?->unit?->unit_code,
                     'property_name' => $payment->tenancy?->unit?->property?->name,
+                    'rent_bill_id' => $payment->rent_bill_id,
+                    'rent_bill' => $payment->rentBill ? [
+                        'id' => $payment->rentBill->id,
+                        'billing_month' => $payment->rentBill->billing_month->format('Y-m'),
+                        'status' => $payment->rentBill->status,
+                    ] : null,
                 ];
             });
 
@@ -106,6 +121,7 @@ class PaymentController extends Controller
             'payment_method' => 'required|string|max:255',
             'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
             'paid_at' => 'required|date',
+            'rent_bill_id' => 'nullable|exists:rent_bills,id',
         ]);
 
         // Verify tenant belongs to landlord's property
@@ -130,23 +146,59 @@ class PaymentController extends Controller
             ], 422);
         }
 
-        // Create the payment record
-        $payment = Payment::create([
+        // Handle rent_bill_id for rent payments using the service
+        $rentBillId = null;
+        $rentBillWarning = null;
+        if ($validated['payment_type'] === 'rent') {
+            $billLinkResult = $this->rentBillService->linkPaymentToBill(
+                $activeTenancy->id,
+                !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                false // Not required - allows payments without bill
+            );
+            $rentBillId = $billLinkResult['rent_bill_id'];
+            if ($billLinkResult['error']) {
+                $rentBillWarning = $billLinkResult['error'] . ' Using current month bill instead.';
+            }
+        }
+
+        // Prepare payment data
+        $paymentData = [
             'tenant_id' => $tenant->id,
             'tenancy_id' => $activeTenancy->id,
+            'rent_bill_id' => $rentBillId,
             'amount' => $validated['amount'],
             'payment_type' => $validated['payment_type'],
             'payment_method' => $validated['payment_method'],
             'status' => $validated['status'],
             'paid_at' => $validated['paid_at'],
-        ]);
+        ];
 
-        return response()->json([
+        // Create payment with transactional rent bill processing if applicable
+        $payment = null;
+        if ($validated['payment_type'] === 'rent' && $rentBillId && in_array($validated['status'], ['paid', 'partial'])) {
+            try {
+                $payment = $this->rentBillService->createPaymentWithRentBill(
+                    $paymentData,
+                    $rentBillId,
+                    $validated['amount']
+                );
+            } catch (\InvalidArgumentException $e) {
+                // Bill already processed, continue with payment but warn
+                $rentBillWarning = $e->getMessage();
+                $payment = Payment::create($paymentData);
+            }
+        } else {
+            // No rent bill linked or not applicable - create payment normally
+            $payment = Payment::create($paymentData);
+        }
+
+        $response = [
             'message' => 'Payment created successfully',
             'payment' => [
                 'id' => $payment->id,
                 'tenant_id' => $payment->tenant_id,
                 'tenancy_id' => $payment->tenancy_id,
+                'rent_bill_id' => $payment->rent_bill_id,
                 'amount' => $payment->amount,
                 'payment_type' => $payment->payment_type,
                 'payment_method' => $payment->payment_method,
@@ -154,7 +206,14 @@ class PaymentController extends Controller
                 'paid_at' => $payment->paid_at,
                 'created_at' => $payment->created_at,
             ],
-        ], 201);
+        ];
+
+        // Include warning if rent bill was not found as specified
+        if ($rentBillWarning) {
+            $response['warning'] = $rentBillWarning;
+        }
+
+        return response()->json($response, 201);
     }
 
     /**

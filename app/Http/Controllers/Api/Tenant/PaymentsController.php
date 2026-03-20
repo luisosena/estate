@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenancy;
+use App\Models\RentBill;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\UtilityService;
+use App\Services\RentBillService;
 use App\Models\UtilityBill;
 
 class PaymentsController extends Controller
@@ -101,6 +103,7 @@ class PaymentsController extends Controller
             'payment_type' => 'required|in:rent,utility',
             'payment_method' => 'required|in:mobile_money,bank_transfer',
             'utility_bill_id' => 'required_if:payment_type,utility|nullable|exists:utility_bills,id',
+            'rent_bill_id' => 'nullable|exists:rent_bills,id',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
         ]);
@@ -158,17 +161,29 @@ class PaymentsController extends Controller
                     }
                 }
 
-                // Determine status for this payment
-                // For rent payments: calculate based on amount vs monthly rent
+                // Determine initial status for this payment
                 // For utility payments: status will be synced from utility bill below
-                $status = ($validated['payment_type'] === 'rent' && $newTotalPaid >= $monthlyRent) 
-                    ? 'paid' 
-                    : 'partial';
+                // For rent payments: status will be determined by rent bill after processing
+                $status = 'pending';
+
+                // Handle rent_bill_id for rent payments using the service
+                $rentBillId = null;
+                $rentBillError = null;
+                if ($validated['payment_type'] === 'rent') {
+                    $billLinkResult = app(RentBillService::class)->linkPaymentToBill(
+                        $activeTenancy->id,
+                        !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                        false // Not required - allows payments without bill
+                    );
+                    $rentBillId = $billLinkResult['rent_bill_id'];
+                    $rentBillError = $billLinkResult['error'];
+                }
 
                 // Create payment
                 $paymentData = [
                     'tenant_id' => $tenant->id,
                     'tenancy_id' => $activeTenancy->id,
+                    'rent_bill_id' => $rentBillId,
                     'amount' => $validated['amount'],
                     'payment_type' => $validated['payment_type'],
                     'payment_method' => $validated['payment_method'],
@@ -227,7 +242,31 @@ class PaymentsController extends Controller
                     }
                 }
 
-                $payment = Payment::create($paymentData);
+                // Create payment with transactional rent bill processing
+                $payment = null;
+                $rentBillWarning = null;
+                
+                if ($validated['payment_type'] === 'rent' && $rentBillId) {
+                    try {
+                        // Use transactional service method for atomic payment + rent bill update
+                        $payment = app(RentBillService::class)->createPaymentWithRentBill(
+                            $paymentData,
+                            $rentBillId,
+                            $validated['amount']
+                        );
+                    } catch (\InvalidArgumentException $e) {
+                        // Bill already processed, continue with payment but warn
+                        $rentBillWarning = $e->getMessage();
+                        $payment = Payment::create($paymentData);
+                        Log::warning('Rent bill payment processing skipped', [
+                            'rent_bill_id' => $rentBillId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                } else {
+                    // No rent bill linked - create payment normally
+                    $payment = Payment::create($paymentData);
+                }
 
                 Log::info('Payment created via API by tenant', [
                     'payment_id' => $payment->id,
@@ -246,12 +285,23 @@ class PaymentsController extends Controller
                 ], 422);
             }
 
-            return response()->json([
+            // Include warning if rent bill was not found/linked properly
+            $response = [
                 'success' => true,
                 'message' => 'Payment processed successfully!',
                 'payment' => $result['payment'],
                 'excessAmount' => $result['excessAmount'] ?? 0,
-            ], 201);
+            ];
+            
+            if (!empty($rentBillWarning)) {
+                $response['warning'] = $rentBillWarning;
+            }
+            
+            if (!empty($rentBillError)) {
+                $response['rent_bill_warning'] = $rentBillError;
+            }
+            
+            return response()->json($response, 201);
 
         } catch (\Exception $e) {
             Log::error('Failed to process payment via API', [

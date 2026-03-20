@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\Landlord\NotificationController;
 use App\Http\Controllers\Api\Landlord\UtilityTypeController;
 use App\Http\Controllers\Api\Landlord\TenancyUtilityController;
 use App\Http\Controllers\Api\Landlord\UtilityBillController;
+use App\Http\Controllers\Api\Landlord\RentBillController;
+use App\Http\Controllers\Api\Tenant\RentBillController as TenantRentBillController;
 use App\Http\Controllers\Api\Tenant\UtilitiesController as TenantUtilitiesController;
 
 /*
@@ -55,6 +57,11 @@ $defineApiRoutes = function (): void {
             });
             Route::get('utilities', [UtilitiesController::class, 'index']);
             Route::get('utility-bills', [TenantUtilitiesController::class, 'bills']);
+            
+            // Rent Bill Management
+            Route::get('rent-bills', [TenantRentBillController::class, 'index']);
+            Route::get('rent-bills/current', [TenantRentBillController::class, 'current']);
+            Route::get('rent-bills/{id}', [TenantRentBillController::class, 'show']);
         });
 
         // Landlord routes
@@ -104,6 +111,13 @@ $defineApiRoutes = function (): void {
             Route::get('utility-bills/{utilityBill}', [UtilityBillController::class, 'show']);
             Route::put('utility-bills/{utilityBill}', [UtilityBillController::class, 'update']);
             Route::post('utility-bills/{utilityBill}/waive', [UtilityBillController::class, 'waive']);
+            
+            // Rent Bill Management
+            Route::get('rent-bills', [RentBillController::class, 'index']);
+            Route::get('rent-bills/overdue', [RentBillController::class, 'overdue']);
+            Route::get('rent-bills/pending', [RentBillController::class, 'pending']);
+            Route::get('rent-bills/{id}', [RentBillController::class, 'show']);
+            Route::post('rent-bills/{id}/waive', [RentBillController::class, 'waive']);
         });
     });
 

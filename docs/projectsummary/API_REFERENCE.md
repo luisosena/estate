@@ -273,6 +273,9 @@ GET /api/landlord/tenants?page=2&per_page=25
 | monthly_revenue | decimal | Expected monthly rent revenue |
 | pending_payments | int | Number of payments awaiting confirmation |
 | overdue_payments | int | Number of overdue payments (past due date) |
+| pending_rent_bills | int | Number of pending rent bills |
+| overdue_rent_bills | int | Number of overdue rent bills |
+| total_rent_outstanding | decimal | Total outstanding rent amount |
 | recent_payments | array | Latest payment records |
 | expiring_tenancies | array | Tenancies expiring in next 30 days |
 
@@ -489,6 +492,13 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 **Note**: For utility payments, the status will be synced with the linked utility bill's status after creation.
 
+**Payment Integration with Rent Bills**:
+For rent payments, you can optionally link a payment to a specific rent bill using `rent_bill_id`. If not provided, the system will automatically link to the current month's rent bill if one exists.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| rent_bill_id | number | No | ID of the rent bill to link this payment to |
+
 ##### GET /api/landlord/payments/{id}
 **Description**: Get payment details
 
@@ -694,6 +704,118 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 ---
 
+#### Rent Bills
+
+##### GET /api/landlord/rent-bills
+**Description**: List all rent bills with pagination and filtering
+**Auth Required**: Yes
+
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| page | int | Page number (default: 1) |
+| status | string | Filter by status (pending, paid, partial, overdue, waived) |
+| property_id | int | Filter by property |
+| tenant_id | int | Filter by tenant |
+| per_page | int | Items per page (default: 15) |
+
+**Response** (200):
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "billing_month": "2026-03",
+      "amount_due": 500.00,
+      "amount_paid": 0,
+      "outstanding_amount": 500.00,
+      "due_date": "2026-03-05",
+      "status": "pending",
+      "notes": null,
+      "tenant_name": "John Doe",
+      "tenant_code": "TNT001",
+      "unit_number": "101",
+      "property_name": "Sunset Apartments",
+      "created_at": "2026-03-01T00:00:00Z"
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "total": 50,
+    "total_pages": 4
+  }
+}
+```
+
+##### GET /api/landlord/rent-bills/overdue
+**Description**: List overdue rent bills
+
+##### GET /api/landlord/rent-bills/pending
+**Description**: List pending rent bills
+
+##### GET /api/landlord/rent-bills/{id}
+**Description**: Get rent bill details with payments
+
+**Response** (200):
+```json
+{
+  "id": 1,
+  "billing_month": "2026-03",
+  "amount_due": 500.00,
+  "amount_paid": 0,
+  "outstanding_amount": 500.00,
+  "due_date": "2026-03-05",
+  "status": "pending",
+  "notes": null,
+  "tenant": {
+    "id": 1,
+    "full_name": "John Doe",
+    "tenant_code": "TNT001",
+    "phone": "+255712345678",
+    "email": "john@example.com"
+  },
+  "unit": {
+    "id": 5,
+    "unit_code": "101"
+  },
+  "property": {
+    "id": 1,
+    "name": "Sunset Apartments"
+  },
+  "payments": [],
+  "created_at": "2026-03-01T00:00:00Z"
+}
+```
+
+##### POST /api/landlord/rent-bills/{id}/waive
+**Description**: Waive a rent bill
+**Auth Required**: Yes
+
+**Request**:
+```json
+{
+  "notes": "Waived due to property issues"
+}
+```
+
+**Response** (200):
+```json
+{
+  "message": "Rent bill waived successfully",
+  "rent_bill": {
+    "id": 1,
+    "billing_month": "2026-03",
+    "amount_due": 500.00,
+    "amount_paid": 500.00,
+    "status": "waived",
+    "notes": "Waived due to property issues"
+  }
+}
+```
+
+---
+
 #### Notifications
 
 ##### GET /api/landlord/notifications
@@ -804,6 +926,13 @@ GET /api/landlord/tenants?page=2&per_page=25
 - For **utility payments**: Status is automatically synced from the linked utility bill's status after creation
   - The payment status will match the utility bill status ('pending', 'partial', 'paid', or 'overdue')
 
+**Payment Integration with Rent Bills**:
+For rent payments, you can optionally link a payment to a specific rent bill using `rent_bill_id`. If not provided, the system will automatically link to the current month's rent bill if one exists.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| rent_bill_id | number | No | ID of the rent bill to link this payment to |
+
 **Response** (201):
 ```json
 {
@@ -904,6 +1033,81 @@ GET /api/landlord/tenants?page=2&per_page=25
   }
 }
 ```
+
+---
+
+#### Rent Bills
+
+##### GET /api/tenant/rent-bills
+**Description**: List tenant's rent bills
+**Auth Required**: Yes (tenant role)
+
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| page | int | Page number (default: 1) |
+| status | string | Filter by status (pending, paid, partial, overdue, waived) |
+| per_page | int | Items per page (default: 15) |
+
+**Response** (200):
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "billing_month": "2026-03",
+      "amount_due": 500.00,
+      "amount_paid": 0,
+      "outstanding_amount": 500.00,
+      "due_date": "2026-03-05",
+      "status": "pending",
+      "notes": null,
+      "created_at": "2026-03-01T00:00:00Z"
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "total": 12,
+    "total_pages": 1
+  }
+}
+```
+
+##### GET /api/tenant/rent-bills/current
+**Description**: Get current month's rent bill
+**Auth Required**: Yes (tenant role)
+
+**Response** (200):
+```json
+{
+  "has_current_bill": true,
+  "rent_bill": {
+    "id": 1,
+    "billing_month": "2026-03",
+    "amount_due": 500.00,
+    "amount_paid": 0,
+    "outstanding_amount": 500.00,
+    "due_date": "2026-03-05",
+    "status": "pending",
+    "notes": null,
+    "payments": []
+  },
+  "monthly_rent": 500.00,
+  "unit": {
+    "id": 5,
+    "unit_code": "101"
+  },
+  "property": {
+    "id": 1,
+    "name": "Sunset Apartments"
+  }
+}
+```
+
+##### GET /api/tenant/rent-bills/{id}
+**Description**: Get rent bill details
+**Auth Required**: Yes (tenant role)
 
 ---
 

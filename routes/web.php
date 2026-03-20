@@ -19,6 +19,8 @@ use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
 use App\Http\Controllers\Web\Landlord\LandlordPaymentController;
 use App\Http\Controllers\Web\Landlord\LandlordUtilityController;
 use App\Http\Controllers\Web\Landlord\LandlordUtilityBillController;
+use App\Http\Controllers\Web\Landlord\LandlordRentBillController;
+use App\Http\Controllers\Web\Tenant\TenantRentBillController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -202,6 +204,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/landlord/utility-bills/{utilityBill}/waive', [LandlordUtilityBillController::class, 'waive'])
         ->name('landlord.utility-bills.waive');
 
+    // Landlord Rent Bills Routes
+    Route::get('/landlord/rent-bills', [LandlordRentBillController::class, 'index'])
+        ->name('landlord.rent-bills.index');
+
+    Route::get('/landlord/rent-bills/{rentBill}', [LandlordRentBillController::class, 'show'])
+        ->name('landlord.rent-bills.show');
+
+    Route::post('/landlord/rent-bills/{rentBill}/waive', [LandlordRentBillController::class, 'waive'])
+        ->name('landlord.rent-bills.waive');
+
     //Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');
@@ -226,6 +238,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/tenant/utilities/bills', [TenantUtilitiesController::class, 'bills'])
         ->name('tenant.utilities.bills');
+
+    // Tenant Rent Bills Routes
+    Route::get('/tenant/rent-bills', [TenantRentBillController::class, 'index'])
+        ->name('tenant.rent-bills.index');
+
+    Route::get('/tenant/rent-bills/{rentBill}', [TenantRentBillController::class, 'show'])
+        ->name('tenant.rent-bills.show');
 
     // Tenant Notification Management Routes
     Route::get('/tenant/notifications', [TenantNotificationController::class, 'index'])
