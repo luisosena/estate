@@ -14,14 +14,26 @@ erDiagram
     UNIT ||--o{ TENANCY : "has active"
     TENANCY ||--o{ PAYMENT : "tracks"
     TENANCY ||--o{ TENANCY_UTILITY : "has"
+    TENANCY ||--o{ RENT_BILL : "generates"
     TENANCY_UTILITY ||--o{ UTILITY_BILL : "generates"
     TENANCY_UTILITY }|..| UTILITY_TYPE : "references"
     UTILITY_BILL ||--o{ PAYMENT : "linked to"
+    RENT_BILL ||--o{ PAYMENT : "linked to"
     USER ||--o{ NOTIFICATION : "receives"
     USER ||--o{ API_TOKEN : "has"
     USER ||--o{ SECURITY_EVENT : "generates"
     TENANT ||--o{ TENANT_IDENTIFICATION : "has"
     TENANT ||--o{ MESSAGE : "sends/receives"
+    
+    RENT_BILL {
+        bigint id PK
+        bigint tenancy_id FK
+        date billing_month
+        decimal amount_due
+        decimal amount_paid
+        date due_date
+        enum status
+    }
     
     UTILITY_TYPE {
         bigint id PK
@@ -252,6 +264,7 @@ erDiagram
 **Additional Migrations**:
 - `database/migrations/2026_03_20_000004_add_utility_bill_id_to_payments_table.php` - Adds utility_bill_id for linkage to utility bills
 - `database/migrations/2026_03_20_000005_add_pending_status_to_payments_table.php` - Adds 'pending' status to payment status enum
+- `database/migrations/2026_03_21_000002_add_rent_bill_id_to_payments_table.php` - Adds rent_bill_id for linkage to rent bills
 
 **Attributes**:
 | Column | Type | Constraints | Description |
@@ -260,6 +273,7 @@ erDiagram
 | tenancy_id | BIGINT | FOREIGN KEY (tenancies.id) | Related tenancy |
 | tenant_id | BIGINT | FOREIGN KEY (tenants.id) | Tenant making payment |
 | utility_bill_id | BIGINT | FOREIGN KEY (nullable, nullOnDelete) | Link to utility bill (for utility payments) |
+| rent_bill_id | BIGINT | FOREIGN KEY (nullable, nullOnDelete) | Link to rent bill (for rent payments) |
 | amount | DECIMAL(12,2) | NOT NULL | Payment amount |
 | type | ENUM('rent', 'deposit', 'utility', 'penalty', 'other') | NOT NULL | Payment type |
 | method | ENUM('cash', 'bank_transfer', 'mobile_money', 'card', 'other') | NOT NULL | Payment method |
@@ -276,6 +290,7 @@ erDiagram
 - INDEX on tenancy_id
 - INDEX on tenant_id
 - INDEX on utility_bill_id
+- INDEX on rent_bill_id
 - INDEX on status
 - INDEX on payment_date
 
@@ -283,6 +298,7 @@ erDiagram
 - BelongsTo Tenancy
 - BelongsTo Tenant
 - BelongsTo UtilityBill (optional, for utility payments)
+- BelongsTo RentBill (optional, for rent payments)
 
 ---
 
@@ -386,7 +402,41 @@ erDiagram
 
 ---
 
-### 10. utilities (DROPPED)
+### 10. rent_bills
+
+**Purpose**: Individual monthly rent charge records. One row per tenancy per billing month. Tracks rent payments, outstanding amounts, and payment status.
+
+**Migration**: `database/migrations/2026_03_21_000001_create_rent_bills_table.php`
+
+**Attributes**:
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
+| tenancy_id | BIGINT | FOREIGN KEY (tenancies.id, cascadeOnDelete) | Reference to tenancy |
+| billing_month | DATE | NOT NULL | First day of billing month (e.g., 2026-03-01) |
+| amount_due | DECIMAL(12,2) | NOT NULL | Monthly rent amount |
+| amount_paid | DECIMAL(12,2) | DEFAULT 0 | Amount paid so far |
+| due_date | DATE | NOT NULL | Payment due date (default: 5th of month) |
+| status | ENUM('pending', 'paid', 'partial', 'overdue', 'waived') | DEFAULT 'pending' | Bill status |
+| notes | TEXT | NULLABLE | Additional notes |
+| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
+| updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
+
+**Indexes**:
+- PRIMARY KEY (id)
+- UNIQUE CONSTRAINT on (tenancy_id, billing_month) - 'uq_rent_bill_month'
+- INDEX on tenancy_id
+- INDEX on billing_month
+- INDEX on status
+- INDEX on due_date
+
+**Relationships**:
+- BelongsTo Tenancy
+- HasMany Payment
+
+---
+
+### 11. utilities (DROPPED)
 
 **Purpose**: **DROPPED** - Original utility tracking table. Has been replaced by the utility_types + tenancy_utilities + utility_bills system.
 

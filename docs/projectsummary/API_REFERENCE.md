@@ -864,8 +864,9 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
     "total_paid": 1500.00,
     "pending": 0,
     "recent": [...]
-  }
-}
+  },
+  "rent_bills": [...],
+  "current_month_bill": {...}
 ```
 
 ---
@@ -1175,6 +1176,9 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
 | GET | /landlord/utility-bills | LandlordUtilityBillController | Utility bill list |
 | GET | /landlord/utility-bills/{id} | LandlordUtilityBillController | View utility bill |
 | POST | /landlord/utility-bills/{id}/waive | LandlordUtilityBillController | Waive utility bill |
+| GET | /landlord/rent-bills | LandlordRentBillController | Rent bill list |
+| GET | /landlord/rent-bills/{id} | LandlordRentBillController | View rent bill |
+| POST | /landlord/rent-bills/{id}/waive | LandlordRentBillController | Waive rent bill |
 | GET | /landlord/notifications | LandlordNotificationController | Notifications |
 
 ### Tenant Routes
@@ -1182,6 +1186,8 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
 |--------|------|------------|-------------|
 | GET | /tenant/dashboard | TenantDashboardController | Tenant dashboard |
 | GET | /tenant/payments | TenantPaymentsController | Payment history |
+| GET | /tenant/rent-bills | TenantRentBillController | Rent bills |
+| GET | /tenant/rent-bills/{id} | TenantRentBillController | View rent bill |
 | GET | /tenant/utilities | TenantUtilitiesController | Utility list |
 | GET | /tenant/utilities/bills | TenantUtilitiesController | Utility bills |
 | GET | /tenant/notifications | TenantNotificationController | Notifications |
@@ -1281,9 +1287,11 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
   "id": 1,
   "tenancy_id": 1,
   "tenant_id": 1,
+  "rent_bill_id": 1,
+  "utility_bill_id": null,
   "amount": 500.00,
-  "type": "rent",
-  "method": "bank_transfer",
+  "payment_type": "rent",
+  "payment_method": "bank_transfer",
   "status": "completed",
   "payment_date": "2024-01-15",
   "due_date": "2024-01-01",

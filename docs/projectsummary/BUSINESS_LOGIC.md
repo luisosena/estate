@@ -642,6 +642,119 @@ This means partial payments that are past their due date are also marked as over
 
 ---
 
+### 6. Rent Billing System
+
+The rent billing system generates monthly rent bills for active tenancies, tracks payment status, and automatically marks bills as overdue.
+
+#### Rent Bill Generation
+**Who**: System (scheduled command)
+
+**Console Command**: `php artisan rent-bills:generate-monthly`
+
+**Scheduled**: Monthly on the 1st at 00:02
+
+**Flow**:
+```mermaid
+sequenceDiagram
+    participant System
+    participant Tenancy
+    participant RentBill
+    
+    System->>System: Run command at 00:02 on 1st of month
+    System->>Tenancy: Get all active tenancies with monthly_rent > 0
+    loop For each tenancy
+        System->>RentBill: firstOrCreate(billing_month = current month)
+        RentBill->>System: Created/Existing bill
+    end
+    System->>System: Log created bills count
+```
+
+**Logic**:
+1. Gets all active tenancies with `monthly_rent > 0`
+2. For each tenancy:
+   - Skips if monthly_rent is null or ≤ 0
+   - Calculates due date (default: 5th of the month)
+   - Uses `firstOrCreate()` to avoid duplicates (unique constraint on tenancy_id + billing_month)
+3. Returns SUCCESS/FAILURE status
+
+#### Mark Rent Bills Overdue
+**Who**: System (scheduled command)
+
+**Console Command**: `php artisan rent-bills:mark-overdue`
+
+**Scheduled**: Daily at 00:30
+
+**Flow**:
+```mermaid
+sequenceDiagram
+    participant System
+    participant RentBill
+    
+    System->>RentBill: Find bills where status IN ('pending', 'partial') AND due_date < today()
+    RentBill->>RentBill: Update status to 'overdue'
+    System->>System: Log count of updated bills
+```
+
+**Logic**:
+1. Updates all bills where:
+   - status IN ('pending', 'partial') AND
+   - due_date < today()
+2. Sets status to 'overdue'
+3. Logs count of updated bills
+
+#### Rent Bill Status Flow
+```
+pending → partial (partial payment received)
+partial → paid (full payment received)
+partial → overdue (due_date passed)
+pending → overdue (due_date passed without payment)
+overdue → paid (late payment received)
+overdue → waived (bill waived by landlord)
+```
+
+**Rent Bill Status Values**:
+| Status | Description |
+|--------|-------------|
+| pending | Bill created, awaiting payment |
+| partial | Partial payment received |
+| paid | Full payment received |
+| overdue | Payment not received by due date |
+| waived | Bill waived by landlord |
+
+**Overdue Logic**: A rent bill is considered overdue if:
+1. Its status is explicitly 'overdue', OR
+2. Its status is 'pending' OR 'partial' AND the due_date has passed
+
+This ensures partial payments that are past their due date are also marked as overdue.
+
+#### Payment-Rent Bill Synchronization
+
+When recording rent payments, the payment can be linked to a specific rent bill:
+
+1. **Optional rent_bill_id**: When recording a payment, you can optionally specify `rent_bill_id` to link the payment to a specific rent bill
+2. **Auto-linking**: If `rent_bill_id` is not provided, the system automatically links to the current month's rent bill if one exists
+3. **Validation**: The system validates that the payment's tenancy matches the rent bill's tenancy
+
+```php
+// RentBillService handles payment processing
+$rentBillService->linkPaymentToBill($tenancyId, $requestedBillId, $required);
+$rentBillService->createPaymentWithRentBill($paymentData, $rentBillId, $paymentAmount);
+```
+
+After payment is created:
+- The rent bill's `amount_paid` is updated
+- The rent bill's status is automatically recalculated:
+  - If amount_paid >= amount_due → 'paid'
+  - If amount_paid > 0 → 'partial'
+  - If amount_paid = 0 → 'pending'
+
+#### Waiving Rent Bills
+**Who**: Landlord
+
+Landlords can waive (forgive) a rent bill using the `/api/landlord/rent-bills/{id}/waive` endpoint. This sets the bill's status to 'waived' with optional notes.
+
+---
+
 ## State Machines
 
 ---
