@@ -24,7 +24,7 @@ class PaymentController extends Controller
         $query = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
                 $query->where('owner_id', $landlord->id);
             })
-            ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id'])
+            ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name'])
             ->orderBy('paid_at', 'desc');
 
         $totalItems = $query->count();
@@ -39,12 +39,12 @@ class PaymentController extends Controller
                     'payment_method' => $payment->payment_method,
                     'status' => $payment->status,
                     'paid_at' => $payment->paid_at,
+                    'due_date' => $payment->due_date,
                     'created_at' => $payment->created_at,
-                    'tenant' => $payment->tenant ? [
-                        'id' => $payment->tenant->id,
-                        'full_name' => $payment->tenant->full_name,
-                        'tenant_code' => $payment->tenant->tenant_code,
-                    ] : null,
+                    'tenant_name' => $payment->tenant?->full_name,
+                    'tenant_code' => $payment->tenant?->tenant_code,
+                    'unit_number' => $payment->tenancy?->unit?->unit_code,
+                    'property_name' => $payment->tenancy?->unit?->property?->name,
                 ];
             });
 
@@ -82,9 +82,12 @@ class PaymentController extends Controller
             'payment_method' => $payment->payment_method,
             'status' => $payment->status,
             'paid_at' => $payment->paid_at,
+            'due_date' => $payment->due_date,
             'created_at' => $payment->created_at,
-            'tenant' => $payment->tenant,
-            'tenancy' => $payment->tenancy,
+            'tenant_name' => $payment->tenant?->full_name,
+            'tenant_code' => $payment->tenant?->tenant_code,
+            'unit_number' => $payment->tenancy?->unit?->unit_code,
+            'property_name' => $payment->tenancy?->unit?->property?->name,
         ]);
     }
 

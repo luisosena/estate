@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card, Chip, Button } from 'react-native-paper';
+import { Text, Card, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency, formatDate } from '../../utils/formatters';
+import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
 import type { Payment } from '../../types';
 import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
 
 type NavigationProp = NativeStackNavigationProp<LandlordPaymentsStackParamList>;
 
-const getPaymentStatusColor = (status: string): string => {
+const getStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
     paid: colors.status.paid,
     partial: colors.status.pending,
@@ -21,7 +21,7 @@ const getPaymentStatusColor = (status: string): string => {
     pending: colors.status.pending,
     cancelled: colors.status.expired,
   };
-  return statusColors[status] ?? colors.gray[400];
+  return statusColors[status] ?? colors.text.secondary;
 };
 
 export function LandlordPaymentsScreen() {
@@ -72,37 +72,76 @@ export function LandlordPaymentsScreen() {
         Manage Utility Bills
       </Button>
 
-      <Card style={screenStyles.card}>
-        <Card.Content>
+      <Card style={[screenStyles.card, { backgroundColor: colors.surfaceVariant, elevation: 0 }]}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
+          <Text variant="titleMedium" style={{ fontSize: 18, color: colors.text.primary }}>Recent Transactions</Text>
+        </View>
+        <Card.Content style={{ paddingHorizontal: 16, paddingTop: 0 }}>
           {payments?.length > 0 ? (
-            payments.map((payment) => (
-              <View key={payment.id} style={screenStyles.listItem}>
-                <View>
-                  <Text variant="bodyMedium">{payment.tenant_name}</Text>
-                  <Text variant="bodySmall" style={screenStyles.date}>
-                    {payment.unit_number} • {payment.paid_at
-                      ? formatDate(payment.paid_at)
-                      : payment.due_date
-                      ? `Due: ${formatDate(payment.due_date)}`
-                      : '-'}
-                  </Text>
+            payments.map((payment, index) => {
+              const dateSource = payment.paid_at || payment.due_date;
+              const isLast = index === payments.length - 1;
+
+              return (
+                <View 
+                  key={payment.id} 
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 16,
+                    borderBottomWidth: isLast ? 0 : 1,
+                    borderBottomColor: colors.borderLight,
+                  }}
+                >
+                  <View style={{
+                    backgroundColor: colors.gray[700],
+                    borderRadius: 12,
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 16,
+                    minWidth: 70,
+                  }}>
+                    {dateSource ? (
+                      <>
+                        <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 16, marginBottom: 2 }}>
+                          {new Date(dateSource).getDate()}
+                        </Text>
+                        <Text style={{ color: colors.white, fontSize: 10, opacity: 0.9 }}>
+                          {new Date(dateSource).toLocaleDateString('en-US', { month: 'short' })}
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={{ color: colors.white, fontSize: 12 }}>-</Text>
+                    )}
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <Text variant="titleMedium" style={{ fontWeight: '500', color: colors.text.primary, marginBottom: 4 }}>
+                      {payment.tenant_name || 'Unknown Tenant'}
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: colors.text.secondary }}>
+                      {payment.unit_number ? `Unit ${payment.unit_number} • ` : ''}
+                      {payment.payment_method === 'mobile_money' ? 'Mobile Money' : 
+                       payment.payment_method === 'bank_transfer' ? 'Bank Transfer' :
+                       payment.payment_type ? capitalize(payment.payment_type) : '-'}
+                    </Text>
+                  </View>
+
+                  <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+                    <Text variant="titleMedium" style={{ fontWeight: '600', color: colors.text.primary, marginBottom: 4 }}>
+                      {formatCurrency(payment.amount)}
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: getStatusColor(payment.status) }}>
+                      {capitalize(payment.status)}
+                    </Text>
+                  </View>
                 </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                    {formatCurrency(payment.amount)}
-                  </Text>
-                  <Chip
-                    mode="flat"
-                    compact
-                    style={[screenStyles.chip, { backgroundColor: getPaymentStatusColor(payment.status) + '20' }]}
-                  >
-                    {payment.status}
-                  </Chip>
-                </View>
-              </View>
-            ))
+              );
+            })
           ) : (
-            <Text variant="bodyMedium" style={screenStyles.empty}>No payments yet</Text>
+            <Text variant="bodyMedium" style={[screenStyles.empty, { paddingVertical: 16 }]}>No payments yet</Text>
           )}
         </Card.Content>
       </Card>

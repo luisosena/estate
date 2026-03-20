@@ -59,6 +59,18 @@ export const screenStyles = StyleSheet.create({
  * Full-width design with straight top border and bottom-spanning height.
  * Uses responsive spacing and accessible labels.
  */
+
+/**
+ * Tab bar height constant for use in screen padding.
+ * Use this to add bottom padding to screens with scrollable content.
+ */
+export const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 84 : 70;
+
+/**
+ * Additional padding for the tab bar to account for iOS safe area.
+ */
+export const TAB_BAR_PADDING_BOTTOM = Platform.OS === 'ios' ? 28 : 0;
+
 export const tabBarScreenOptions = {
   tabBarActiveTintColor: colors.primary,
   tabBarInactiveTintColor: colors.gray[600], // Better contrast for inactive
@@ -67,8 +79,8 @@ export const tabBarScreenOptions = {
     bottom: 0,
     left: 0,
     right: 0,
-    height: Platform.OS === 'ios' ? 84 : 70,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 0, // Safe area padding for iOS home indicator
+    height: TAB_BAR_HEIGHT,
+    paddingBottom: TAB_BAR_PADDING_BOTTOM,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
