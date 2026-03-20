@@ -26,6 +26,11 @@ class TenantRentBillController extends Controller
             return inertia('Tenant/RentBills/Index', [
                 'rentBills' => [],
                 'currentMonthBill' => null,
+                'stats' => [
+                    'total' => 0,
+                    'pending' => 0,
+                    'paid' => 0,
+                ],
             ]);
         }
 
@@ -37,9 +42,20 @@ class TenantRentBillController extends Controller
             ->where('billing_month', now()->startOfMonth())
             ->first();
 
+        // Get stats
+        $baseQuery = RentBill::where('tenancy_id', $activeTenancy->id);
+        $totalCount = (clone $baseQuery)->count();
+        $pendingCount = (clone $baseQuery)->whereIn('status', ['pending', 'overdue', 'partial'])->count();
+        $paidCount = (clone $baseQuery)->where('status', 'paid')->count();
+
         return inertia('Tenant/RentBills/Index', [
             'rentBills' => $rentBills,
             'currentMonthBill' => $currentMonthBill,
+            'stats' => [
+                'total' => $totalCount,
+                'pending' => $pendingCount,
+                'paid' => $paidCount,
+            ],
         ]);
     }
 

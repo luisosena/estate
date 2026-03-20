@@ -25,6 +25,8 @@ import {
   House,
   MessageCircleMore,
   Zap,
+  Receipt,
+  AlertCircle,
 } from 'lucide-react';
 import { route } from 'ziggy-js';
 
@@ -55,6 +57,16 @@ interface Notification {
   created_at: string;
 }
 
+interface RentBill {
+  id: number;
+  billing_month: string;
+  amount_due: number;
+  amount_paid: number;
+  due_date: string;
+  status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
+  outstanding_amount: number;
+}
+
 interface TenantDashboardProps {
   tenant: Tenant;
   payments?: Payment[];
@@ -62,6 +74,8 @@ interface TenantDashboardProps {
   tenancy?: Tenancy | null;
   utilities?: Utility[];
   notifications?: Notification[];
+  rent_bills?: RentBill[];
+  current_month_bill?: RentBill | null;
 }
 
 const formatDate = (dateString?: string | null) => {
@@ -87,6 +101,8 @@ export default function TenantDashboard({
   tenancy = null,
   utilities = [],
   notifications = [],
+  rent_bills = [],
+  current_month_bill = null,
 }: TenantDashboardProps) {
   const handleLogout = () => {
     router.post('/logout');
@@ -132,7 +148,7 @@ export default function TenantDashboard({
         </div>
 
         {/* Stat Cards */}
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Your Unit</CardTitle>
@@ -171,6 +187,46 @@ export default function TenantDashboard({
               <p className="mt-1 text-xs text-muted-foreground">
                 Since {formatDate(tenancy?.move_in_date)}
               </p>
+            </CardContent>
+          </Card>
+
+          <Card className={current_month_bill?.status && current_month_bill.status !== 'paid' ? 'border-amber-500 dark:border-amber-500' : ''}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Rent Status
+              </CardTitle>
+              {current_month_bill ? (
+                current_month_bill.status === 'paid' ? (
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                ) : current_month_bill.status === 'overdue' ? (
+                  <AlertCircle className="h-4 w-4 text-red-500" />
+                ) : (
+                  <Clock className="h-4 w-4 text-amber-500" />
+                )
+              ) : (
+                <Receipt className="h-4 w-4 text-muted-foreground" />
+              )}
+            </CardHeader>
+            <CardContent>
+              {current_month_bill ? (
+                <>
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(current_month_bill.outstanding_amount)}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {current_month_bill.status === 'paid'
+                      ? 'Paid for this month'
+                      : `Due: ${formatDate(current_month_bill.due_date)}`}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">—</div>
+                  <p className="text-xs text-muted-foreground">
+                    No bill for this month
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 

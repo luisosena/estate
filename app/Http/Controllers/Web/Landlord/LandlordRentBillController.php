@@ -29,8 +29,30 @@ class LandlordRentBillController extends Controller
 
         $rentBills = $query->paginate(15);
 
+        // Get overall stats (not filtered by status)
+        $statsQuery = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
+            $query->where('owner_id', $landlord->id);
+        });
+
+        $totalCount = (clone $statsQuery)->count();
+        $pendingCount = (clone $statsQuery)->where('status', 'pending')->count();
+        $overdueCount = (clone $statsQuery)->where(function ($q) {
+            $q->where('status', 'overdue')
+              ->orWhere(function ($q2) {
+                  $q2->whereIn('status', ['pending', 'partial'])
+                     ->where('due_date', '<', now()->toDateString());
+              });
+        })->count();
+        $paidCount = (clone $statsQuery)->where('status', 'paid')->count();
+
         return inertia('Landlord/RentBills/Index', [
             'rentBills' => $rentBills,
+            'stats' => [
+                'total' => $totalCount,
+                'pending' => $pendingCount,
+                'overdue' => $overdueCount,
+                'paid' => $paidCount,
+            ],
         ]);
     }
 

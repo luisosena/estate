@@ -16,10 +16,13 @@ import { Link, router } from '@inertiajs/react';
 import {
   ArrowRight,
   Building2,
+  Clock,
   DollarSign,
   Home,
   Plus,
+  Receipt,
   Users,
+  AlertCircle,
 } from 'lucide-react';
 import { route } from 'ziggy-js';
 
@@ -36,6 +39,9 @@ interface Stats {
   total_properties: number;
   total_units: number;
   monthly_revenue: number;
+  pending_rent_bills: number;
+  overdue_rent_bills: number;
+  total_rent_outstanding: number;
 }
 
 interface LandlordDashboardProps {
@@ -162,6 +168,61 @@ export default function Dashboard({
               <p className="text-xs text-muted-foreground">Units occupied</p>
             </CardContent>
           </Card>
+
+          <Card className={stats.pending_rent_bills > 0 ? 'border-amber-500 dark:border-amber-500' : ''}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Pending Rent Bills
+              </CardTitle>
+              <Clock className="h-4 w-4 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-600 dark:text-amber-500">
+                {stats.pending_rent_bills}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Awaiting payment
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className={stats.overdue_rent_bills > 0 ? 'border-red-500 dark:border-red-500' : ''}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Overdue Rent Bills
+              </CardTitle>
+              {stats.overdue_rent_bills > 0 ? (
+                <AlertCircle className="h-4 w-4 text-red-500" />
+              ) : (
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              )}
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-500">
+                {stats.overdue_rent_bills}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Past due date
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Outstanding
+              </CardTitle>
+              <Receipt className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatCurrency(stats.total_rent_outstanding)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Unpaid rent amount
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Properties Overview */}
@@ -261,9 +322,15 @@ export default function Dashboard({
                 </Link>
               </Button>
               <Button asChild variant="outline" className="justify-start">
-                <Link href={route('landlord.tenants.index')}>
+                <Link href={route('landlord.payments.index')}>
                   <DollarSign className="mr-2 h-4 w-4" />
                   View Payments
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="justify-start">
+                <Link href={route('landlord.rent-bills.index')}>
+                  <Receipt className="mr-2 h-4 w-4" />
+                  View Rent Bills
                 </Link>
               </Button>
             </div>

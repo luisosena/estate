@@ -9,7 +9,7 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, Users, Building2, Home, Bell, Zap, Receipt } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Home, Bell, Zap, Receipt, DollarSign } from 'lucide-react';
 import { route } from 'ziggy-js';
 import NotificationBell from '@/components/notification-bell';
 
@@ -60,6 +60,12 @@ const mainNavItems = [
         icon: Receipt,
         href: () => route('landlord.utility-bills.index'),
         routeName: 'landlord.utility-bills.index',
+    },
+    {
+        label: 'Rent Bills',
+        icon: DollarSign,
+        href: () => route('landlord.rent-bills.index'),
+        routeName: 'landlord.rent-bills.index',
     },
     {
         label: 'Notifications',
