@@ -56,7 +56,7 @@ export const screenStyles = StyleSheet.create({
 
 /**
  * Tab bar options shared between Tenant and Landlord navigators.
- * Floating tab bar design with accessibility and performance optimizations.
+ * Full-width design with straight top border and bottom-spanning height.
  * Uses responsive spacing and accessible labels.
  */
 export const tabBarScreenOptions = {
@@ -64,19 +64,20 @@ export const tabBarScreenOptions = {
   tabBarInactiveTintColor: colors.gray[600], // Better contrast for inactive
   tabBarStyle: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 28 : 24, // Account for iOS home indicator
-    left: 16,
-    right: 16,
-    height: 56,
-    borderRadius: 16,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: Platform.OS === 'ios' ? 84 : 70,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 0, // Safe area padding for iOS home indicator
     backgroundColor: colors.surface,
-    borderTopWidth: 0,
-    // Performance-optimized shadow
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    // Subtle shadow for depth
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 4,
   },
   tabBarLabelStyle: {
     fontSize: 10,
