@@ -159,12 +159,11 @@ class PaymentsController extends Controller
                 }
 
                 // Determine status for this payment
-                $status = 'partial';
-                if ($validated['payment_type'] !== 'rent') {
-                    $status = 'pending'; // Utility payments start as pending until approved
-                } elseif ($newTotalPaid >= $monthlyRent) {
-                    $status = 'paid';
-                }
+                // For rent payments: calculate based on amount vs monthly rent
+                // For utility payments: status will be synced from utility bill below
+                $status = ($validated['payment_type'] === 'rent' && $newTotalPaid >= $monthlyRent) 
+                    ? 'paid' 
+                    : 'partial';
 
                 // Create payment
                 $paymentData = [
@@ -211,6 +210,20 @@ class PaymentsController extends Controller
                         app(UtilityService::class)->processUtilityPayment($utilityBill, $validated['amount']);
                     } catch (\InvalidArgumentException $e) {
                         return response()->json(['error' => $e->getMessage()], 422);
+                    }
+                    
+                    // Sync payment status with utility bill status
+                    // Refresh the utility bill to get the updated status
+                    $utilityBill->refresh();
+                    $paymentData['status'] = $utilityBill->status;
+
+                    // Validate the synced status is allowed
+                    if (!in_array($paymentData['status'], ['paid', 'partial', 'overdue', 'pending'])) {
+                        Log::warning('Unexpected utility bill status after payment', [
+                            'utility_bill_id' => $utilityBill->id,
+                            'status' => $paymentData['status']
+                        ]);
+                        $paymentData['status'] = 'partial'; // Safe fallback
                     }
                 }
 

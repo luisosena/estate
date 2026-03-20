@@ -39,7 +39,7 @@ class LandlordPaymentController extends Controller
             'amount' => 'required|numeric|min:0',
             'payment_type' => ['required', Rule::in(['rent', 'utility'])],
             'payment_method' => 'required|string|max:255',
-            'status' => ['required', Rule::in(['paid', 'partial', 'overdue'])],
+            'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
             'paid_at' => 'required|date',
         ]);
 
@@ -115,7 +115,7 @@ class LandlordPaymentController extends Controller
             'amount' => 'required|numeric|min:0',
             'payment_type' => ['required', Rule::in(['rent', 'utility'])],
             'payment_method' => 'required|string|max:255',
-            'status' => ['required', Rule::in(['paid', 'partial', 'overdue'])],
+            'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
             'paid_at' => 'required|date',
         ]);
 

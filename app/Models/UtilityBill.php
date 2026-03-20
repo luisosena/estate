@@ -63,7 +63,7 @@ class UtilityBill extends Model
         return $query->where(function ($q) {
             $q->where('status', 'overdue')
               ->orWhere(function ($q) {
-                  $q->where('status', 'pending')
+                  $q->whereIn('status', ['pending', 'partial'])
                     ->where('due_date', '<', now());
               });
         });

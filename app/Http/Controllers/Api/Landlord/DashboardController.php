@@ -49,6 +49,13 @@ class DashboardController extends Controller
             $pendingPayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
                     $query->where('owner_id', $landlord->id);
                 })
+                ->where('status', 'pending')
+                ->count();
+
+            // Get overdue payments count (separate from pending)
+            $overduePayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
+                    $query->where('owner_id', $landlord->id);
+                })
                 ->where('status', 'overdue')
                 ->count();
 
@@ -134,6 +141,7 @@ class DashboardController extends Controller
                 'vacant_units' => $vacantUnits,
                 'total_tenants' => $totalActiveTenants,
                 'pending_payments' => $pendingPayments,
+                'overdue_payments' => $overduePayments,
                 'recent_payments' => $recentPayments,
                 'expiring_leases' => $expiringLeases,
                 'properties' => $formattedProperties,

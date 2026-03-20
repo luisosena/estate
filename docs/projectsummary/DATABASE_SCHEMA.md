@@ -251,6 +251,7 @@ erDiagram
 
 **Additional Migrations**:
 - `database/migrations/2026_03_20_000004_add_utility_bill_id_to_payments_table.php` - Adds utility_bill_id for linkage to utility bills
+- `database/migrations/2026_03_20_000005_add_pending_status_to_payments_table.php` - Adds 'pending' status to payment status enum
 
 **Attributes**:
 | Column | Type | Constraints | Description |
@@ -262,7 +263,7 @@ erDiagram
 | amount | DECIMAL(12,2) | NOT NULL | Payment amount |
 | type | ENUM('rent', 'deposit', 'utility', 'penalty', 'other') | NOT NULL | Payment type |
 | method | ENUM('cash', 'bank_transfer', 'mobile_money', 'card', 'other') | NOT NULL | Payment method |
-| status | ENUM('pending', 'completed', 'failed', 'refunded', 'cancelled') | DEFAULT 'pending' | Payment status |
+| status | ENUM('paid', 'partial', 'overdue', 'cancelled', 'pending') | DEFAULT 'pending' | Payment status |
 | payment_date | DATE | NOT NULL | Date payment was made |
 | due_date | DATE | NOT NULL | Date payment was due |
 | reference_number | VARCHAR(100) | NULLABLE | External payment reference |

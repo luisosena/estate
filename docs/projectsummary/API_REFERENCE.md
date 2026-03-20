@@ -255,10 +255,26 @@ GET /api/landlord/tenants?page=2&per_page=25
   "total_tenants": 45,
   "monthly_revenue": 25000.00,
   "pending_payments": 3,
+  "overdue_payments": 2,
   "recent_payments": [...],
   "expiring_tenancies": [...]
 }
 ```
+
+**Response Fields**:
+| Field | Type | Description |
+|-------|------|-------------|
+| total_properties | int | Number of properties owned by landlord |
+| total_units | int | Total units across all properties |
+| occupied_units | int | Units currently occupied |
+| vacant_units | int | Units available for rent |
+| occupancy_rate | int | Percentage of occupied units |
+| total_tenants | int | Total active tenants |
+| monthly_revenue | decimal | Expected monthly rent revenue |
+| pending_payments | int | Number of payments awaiting confirmation |
+| overdue_payments | int | Number of overdue payments (past due date) |
+| recent_payments | array | Latest payment records |
+| expiring_tenancies | array | Tenancies expiring in next 30 days |
 
 #### Properties
 
@@ -432,8 +448,8 @@ GET /api/landlord/tenants?page=2&per_page=25
 **Query Parameters**:
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| status | string | Filter by status |
-| type | string | Filter by type |
+| status | string | Filter by status (pending, paid, partial, overdue, cancelled) |
+| type | string | Filter by type (rent, utility, deposit, penalty, other) |
 | tenant_id | int | Filter by tenant |
 | start_date | date | Filter start date |
 | end_date | date | Filter end date |
@@ -450,6 +466,7 @@ GET /api/landlord/tenants?page=2&per_page=25
   "amount": 500.00,
   "type": "rent",
   "method": "bank_transfer",
+  "status": "paid",
   "payment_date": "2024-01-15",
   "due_date": "2024-01-01",
   "reference_number": "TXN123456",
@@ -457,11 +474,48 @@ GET /api/landlord/tenants?page=2&per_page=25
 }
 ```
 
+**Fields**:
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| tenancy_id | number | Yes | Related tenancy ID |
+| amount | number | Yes | Payment amount |
+| type | string | Yes | 'rent', 'deposit', 'utility', 'penalty', or 'other' |
+| method | string | Yes | 'cash', 'bank_transfer', 'mobile_money', 'card', or 'other' |
+| status | string | Yes | 'paid', 'partial', 'overdue', or 'pending' |
+| payment_date | date | Yes | Date payment was made |
+| due_date | date | Yes | Date payment was due |
+| reference_number | string | No | External payment reference |
+| notes | string | No | Payment notes |
+
+**Note**: For utility payments, the status will be synced with the linked utility bill's status after creation.
+
 ##### GET /api/landlord/payments/{id}
 **Description**: Get payment details
 
 ##### PUT /api/landlord/payments/{id}
 **Description**: Update payment
+
+**Request**:
+```json
+{
+  "amount": 500.00,
+  "status": "paid",
+  "payment_date": "2024-01-15",
+  "reference_number": "TXN123456",
+  "notes": "January rent - updated"
+}
+```
+
+**Fields**:
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| amount | number | No | Payment amount |
+| status | string | No | 'paid', 'partial', 'overdue', 'pending', or 'cancelled' |
+| payment_date | date | No | Date payment was made |
+| reference_number | string | No | External payment reference |
+| notes | string | No | Payment notes |
+
+**Note**: For utility payments, updating the status will also affect the linked utility bill's status.
 
 ---
 
@@ -522,7 +576,7 @@ GET /api/landlord/tenants?page=2&per_page=25
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | page | int | Page number (default: 1) |
-| status | string | Filter by status (pending, paid, partial, overdue) |
+| status | string | Filter by status (pending, paid, partial, overdue, cancelled) |
 | property_id | int | Filter by property |
 | billing_month | string | Filter by billing month (YYYY-MM) |
 | from_month | string | Filter from month (YYYY-MM) |
@@ -742,6 +796,14 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 *When payment_type is 'utility', utility_bill_id is required to link the payment to a specific utility bill.
 
+**Payment Status Behavior**:
+- For **rent payments**: Status is calculated based on amount vs. monthly rent
+  - If amount >= monthly rent → 'paid'
+  - If amount < monthly rent → 'partial'
+  - If no payments → 'pending'
+- For **utility payments**: Status is automatically synced from the linked utility bill's status after creation
+  - The payment status will match the utility bill status ('pending', 'partial', 'paid', or 'overdue')
+
 **Response** (201):
 ```json
 {
@@ -803,7 +865,7 @@ GET /api/landlord/tenants?page=2&per_page=25
 **Query Parameters**:
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| status | string | Filter by status (pending, paid, partial, overdue) |
+| status | string | Filter by status (pending, paid, partial, overdue, waived) |
 
 **Response** (200):
 ```json

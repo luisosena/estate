@@ -539,10 +539,25 @@ sequenceDiagram
 
 #### Payment Status Flow
 ```
-pending → completed (successful payment)
-pending → failed (failed payment)
-completed → refunded (payment refunded)
+pending → paid (payment confirmed)
+pending → partial (partial payment received)
+pending → overdue (payment not received by due date)
+partial → paid (additional payment completes the amount)
+partial → overdue (due date passed without full payment)
+overdue → paid (late payment received)
+cancelled (payment cancelled by landlord)
 ```
+
+**Payment Status Values**:
+| Status | Description |
+|--------|-------------|
+| pending | Payment recorded but not yet confirmed/cleared |
+| partial | Partial payment received, amount outstanding remains |
+| paid | Full payment received |
+| overdue | Payment not received by due date |
+| cancelled | Payment was cancelled |
+
+**Note**: The 'pending' status is particularly important for utility payments which may require landlord approval before being considered complete. When a utility payment is created, its status is synced from the associated utility bill's status.
 
 ---
 
@@ -609,6 +624,21 @@ pending → overdue (due_date passed without payment)
 overdue → paid (late payment received)
 overdue → waived (bill waived by landlord)
 ```
+
+**Utility Bill Status Values**:
+| Status | Description |
+|--------|-------------|
+| pending | Bill created, awaiting payment |
+| partial | Partial payment received |
+| paid | Full payment received |
+| overdue | Payment not received by due date |
+| waived | Bill waived by landlord |
+
+**Overdue Logic**: A utility bill is considered overdue if:
+1. Its status is explicitly 'overdue', OR
+2. Its status is 'pending' OR 'partial' AND the due_date has passed
+
+This means partial payments that are past their due date are also marked as overdue, ensuring landlords can track incomplete payments effectively.
 
 ---
 
@@ -692,6 +722,45 @@ stateDiagram-v2
 ```
 
 ### 3. Payment Validation
+
+#### Payment Status Calculation
+
+The system calculates payment status based on total paid vs. expected amount:
+
+```php
+// For rent payments
+if ($totalPaid >= $monthlyRent) {
+    return 'paid';      // Fully paid
+} elseif ($totalPaid > 0) {
+    return 'partial';    // Partially paid
+}
+
+return 'pending';       // No payments made yet
+```
+
+**Key Changes**:
+- Previously returned 'overdue' when no payments were made
+- Now returns 'pending' for unpaid rent - more accurate representation of payment state
+- Rent payments and utility payments are calculated separately
+
+#### Payment-Utility Bill Synchronization
+
+When recording utility payments, the payment status is synchronized with the utility bill status:
+
+1. Landlord records a utility payment linked to a utility bill
+2. After payment is created, the system refreshes the utility bill
+3. The payment status is updated to match the utility bill's current status
+4. This ensures payment status always reflects the actual state of the utility bill
+
+```php
+// Payment status is synced from utility bill after creation
+$utilityBill->refresh();
+$paymentData['status'] = $utilityBill->status;
+```
+
+**Valid synced statuses**: 'paid', 'partial', 'overdue', 'pending'
+
+If an unexpected status is encountered, it defaults to 'partial' as a safe fallback.
 ```php
 // Payment cannot exceed remaining balance
 'amount' => function ($attribute, $value, $fail) use ($tenancy) {
