@@ -34,6 +34,8 @@ mobile/src/screens/tenant/
 ├── MakePaymentScreen.tsx       # Make rent or utility payments
 ├── UtilitiesScreen.tsx         # List of assigned utilities
 ├── UtilityBillsScreen.tsx      # View utility bills with summary
+├── RentBillsScreen.tsx         # View rent bills with summary (NEW)
+├── RentBillDetailsScreen.tsx   # View rent bill details with payment history (NEW)
 ├── ProfileScreen.tsx          # Tenant profile management
 └── LoginScreen.tsx            # Authentication
 ```
@@ -49,7 +51,9 @@ mobile/src/screens/landlord/
 ├── TenantDetailsScreen.tsx    # Tenant details with utilities button
 ├── TenancyUtilitiesScreen.tsx # Manage utilities for a tenancy
 ├── PaymentsScreen.tsx         # Payment history
-├── UtilityBillsScreen.tsx    # View and manage tenant utility bills
+├── UtilityBillsScreen.tsx     # View and manage tenant utility bills
+├── RentBillsScreen.tsx        # View and manage rent bills (NEW)
+├── RentBillDetailsScreen.tsx  # View/edit rent bill details (NEW)
 ├── ProfileScreen.tsx         # Landlord profile management
 └── LoginScreen.tsx           # Authentication
 ```
@@ -59,6 +63,11 @@ mobile/src/screens/landlord/
 - Nested stack navigators for detail screens
 - Modal screens for forms (add/edit utilities, bills)
 
+**New Navigation Routes (Rent Bills):**
+- Tenant Payments Stack: `RentBills`, `RentBillDetails`
+- Landlord Payments Stack: `RentBills`, `RentBillDetails`
+- MakePayment Screen: Now accepts optional `rentBillId` parameter
+
 ### API Client Structure
 ```
 mobile/src/
@@ -66,21 +75,26 @@ mobile/src/
 │   ├── client.ts              # Axios instance with interceptors
 │   ├── landlord.ts            # Landlord API endpoints
 │   └── tenant.ts              # Tenant API endpoints
-└── types/
-    └── index.ts               # TypeScript type definitions
+├── types/
+│   └── index.ts               # TypeScript type definitions
+└── utils/
+    └── statusColors.ts        # Status color utility for bills/payments (NEW)
 ```
 
 ### Key API Endpoints Used by Mobile
 
 **Tenant API** (`/api/tenant/*`):
-- `GET /tenant/dashboard` - Dashboard data
+- `GET /tenant/dashboard` - Dashboard data with rent bill summary
 - `GET /tenant/payments` - Payment history with pending amount
-- `POST /tenant/payments` - Create payment (rent/utility)
+- `POST /tenant/payments` - Create payment (rent/utility) with optional rent_bill_id
 - `GET /tenant/utilities` - List assigned utilities with tenancy info
 - `GET /tenant/utility-bills` - List utility bills with summary
+- `GET /tenant/rent-bills` - List tenant's rent bills with summary (NEW)
+- `GET /tenant/rent-bills/current` - Get current month's rent bill (NEW)
+- `GET /tenant/rent-bills/{id}` - Get rent bill details (NEW)
 
 **Landlord API** (`/api/landlord/*`):
-- `GET /landlord/dashboard` - Dashboard metrics
+- `GET /landlord/dashboard` - Dashboard metrics with rent bill stats
 - `GET /landlord/utility-types` - List all utility types
 - `GET /landlord/utility-bills` - List all utility bills (paginated)
 - `PUT /landlord/utility-bills/{id}` - Update utility bill
@@ -89,6 +103,11 @@ mobile/src/
 - `POST /landlord/tenancies/{id}/utilities` - Add utility to tenancy
 - `PUT /landlord/tenancy-utilities/{id}` - Update tenancy utility
 - `DELETE /landlord/tenancy-utilities/{id}` - Remove utility from tenancy
+- `GET /landlord/rent-bills` - List all rent bills with filtering (NEW)
+- `GET /landlord/rent-bills/{id}` - Get rent bill details with payments (NEW)
+- `POST /landlord/rent-bills/{id}/waive` - Waive a rent bill (NEW)
+- `GET /landlord/rent-bills/overdue` - List overdue rent bills (NEW)
+- `GET /landlord/rent-bills/pending` - List pending rent bills (NEW)
 
 ### Mobile TypeScript Types
 
@@ -119,6 +138,53 @@ interface UtilityBillSummary {
   total_paid: number;
   total_outstanding: number;
   bill_count: number;
+}
+
+// Rent Bill - represents a monthly rent charge (NEW)
+type RentBillStatus = 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
+
+interface RentBill {
+  id: number;
+  tenancy_id: number;
+  billing_month: string; // YYYY-MM-01
+  amount_due: number;
+  amount_paid: number;
+  due_date: string;
+  status: RentBillStatus;
+  notes: string | null;
+  tenant?: {
+    id: number;
+    full_name: string;
+    email: string;
+  };
+  unit?: {
+    id: number;
+    unit_number: string;
+  };
+  property?: {
+    id: number;
+    name: string;
+  };
+  payments?: Payment[];
+}
+
+// Rent Bill Summary - aggregated statistics for tenant
+interface RentBillSummary {
+  total_outstanding: number;
+  pending_count: number;
+  overdue_count: number;
+  paid_count: number;
+}
+
+// Payment Form Data - with rent bill linking (NEW)
+interface PaymentFormData {
+  amount: number;
+  payment_type: 'rent' | 'utility';
+  payment_method: 'mobile_money' | 'bank_transfer';
+  utility_bill_id?: number;
+  rent_bill_id?: number; // Link payment to specific rent bill
+  reference_number?: string;
+  notes?: string;
 }
 ```
 

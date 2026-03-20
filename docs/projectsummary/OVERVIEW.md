@@ -306,6 +306,15 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - App shell with sidebar/header/navigation, responsive behavior, and dark/light theming.
   - Reusable components for tables, charts, cards, navigation, forms, and notifications.
 
+- **Mobile App (React Native/Expo)**
+  - Cross-platform mobile application for iOS and Android.
+  - Role-based screens for both landlords and tenants.
+  - **Rent Billing System**: Complete mobile integration with rent bill viewing, payment linking, and status tracking.
+    - Tenant: View rent bills, current month bill, make payments linked to specific bills.
+    - Landlord: Manage rent bills, view overdue/pending bills, waive bills.
+  - Dashboard enhancements showing rent bill statistics.
+  - Token-based authentication with API client.
+
 - **Quality & tooling**
   - Linting and formatting set up for both PHP and JS/TS.
   - Testing powered by Pest with coverage for auth, dashboard, and settings behaviors.

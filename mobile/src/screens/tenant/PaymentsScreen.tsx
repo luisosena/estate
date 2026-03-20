@@ -128,6 +128,16 @@ export function TenantPaymentsScreen() {
         </Card>
       )}
 
+      {/* Rent Bills Link */}
+      <Button
+        mode="outlined"
+        onPress={() => navigation.navigate('RentBills')}
+        style={{ marginHorizontal: 16, marginBottom: 16 }}
+        icon="home"
+      >
+        View Rent Bills
+      </Button>
+
       {/* Payment History */}
       <Card style={screenStyles.card}>
         <Card.Content>

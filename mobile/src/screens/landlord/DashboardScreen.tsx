@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card } from 'react-native-paper';
+import { Text, Card, Button, Chip } from 'react-native-paper';
 import { useAuth } from '../../context/AuthContext';
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
@@ -8,9 +8,15 @@ import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import type { LandlordDashboard } from '../../types';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
+
+type NavigationProp = NativeStackNavigationProp<LandlordPaymentsStackParamList>;
 
 export function LandlordDashboardScreen() {
   const { user } = useAuth();
+  const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<LandlordDashboard | null>(null);
@@ -85,6 +91,50 @@ export function LandlordDashboardScreen() {
               </Text>
             </View>
           </Card.Content>
+        </Card>
+      )}
+
+      {/* Rent Bills Summary */}
+      {data && (
+        <Card style={screenStyles.card}>
+          <Card.Title title="Rent Bills" titleVariant="titleMedium" />
+          <Card.Content>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Pending Bills</Text>
+              <Chip
+                mode="flat"
+                style={{ backgroundColor: colors.status.pending + '20' }}
+                textStyle={{ color: colors.status.pending }}
+              >
+                {data.pending_rent_bills || 0}
+              </Chip>
+            </View>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Overdue Bills</Text>
+              <Chip
+                mode="flat"
+                style={{ backgroundColor: colors.status.overdue + '20' }}
+                textStyle={{ color: colors.status.overdue }}
+              >
+                {data.overdue_rent_bills || 0}
+              </Chip>
+            </View>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Total Outstanding</Text>
+              <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: colors.status.overdue }}>
+                {formatCurrency(data.total_rent_outstanding || 0)}
+              </Text>
+            </View>
+          </Card.Content>
+          <Card.Actions>
+            <Button
+              mode="contained"
+              onPress={() => navigation.navigate('RentBills')}
+              style={{ marginHorizontal: 16, marginBottom: 8 }}
+            >
+              Manage Rent Bills
+            </Button>
+          </Card.Actions>
         </Card>
       )}
 

@@ -8,6 +8,11 @@ import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
 import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
 import type { TenantDashboard } from '../../types';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
+
+type NavigationProp = NativeStackNavigationProp<TenantPaymentsStackParamList>;
 
 const getStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
@@ -22,6 +27,7 @@ const getStatusColor = (status: string): string => {
 
 export function TenantDashboardScreen() {
   const { user } = useAuth();
+  const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<TenantDashboard | null>(null);
@@ -105,7 +111,16 @@ export function TenantDashboardScreen() {
 
       {/* Quick Actions */}
       <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginBottom: 16, gap: 12 }}>
-        <Button mode="contained" icon="credit-card" style={{ flex: 1 }} onPress={() => {}}>
+        <Button 
+          mode="contained" 
+          icon="credit-card" 
+          style={{ flex: 1 }} 
+          onPress={() => navigation.navigate('MakePayment', { 
+            monthlyRent: data?.current_month_bill?.amount_due,
+            pendingAmount: data?.current_month_bill ? data.current_month_bill.amount_due - data.current_month_bill.amount_paid : undefined,
+            rentBillId: data?.current_month_bill?.id
+          })}
+        >
           Pay Rent
         </Button>
         <Button mode="outlined" icon="file-document" style={{ flex: 1 }} onPress={() => {}}>
@@ -143,6 +158,118 @@ export function TenantDashboardScreen() {
           )}
         </Card.Content>
       </Card>
+
+      {/* Current Month Rent Bill */}
+      {data?.current_month_bill && (
+        <Card style={screenStyles.card}>
+          <Card.Title title="Current Month Rent" titleVariant="titleMedium" />
+          <Card.Content>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Billing Month:</Text>
+              <Text variant="bodyMedium">{formatDate(data.current_month_bill.billing_month)}</Text>
+            </View>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Amount Due:</Text>
+              <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: colors.primary }}>
+                {formatCurrency(data.current_month_bill.amount_due)}
+              </Text>
+            </View>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Amount Paid:</Text>
+              <Text variant="bodyMedium" style={{ color: colors.status.paid }}>
+                {formatCurrency(data.current_month_bill.amount_paid)}
+              </Text>
+            </View>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Outstanding:</Text>
+              <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: colors.status.overdue }}>
+                {formatCurrency(data.current_month_bill.amount_due - data.current_month_bill.amount_paid)}
+              </Text>
+            </View>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Due Date:</Text>
+              <Text variant="bodyMedium" style={{ 
+                color: data.current_month_bill.status === 'overdue' ? colors.status.overdue : colors.text.secondary 
+              }}>
+                {formatDate(data.current_month_bill.due_date)}
+              </Text>
+            </View>
+            <View style={screenStyles.listItem}>
+              <Text variant="bodyMedium" style={screenStyles.date}>Status:</Text>
+              <Chip
+                mode="flat"
+                style={[screenStyles.chip, { backgroundColor: getStatusColor(data.current_month_bill.status) + '20' }]}
+              >
+                {data.current_month_bill.status}
+              </Chip>
+            </View>
+          </Card.Content>
+          <Card.Actions>
+            <Button
+              mode="contained"
+              onPress={() => navigation.navigate('MakePayment', { 
+                monthlyRent: data.current_month_bill?.amount_due,
+                pendingAmount: data.current_month_bill ? data.current_month_bill.amount_due - data.current_month_bill.amount_paid : undefined,
+                rentBillId: data.current_month_bill?.id
+              })}
+              style={{ marginHorizontal: 16, marginBottom: 8 }}
+              icon="credit-card"
+            >
+              Pay Now
+            </Button>
+            <Button
+              mode="outlined"
+              onPress={() => data.current_month_bill && navigation.navigate('RentBillDetails', { billId: data.current_month_bill.id })}
+              style={{ marginHorizontal: 16, marginBottom: 8 }}
+            >
+              View Details
+            </Button>
+          </Card.Actions>
+        </Card>
+      )}
+
+      {/* Rent Bills History */}
+      {data?.rent_bills && data.rent_bills.length > 0 && (
+        <Card style={screenStyles.card}>
+          <Card.Title title="Rent Bills History" titleVariant="titleMedium" />
+          <Card.Content>
+            {data.rent_bills.slice(0, 3).map((bill) => (
+              <View key={bill.id} style={screenStyles.listItem}>
+                <View>
+                  <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
+                    {formatDate(bill.billing_month)}
+                  </Text>
+                  <Text variant="bodySmall" style={screenStyles.date}>
+                    Due: {formatDate(bill.due_date)}
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
+                    {formatCurrency(bill.amount_due)}
+                  </Text>
+                  <Chip
+                    mode="flat"
+                    compact
+                    style={[screenStyles.chip, { backgroundColor: getStatusColor(bill.status) + '20', height: 24 }]}
+                    textStyle={{ fontSize: 10, color: getStatusColor(bill.status) }}
+                  >
+                    {bill.status}
+                  </Chip>
+                </View>
+              </View>
+            ))}
+          </Card.Content>
+          <Card.Actions>
+            <Button
+              mode="outlined"
+              onPress={() => navigation.navigate('RentBills')}
+              style={{ marginHorizontal: 16, marginBottom: 8 }}
+            >
+              View All Rent Bills
+            </Button>
+          </Card.Actions>
+        </Card>
+      )}
 
       {/* Utilities Summary */}
       <Card style={screenStyles.card}>

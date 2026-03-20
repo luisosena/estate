@@ -22,15 +22,11 @@ import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import type { UtilityBill } from '../../types';
+import type { UtilityBill, RentBill } from '../../types';
+import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
 
-type RootStackParamList = {
-  TenantTabs: undefined;
-  MakePayment: { monthlyRent?: number; pendingAmount?: number };
-};
-
-type MakePaymentRouteProp = RouteProp<RootStackParamList, 'MakePayment'>;
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type MakePaymentRouteProp = RouteProp<TenantPaymentsStackParamList, 'MakePayment'>;
+type NavigationProp = NativeStackNavigationProp<TenantPaymentsStackParamList>;
 
 const paymentMethods = [
   { value: 'mobile_money', label: 'Mobile Money' },
@@ -45,19 +41,21 @@ const paymentTypes = [
 export function MakePaymentScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<MakePaymentRouteProp>();
-  const { monthlyRent = 0, pendingAmount = 0 } = route.params || {};
+  const { monthlyRent = 0, pendingAmount = 0, rentBillId } = route.params || {};
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [utilityBills, setUtilityBills] = useState<UtilityBill[]>([]);
+  const [rentBills, setRentBills] = useState<RentBill[]>([]);
   const [loadingBills, setLoadingBills] = useState(false);
 
   // Form state
   const [amount, setAmount] = useState('');
   const [paymentType, setPaymentType] = useState<'rent' | 'utility'>('rent');
   const [paymentMethod, setPaymentMethod] = useState<'mobile_money' | 'bank_transfer'>('mobile_money');
-  const [selectedBillId, setSelectedBillId] = useState<number | null>(null);
+  const [selectedUtilityBillId, setSelectedUtilityBillId] = useState<number | null>(null);
+  const [selectedRentBillId, setSelectedRentBillId] = useState<number | null>(rentBillId || null);
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -65,7 +63,7 @@ export function MakePaymentScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const isInitialMount = useRef(true);
 
-  // Track whether we should auto-select a bill (only on first load when paymentType changes to utility)
+  // Track whether we should auto-select a bill (only on first load when paymentType changes)
   const shouldAutoSelectBill = useRef(true);
 
   // Reset auto-select flag on mount to ensure proper behavior on revisit
@@ -73,11 +71,13 @@ export function MakePaymentScreen() {
     shouldAutoSelectBill.current = true;
   }, []);
 
-  // Fetch utility bills when payment type changes to utility
+  // Fetch bills when payment type changes
   useEffect(() => {
     const fetchBills = async () => {
       if (paymentType === 'utility') {
         setLoadingBills(true);
+        setRentBills([]);
+        setSelectedRentBillId(null);
         try {
           const response = await tenantApi.getUtilityBills();
           // Filter to show only pending, partial, or overdue bills
@@ -88,7 +88,7 @@ export function MakePaymentScreen() {
           
           // Auto-select first bill if none selected (only on initial fetch)
           if (pendingBills.length > 0 && shouldAutoSelectBill.current) {
-            setSelectedBillId(pendingBills[0].id);
+            setSelectedUtilityBillId(pendingBills[0].id);
             setAmount(pendingBills[0].amount_due.toString());
             shouldAutoSelectBill.current = false;
           }
@@ -97,10 +97,48 @@ export function MakePaymentScreen() {
         } finally {
           setLoadingBills(false);
         }
-      } else {
+      } else if (paymentType === 'rent') {
+        setLoadingBills(true);
         setUtilityBills([]);
-        setSelectedBillId(null);
-        shouldAutoSelectBill.current = true; // Reset for next time payment type changes to utility
+        setSelectedUtilityBillId(null);
+        try {
+          const response = await tenantApi.getRentBills();
+          // Filter to show only pending, partial, or overdue bills
+          const pendingBills = response.data.filter(
+            (bill) => bill.status === 'pending' || bill.status === 'partial' || bill.status === 'overdue'
+          );
+          setRentBills(pendingBills);
+          
+          // Auto-select bill from params or first pending bill
+          if (shouldAutoSelectBill.current) {
+            if (rentBillId) {
+              // Use the bill from params
+              const billFromParams = pendingBills.find(b => b.id === rentBillId);
+              if (billFromParams) {
+                setSelectedRentBillId(billFromParams.id);
+                setAmount((billFromParams.amount_due - billFromParams.amount_paid).toString());
+              } else {
+                // Bill exists in params but not in pending list (already paid or not found)
+                // Fall back to first pending bill or show info
+                console.warn('Rent bill from params not found in pending bills:', rentBillId);
+                if (pendingBills.length > 0) {
+                  setSelectedRentBillId(pendingBills[0].id);
+                  setAmount((pendingBills[0].amount_due - pendingBills[0].amount_paid).toString());
+                } else {
+                  Alert.alert('Info', 'This rent bill has already been paid or could not be found.');
+                }
+              }
+            } else if (pendingBills.length > 0) {
+              setSelectedRentBillId(pendingBills[0].id);
+              setAmount((pendingBills[0].amount_due - pendingBills[0].amount_paid).toString());
+            }
+            shouldAutoSelectBill.current = false;
+          }
+        } catch (error) {
+          console.error('Failed to fetch rent bills:', error);
+        } finally {
+          setLoadingBills(false);
+        }
       }
     };
 
@@ -127,8 +165,30 @@ export function MakePaymentScreen() {
       newErrors.amount = 'Amount is too large';
     }
 
-    if (paymentType === 'utility' && !selectedBillId) {
+    // Validate amount doesn't exceed outstanding balance
+    if (numAmount > 0) {
+      let outstanding = 0;
+      if (paymentType === 'rent' && selectedRentBillId) {
+        const selectedBill = rentBills.find(b => b.id === selectedRentBillId);
+        if (selectedBill) {
+          outstanding = selectedBill.amount_due - selectedBill.amount_paid;
+        }
+      } else if (paymentType === 'utility' && selectedUtilityBillId) {
+        const selectedBill = utilityBills.find(b => b.id === selectedUtilityBillId);
+        if (selectedBill) {
+          outstanding = selectedBill.amount_due;
+        }
+      }
+      if (outstanding > 0 && numAmount > outstanding) {
+        newErrors.amount = `Amount cannot exceed outstanding balance (${formatCurrency(outstanding)})`;
+      }
+    }
+
+    if (paymentType === 'utility' && !selectedUtilityBillId) {
       newErrors.bill = 'Please select a utility bill';
+    }
+    if (paymentType === 'rent' && !selectedRentBillId) {
+      newErrors.bill = 'Please select a rent bill';
     }
 
     if (!paymentMethod) {
@@ -156,7 +216,8 @@ export function MakePaymentScreen() {
         amount: parseFloat(amount),
         payment_type: paymentType,
         payment_method: paymentMethod,
-        utility_bill_id: selectedBillId || undefined,
+        utility_bill_id: paymentType === 'utility' ? selectedUtilityBillId || undefined : undefined,
+        rent_bill_id: paymentType === 'rent' ? selectedRentBillId || undefined : undefined,
         reference_number: referenceNumber || undefined,
         notes: notes || undefined,
       };
@@ -190,8 +251,9 @@ export function MakePaymentScreen() {
       paymentMethod === 'mobile_money' ? 'Mobile Money' : 'Bank Transfer';
 
     // Find selected bill info
-    const selectedBill = utilityBills.find(bill => bill.id === selectedBillId);
-    const utilityName = selectedBill?.tenancy_utility?.utility_type?.name;
+    const selectedUtilityBill = paymentType === 'utility' ? utilityBills.find(bill => bill.id === selectedUtilityBillId) : null;
+    const selectedRentBill = paymentType === 'rent' ? rentBills.find(bill => bill.id === selectedRentBillId) : null;
+    const utilityName = selectedUtilityBill?.tenancy_utility?.utility_type?.name;
 
     return (
       <View style={[screenStyles.container, { padding: 16 }]}>
@@ -223,13 +285,23 @@ export function MakePaymentScreen() {
                 </Text>
               </View>
 
-              {paymentType === 'utility' && selectedBill && (
+              {paymentType === 'utility' && selectedUtilityBill && (
                 <View style={styles.row}>
                   <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
                     Utility:
                   </Text>
                   <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
                     {utilityName || 'Unknown'}
+                  </Text>
+                </View>
+              )}
+              {paymentType === 'rent' && selectedRentBill && (
+                <View style={styles.row}>
+                  <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
+                    Rent Bill:
+                  </Text>
+                  <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
+                    {formatDate(selectedRentBill.billing_month)}
                   </Text>
                 </View>
               )}
@@ -342,14 +414,14 @@ export function MakePaymentScreen() {
                         key={bill.id}
                         style={[
                           styles.billOption,
-                          selectedBillId === bill.id && styles.billOptionSelected,
+                          selectedUtilityBillId === bill.id && styles.billOptionSelected,
                         ]}
                       >
                         <RadioButton.Android
                           value={bill.id.toString()}
-                          status={selectedBillId === bill.id ? 'checked' : 'unchecked'}
+                          status={selectedUtilityBillId === bill.id ? 'checked' : 'unchecked'}
                           onPress={() => {
-                            setSelectedBillId(bill.id);
+                            setSelectedUtilityBillId(bill.id);
                             setAmount(outstanding.toString());
                           }}
                         />
@@ -376,6 +448,66 @@ export function MakePaymentScreen() {
               ) : (
                 <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
                   No pending utility bills found
+                </Text>
+              )}
+            </Card.Content>
+          </Card>
+        )}
+
+        {/* Rent Bill Selection - only show when payment type is rent */}
+        {paymentType === 'rent' && (
+          <Card style={screenStyles.card}>
+            <Card.Content>
+              <Text variant="titleMedium" style={screenStyles.title}>
+                Select Rent Bill
+              </Text>
+              {loadingBills ? (
+                <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
+                  Loading bills...
+                </Text>
+              ) : rentBills.length > 0 ? (
+                <>
+                  {rentBills.map((bill) => {
+                    const outstanding = bill.amount_due - bill.amount_paid;
+                    return (
+                      <View
+                        key={bill.id}
+                        style={[
+                          styles.billOption,
+                          selectedRentBillId === bill.id && styles.billOptionSelected,
+                        ]}
+                      >
+                        <RadioButton.Android
+                          value={bill.id.toString()}
+                          status={selectedRentBillId === bill.id ? 'checked' : 'unchecked'}
+                          onPress={() => {
+                            setSelectedRentBillId(bill.id);
+                            setAmount(outstanding.toString());
+                          }}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
+                            {formatDate(bill.billing_month)}
+                          </Text>
+                          <Text variant="bodySmall" style={screenStyles.date}>
+                            Due: {formatDate(bill.due_date)}
+                          </Text>
+                          <Text variant="bodySmall" style={{ color: bill.status === 'overdue' ? colors.status.overdue : colors.text.secondary }}>
+                            Status: {bill.status} • Outstanding: {formatCurrency(outstanding)}
+                          </Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+                  {errors.bill && (
+                    <Text variant="bodySmall" style={{ color: colors.error, marginTop: 8 }}>
+                      {errors.bill}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
+                  No pending rent bills found
                 </Text>
               )}
             </Card.Content>

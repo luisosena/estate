@@ -63,14 +63,24 @@ export function LandlordPaymentsScreen() {
         <Text variant="bodyMedium" style={screenStyles.subtitle}>Track all tenant payments</Text>
       </View>
 
-      <Button
-        mode="contained"
-        onPress={() => navigation.navigate('UtilityBills')}
-        style={{ marginHorizontal: 16, marginBottom: 16 }}
-        icon="file-document"
-      >
-        Manage Utility Bills
-      </Button>
+      <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginBottom: 16 }}>
+        <Button
+          mode="contained"
+          onPress={() => navigation.navigate('UtilityBills')}
+          style={{ flex: 1 }}
+          icon="flash"
+        >
+          Utility Bills
+        </Button>
+        <Button
+          mode="contained"
+          onPress={() => navigation.navigate('RentBills')}
+          style={{ flex: 1 }}
+          icon="home"
+        >
+          Rent Bills
+        </Button>
+      </View>
 
       <Card style={[screenStyles.card, { backgroundColor: colors.surfaceVariant, elevation: 0 }]}>
         <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>

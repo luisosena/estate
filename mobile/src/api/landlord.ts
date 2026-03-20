@@ -11,6 +11,7 @@ import type {
   UtilityType,
   Utility,
   UtilityBill,
+  RentBill,
 } from '../types';
 
 export const landlordApi = {
@@ -171,6 +172,33 @@ export const landlordApi = {
 
   waiveUtilityBill: (utilityBillId: number): Promise<{ message: string; data: UtilityBill }> =>
     api.post<{ message: string; data: UtilityBill }>(`/landlord/utility-bills/${utilityBillId}/waive`, {}),
+
+  // Rent Bills
+  getRentBills: (params?: {
+    page?: number;
+    status?: string;
+    property_id?: number;
+    tenant_id?: number;
+  }): Promise<{
+    data: RentBill[];
+    meta: { current_page: number; per_page: number; total: number; total_pages: number };
+  }> =>
+    api.get<{
+      data: RentBill[];
+      meta: { current_page: number; per_page: number; total: number; total_pages: number };
+    }>('/landlord/rent-bills', params),
+
+  getRentBill: (rentBillId: number): Promise<{ data: RentBill }> =>
+    api.get<{ data: RentBill }>(`/landlord/rent-bills/${rentBillId}`),
+
+  waiveRentBill: (rentBillId: number): Promise<{ message: string; data: RentBill }> =>
+    api.post<{ message: string; data: RentBill }>(`/landlord/rent-bills/${rentBillId}/waive`, {}),
+
+  getOverdueRentBills: (): Promise<{ data: RentBill[] }> =>
+    api.get<{ data: RentBill[] }>('/landlord/rent-bills/overdue'),
+
+  getPendingRentBills: (): Promise<{ data: RentBill[] }> =>
+    api.get<{ data: RentBill[] }>('/landlord/rent-bills/pending'),
 };
 
 export default landlordApi;

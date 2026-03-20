@@ -148,17 +148,6 @@ export interface Property {
   created_at: string;
 }
 
-export interface LandlordDashboard {
-  total_properties: number;
-  total_units: number;
-  occupied_units: number;
-  vacant_units: number;
-  total_tenants: number;
-  pending_payments: number;
-  recent_payments: Payment[];
-  expiring_leases: Tenancy[];
-}
-
 // ──────────────────────────────────────────
 // Tenant-Specific Types
 // ──────────────────────────────────────────
@@ -225,6 +214,66 @@ export interface UtilityBillSummary {
   paid_count?: number;
 }
 
+// ──────────────────────────────────────────
+// Rent Bill Types
+// ──────────────────────────────────────────
+
+export type RentBillStatus = 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
+
+export interface RentBill {
+  id: number;
+  tenancy_id: number;
+  billing_month: string; // YYYY-MM-01
+  amount_due: number;
+  amount_paid: number;
+  due_date: string;
+  status: RentBillStatus;
+  notes: string | null;
+  created_at?: string;
+  updated_at?: string;
+  // Relationships (populated from API)
+  tenant?: {
+    id: number;
+    full_name: string;
+    email: string;
+  };
+  unit?: {
+    id: number;
+    unit_number: string;
+  };
+  property?: {
+    id: number;
+    name: string;
+  };
+  payments?: Payment[];
+}
+
+export interface RentBillSummary {
+  total_outstanding: number;
+  pending_count: number;
+  overdue_count: number;
+  paid_count: number;
+}
+
+// ──────────────────────────────────────────
+// Dashboard Enhancements
+// ──────────────────────────────────────────
+
+export interface LandlordDashboard {
+  total_properties: number;
+  total_units: number;
+  occupied_units: number;
+  vacant_units: number;
+  total_tenants: number;
+  pending_payments: number;
+  recent_payments: Payment[];
+  expiring_leases: Tenancy[];
+  // Rent Bill fields
+  pending_rent_bills: number;
+  overdue_rent_bills: number;
+  total_rent_outstanding: number;
+}
+
 export interface TenantDashboard {
   tenant: Tenant;
   unit: Unit | null;
@@ -232,6 +281,9 @@ export interface TenantDashboard {
   payments: Payment[];
   utilities: Utility[];
   notifications: Notification[];
+  // Rent Bill fields
+  rent_bills?: RentBill[];
+  current_month_bill?: RentBill | null;
 }
 
 // ──────────────────────────────────────────

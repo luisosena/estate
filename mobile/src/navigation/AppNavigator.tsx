@@ -19,6 +19,8 @@ import { TenantUtilitiesScreen } from '../screens/tenant/UtilitiesScreen';
 import { TenantUtilityBillsScreen } from '../screens/tenant/UtilityBillsScreen';
 import { TenantProfileScreen } from '../screens/tenant/ProfileScreen';
 import { MakePaymentScreen } from '../screens/tenant/MakePaymentScreen';
+import { TenantRentBillsScreen } from '../screens/tenant/RentBillsScreen';
+import { TenantRentBillDetailsScreen } from '../screens/tenant/RentBillDetailsScreen';
 
 // Landlord Screens
 import { LandlordDashboardScreen } from '../screens/landlord/DashboardScreen';
@@ -27,6 +29,8 @@ import { LandlordTenantsScreen } from '../screens/landlord/TenantsScreen';
 import { LandlordPaymentsScreen } from '../screens/landlord/PaymentsScreen';
 import { LandlordProfileScreen } from '../screens/landlord/ProfileScreen';
 import { LandlordUtilityBillsScreen } from '../screens/landlord/UtilityBillsScreen';
+import { LandlordRentBillsScreen } from '../screens/landlord/RentBillsScreen';
+import { LandlordRentBillDetailsScreen } from '../screens/landlord/RentBillDetailsScreen';
 import { TenancyUtilitiesScreen } from '../screens/landlord/TenancyUtilitiesScreen';
 
 // Detail Screens
@@ -58,7 +62,9 @@ export type TenantUtilitiesStackParamList = {
 
 export type TenantPaymentsStackParamList = {
   PaymentsList: undefined;
-  MakePayment: { monthlyRent?: number; pendingAmount?: number };
+  MakePayment: { monthlyRent?: number; pendingAmount?: number; rentBillId?: number };
+  RentBills: undefined;
+  RentBillDetails: { billId: number };
 };
 
 export type LandlordTabParamList = {
@@ -85,6 +91,8 @@ export type LandlordTenantsStackParamList = {
 export type LandlordPaymentsStackParamList = {
   PaymentsList: undefined;
   UtilityBills: undefined;
+  RentBills: undefined;
+  RentBillDetails: { billId: number };
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -112,6 +120,8 @@ function TenantPaymentsNavigator() {
     <TenantPaymentsStack.Navigator screenOptions={{ headerShown: false }}>
       <TenantPaymentsStack.Screen name="PaymentsList" component={TenantPaymentsScreen} />
       <TenantPaymentsStack.Screen name="MakePayment" component={MakePaymentScreen} />
+      <TenantPaymentsStack.Screen name="RentBills" component={TenantRentBillsScreen} />
+      <TenantPaymentsStack.Screen name="RentBillDetails" component={TenantRentBillDetailsScreen} />
     </TenantPaymentsStack.Navigator>
   );
 }
@@ -197,6 +207,8 @@ function LandlordPaymentsNavigator() {
     <PaymentsStack.Navigator screenOptions={{ headerShown: false }}>
       <PaymentsStack.Screen name="PaymentsList" component={LandlordPaymentsScreen} />
       <PaymentsStack.Screen name="UtilityBills" component={LandlordUtilityBillsScreen} />
+      <PaymentsStack.Screen name="RentBills" component={LandlordRentBillsScreen} />
+      <PaymentsStack.Screen name="RentBillDetails" component={LandlordRentBillDetailsScreen} />
     </PaymentsStack.Navigator>
   );
 }
