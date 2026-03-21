@@ -26,8 +26,6 @@ export const screenStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    // Add bottom padding to account for the absolute positioned tab bar
-    paddingBottom: SCREEN_BOTTOM_PADDING,
   },
   header: {
     padding: 16,
@@ -83,10 +81,6 @@ export const tabBarScreenOptions = {
   tabBarActiveTintColor: colors.primary,
   tabBarInactiveTintColor: colors.gray[600], // Better contrast for inactive
   tabBarStyle: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     height: TAB_BAR_HEIGHT,
     paddingBottom: TAB_BAR_PADDING_BOTTOM,
     backgroundColor: colors.surface,
