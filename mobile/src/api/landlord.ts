@@ -14,6 +14,39 @@ import type {
   RentBill,
 } from '../types';
 
+/**
+ * Validates if a string is a valid tenant code format.
+ * Tenant codes follow the pattern: TEN-XXXXXX (TEN- + 6 alphanumeric characters)
+ * Also accepts legacy format: TEN-XXXXX (TEN- + 5 alphanumeric characters)
+ * Matches backend pattern: TEN-[A-Z0-9]{5,6}
+ */
+export function isValidTenantCode(code: string): boolean {
+  // Accepts: TEN-XXXXXX (6 alphanumeric) or TEN-XXXXX (5 alphanumeric)
+  // Pattern: TEN-[A-Z0-9]{5,6} to match backend
+  return /^TEN-[A-Z0-9]{5,6}$/i.test(code);
+}
+
+/**
+ * Validates tenant identifier - accepts either valid tenant code or numeric ID.
+ * Returns the validated string or throws an error for invalid formats.
+ */
+export function validateTenantIdentifier(identifier: string): string {
+  if (isValidTenantCode(identifier)) {
+    return identifier.toUpperCase();
+  }
+  if (/^\d+$/.test(identifier)) {
+    // Numeric ID - log a warning for security awareness
+    console.warn(
+      `Security: Using numeric ID '${identifier}' for tenant lookup. ` +
+      `Consider using tenant_code for better security.`
+    );
+    return identifier;
+  }
+  throw new Error(
+    `Invalid tenant identifier '${identifier}'. Expected either a valid tenant ID (numeric) or tenant code (format: TEN-XXXXXX).`
+  );
+}
+
 export const landlordApi = {
   // Dashboard
   getDashboard: (): Promise<LandlordDashboard> =>
@@ -58,14 +91,26 @@ export const landlordApi = {
   getTenants: (page = 1): Promise<PaginatedResponse<Tenant>> =>
     api.get<PaginatedResponse<Tenant>>('/landlord/tenants', { page }),
 
-  getTenant: (tenantId: number | string): Promise<Tenant> =>
-    api.get<Tenant>(`/landlord/tenants/${tenantId}`),
+  /**
+   * Fetches a tenant by their unique tenant code.
+   * Security: Uses tenant_code instead of tenant ID to prevent enumeration attacks.
+   * @param tenantIdentifier - The tenant code (e.g., 'TEN-ABC123') or numeric ID
+   */
+  getTenant: (tenantIdentifier: string): Promise<Tenant> => {
+    const validated = validateTenantIdentifier(tenantIdentifier);
+    return api.get<Tenant>(`/landlord/tenants/${validated}`);
+  },
 
   createTenant: (data: Partial<Tenant>): Promise<Tenant> =>
     api.post<Tenant>('/landlord/tenants', data),
 
-  updateTenant: (tenantId: string, data: Partial<Tenant>): Promise<Tenant> =>
-    api.put<Tenant>(`/landlord/tenants/${tenantId}`, data),
+  /**
+   * Updates a tenant by their unique tenant code.
+   * Security: Uses tenant_code instead of tenant ID to prevent enumeration attacks.
+   * @param tenantCode - The unique tenant code (e.g., 'TEN-ABC123')
+   */
+  updateTenant: (tenantCode: string, data: Partial<Tenant>): Promise<Tenant> =>
+    api.put<Tenant>(`/landlord/tenants/${tenantCode}`, data),
 
   deleteTenant: (tenancyId: number): Promise<void> =>
     api.delete(`/landlord/tenants/${tenancyId}/remove`),

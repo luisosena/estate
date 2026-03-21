@@ -84,7 +84,7 @@ export type LandlordPropertiesStackParamList = {
 
 export type LandlordTenantsStackParamList = {
   TenantsList: undefined;
-  TenantDetails: { tenantId: number };
+  TenantDetails: { tenantCode: string };
   TenancyUtilities: { tenancyId: number; tenantName: string };
 };
 

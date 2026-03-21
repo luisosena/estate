@@ -432,23 +432,69 @@ GET /api/landlord/tenants?page=2&per_page=25
 }
 ```
 
-##### GET /api/landlord/tenants/{id}
+##### GET /api/landlord/tenants/{identifier}
 **Description**: Get tenant details with all tenancies
 **Path Parameters**:
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | integer | string | Tenant ID (numeric) or tenant_code (string) |
+| identifier | integer | string | Tenant ID (numeric) or tenant_code (string) |
 
-**Note**: The endpoint accepts both numeric IDs (e.g., `1`) and tenant codes (e.g., `TEN-ABC123`). This allows flexibility for different frontend implementations.
+**Note**: The endpoint accepts both numeric IDs (e.g., `1`) and tenant codes (e.g., `TEN-ABC123`). Tenant codes follow the pattern `TEN-XXXXXX` (6 alphanumeric characters) or legacy format `TEN-XXXXX` (5 alphanumeric characters). Using tenant codes is recommended for security as they prevent tenant enumeration attacks.
 
-##### PUT /api/landlord/tenants/{id}
+**Response** (200):
+```json
+{
+  "id": 1,
+  "tenant_code": "TEN-ABC123",
+  "full_name": "John Doe",
+  "phone": "+255712345678",
+  "email": "john@example.com",
+  "emergency_contact_name": "Jane Doe",
+  "emergency_contact_phone": "+255700000000",
+  "emergency_contact_relation": "Spouse",
+  "tenancies": [
+    {
+      "id": 1,
+      "status": "active",
+      "move_in_date": "2024-01-01",
+      "move_out_date": null,
+      "monthly_rent": 500.00,
+      "security_deposit": 1000.00,
+      "unit": {
+        "id": 5,
+        "unit_name": "Unit 101",
+        "unit_code": "U101",
+        "unit_number": "101",
+        "property_name": "Sunset Apartments",
+        "property_address": "123 Main Street"
+      }
+    }
+  ]
+}
+```
+
+**Response Fields**:
+| Field | Type | Description |
+|-------|------|-------------|
+| id | int | Tenant's unique database ID |
+| tenant_code | string | Unique tenant identifier (e.g., TEN-ABC123) |
+| full_name | string | Tenant's full name |
+| phone | string | Contact phone number |
+| email | string | Contact email |
+| tenancies | array | List of all tenancies (active and historical) |
+| tenancies[].status | string | Tenancy status (active, completed, expired) |
+| tenancies[].unit.unit_number | string | Unit's unit number |
+| tenancies[].unit.property_name | string | Property name |
+| tenancies[].unit.property_address | string | Property address |
+
+##### PUT /api/landlord/tenants/{identifier}
 **Description**: Update tenant
 **Path Parameters**:
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | integer | string | Tenant ID (numeric) or tenant_code (string) |
+| identifier | integer | string | Tenant ID (numeric) or tenant_code (string) |
 
-**Note**: The endpoint accepts both numeric IDs (e.g., `1`) and tenant codes (e.g., `TEN-ABC123`).
+**Note**: The endpoint accepts both numeric IDs (e.g., `1`) and tenant codes (e.g., `TEN-ABC123`). Using tenant codes is recommended for security.
 
 ##### DELETE /api/landlord/tenants/{id}
 **Description**: End tenant's tenancy

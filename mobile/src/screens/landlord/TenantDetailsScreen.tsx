@@ -3,7 +3,7 @@ import { View, ScrollView, RefreshControl } from 'react-native';
 import { Text, Card, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { landlordApi } from '../../api/landlord';
+import { landlordApi, isValidTenantCode } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
@@ -19,7 +19,17 @@ type TenantDetailsRouteProp = RouteProp<LandlordTenantsStackParamList, 'TenantDe
 export function TenantDetailsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<TenantDetailsRouteProp>();
-  const { tenantId } = route.params;
+  const { tenantCode } = route.params;
+
+  // Note: This is a client-side warning only. The backend validates the tenant code
+  // via findTenantByIdentifier() and will return 404 for invalid codes.
+  // This warning helps catch development issues but doesn't block execution.
+  if (tenantCode && !isValidTenantCode(tenantCode)) {
+    console.warn(
+      `Security: Received non-standard tenantCode '${tenantCode}'. ` +
+      `Expected format TEN-XXXXXX. Proceeding with API validation...`
+    );
+  }
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,7 +39,7 @@ export function TenantDetailsScreen() {
   const fetchTenant = useCallback(async () => {
     try {
       setError(null);
-      const data = await landlordApi.getTenant(tenantId);
+      const data = await landlordApi.getTenant(tenantCode);
       setTenant(data);
     } catch (err) {
       console.error('Failed to fetch tenant details:', err);
@@ -38,11 +48,11 @@ export function TenantDetailsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [tenantId]);
+  }, [tenantCode]);
 
   useEffect(() => {
     fetchTenant();
-  }, [tenantId]);
+  }, [tenantCode]);
 
   const onRefresh = () => {
     setRefreshing(true);

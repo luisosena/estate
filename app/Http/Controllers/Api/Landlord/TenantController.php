@@ -116,8 +116,9 @@ class TenantController extends Controller
         // Find tenant by tenant_code or by id using pattern check
         $tenant = $this->findTenantByIdentifier($tenantIdentifier);
 
-        // Verify tenant belongs to landlord's property
+        // Verify tenant belongs to landlord's property (check active and historical tenancies)
         $hasAccess = $tenant->tenancies()
+            ->whereIn('status', ['active', 'completed', 'expired'])
             ->whereHas('unit.property', function ($query) use ($landlord) {
                 $query->where('owner_id', $landlord->id);
             })
@@ -143,7 +144,9 @@ class TenantController extends Controller
                         'id' => $tenancy->unit->id,
                         'unit_name' => $tenancy->unit->unit_name,
                         'unit_code' => $tenancy->unit->unit_code,
-                        'property' => $tenancy->unit->property,
+                        'unit_number' => $tenancy->unit->unit_number,
+                        'property_name' => $tenancy->unit->property?->name,
+                        'property_address' => $tenancy->unit->property?->address,
                     ] : null,
                 ];
             });
@@ -354,9 +357,9 @@ class TenantController extends Controller
      */
     private function findTenantByIdentifier(string $identifier): Tenant
     {
-        // Check if identifier matches the tenant_code pattern (TEN-XXXXXX)
-        // Tenant codes are generated as 'TEN-' + 6 uppercase alphanumeric characters
-        if (preg_match('/^TEN-[A-Z0-9]{6}$/i', $identifier)) {
+        // Check if identifier matches the tenant_code pattern (TEN-XXXXXX or TEN-XXXXX)
+        // New format: TEN-XXXXXX (6 characters), Legacy format: TEN-XXXXX (5 digits)
+        if (preg_match('/^TEN-[A-Z0-9]{5,6}$/i', $identifier)) {
             $tenant = Tenant::where('tenant_code', strtoupper($identifier))->first();
             
             if (!$tenant) {

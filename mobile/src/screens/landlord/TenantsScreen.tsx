@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, RefreshControl } from 'react-native';
+import { View, ScrollView, RefreshControl, Alert } from 'react-native';
 import { Text, Card } from 'react-native-paper';
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
@@ -57,7 +57,17 @@ export function LandlordTenantsScreen() {
           <Card 
             key={tenant.id} 
             style={screenStyles.card}
-            onPress={() => navigation.navigate('TenantDetails', { tenantId: tenant.id })}
+            onPress={() => {
+              // Security: Require tenant_code to prevent enumeration attacks
+              if (!tenant.tenant_code) {
+                Alert.alert(
+                  'Unable to View Details',
+                  `Tenant ${tenant.full_name} cannot be viewed at this time. Please contact support.`
+                );
+                return;
+              }
+              navigation.navigate('TenantDetails', { tenantCode: tenant.tenant_code });
+            }}
           >
             <Card.Title title={tenant.full_name} titleVariant="titleMedium" />
             <Card.Content>
