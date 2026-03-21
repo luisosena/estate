@@ -81,9 +81,9 @@ $defineApiRoutes = function (): void {
             Route::delete('units/{unitId}', [UnitController::class, 'destroy']);
             
             Route::get('tenants', [TenantController::class, 'index']);
-            Route::get('tenants/{tenantCode}', [TenantController::class, 'show']);
+            Route::get('tenants/{tenantIdentifier}', [TenantController::class, 'show']);
             Route::post('tenants', [TenantController::class, 'store']);
-            Route::put('tenants/{tenantCode}', [TenantController::class, 'update']);
+            Route::put('tenants/{tenantIdentifier}', [TenantController::class, 'update']);
             Route::delete('tenants/{tenancyId}/remove', [TenantController::class, 'destroy']);
             
             Route::get('payments', [PaymentController::class, 'index']);

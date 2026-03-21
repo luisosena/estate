@@ -109,12 +109,12 @@ class TenantController extends Controller
      * Get a single tenant.
      * GET /api/v1/landlord/tenants/{tenant}
      */
-    public function show(Request $request, string $tenantCode)
+    public function show(Request $request, string $tenantIdentifier)
     {
         $landlord = $request->user();
 
-        // Find tenant by tenant_code
-        $tenant = Tenant::where('tenant_code', $tenantCode)->firstOrFail();
+        // Find tenant by tenant_code or by id using pattern check
+        $tenant = $this->findTenantByIdentifier($tenantIdentifier);
 
         // Verify tenant belongs to landlord's property
         $hasAccess = $tenant->tenancies()
@@ -259,11 +259,12 @@ class TenantController extends Controller
      * Update a tenant.
      * PUT /api/v1/landlord/tenants/{tenant}
      */
-    public function update(Request $request, string $tenantCode)
+    public function update(Request $request, string $tenantIdentifier)
     {
         $landlord = $request->user();
 
-        $tenant = Tenant::where('tenant_code', $tenantCode)->firstOrFail();
+        // Find tenant by tenant_code or by id using pattern check
+        $tenant = $this->findTenantByIdentifier($tenantIdentifier);
 
         // Verify tenant belongs to landlord's property
         $hasAccess = $tenant->tenancies()
@@ -340,5 +341,43 @@ class TenantController extends Controller
         } while (User::where('username', $username)->exists());
 
         return $username;
+    }
+
+    /**
+     * Find a tenant by identifier (ID or tenant_code).
+     * Uses pattern matching to determine whether to search by ID or tenant_code.
+     * This prevents issues with numeric tenant_codes being misinterpreted as IDs.
+     *
+     * @param string $identifier The tenant identifier (either numeric ID or tenant_code)
+     * @return Tenant The found tenant
+     * @throws \Illuminate\Database\QueryException When tenant is not found
+     */
+    private function findTenantByIdentifier(string $identifier): Tenant
+    {
+        // Check if identifier matches the tenant_code pattern (TEN-XXXXXX)
+        // Tenant codes are generated as 'TEN-' + 6 uppercase alphanumeric characters
+        if (preg_match('/^TEN-[A-Z0-9]{6}$/i', $identifier)) {
+            $tenant = Tenant::where('tenant_code', strtoupper($identifier))->first();
+            
+            if (!$tenant) {
+                abort(404, "Tenant with code '{$identifier}' not found.");
+            }
+            
+            return $tenant;
+        }
+
+        // Check if identifier is a valid numeric ID (positive integer only)
+        if (ctype_digit($identifier)) {
+            $tenant = Tenant::find((int) $identifier);
+            
+            if (!$tenant) {
+                abort(404, "Tenant with ID '{$identifier}' not found.");
+            }
+            
+            return $tenant;
+        }
+
+        // Invalid format - neither valid tenant_code nor numeric ID
+        abort(400, "Invalid tenant identifier '{$identifier}'. Expected either a valid tenant ID (numeric) or tenant code (format: TEN-XXXXXX).");
     }
 }

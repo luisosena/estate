@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class LandlordPaymentController extends Controller
 {
@@ -19,6 +20,41 @@ class LandlordPaymentController extends Controller
     public function __construct(RentBillService $rentBillService)
     {
         $this->rentBillService = $rentBillService;
+    }
+
+    /**
+     * Display a listing of payments for the landlord.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Inertia\Response
+     */
+    public function index(Request $request)
+    {
+        $landlord = $request->user();
+        
+        // Base query for filtering payments belonging to landlord's properties
+        $baseQuery = \App\Models\Payment::whereHas('tenant.tenancies.unit.property', function ($query) use ($landlord) {
+            $query->where('owner_id', $landlord->id);
+        });
+
+        // Get paginated payments with eager loading
+        $payments = (clone $baseQuery)
+            ->with(['tenant', 'tenancy.unit.property', 'rentBill'])
+            ->orderBy('paid_at', 'desc')
+            ->paginate(20);
+
+        // Calculate stats using cloned base queries (avoids N+1 problem)
+        $thisMonth = now()->startOfMonth();
+        $stats = [
+            'total_payments' => (clone $baseQuery)->count(),
+            'total_amount' => (clone $baseQuery)->sum('amount'),
+            'this_month_amount' => (clone $baseQuery)->where('paid_at', '>=', $thisMonth)->sum('amount'),
+        ];
+
+        return Inertia::render('landlord/payments/index', [
+            'payments' => $payments,
+            'stats' => $stats,
+        ]);
     }
 
     /**

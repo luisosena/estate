@@ -2,6 +2,23 @@ import { StyleSheet, Platform } from 'react-native';
 import { colors } from './colors';
 
 /**
+ * Tab bar height constant for use in screen padding.
+ * Use this to add bottom padding to screens with scrollable content.
+ */
+export const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 84 : 70;
+
+/**
+ * Additional padding for the tab bar to account for iOS safe area.
+ */
+export const TAB_BAR_PADDING_BOTTOM = Platform.OS === 'ios' ? 28 : 0;
+
+/**
+ * Bottom padding needed for screens to avoid tab bar overlay.
+ * This is the visible height of the tab bar (excluding internal padding).
+ */
+export const SCREEN_BOTTOM_PADDING = Platform.OS === 'ios' ? 56 : 70;
+
+/**
  * Shared styles used across multiple screens.
  * Avoids duplicating identical StyleSheet.create() calls in every screen file.
  */
@@ -9,6 +26,8 @@ export const screenStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    // Add bottom padding to account for the absolute positioned tab bar
+    paddingBottom: SCREEN_BOTTOM_PADDING,
   },
   header: {
     padding: 16,
@@ -59,17 +78,6 @@ export const screenStyles = StyleSheet.create({
  * Full-width design with straight top border and bottom-spanning height.
  * Uses responsive spacing and accessible labels.
  */
-
-/**
- * Tab bar height constant for use in screen padding.
- * Use this to add bottom padding to screens with scrollable content.
- */
-export const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 84 : 70;
-
-/**
- * Additional padding for the tab bar to account for iOS safe area.
- */
-export const TAB_BAR_PADDING_BOTTOM = Platform.OS === 'ios' ? 28 : 0;
 
 export const tabBarScreenOptions = {
   tabBarActiveTintColor: colors.primary,

@@ -121,6 +121,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('landlord.tenancies.end');
 
     // Payment Management Routes
+    Route::get('/landlord/payments', [LandlordPaymentController::class, 'index'])
+        ->name('landlord.payments.index');
+
     Route::post('/landlord/tenants/{tenant}/payments', [LandlordPaymentController::class, 'store'])
         ->name('landlord.tenants.payments.store');
 

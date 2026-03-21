@@ -9,7 +9,7 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, Users, Building2, Home, Bell, Zap, Receipt, DollarSign } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Home, Bell, Zap, Receipt, DollarSign, CreditCard } from 'lucide-react';
 import { route } from 'ziggy-js';
 import NotificationBell from '@/components/notification-bell';
 
@@ -48,6 +48,12 @@ const mainNavItems = [
         icon: Users,
         href: () => route('landlord.tenants.index'),
         routeName: 'landlord.tenants.index',
+    },
+    {
+        label: 'Payments',
+        icon: CreditCard,
+        href: () => route('landlord.payments.index'),
+        routeName: 'landlord.payments.index',
     },
     {
         label: 'Utilities',
@@ -145,10 +151,7 @@ export function LandlordSidebar({ properties = [], unreadNotificationsCount = 0 
                                         isActive={isPropertyActive(property.id)}
                                     >
                                         <Link
-                                            href={route(
-                                                'landlord.properties.tenants',
-                                                { property: property.id },
-                                            )}
+                                            href={route('landlord.properties.tenants', { property: property.id })}
                                         >
                                             <Building2 className="h-4 w-4" />
                                             <span>{property.name}</span>

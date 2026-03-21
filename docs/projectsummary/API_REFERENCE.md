@@ -434,12 +434,28 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 ##### GET /api/landlord/tenants/{id}
 **Description**: Get tenant details with all tenancies
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | integer | string | Tenant ID (numeric) or tenant_code (string) |
+
+**Note**: The endpoint accepts both numeric IDs (e.g., `1`) and tenant codes (e.g., `TEN-ABC123`). This allows flexibility for different frontend implementations.
 
 ##### PUT /api/landlord/tenants/{id}
 **Description**: Update tenant
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | integer | string | Tenant ID (numeric) or tenant_code (string) |
+
+**Note**: The endpoint accepts both numeric IDs (e.g., `1`) and tenant codes (e.g., `TEN-ABC123`).
 
 ##### DELETE /api/landlord/tenants/{id}
 **Description**: End tenant's tenancy
+**Path Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | integer | Tenancy ID (this endpoint uses the tenancy ID, not tenant ID) |
 
 ---
 
@@ -1161,9 +1177,9 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
 | DELETE | /landlord/units/{id} | LandlordUnitController | Delete unit |
 | GET | /landlord/tenants | LandlordTenantController | Tenant list |
 | POST | /landlord/tenants | LandlordTenantController | Create tenant |
-| GET | /landlord/tenants/{id} | LandlordTenantController | View tenant |
-| PUT | /landlord/tenants/{id} | LandlordTenantController | Update tenant |
-| DELETE | /landlord/tenants/{id} | LandlordTenantController | End tenancy |
+| GET | /landlord/tenants/{id} | LandlordTenantController | View tenant (accepts ID or tenant_code) |
+| PUT | /landlord/tenants/{id} | LandlordTenantController | Update tenant (accepts ID or tenant_code) |
+| DELETE | /landlord/tenants/{id} | LandlordTenantController | End tenancy (tenancy ID) |
 | GET | /landlord/payments | LandlordPaymentController | Payment list |
 | POST | /landlord/payments | LandlordPaymentController | Create payment |
 | GET | /landlord/utilities | LandlordUtilityController | Utility list |
