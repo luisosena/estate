@@ -57,7 +57,7 @@ export function LandlordDashboardScreen() {
 
       {/* Summary Stats */}
       {data && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Overview" titleVariant="titleMedium" />
           <Card.Content>
             <View style={screenStyles.listItem}>
@@ -96,7 +96,7 @@ export function LandlordDashboardScreen() {
 
       {/* Rent Bills Summary */}
       {data && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Rent Bills" titleVariant="titleMedium" />
           <Card.Content>
             <View style={screenStyles.listItem}>
@@ -140,7 +140,7 @@ export function LandlordDashboardScreen() {
 
       {/* Recent Payments */}
       {data?.recent_payments && data.recent_payments.length > 0 && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Recent Payments" titleVariant="titleMedium" />
           <Card.Content>
             {data.recent_payments.slice(0, 5).map((payment) => (
@@ -166,7 +166,7 @@ export function LandlordDashboardScreen() {
 
       {/* Expiring Leases */}
       {data?.expiring_leases && data.expiring_leases.length > 0 && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Expiring Leases" titleVariant="titleMedium" />
           <Card.Content>
             {data.expiring_leases.slice(0, 5).map((tenancy) => (

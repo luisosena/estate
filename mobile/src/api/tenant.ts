@@ -11,6 +11,9 @@ import type {
   TenantDashboard,
   RentBill,
   RentBillSummary,
+  UserProfile,
+  TenantProfileUpdateData,
+  PasswordUpdateData,
 } from '../types';
 
 export interface PaymentFormData {
@@ -61,11 +64,16 @@ export const tenantApi = {
       ...(status && { status }),
     }),
 
-  getProfile: (): Promise<{ tenant: Tenant }> =>
-    api.get<{ tenant: Tenant }>('/tenant/profile'),
+  // Profile Management
+  getProfile: (): Promise<{ user: UserProfile }> =>
+    api.get<{ user: UserProfile }>('/tenant/profile'),
 
-  updateProfile: (data: Partial<Tenant>): Promise<{ tenant: Tenant }> =>
-    api.put<{ tenant: Tenant }>('/tenant/profile', data),
+  updateProfile: (data: TenantProfileUpdateData): Promise<{ message: string; user: UserProfile }> =>
+    api.put<{ message: string; user: UserProfile }>('/tenant/profile', data),
+
+  // Password Update
+  updatePassword: (data: PasswordUpdateData): Promise<{ message: string }> =>
+    api.put<{ message: string }>('/tenant/password', data),
 
   getNotifications: (): Promise<{ notifications: Notification[] }> =>
     api.get<{ notifications: Notification[] }>('/tenant/notifications'),

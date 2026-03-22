@@ -63,7 +63,7 @@ export function LandlordPropertiesScreen() {
 
       {properties?.length > 0 ? (
         properties.map((property) => (
-          <Card 
+          <Card mode="contained" 
             key={property.id} 
             style={screenStyles.card}
             onPress={() => navigation.navigate('PropertyDetails', { propertyId: property.id })}
@@ -91,7 +91,7 @@ export function LandlordPropertiesScreen() {
           </Card>
         ))
       ) : (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Content>
             <Text variant="bodyMedium" style={screenStyles.empty}>No properties yet</Text>
           </Card.Content>

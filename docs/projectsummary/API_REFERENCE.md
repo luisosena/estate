@@ -236,6 +236,30 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 ---
 
+### User Management Endpoints
+
+#### GET /api/users
+**Description**: List all users (Landlords see their tenants, Admins see all)
+**Auth Required**: Yes (admin or landlord)
+
+#### POST /api/users
+**Description**: Create a new user manualy
+**Auth Required**: Yes (admin only)
+
+#### GET /api/users/{id}
+**Description**: Get specific user details
+**Auth Required**: Yes (admin or landlord owning the user's property)
+
+#### PUT /api/users/{id}
+**Description**: Update user
+**Auth Required**: Yes (admin only)
+
+#### DELETE /api/users/{id}
+**Description**: Delete user account
+**Auth Required**: Yes (admin only)
+
+---
+
 ### Landlord API Endpoints
 
 #### Dashboard
@@ -892,6 +916,22 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 
 ---
 
+#### Profile & Settings
+
+##### GET /api/landlord/profile
+**Description**: Get authenticated landlord profile details
+**Auth Required**: Yes (landlord role)
+
+##### PUT /api/landlord/profile
+**Description**: Update landlord's profile information
+**Auth Required**: Yes (landlord role)
+
+##### PUT /api/landlord/password
+**Description**: Update landlord's password (Rate Limited: 5/min)
+**Auth Required**: Yes (landlord role)
+
+---
+
 ### Tenant API Endpoints
 
 #### Dashboard
@@ -1170,6 +1210,22 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 
 ##### GET /api/tenant/rent-bills/{id}
 **Description**: Get rent bill details
+**Auth Required**: Yes (tenant role)
+
+---
+
+#### Profile & Settings
+
+##### GET /api/tenant/profile
+**Description**: Get authenticated tenant's external profile details
+**Auth Required**: Yes (tenant role)
+
+##### PUT /api/tenant/profile
+**Description**: Update tenant's profile information
+**Auth Required**: Yes (tenant role)
+
+##### PUT /api/tenant/password
+**Description**: Update tenant's password (Rate Limited: 5/min)
 **Auth Required**: Yes (tenant role)
 
 ---

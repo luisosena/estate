@@ -4,8 +4,18 @@ import { Text, Card, Button } from 'react-native-paper';
 import { useAuth } from '../../context/AuthContext';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-export function TenantProfileScreen() {
+type TenantProfileStackParamList = {
+  ProfileView: undefined;
+  EditProfile: undefined;
+};
+
+type Props = {
+  navigation: NativeStackNavigationProp<TenantProfileStackParamList, 'ProfileView'>;
+};
+
+export function TenantProfileScreen({ navigation }: Props) {
   const { user, logout } = useAuth();
 
   return (
@@ -29,7 +39,13 @@ export function TenantProfileScreen() {
           </View>
         </Card.Content>
       </Card>
-      <View style={{ padding: 16 }}>
+      <View style={{ padding: 16, gap: 12 }}>
+        <Button 
+          mode="contained" 
+          onPress={() => navigation.navigate('EditProfile')}
+        >
+          Edit Profile
+        </Button>
         <Button mode="contained" onPress={logout} buttonColor={colors.error}>Logout</Button>
       </View>
     </ScrollView>

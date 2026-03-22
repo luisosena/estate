@@ -4,9 +4,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\SessionController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\Tenant\DashboardController;
 use App\Http\Controllers\Api\Tenant\PaymentsController;
 use App\Http\Controllers\Api\Tenant\UtilitiesController;
+use App\Http\Controllers\Api\Tenant\ProfileController as TenantProfileController;
+use App\Http\Controllers\Api\PasswordController;
 use App\Http\Controllers\Api\Landlord\DashboardController as LandlordDashboardController;
 use App\Http\Controllers\Api\Landlord\PropertyController;
 use App\Http\Controllers\Api\Landlord\UnitController;
@@ -17,6 +20,7 @@ use App\Http\Controllers\Api\Landlord\UtilityTypeController;
 use App\Http\Controllers\Api\Landlord\TenancyUtilityController;
 use App\Http\Controllers\Api\Landlord\UtilityBillController;
 use App\Http\Controllers\Api\Landlord\RentBillController;
+use App\Http\Controllers\Api\Landlord\ProfileController as LandlordProfileController;
 use App\Http\Controllers\Api\Tenant\RentBillController as TenantRentBillController;
 use App\Http\Controllers\Api\Tenant\UtilitiesController as TenantUtilitiesController;
 
@@ -48,6 +52,16 @@ $defineApiRoutes = function (): void {
             });
         });
 
+        // User Management (Admin/Landlord only - role check in controller)
+        Route::prefix('users')->group(function () {
+            Route::get('/', [UserController::class, 'index']);
+            Route::get('/{id}', [UserController::class, 'show']);
+            Route::post('/', [UserController::class, 'store']);
+            Route::put('/{id}', [UserController::class, 'update']);
+            Route::patch('/{id}', [UserController::class, 'update']);
+            Route::delete('/{id}', [UserController::class, 'destroy']);
+        });
+
         // Tenant routes
         Route::prefix('tenant')->group(function () {
             Route::get('dashboard', [DashboardController::class, 'index']);
@@ -62,6 +76,13 @@ $defineApiRoutes = function (): void {
             Route::get('rent-bills', [TenantRentBillController::class, 'index']);
             Route::get('rent-bills/current', [TenantRentBillController::class, 'current']);
             Route::get('rent-bills/{id}', [TenantRentBillController::class, 'show']);
+            
+            // Tenant Profile Management
+            Route::get('profile', [TenantProfileController::class, 'show']);
+            Route::put('profile', [TenantProfileController::class, 'update']);
+            
+            // Password Update (with rate limiting: 5 attempts per minute)
+            Route::put('password', [PasswordController::class, 'update'])->middleware('throttle:5,1');
         });
 
         // Landlord routes
@@ -118,6 +139,13 @@ $defineApiRoutes = function (): void {
             Route::get('rent-bills/pending', [RentBillController::class, 'pending']);
             Route::get('rent-bills/{id}', [RentBillController::class, 'show']);
             Route::post('rent-bills/{id}/waive', [RentBillController::class, 'waive']);
+            
+            // Landlord Profile Management
+            Route::get('profile', [LandlordProfileController::class, 'show']);
+            Route::put('profile', [LandlordProfileController::class, 'update']);
+            
+            // Password Update (with rate limiting: 5 attempts per minute)
+            Route::put('password', [PasswordController::class, 'update'])->middleware('throttle:5,1');
         });
     });
 

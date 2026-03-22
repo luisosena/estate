@@ -29,7 +29,7 @@ export const screenStyles = StyleSheet.create({
   },
   header: {
     padding: 16,
-    paddingTop: 24,
+    paddingTop: Platform.OS === 'ios' ? 80 : 64,
   },
   title: {
     color: colors.text.primary,
@@ -43,6 +43,17 @@ export const screenStyles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 16,
     backgroundColor: colors.white,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.04)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 3,
   },
   placeholder: {
     color: colors.text.secondary,
@@ -69,6 +80,9 @@ export const screenStyles = StyleSheet.create({
   chip: {
     height: 28,
   },
+  input: {
+    marginBottom: 12,
+  },
 });
 
 /**
@@ -78,6 +92,7 @@ export const screenStyles = StyleSheet.create({
  */
 
 export const tabBarScreenOptions = {
+  headerShown: false,
   tabBarActiveTintColor: colors.primary,
   tabBarInactiveTintColor: colors.gray[600], // Better contrast for inactive
   tabBarStyle: {

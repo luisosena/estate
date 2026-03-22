@@ -95,7 +95,7 @@ export function TenantDetailsScreen() {
 
       {/* Tenancy Information */}
       {activeTenancy && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Current Tenancy" titleVariant="titleMedium" />
           <Card.Content>
             {activeTenancy.unit && (
@@ -163,7 +163,7 @@ export function TenantDetailsScreen() {
         </Card>
       )}
 
-      <Card style={screenStyles.card}>
+      <Card mode="contained" style={screenStyles.card}>
          <Card.Title title="Contact Information" />
          <Card.Content>
             <View style={screenStyles.listItem}>
@@ -181,7 +181,7 @@ export function TenantDetailsScreen() {
 
       {/* Emergency Contact */}
       {(tenant.emergency_contact_name || tenant.emergency_contact_phone) && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Emergency Contact" />
           <Card.Content>
             {tenant.emergency_contact_name && (
@@ -208,7 +208,7 @@ export function TenantDetailsScreen() {
 
       {/* Past Tenancies */}
       {pastTenancies.length > 0 && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Past Tenancies" titleVariant="titleMedium" />
           <Card.Content>
             {pastTenancies.map((tenancy) => (

@@ -99,7 +99,7 @@ export function LandlordRentBillDetailsScreen() {
       </View>
 
       {/* Status Card */}
-      <Card style={screenStyles.card}>
+      <Card mode="contained" style={screenStyles.card}>
         <Card.Content>
           <View style={styles.statusRow}>
             <Text variant="titleMedium">Status</Text>
@@ -115,7 +115,7 @@ export function LandlordRentBillDetailsScreen() {
       </Card>
 
       {/* Tenant Info */}
-      <Card style={screenStyles.card}>
+      <Card mode="contained" style={screenStyles.card}>
         <Card.Title title="Tenant" titleVariant="titleMedium" />
         <Card.Content>
           <View style={styles.detailRow}>
@@ -131,7 +131,7 @@ export function LandlordRentBillDetailsScreen() {
 
       {/* Property & Unit Info */}
       {(bill.property || bill.unit) && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Property & Unit" titleVariant="titleMedium" />
           <Card.Content>
             {bill.property && (
@@ -151,7 +151,7 @@ export function LandlordRentBillDetailsScreen() {
       )}
 
       {/* Bill Details */}
-      <Card style={screenStyles.card}>
+      <Card mode="contained" style={screenStyles.card}>
         <Card.Title title="Bill Details" titleVariant="titleMedium" />
         <Card.Content>
           <View style={styles.detailRow}>
@@ -214,7 +214,7 @@ export function LandlordRentBillDetailsScreen() {
 
       {/* Payment History */}
       {bill.payments && bill.payments.length > 0 && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Payment History" titleVariant="titleMedium" />
           <Card.Content>
             {bill.payments.map((payment) => (

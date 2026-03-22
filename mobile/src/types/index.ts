@@ -18,6 +18,7 @@ export interface AuthUser {
   id: number;
   name: string;
   email: string;
+  phone?: string;
   role: 'tenant' | 'landlord' | 'admin';
   tenant?: TenantProfile;
   landlord?: LandlordProfile;
@@ -28,6 +29,9 @@ export interface TenantProfile {
   full_name: string;
   phone: string;
   email: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relation?: string;
 }
 
 export interface LandlordProfile {
@@ -284,6 +288,64 @@ export interface TenantDashboard {
   // Rent Bill fields
   rent_bills?: RentBill[];
   current_month_bill?: RentBill | null;
+}
+
+// ──────────────────────────────────────────
+// User Management Types
+// ──────────────────────────────────────────
+
+export interface User {
+  id: number;
+  name: string;
+  username?: string;
+  email: string;
+  role: 'tenant' | 'landlord' | 'admin';
+  phone?: string;
+  tenant_id?: number;
+  landlord_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  role: 'tenant' | 'landlord' | 'admin';
+  // Tenant-specific
+  tenant?: Tenant | null;
+  // Landlord-specific (no separate model, uses user fields)
+}
+
+export interface CreateUserData {
+  name: string;
+  email: string;
+  password: string;
+  role: 'tenant' | 'landlord' | 'admin';
+  phone?: string;
+}
+
+export interface UpdateUserData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  role?: 'tenant' | 'landlord' | 'admin';
+}
+
+export interface TenantProfileUpdateData extends Omit<UpdateUserData, 'role'> {
+  full_name?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relation?: string;
+}
+
+export interface LandlordProfileUpdateData extends Omit<UpdateUserData, 'role'> {}
+
+export interface PasswordUpdateData {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
 }
 
 // ──────────────────────────────────────────

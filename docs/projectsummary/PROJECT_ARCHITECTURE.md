@@ -37,6 +37,7 @@ mobile/src/screens/tenant/
 ├── RentBillsScreen.tsx         # View rent bills with summary (NEW)
 ├── RentBillDetailsScreen.tsx   # View rent bill details with payment history (NEW)
 ├── ProfileScreen.tsx          # Tenant profile management
+├── EditProfileScreen.tsx      # Tenant profile and password update (NEW)
 └── LoginScreen.tsx            # Authentication
 ```
 
@@ -54,7 +55,9 @@ mobile/src/screens/landlord/
 ├── UtilityBillsScreen.tsx     # View and manage tenant utility bills
 ├── RentBillsScreen.tsx        # View and manage rent bills (NEW)
 ├── RentBillDetailsScreen.tsx  # View/edit rent bill details (NEW)
+├── AddTenantScreen.tsx        # Handle complex tenant creation
 ├── ProfileScreen.tsx         # Landlord profile management
+├── EditProfileScreen.tsx     # Landlord profile and password update (NEW)
 └── LoginScreen.tsx           # Authentication
 ```
 
@@ -76,7 +79,12 @@ mobile/src/
 │   ├── landlord.ts            # Landlord API endpoints
 │   └── tenant.ts              # Tenant API endpoints
 ├── types/
-│   └── index.ts               # TypeScript type definitions
+│   └── index.ts               # TypeScript type definitions (Consolidated User Updates)
+├── components/
+│   └── profile/
+│       └── ChangePasswordForm.tsx # Reusable nested password update UI (NEW)
+├── hooks/
+│   └── useAddTenant.ts        # Custom abstraction hook for tenant additions (NEW)
 └── utils/
     └── statusColors.ts        # Status color utility for bills/payments (NEW)
 ```
@@ -92,6 +100,9 @@ mobile/src/
 - `GET /tenant/rent-bills` - List tenant's rent bills with summary (NEW)
 - `GET /tenant/rent-bills/current` - Get current month's rent bill (NEW)
 - `GET /tenant/rent-bills/{id}` - Get rent bill details (NEW)
+- `GET /tenant/profile` - Get authenticated tenant profile
+- `PUT /tenant/profile` - Update profile particulars
+- `PUT /password` - Update password (Shared Universal Controller)
 
 **Landlord API** (`/api/landlord/*`):
 - `GET /landlord/dashboard` - Dashboard metrics with rent bill stats
@@ -108,6 +119,9 @@ mobile/src/
 - `POST /landlord/rent-bills/{id}/waive` - Waive a rent bill (NEW)
 - `GET /landlord/rent-bills/overdue` - List overdue rent bills (NEW)
 - `GET /landlord/rent-bills/pending` - List pending rent bills (NEW)
+- `GET /landlord/profile` - Get authenticated landlord profile
+- `PUT /landlord/profile` - Update landlord details
+- `PUT /password` - Update password (Shared Universal Controller)
 
 ### Mobile TypeScript Types
 

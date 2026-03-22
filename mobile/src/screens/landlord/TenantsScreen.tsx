@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, ScrollView, RefreshControl, Alert } from 'react-native';
-import { Text, Card } from 'react-native-paper';
+import { Text, Card, IconButton } from 'react-native-paper';
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
@@ -16,6 +16,19 @@ export function LandlordTenantsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tenants, setTenants] = useState<Tenant[]>([]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon="account-plus"
+          iconColor="#fff"
+          size={24}
+          onPress={() => navigation.navigate('AddTenant', {})}
+        />
+      ),
+    });
+  }, [navigation]);
 
   const fetchTenants = async () => {
     try {
@@ -54,7 +67,7 @@ export function LandlordTenantsScreen() {
 
       {tenants?.length > 0 ? (
         tenants.map((tenant) => (
-          <Card 
+          <Card mode="contained" 
             key={tenant.id} 
             style={screenStyles.card}
             onPress={() => {
@@ -83,7 +96,7 @@ export function LandlordTenantsScreen() {
           </Card>
         ))
       ) : (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Content>
             <Text variant="bodyMedium" style={screenStyles.empty}>No tenants yet</Text>
           </Card.Content>

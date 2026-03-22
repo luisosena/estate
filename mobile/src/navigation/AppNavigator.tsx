@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../context/AuthContext';
 import { LoadingScreen } from '../components/common/LoadingScreen';
 import { tabBarScreenOptions } from '../constants/styles';
+import { colors } from '../constants/colors';
 
 // Icons
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ import { TenantPaymentsScreen } from '../screens/tenant/PaymentsScreen';
 import { TenantUtilitiesScreen } from '../screens/tenant/UtilitiesScreen';
 import { TenantUtilityBillsScreen } from '../screens/tenant/UtilityBillsScreen';
 import { TenantProfileScreen } from '../screens/tenant/ProfileScreen';
+import { TenantEditProfileScreen } from '../screens/tenant/EditProfileScreen';
 import { MakePaymentScreen } from '../screens/tenant/MakePaymentScreen';
 import { TenantRentBillsScreen } from '../screens/tenant/RentBillsScreen';
 import { TenantRentBillDetailsScreen } from '../screens/tenant/RentBillDetailsScreen';
@@ -28,6 +30,7 @@ import { LandlordPropertiesScreen } from '../screens/landlord/PropertiesScreen';
 import { LandlordTenantsScreen } from '../screens/landlord/TenantsScreen';
 import { LandlordPaymentsScreen } from '../screens/landlord/PaymentsScreen';
 import { LandlordProfileScreen } from '../screens/landlord/ProfileScreen';
+import { LandlordEditProfileScreen } from '../screens/landlord/EditProfileScreen';
 import { LandlordUtilityBillsScreen } from '../screens/landlord/UtilityBillsScreen';
 import { LandlordRentBillsScreen } from '../screens/landlord/RentBillsScreen';
 import { LandlordRentBillDetailsScreen } from '../screens/landlord/RentBillDetailsScreen';
@@ -37,6 +40,7 @@ import { TenancyUtilitiesScreen } from '../screens/landlord/TenancyUtilitiesScre
 import { PropertyDetailsScreen } from '../screens/landlord/PropertyDetailsScreen';
 import { UnitDetailsScreen } from '../screens/landlord/UnitDetailsScreen';
 import { TenantDetailsScreen } from '../screens/landlord/TenantDetailsScreen';
+import { AddTenantScreen } from '../screens/landlord/AddTenantScreen';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -54,6 +58,23 @@ export type TenantTabParamList = {
   Utilities: undefined;
   Profile: undefined;
 };
+
+export type TenantProfileStackParamList = {
+  ProfileView: undefined;
+  EditProfile: undefined;
+};
+
+// Create stack navigator for tenant profile
+const TenantProfileStack = createNativeStackNavigator<TenantProfileStackParamList>();
+
+function TenantProfileNavigator() {
+  return (
+    <TenantProfileStack.Navigator screenOptions={{ headerShown: false }}>
+      <TenantProfileStack.Screen name="ProfileView" component={TenantProfileScreen} />
+      <TenantProfileStack.Screen name="EditProfile" component={TenantEditProfileScreen} />
+    </TenantProfileStack.Navigator>
+  );
+}
 
 export type TenantUtilitiesStackParamList = {
   UtilitiesList: undefined;
@@ -75,15 +96,34 @@ export type LandlordTabParamList = {
   Profile: undefined;
 };
 
+export type LandlordProfileStackParamList = {
+  ProfileView: undefined;
+  EditProfile: undefined;
+};
+
+// Create stack navigator for landlord profile
+const LandlordProfileStack = createNativeStackNavigator<LandlordProfileStackParamList>();
+
+function LandlordProfileNavigator() {
+  return (
+    <LandlordProfileStack.Navigator screenOptions={{ headerShown: false }}>
+      <LandlordProfileStack.Screen name="ProfileView" component={LandlordProfileScreen} />
+      <LandlordProfileStack.Screen name="EditProfile" component={LandlordEditProfileScreen} />
+    </LandlordProfileStack.Navigator>
+  );
+}
+
 // New Nested Stack Params
 export type LandlordPropertiesStackParamList = {
   PropertiesList: undefined;
   PropertyDetails: { propertyId: number };
   UnitDetails: { unitId: number };
+  AddTenant: { unitId?: number };
 };
 
 export type LandlordTenantsStackParamList = {
   TenantsList: undefined;
+  AddTenant: { unitId?: number };
   TenantDetails: { tenantCode: string };
   TenancyUtilities: { tenancyId: number; tenantName: string };
 };
@@ -168,7 +208,7 @@ function TenantNavigator() {
       />
       <TenantTab.Screen 
         name="Profile" 
-        component={TenantProfileScreen}
+        component={TenantProfileNavigator}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
@@ -182,9 +222,10 @@ function TenantNavigator() {
 function LandlordPropertiesNavigator() {
   return (
     <PropertiesStack.Navigator screenOptions={{ headerShown: false }}>
-      <PropertiesStack.Screen name="PropertiesList" component={LandlordPropertiesScreen} />
-      <PropertiesStack.Screen name="PropertyDetails" component={PropertyDetailsScreen} />
-      <PropertiesStack.Screen name="UnitDetails" component={UnitDetailsScreen} />
+      <PropertiesStack.Screen name="PropertiesList" component={LandlordPropertiesScreen} options={{ title: 'Properties' }} />
+      <PropertiesStack.Screen name="PropertyDetails" component={PropertyDetailsScreen} options={{ title: 'Property Details' }} />
+      <PropertiesStack.Screen name="UnitDetails" component={UnitDetailsScreen} options={{ title: 'Unit Details' }} />
+      <PropertiesStack.Screen name="AddTenant" component={AddTenantScreen} options={{ title: 'Add Tenant' }} />
     </PropertiesStack.Navigator>
   );
 }
@@ -192,9 +233,10 @@ function LandlordPropertiesNavigator() {
 function LandlordTenantsNavigator() {
   return (
     <TenantsStack.Navigator screenOptions={{ headerShown: false }}>
-      <TenantsStack.Screen name="TenantsList" component={LandlordTenantsScreen} />
-      <TenantsStack.Screen name="TenantDetails" component={TenantDetailsScreen} />
-      <TenantsStack.Screen name="TenancyUtilities" component={TenancyUtilitiesScreen} />
+      <TenantsStack.Screen name="TenantsList" component={LandlordTenantsScreen} options={{ title: 'Tenants' }} />
+      <TenantsStack.Screen name="AddTenant" component={AddTenantScreen} options={{ title: 'Add Tenant' }} />
+      <TenantsStack.Screen name="TenantDetails" component={TenantDetailsScreen} options={{ title: 'Tenant Details' }} />
+      <TenantsStack.Screen name="TenancyUtilities" component={TenancyUtilitiesScreen} options={{ title: 'Utilities' }} />
     </TenantsStack.Navigator>
   );
 }
@@ -255,7 +297,7 @@ function LandlordNavigator() {
       />
       <LandlordTab.Screen 
         name="Profile" 
-        component={LandlordProfileScreen}
+        component={LandlordProfileNavigator}
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />

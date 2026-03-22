@@ -12,6 +12,9 @@ import type {
   Utility,
   UtilityBill,
   RentBill,
+  UserProfile,
+  LandlordProfileUpdateData,
+  PasswordUpdateData,
 } from '../types';
 
 /**
@@ -69,10 +72,18 @@ export const landlordApi = {
     api.delete(`/landlord/properties/${propertyId}`),
 
   // Units
-  getUnits: (propertyId?: number, page = 1): Promise<PaginatedResponse<Unit>> =>
+  getUnits: (propertyId?: number, page = 1, status?: string): Promise<PaginatedResponse<Unit>> =>
     api.get<PaginatedResponse<Unit>>('/landlord/units', {
       ...(propertyId && { property_id: propertyId }),
+      ...(status && { status }),
       page,
+    }),
+
+  // Get vacant units (for adding tenants)
+  getVacantUnits: (propertyId?: number): Promise<PaginatedResponse<Unit>> =>
+    api.get<PaginatedResponse<Unit>>('/landlord/units', {
+      ...(propertyId && { property_id: propertyId }),
+      status: 'vacant',
     }),
 
   getUnit: (unitId: number): Promise<Unit> =>
@@ -244,6 +255,17 @@ export const landlordApi = {
 
   getPendingRentBills: (): Promise<{ data: RentBill[] }> =>
     api.get<{ data: RentBill[] }>('/landlord/rent-bills/pending'),
+
+  // Profile Management
+  getProfile: (): Promise<{ user: UserProfile }> =>
+    api.get<{ user: UserProfile }>('/landlord/profile'),
+
+  updateProfile: (data: LandlordProfileUpdateData): Promise<{ message: string; user: UserProfile }> =>
+    api.put<{ message: string; user: UserProfile }>('/landlord/profile', data),
+
+  // Password Update
+  updatePassword: (data: PasswordUpdateData): Promise<{ message: string }> =>
+    api.put<{ message: string }>('/landlord/password', data),
 };
 
 export default landlordApi;

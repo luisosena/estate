@@ -4,8 +4,18 @@ import { Text, Card, Button } from 'react-native-paper';
 import { useAuth } from '../../context/AuthContext';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-export function LandlordProfileScreen() {
+type LandlordProfileStackParamList = {
+  ProfileView: undefined;
+  EditProfile: undefined;
+};
+
+type Props = {
+  navigation: NativeStackNavigationProp<LandlordProfileStackParamList, 'ProfileView'>;
+};
+
+export function LandlordProfileScreen({ navigation }: Props) {
   const { user, logout } = useAuth();
 
   return (
@@ -13,7 +23,7 @@ export function LandlordProfileScreen() {
       <View style={screenStyles.header}>
         <Text variant="headlineSmall" style={screenStyles.title}>Profile</Text>
       </View>
-      <Card style={screenStyles.card}>
+      <Card mode="contained" style={screenStyles.card}>
         <Card.Content>
           <View style={screenStyles.listItem}>
             <Text variant="bodyMedium" style={screenStyles.date}>Name</Text>
@@ -29,7 +39,13 @@ export function LandlordProfileScreen() {
           </View>
         </Card.Content>
       </Card>
-      <View style={{ padding: 16 }}>
+      <View style={{ padding: 16, gap: 12 }}>
+        <Button 
+          mode="contained" 
+          onPress={() => navigation.navigate('EditProfile')}
+        >
+          Edit Profile
+        </Button>
         <Button mode="contained" onPress={logout} buttonColor={colors.error}>Logout</Button>
       </View>
     </ScrollView>

@@ -118,7 +118,7 @@ export function LandlordRentBillsScreen() {
         </View>
 
         {/* Summary Stats */}
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Content>
             <View style={styles.summaryRow}>
               <Text variant="bodyMedium" style={screenStyles.date}>Total Outstanding:</Text>
@@ -176,7 +176,7 @@ export function LandlordRentBillsScreen() {
         </View>
 
         {/* Bills List */}
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Content>
             {bills.length > 0 ? (
               bills.map((bill) => {

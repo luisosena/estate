@@ -190,7 +190,7 @@ export function TenancyUtilitiesScreen() {
           </Text>
         </View>
 
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Content>
             <Text variant="titleMedium" style={screenStyles.title}>
               Assigned Utilities

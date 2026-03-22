@@ -1,19 +1,22 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card } from 'react-native-paper';
+import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
+import { View, ScrollView, RefreshControl, Alert } from 'react-native';
+import { Text, Card, Button } from 'react-native-paper';
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import type { Unit } from '../../types';
 
 type UnitDetailsRouteProp = RouteProp<LandlordPropertiesStackParamList, 'UnitDetails'>;
+type NavigationProp = NativeStackNavigationProp<LandlordPropertiesStackParamList, 'UnitDetails'>;
 
 export function UnitDetailsScreen() {
   const route = useRoute<UnitDetailsRouteProp>();
+  const navigation = useNavigation<NavigationProp>();
   const { unitId } = route.params;
 
   const [loading, setLoading] = useState(true);
@@ -34,6 +37,31 @@ export function UnitDetailsScreen() {
       setRefreshing(false);
     }
   }, [unitId]);
+
+  // Set up navigation header for Add Tenant button on vacant units
+  useLayoutEffect(() => {
+    if (unit && (unit.status === 'vacant' || unit.status === 'available')) {
+      navigation.setOptions({
+        headerRight: () => (
+          <Button
+            mode="contained"
+            onPress={() => navigation.navigate('AddTenant', { unitId })}
+            buttonColor={colors.primary}
+            textColor="#fff"
+            compact
+            style={{ marginRight: 8 }}
+          >
+            Add Tenant
+          </Button>
+        ),
+      });
+    } else {
+      // Reset header when unit is not vacant
+      navigation.setOptions({
+        headerRight: undefined,
+      });
+    }
+  }, [navigation, unit, unitId]);
 
   useEffect(() => {
     fetchUnit();
@@ -62,6 +90,7 @@ export function UnitDetailsScreen() {
 
   const activeTenancy = unit.tenancies?.find((t) => t.status === 'active');
   const currentTenant = activeTenancy?.tenant;
+  const isVacant = unit.status === 'vacant' || unit.status === 'available';
 
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -96,7 +125,7 @@ export function UnitDetailsScreen() {
         )}
       </View>
 
-      <Card style={screenStyles.card}>
+      <Card mode="contained" style={screenStyles.card}>
         <Card.Title title="Unit Information" />
         <Card.Content>
           <View style={screenStyles.listItem}>
@@ -130,7 +159,7 @@ export function UnitDetailsScreen() {
 
       {/* Current Tenant Info */}
       {currentTenant && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Current Tenant" titleVariant="titleMedium" />
           <Card.Content>
             <View style={screenStyles.listItem}>
@@ -155,7 +184,7 @@ export function UnitDetailsScreen() {
 
       {/* Past Tenants */}
       {unit.tenancies && unit.tenancies.filter(t => t.status !== 'active').length > 0 && (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Title title="Past Tenants" titleVariant="titleMedium" />
           <Card.Content>
             {unit.tenancies.filter(t => t.status !== 'active').map((tenancy) => (

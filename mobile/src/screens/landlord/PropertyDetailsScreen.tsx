@@ -84,7 +84,7 @@ export function PropertyDetailsScreen() {
       
       {units?.length > 0 ? (
         units.map((unit) => (
-          <Card 
+          <Card mode="contained" 
             key={unit.id} 
             style={screenStyles.card}
             onPress={() => navigation.navigate('UnitDetails', { unitId: unit.id })}
@@ -104,7 +104,7 @@ export function PropertyDetailsScreen() {
           </Card>
         ))
       ) : (
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Content>
             <Text variant="bodyMedium" style={screenStyles.empty}>No units found for this property.</Text>
           </Card.Content>

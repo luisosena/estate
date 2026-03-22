@@ -189,7 +189,7 @@ export function LandlordUtilityBillsScreen() {
         </View>
 
         {/* Bills List */}
-        <Card style={screenStyles.card}>
+        <Card mode="contained" style={screenStyles.card}>
           <Card.Content>
             {bills.length > 0 ? (
               bills.map((bill) => {

@@ -185,7 +185,19 @@ $activeTenancy = $tenant->tenancies()->where('status', 'active')->first();
 
 ## CRUD Operations
 
-### 1. Property Management
+### 1. User Management (Standalone)
+
+#### Create / Update / Delete User
+**Who**: Admin (Full access), Landlord (Read-only access to their tenants)
+
+**Constraints**:
+- Users are primarily created passively when establishing a Tenant or Landlord record.
+- Direct User CRUD is typically reserved for Administrative overrides.
+- `UserController` protects data by dynamically eager-loading `$user->loadMissing('tenant.tenancies.unit.property')` to verify that Landlords can only `show()` or `index()` users who are assigned to their owned properties.
+
+---
+
+### 2. Property Management
 
 #### Create Property
 **Who**: Admin, Landlord
