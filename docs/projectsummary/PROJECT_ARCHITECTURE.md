@@ -71,6 +71,10 @@ mobile/src/screens/landlord/
 - Landlord Payments Stack: `RentBills`, `RentBillDetails`
 - MakePayment Screen: Now accepts optional `rentBillId` parameter
 
+**Splash Screen Logic:**
+- `SplashScreen.tsx`: Custom animated entry screen with "Deep Teal & Gold" branding.
+- **Background Loading Pattern**: The main app navigator mounts *behind* the splash overlay to pre-fetch data and pre-render components during the animation, ensuring a flicker-free transition.
+
 ### API Client Structure
 ```
 mobile/src/
@@ -81,6 +85,7 @@ mobile/src/
 ├── types/
 │   └── index.ts               # TypeScript type definitions (Consolidated User Updates)
 ├── components/
+│   ├── SplashScreen.tsx       # Elegant animated entry screen (NEW)
 │   └── profile/
 │       └── ChangePasswordForm.tsx # Reusable nested password update UI (NEW)
 ├── hooks/

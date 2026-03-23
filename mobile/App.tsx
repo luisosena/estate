@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { SplashScreen } from './src/components/SplashScreen';
 
 // Custom theme - Sophisticated Deep Teal & Gold (accessibility optimized)
 const theme = {
@@ -26,6 +28,8 @@ const theme = {
 };
 
 export default function App() {
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -37,6 +41,13 @@ export default function App() {
           </AuthProvider>
         </PaperProvider>
       </SafeAreaProvider>
+
+      {/* Render Splash Screen on top of the app as an absolute overlay */}
+      {isSplashVisible && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
+          <SplashScreen onFinish={() => setIsSplashVisible(false)} />
+        </View>
+      )}
     </GestureHandlerRootView>
   );
 }

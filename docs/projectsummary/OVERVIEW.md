@@ -309,6 +309,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 - **Mobile App (React Native/Expo)**
   - Cross-platform mobile application for iOS and Android.
   - Role-based screens for both landlords and tenants.
+  - **Premium Onboarding**: Minimalistic custom splash screen with background loading to ensure a "zero-flicker" transition to the main app.
   - **Rent Billing System**: Complete mobile integration with rent bill viewing, payment linking, and status tracking.
     - Tenant: View rent bills, current month bill, make payments linked to specific bills.
     - Landlord: Manage rent bills, view overdue/pending bills, waive bills.
