@@ -37,14 +37,14 @@
 
 | Code | Full Name | Phone | Emergency Contact |
 |------|-----------|-------|------------------|
-| TNT-2026-001 | Amina Juma Salim | +255754123456 | Juma Salim (Father) |
-| TNT-2026-002 | Bernard Omondi | +255653234567 | Grace Omondi (Wife) |
-| TNT-2026-003 | Fatuma Rashid | +255712345678 | Rashid Khalid (Husband) |
-| TNT-2026-004 | David Mwangi Kariuki | +255785456789 | Susan Kariuki (Sister) |
-| TNT-2026-005 | Zainab Mohammed Ali | +255622567890 | Mohammed Ali (Brother) |
+| TEN-00001 | Amina Juma Salim | +255754123456 | Juma Salim (Father) |
+| TEN-00002 | Bernard Omondi | +255653234567 | Grace Omondi (Wife) |
+| TEN-00003 | Fatuma Rashid | +255712345678 | Rashid Khalid (Husband) |
+| TEN-00004 | David Mwangi Kariuki | +255785456789 | Susan Kariuki (Sister) |
+| TEN-00005 | Zainab Mohammed Ali | +255622567890 | Mohammed Ali (Brother) |
 
 **Key field notes (tenants table):**
-- `tenant_code` — unique, format `TNT-YYYY-NNN`
+- `tenant_code` — unique, format `TEN-NNNNN`
 - `full_name` — single field (not split first/last)
 - `emergency_contact_name`, `emergency_contact_phone`, `emergency_contact_relation` — three separate columns
 - Soft-deletes enabled (`deleted_at`)

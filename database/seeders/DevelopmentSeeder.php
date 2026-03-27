@@ -151,7 +151,7 @@ class DevelopmentSeeder extends Seeder
         // =====================================================
         $tenantData = [
             [
-                'tenant_code' => 'TNT-2026-001',
+                'tenant_code' => 'TEN-00001',
                 'full_name'   => 'Amina Juma Salim',
                 'phone'       => '+255754123456',
                 'email'       => 'amina.salim@gmail.com',
@@ -167,7 +167,7 @@ class DevelopmentSeeder extends Seeder
                 'id_number'   => 'TZ-NID-19870321-001',
             ],
             [
-                'tenant_code' => 'TNT-2026-002',
+                'tenant_code' => 'TEN-00002',
                 'full_name'   => 'Bernard Omondi',
                 'phone'       => '+255653234567',
                 'email'       => 'bernard.omondi@gmail.com',
@@ -183,7 +183,7 @@ class DevelopmentSeeder extends Seeder
                 'id_number'   => 'KE-PP-A4521876',
             ],
             [
-                'tenant_code' => 'TNT-2026-003',
+                'tenant_code' => 'TEN-00003',
                 'full_name'   => 'Fatuma Rashid',
                 'phone'       => '+255712345678',
                 'email'       => 'fatuma.rashid@yahoo.com',
@@ -199,7 +199,7 @@ class DevelopmentSeeder extends Seeder
                 'id_number'   => 'TZ-NID-19900615-003',
             ],
             [
-                'tenant_code' => 'TNT-2026-004',
+                'tenant_code' => 'TEN-00004',
                 'full_name'   => 'David Mwangi Kariuki',
                 'phone'       => '+255785456789',
                 'email'       => 'david.mwangi@outlook.com',
@@ -215,7 +215,7 @@ class DevelopmentSeeder extends Seeder
                 'id_number'   => 'TZ-DL-2019-00445',
             ],
             [
-                'tenant_code' => 'TNT-2026-005',
+                'tenant_code' => 'TEN-00005',
                 'full_name'   => 'Zainab Mohammed Ali',
                 'phone'       => '+255622567890',
                 'email'       => 'zainab.ali@gmail.com',

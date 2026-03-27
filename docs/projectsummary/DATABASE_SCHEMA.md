@@ -118,22 +118,24 @@ erDiagram
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
-| user_id | BIGINT | FOREIGN KEY (nullable) | Reference to user account |
-| first_name | VARCHAR(255) | NOT NULL | Tenant's first name |
-| last_name | VARCHAR(255) | NOT NULL | Tenant's last name |
-| email | VARCHAR(255) | NOT NULL | Tenant's email |
-| phone | VARCHAR(50) | NULLABLE | Contact phone number |
-| emergency_contact | VARCHAR(255) | NULLABLE | Emergency contact info |
+| tenant_code | VARCHAR(255) | UNIQUE, NOT NULL | Unique tenant code |
+| full_name | VARCHAR(255) | NOT NULL | Tenant's full name |
+| phone | VARCHAR(50) | NOT NULL | Contact phone number |
+| email | VARCHAR(255) | NULLABLE | Tenant's email |
+| emergency_contact_name | VARCHAR(255) | NOT NULL | Emergency contact name |
+| emergency_contact_phone | VARCHAR(255) | NOT NULL | Emergency contact phone |
+| emergency_contact_relation | VARCHAR(255) | NOT NULL | Emergency contact relation |
+| deleted_at | TIMESTAMP | NULLABLE | Soft delete timestamp |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
 **Indexes**:
 - PRIMARY KEY (id)
-- INDEX on user_id
+- UNIQUE INDEX on tenant_code
 - INDEX on email
 
 **Relationships**:
-- HasOne User
+- HasOne User (via users.tenant_id)
 - HasMany Tenancy
 - HasMany TenantIdentification
 - HasMany Payment
@@ -188,24 +190,17 @@ erDiagram
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | property_id | BIGINT | FOREIGN KEY (properties.id) | Parent property |
-| unit_number | VARCHAR(50) | NOT NULL | Unit identifier (e.g., "101", "2A") |
-| type | ENUM('studio', '1bedroom', '2bedroom', '3bedroom', 'commercial') | NOT NULL | Unit type |
-| floor | INT | NULLABLE | Floor number |
-| size_sqm | DECIMAL(10,2) | NULLABLE | Unit size in square meters |
-| bedrooms | INT | DEFAULT 0 | Number of bedrooms |
-| bathrooms | DECIMAL(3,1) | DEFAULT 1.0 | Number of bathrooms |
-| rent_amount | DECIMAL(12,2) | NOT NULL | Monthly rent |
-| status | ENUM('available', 'occupied', 'maintenance', 'unavailable') | DEFAULT 'available' | Unit availability |
-| description | TEXT | NULLABLE | Unit description |
-| features | JSON | NULLABLE | Array of features (parking, balcony, etc.) |
+| unit_code | VARCHAR(255) | UNIQUE, NOT NULL | Unit identifier |
+| unit_name | VARCHAR(255) | NOT NULL | Human-readable unit name |
+| status | ENUM('available', 'occupied', 'maintenance') | DEFAULT 'available' | Unit availability |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
 **Indexes**:
 - PRIMARY KEY (id)
+- UNIQUE INDEX on unit_code
 - INDEX on property_id
 - INDEX on status
-- Composite INDEX on (property_id, unit_number)
 
 **Relationships**:
 - BelongsTo Property
@@ -230,9 +225,9 @@ erDiagram
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | tenant_id | BIGINT | FOREIGN KEY (tenants.id) | Tenant reference |
 | unit_id | BIGINT | FOREIGN KEY (units.id) | Rented unit |
-| start_date | DATE | NOT NULL | Tenancy start date |
-| end_date | DATE | NULLABLE | Tenancy end date (planned) |
-| rent_amount | DECIMAL(12,2) | NOT NULL | Monthly rent amount |
+| move_in_date | DATE | NOT NULL | Tenancy start date |
+| move_out_date | DATE | NULLABLE | Tenancy end date (planned) |
+| monthly_rent | DECIMAL(12,2) | NOT NULL | Monthly rent amount |
 | security_deposit | DECIMAL(12,2) | NULLABLE | Security deposit amount |
 | status | ENUM('active', 'ended', 'pending', 'expired') | DEFAULT 'pending' | Tenancy status |
 | termination_reason | VARCHAR(255) | NULLABLE | Reason for termination |
@@ -275,10 +270,10 @@ erDiagram
 | utility_bill_id | BIGINT | FOREIGN KEY (nullable, nullOnDelete) | Link to utility bill (for utility payments) |
 | rent_bill_id | BIGINT | FOREIGN KEY (nullable, nullOnDelete) | Link to rent bill (for rent payments) |
 | amount | DECIMAL(12,2) | NOT NULL | Payment amount |
-| type | ENUM('rent', 'deposit', 'utility', 'penalty', 'other') | NOT NULL | Payment type |
-| method | ENUM('cash', 'bank_transfer', 'mobile_money', 'card', 'other') | NOT NULL | Payment method |
+| payment_type | ENUM('rent', 'deposit', 'utility', 'penalty', 'other') | NOT NULL | Payment type |
+| payment_method | ENUM('cash', 'bank_transfer', 'mobile_money', 'card', 'other') | NOT NULL | Payment method |
 | status | ENUM('paid', 'partial', 'overdue', 'cancelled', 'pending') | DEFAULT 'pending' | Payment status |
-| payment_date | DATE | NOT NULL | Date payment was made |
+| paid_at | TIMESTAMP | NOT NULL | Date payment was made |
 | due_date | DATE | NOT NULL | Date payment was due |
 | reference_number | VARCHAR(100) | NULLABLE | External payment reference |
 | notes | TEXT | NULLABLE | Payment notes |
@@ -507,7 +502,7 @@ erDiagram
 **Attributes**:
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
+| id | UUID | PRIMARY KEY | Unique identifier |
 | notifiable_type | VARCHAR(255) | NOT NULL | Model type (User/Tenant) |
 | notifiable_id | BIGINT | NOT NULL | Model ID |
 | type | VARCHAR(255) | NOT NULL | Notification class/type |
@@ -538,9 +533,7 @@ erDiagram
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | sender_id | BIGINT | FOREIGN KEY (users.id) | Message sender |
 | receiver_id | BIGINT | FOREIGN KEY (users.id) | Message receiver |
-| subject | VARCHAR(255) | NULLABLE | Message subject |
-| body | TEXT | NOT NULL | Message content |
-| read_at | TIMESTAMP | NULLABLE | When message was read |
+| message | TEXT | NOT NULL | Message content |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -661,11 +654,7 @@ The following tables are created by Laravel framework:
 
 ### JSON Fields
 
-#### units.features
-Stores an array of unit features:
-```json
-["parking", "balcony", "air_conditioning", "furnished"]
-```
+*(No custom JSON fields for units table in the current schema)*
 
 #### api_tokens.abilities
 Stores token permissions:
@@ -713,11 +702,13 @@ erDiagram
     
     TENANT {
         bigint id PK
-        bigint user_id FK
-        string first_name
-        string last_name
-        string email
+        string tenant_code UK
+        string full_name
         string phone
+        string email
+        string emergency_contact_name
+        string emergency_contact_phone
+        string emergency_contact_relation
     }
     
     PROPERTY {
@@ -731,9 +722,8 @@ erDiagram
     UNIT {
         bigint id PK
         bigint property_id FK
-        string unit_number
-        enum type
-        decimal rent_amount
+        string unit_code UK
+        string unit_name
         enum status
     }
     
@@ -741,9 +731,9 @@ erDiagram
         bigint id PK
         bigint tenant_id FK
         bigint unit_id FK
-        date start_date
-        date end_date
-        decimal rent_amount
+        date move_in_date
+        date move_out_date
+        decimal monthly_rent
         enum status
     }
     
@@ -753,9 +743,10 @@ erDiagram
         bigint tenant_id FK
         bigint utility_bill_id FK
         decimal amount
-        enum type
+        enum payment_type
+        enum payment_method
         enum status
-        date payment_date
+        timestamp paid_at
     }
     
     UTILITY_TYPE {
