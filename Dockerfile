@@ -21,11 +21,11 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --optimize-autoloader --no-scripts --no-interaction
 
-# Copy Nginx config
-COPY nginx.conf /etc/nginx/http.d/default.conf
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Expose port
 EXPOSE 8000
 
 # Start Nginx + PHP-FPM
-CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]
+CMD ["/start.sh"]

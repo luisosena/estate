@@ -3,7 +3,7 @@ services:
     name: estate-practice
     env: docker
     buildCommand: composer install --no-interaction --no-dev
-    startCommand: sh -c "php-fpm && nginx -g 'daemon off;'"
+    startCommand: "/start.sh"
     envVars:
       - key: APP_ENV
         value: production
