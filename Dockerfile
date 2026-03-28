@@ -2,11 +2,12 @@ FROM php:8.5-fpm-alpine
 
 # Install dependencies
 RUN apk add --no-cache \
-    curl \
-    git \
-    zip \
-    unzip \
-    ca-certificates
+  curl \
+  git \
+  zip \
+  unzip \
+  ca-certificates \
+  nginx
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -20,8 +21,11 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --optimize-autoloader --no-scripts --no-interaction
 
-# Expose port
-EXPOSE 9000
+# Copy Nginx config
+COPY nginx.conf /etc/nginx/http.d/default.conf
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Expose port
+EXPOSE 8000
+
+# Start Nginx + PHP-FPM
+CMD ["sh", "-c", "php-fpm && nginx -g 'daemon off;'"]
