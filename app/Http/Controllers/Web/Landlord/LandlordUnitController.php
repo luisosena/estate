@@ -143,7 +143,7 @@ class LandlordUnitController extends Controller
         
         $property = Property::where('owner_id', $landlord->id)
             ->with(['units' => function ($query) {
-                $query->select('id', 'unit_code', 'unit_name', 'status', 'created_at')
+                $query->select('id', 'property_id', 'unit_code', 'unit_name', 'status', 'created_at')
                       ->orderBy('unit_code');
             }])
             ->findOrFail($propertyId);
