@@ -83,13 +83,5 @@
         "vite": "^7.0.4",
         "ziggy-js": "^2.6.0",
         "zod": "^4.3.6"
-    },
-    "optionalDependencies": {
-        "@rollup/rollup-linux-x64-gnu": "4.9.5",
-        "@rollup/rollup-win32-x64-msvc": "4.9.5",
-        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
-        "@tailwindcss/oxide-win32-x64-msvc": "^4.0.1",
-        "lightningcss-linux-x64-gnu": "^1.29.1",
-        "lightningcss-win32-x64-msvc": "^1.29.1"
     }
 }

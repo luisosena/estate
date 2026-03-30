@@ -2,7 +2,7 @@ import { Transition } from '@headlessui/react';
 import { Form, Head } from '@inertiajs/react';
 import { useRef } from 'react';
 
-import PasswordController from '@/actions/App/Http/Controllers/Settings/PasswordController';
+import PasswordController from '@/actions/App/Http/Controllers/Web/Settings/PasswordController';
 import HeadingSmall from '@/components/shared/heading-small';
 import InputError from '@/components/shared/input-error';
 import { Button } from '@/components/ui/button';
