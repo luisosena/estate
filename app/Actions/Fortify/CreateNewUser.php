@@ -31,8 +31,7 @@ class CreateNewUser implements CreatesNewUsers
     protected function generateUsername(string $name): string
     {
         do {
-            $base = Str::slug($name, '.');
-            $username = $base . '_' . random_int(1000, 9999);
+            $username = Str::slug($name, '.');
         } while (User::where('username', $username)->exists());
 
         return $username;
