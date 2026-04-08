@@ -92,7 +92,10 @@ interface Props {
 
 // Form validation schema
 const paymentSchema = z.object({
-  amount: z.coerce.number().min(1, 'Amount must be at least 1'),
+  amount: z.preprocess(
+    (val) => (val === '' || val === null ? undefined : Number(val)), 
+    z.number().min(1, 'Amount must be at least 1')
+  ),
   payment_type: z.enum(['rent', 'utility']),
   payment_method: z.enum(['mobile_money', 'bank_transfer']),
   reference_number: z.string().max(100).optional(),
@@ -119,7 +122,7 @@ export default function MakePayment({
 }: Props) {
   // Form state
   const [formData, setFormData] = useState<any>({
-    amount: existingPayment?.amount ?? (existingPayment?.payment_type === 'rent' || !existingPayment ? pendingAmount : 0),
+    amount: Number(existingPayment?.amount || 0) || (existingPayment?.payment_type === 'rent' || !existingPayment ? (Number(pendingAmount) || 0) : 0),
     payment_type: (existingPayment?.payment_type as 'rent' | 'utility') ?? 'rent',
     payment_method: existingPayment?.payment_method ?? '',
     reference_number: existingPayment?.reference_number ?? '',
@@ -369,11 +372,19 @@ export default function MakePayment({
                       value={formData.utility_bill_id?.toString() || ''}
                       onValueChange={(value) => {
                         const bill = pendingUtilityBills.find(b => b.id.toString() === value);
-                        setFormData((prev: any) => ({ 
-                          ...prev, 
-                          utility_bill_id: parseInt(value),
-                          amount: bill ? (bill.amount_due - bill.amount_paid) : prev.amount
-                        }));
+                        if (bill) {
+                          const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
+                          setFormData((prev: any) => ({ 
+                            ...prev, 
+                            utility_bill_id: parseInt(value),
+                            amount: outstanding > 0 ? outstanding : 0
+                          }));
+                        } else {
+                          setFormData((prev: any) => ({ 
+                            ...prev, 
+                            utility_bill_id: parseInt(value)
+                          }));
+                        }
                       }}
                     >
                       <SelectTrigger>

@@ -633,11 +633,19 @@ export default function TenantEditModal({
                   value={formData.utility_bill_id?.toString() || ''} 
                   onValueChange={(value) => {
                     const bill = pendingUtilityBills.find(b => b.id.toString() === value);
-                    setFormData((prev: any) => ({
-                      ...prev,
-                      utility_bill_id: parseInt(value),
-                      amount: bill ? (bill.amount_due - bill.amount_paid) : prev.amount
-                    }));
+                    if (bill) {
+                      const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        utility_bill_id: parseInt(value),
+                        amount: outstanding > 0 ? outstanding : 0
+                      }));
+                    } else {
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        utility_bill_id: parseInt(value)
+                      }));
+                    }
                   }}
                 >
                   <SelectTrigger>
