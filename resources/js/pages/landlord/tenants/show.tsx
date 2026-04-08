@@ -81,6 +81,8 @@ interface Props {
   tenancy_history: TenancyHistory[];
   properties: any[];
   availableUnits: any[];
+  outstandingRent: number;
+  outstandingUtilities: number;
 }
 
 export default function TenantShow({
@@ -92,6 +94,8 @@ export default function TenantShow({
   tenancy_history,
   properties,
   availableUnits,
+  outstandingRent,
+  outstandingUtilities,
 }: Props) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editType, setEditType] = useState<
@@ -578,6 +582,8 @@ export default function TenantShow({
         property={property}
         availableUnits={availableUnits}
         selectedPayment={selectedPayment}
+        outstandingRent={outstandingRent}
+        outstandingUtilities={outstandingUtilities}
         editType={editType}
         onSave={(updatedData) => {
           // Handle different types of updates

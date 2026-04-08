@@ -73,6 +73,8 @@ interface TenantEditModalProps {
   selectedPayment?: Payment | null;
   onSave: (data: any) => void;
   editType?: 'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history' | 'payment' | 'add-payment' | 'end-tenancy' | 'move-tenant';
+  outstandingRent?: number;
+  outstandingUtilities?: number;
 }
 
 export default function TenantEditModal({
@@ -86,6 +88,8 @@ export default function TenantEditModal({
   selectedPayment = null,
   onSave,
   editType = 'personal',
+  outstandingRent = 0,
+  outstandingUtilities = 0,
 }: TenantEditModalProps) {
   const [formData, setFormData] = useState<any>(() => {
     // Initialize form data based on edit type
@@ -603,6 +607,18 @@ export default function TenantEditModal({
                 />
               </div>
             </div>
+
+            {/* Overpayment Warning */}
+            {((formData.payment_type === 'rent' && formData.amount > (outstandingRent || 0)) || 
+              (formData.payment_type === 'utility' && formData.amount > (outstandingUtilities || 0))) && (
+              <Alert className="bg-amber-50 border-amber-200">
+                <AlertCircleIcon className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-700">
+                  Note: The amount entered is more than the {formData.payment_type} amount due ({formData.payment_type === 'rent' ? outstandingRent : outstandingUtilities} TZS) and it will be recorded as is.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="payment_method">Payment Method</Label>
