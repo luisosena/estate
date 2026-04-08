@@ -1,11 +1,13 @@
+import { Link, router, useForm } from '@inertiajs/react';
+import { ArrowLeft, Mail, Phone, MapPin, Building, User, Lock, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import { route } from 'ziggy-js';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Mail, Phone, MapPin, Building, User, Lock, Eye, EyeOff } from 'lucide-react';
-import { route } from 'ziggy-js';
-import { useState } from 'react';
+
 
 interface Landlord {
   id: number;

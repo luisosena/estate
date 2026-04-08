@@ -1,46 +1,46 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useAuth } from '../context/AuthContext';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+
 import { LoadingScreen } from '../components/common/LoadingScreen';
 import { tabBarScreenOptions } from '../constants/styles';
-import { colors } from '../constants/colors';
+import { useAuth } from '../context/AuthContext';
 
 // Icons
-import { Ionicons } from '@expo/vector-icons';
 
 // Auth Screens
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
 
 // Tenant Screens
-import { TenantDashboardScreen } from '../screens/tenant/DashboardScreen';
-import { TenantPaymentsScreen } from '../screens/tenant/PaymentsScreen';
-import { TenantUtilitiesScreen } from '../screens/tenant/UtilitiesScreen';
-import { TenantUtilityBillsScreen } from '../screens/tenant/UtilityBillsScreen';
-import { TenantProfileScreen } from '../screens/tenant/ProfileScreen';
-import { TenantEditProfileScreen } from '../screens/tenant/EditProfileScreen';
-import { MakePaymentScreen } from '../screens/tenant/MakePaymentScreen';
-import { TenantRentBillsScreen } from '../screens/tenant/RentBillsScreen';
-import { TenantRentBillDetailsScreen } from '../screens/tenant/RentBillDetailsScreen';
-
-// Landlord Screens
+import { AddTenantScreen } from '../screens/landlord/AddTenantScreen';
 import { LandlordDashboardScreen } from '../screens/landlord/DashboardScreen';
-import { LandlordPropertiesScreen } from '../screens/landlord/PropertiesScreen';
-import { LandlordTenantsScreen } from '../screens/landlord/TenantsScreen';
+import { LandlordEditProfileScreen } from '../screens/landlord/EditProfileScreen';
 import { LandlordPaymentsScreen } from '../screens/landlord/PaymentsScreen';
 import { LandlordProfileScreen } from '../screens/landlord/ProfileScreen';
-import { LandlordEditProfileScreen } from '../screens/landlord/EditProfileScreen';
-import { LandlordUtilityBillsScreen } from '../screens/landlord/UtilityBillsScreen';
-import { LandlordRentBillsScreen } from '../screens/landlord/RentBillsScreen';
+import { LandlordPropertiesScreen } from '../screens/landlord/PropertiesScreen';
+import { PropertyDetailsScreen } from '../screens/landlord/PropertyDetailsScreen';
 import { LandlordRentBillDetailsScreen } from '../screens/landlord/RentBillDetailsScreen';
+import { LandlordRentBillsScreen } from '../screens/landlord/RentBillsScreen';
 import { TenancyUtilitiesScreen } from '../screens/landlord/TenancyUtilitiesScreen';
+import { TenantDetailsScreen } from '../screens/landlord/TenantDetailsScreen';
+import { LandlordTenantsScreen } from '../screens/landlord/TenantsScreen';
+import { UnitDetailsScreen } from '../screens/landlord/UnitDetailsScreen';
+import { LandlordUtilityBillsScreen } from '../screens/landlord/UtilityBillsScreen';
+import { TenantDashboardScreen } from '../screens/tenant/DashboardScreen';
+import { TenantEditProfileScreen } from '../screens/tenant/EditProfileScreen';
+import { MakePaymentScreen } from '../screens/tenant/MakePaymentScreen';
+import { TenantPaymentsScreen } from '../screens/tenant/PaymentsScreen';
+import { TenantProfileScreen } from '../screens/tenant/ProfileScreen';
+import { TenantRentBillDetailsScreen } from '../screens/tenant/RentBillDetailsScreen';
+import { TenantRentBillsScreen } from '../screens/tenant/RentBillsScreen';
+import { TenantUtilitiesScreen } from '../screens/tenant/UtilitiesScreen';
+import { TenantUtilityBillsScreen } from '../screens/tenant/UtilityBillsScreen';
+
+// Landlord Screens
 
 // Detail Screens
-import { PropertyDetailsScreen } from '../screens/landlord/PropertyDetailsScreen';
-import { UnitDetailsScreen } from '../screens/landlord/UnitDetailsScreen';
-import { TenantDetailsScreen } from '../screens/landlord/TenantDetailsScreen';
-import { AddTenantScreen } from '../screens/landlord/AddTenantScreen';
 
 export type RootStackParamList = {
   Auth: undefined;

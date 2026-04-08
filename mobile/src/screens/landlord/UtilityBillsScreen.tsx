@@ -1,15 +1,16 @@
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, Alert } from 'react-native';
 import { Text, Card, Chip, Button, SegmentedButtons, TextInput, Portal, Modal } from 'react-native-paper';
-import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
-import type { UtilityBill } from '../../types';
+import { screenStyles } from '../../constants/styles';
 import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
+import type { UtilityBill } from '../../types';
+import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
 
 type NavigationProp = NativeStackNavigationProp<LandlordPaymentsStackParamList>;
 type RouteProps = RouteProp<LandlordPaymentsStackParamList, 'UtilityBills'>;

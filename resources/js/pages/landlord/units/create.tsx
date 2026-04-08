@@ -1,3 +1,7 @@
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Building2, Home, Plus } from 'lucide-react';
+import { route } from 'ziggy-js';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,8 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -21,9 +25,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Building2, Home, Plus } from 'lucide-react';
-import { route } from 'ziggy-js';
 
 interface Property {
   id: number;

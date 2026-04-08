@@ -1,6 +1,7 @@
+import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+
 import { landlordApi } from '../api/landlord';
 import type { Unit } from '../types';
 

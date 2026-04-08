@@ -1,3 +1,7 @@
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard, CreditCard, Zap, Bell, FileText, DollarSign } from 'lucide-react';
+import { route } from 'ziggy-js';
+
 import {
     Sidebar,
     SidebarContent,
@@ -6,9 +10,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, CreditCard, Zap, Bell, FileText, DollarSign } from 'lucide-react';
-import { route } from 'ziggy-js';
 
 const navItems = [
     {

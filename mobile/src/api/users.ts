@@ -1,4 +1,3 @@
-import api from './client';
 import type {
   User,
   UserProfile,
@@ -6,6 +5,8 @@ import type {
   UpdateUserData,
   PaginatedResponse,
 } from '../types';
+
+import api from './client';
 
 export const userApi = {
   // List all users (admin/landlord only)

@@ -1,23 +1,25 @@
-import { TenantSidebar } from '@/components/layout/tenant-sidebar';
-import TenantNotificationBell from '@/components/tenant-notification-bell';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { route } from 'ziggy-js';
 import {
   CreditCard,
   Plus,
   ArrowLeft,
   Calendar,
 } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
 import { useEffect } from 'react';
+import { toast, Toaster } from 'sonner';
+import { route } from 'ziggy-js';
+
+import { TenantSidebar } from '@/components/layout/tenant-sidebar';
+import TenantNotificationBell from '@/components/tenant-notification-bell';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+
 
 interface Tenant {
   id: number;

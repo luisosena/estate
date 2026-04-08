@@ -1,13 +1,14 @@
+import { Link, router } from '@inertiajs/react';
+import { ArrowLeft, Save } from 'lucide-react';
+import { useState } from 'react';
+import { toast, Toaster } from 'sonner';
+import { route } from 'ziggy-js';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
 import {
   Select,
   SelectContent,
@@ -15,11 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Link, router } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
-import { route } from 'ziggy-js';
-import { useState } from 'react';
-import { toast, Toaster } from 'sonner';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 
 interface UtilityType {
   id: number;

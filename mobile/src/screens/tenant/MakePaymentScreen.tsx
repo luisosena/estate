@@ -1,3 +1,5 @@
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -15,15 +17,14 @@ import {
   RadioButton,
   SegmentedButtons,
 } from 'react-native-paper';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { tenantApi, PaymentFormData } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency, formatDate } from '../../utils/formatters';
-import type { UtilityBill, RentBill } from '../../types';
+import { screenStyles } from '../../constants/styles';
 import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
+import type { UtilityBill, RentBill } from '../../types';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 
 type MakePaymentRouteProp = RouteProp<TenantPaymentsStackParamList, 'MakePayment'>;
 type NavigationProp = NativeStackNavigationProp<TenantPaymentsStackParamList>;

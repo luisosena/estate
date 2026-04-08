@@ -1,9 +1,11 @@
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { TextInput, Button, Text, HelperText } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/errors';
+
 import { authStyles as styles } from './authStyles';
 
 export function RegisterScreen() {

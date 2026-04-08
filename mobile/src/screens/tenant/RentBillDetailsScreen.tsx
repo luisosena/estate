@@ -1,16 +1,17 @@
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { Text, Card, Chip, Button, Divider } from 'react-native-paper';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { tenantApi } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
+import { screenStyles } from '../../constants/styles';
+import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
+import type { RentBill } from '../../types';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { getStatusColor } from '../../utils/statusColors';
-import type { RentBill } from '../../types';
-import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
 
 type NavigationProp = NativeStackNavigationProp<TenantPaymentsStackParamList>;
 type RouteProps = RouteProp<TenantPaymentsStackParamList, 'RentBillDetails'>;

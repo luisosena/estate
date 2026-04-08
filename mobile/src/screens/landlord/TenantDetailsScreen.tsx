@@ -1,16 +1,19 @@
+import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { Text, Card, Button } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { landlordApi, isValidTenantCode } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency, formatDate } from '../../utils/formatters';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { screenStyles } from '../../constants/styles';
 import { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
 import type { Tenant } from '../../types';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+
+
 
 type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList>;
 
@@ -52,7 +55,7 @@ export function TenantDetailsScreen() {
 
   useEffect(() => {
     fetchTenant();
-  }, [tenantCode]);
+  }, [tenantCode, fetchTenant]);
 
   const onRefresh = () => {
     setRefreshing(true);

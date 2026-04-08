@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet, Alert } from 'react-native';
-import { Text, Card, Chip, Button, Divider } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, ScrollView, RefreshControl, StyleSheet, Alert } from 'react-native';
+import { Text, Card, Chip, Button, Divider } from 'react-native-paper';
+
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
+import { screenStyles } from '../../constants/styles';
+import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
+import type { RentBill } from '../../types';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { getStatusColor } from '../../utils/statusColors';
-import type { RentBill } from '../../types';
-import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
 
 type NavigationProp = NativeStackNavigationProp<LandlordPaymentsStackParamList>;
 type RouteProps = RouteProp<LandlordPaymentsStackParamList, 'RentBillDetails'>;
@@ -24,7 +25,7 @@ export function LandlordRentBillDetailsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [bill, setBill] = useState<RentBill | null>(null);
 
-  const fetchBill = async () => {
+  const fetchBill = useCallback(async () => {
     try {
       const data = await landlordApi.getRentBill(billId);
       setBill(data.data);
@@ -34,11 +35,11 @@ export function LandlordRentBillDetailsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [billId]);
 
   useEffect(() => {
     fetchBill();
-  }, [billId]);
+  }, [billId, fetchBill]);
 
   const onRefresh = () => {
     setRefreshing(true);

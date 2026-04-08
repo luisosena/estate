@@ -1,23 +1,25 @@
+import { Link, router } from '@inertiajs/react';
+import { MoreHorizontal, Eye, CheckCircle2, Clock, AlertCircle, Receipt } from 'lucide-react';
+import { useState } from 'react';
+import { route } from 'ziggy-js';
+
 import { TenantSidebar } from '@/components/layout/tenant-sidebar';
 import TenantNotificationBell from '@/components/tenant-notification-bell';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { Link, router } from '@inertiajs/react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, CheckCircle2, Clock, AlertCircle, Receipt } from 'lucide-react';
-import { route } from 'ziggy-js';
-import { useState } from 'react';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+
 
 interface RentBill {
   id: number;

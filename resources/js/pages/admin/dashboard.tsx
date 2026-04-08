@@ -1,9 +1,10 @@
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, router } from '@inertiajs/react';
 import { Building, Users, Home, Settings, LogOut, Plus } from 'lucide-react';
 import { route } from 'ziggy-js';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AdminDashboardProps {
     stats?: {

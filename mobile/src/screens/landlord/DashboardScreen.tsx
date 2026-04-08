@@ -1,16 +1,17 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { Text, Card, Button, Chip } from 'react-native-paper';
-import { useAuth } from '../../context/AuthContext';
+
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency, formatDate } from '../../utils/formatters';
-import type { LandlordDashboard } from '../../types';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { screenStyles } from '../../constants/styles';
+import { useAuth } from '../../context/AuthContext';
 import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
+import type { LandlordDashboard } from '../../types';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 
 type NavigationProp = NativeStackNavigationProp<LandlordPaymentsStackParamList>;
 

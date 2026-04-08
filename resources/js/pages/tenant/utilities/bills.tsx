@@ -1,20 +1,22 @@
-import { TenantSidebar } from '@/components/layout/tenant-sidebar';
-import TenantNotificationBell from '@/components/tenant-notification-bell';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
 import { Link } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   CreditCard,
   AlertCircle,
   CheckCircle,
 } from 'lucide-react';
 import { route } from 'ziggy-js';
+
+import { TenantSidebar } from '@/components/layout/tenant-sidebar';
+import TenantNotificationBell from '@/components/tenant-notification-bell';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+
 
 interface Tenant {
   id: number;

@@ -1,12 +1,13 @@
+import { NavigationContainer } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { SplashScreen } from './src/components/SplashScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
-import { SplashScreen } from './src/components/SplashScreen';
 
 // Custom theme - Sophisticated Deep Teal & Gold (accessibility optimized)
 const theme = {

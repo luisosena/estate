@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
+
 import { colors } from '../../constants/colors';
 
 interface LoadingScreenProps {

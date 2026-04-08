@@ -1,12 +1,13 @@
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Alert } from 'react-native';
 import { Text, TextInput, Button, Card, HelperText } from 'react-native-paper';
-import { useAuth } from '../../context/AuthContext';
+
 import { landlordApi } from '../../api';
-import { screenStyles } from '../../constants/styles';
-import { colors } from '../../constants/colors';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChangePasswordForm } from '../../components/profile/ChangePasswordForm';
+import { colors } from '../../constants/colors';
+import { screenStyles } from '../../constants/styles';
+import { useAuth } from '../../context/AuthContext';
 
 type LandlordProfileStackParamList = {
   ProfileView: undefined;

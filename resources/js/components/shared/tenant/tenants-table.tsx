@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { Link } from "@inertiajs/react";
-import { route } from "ziggy-js";
 import {
   type ColumnDef,
   type SortingState,
@@ -20,7 +18,10 @@ import {
   MoreHorizontal,
   Mail,
 } from "lucide-react";
+import { useState } from "react";
+import { route } from "ziggy-js";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -46,7 +47,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import type { Tenant } from "@/types";
 
 type TenantStatus = Tenant["status"];

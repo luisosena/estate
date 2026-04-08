@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Alert } from 'react-native';
 import { Text, TextInput, Button, HelperText, Card } from 'react-native-paper';
-import { screenStyles } from '../../constants/styles';
+
 import { colors } from '../../constants/colors';
+import { screenStyles } from '../../constants/styles';
 
 interface Props {
   onUpdatePassword: (data: any) => Promise<{ message: string }>;

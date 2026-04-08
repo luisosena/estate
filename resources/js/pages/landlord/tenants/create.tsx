@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
-import AuthLayout from '@/layouts/auth-layout';
+
 import CreateTenantForm from '@/components/Tenant/CreateTenantForm';
+import AuthLayout from '@/layouts/auth-layout';
 
 interface AvailableUnit {
     id: number;

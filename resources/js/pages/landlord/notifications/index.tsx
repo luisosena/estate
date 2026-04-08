@@ -1,13 +1,15 @@
-import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link, router } from '@inertiajs/react';
 import { Bell, Check, CheckCheck, Filter, Trash2, X } from 'lucide-react';
-import { route } from 'ziggy-js';
 import { useEffect, useState } from 'react';
+import { route } from 'ziggy-js';
+
+import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+
 
 interface Notification {
   id: string;

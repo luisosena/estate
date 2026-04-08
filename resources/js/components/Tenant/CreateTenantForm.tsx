@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
+import { Loader2, ArrowLeft, Home, Calendar, DollarSign } from 'lucide-react';
+import React, { useState } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Field, FieldGroup, FieldLabel, FieldDescription, FieldError, FieldSeparator } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Field, FieldGroup, FieldLabel, FieldDescription, FieldError, FieldSeparator } from '@/components/ui/field';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, ArrowLeft, Home, Calendar, DollarSign } from 'lucide-react';
+
 
 interface AvailableUnit {
     id: number;

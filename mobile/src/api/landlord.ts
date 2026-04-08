@@ -1,4 +1,3 @@
-import api from './client';
 import type {
   Property,
   Unit,
@@ -16,6 +15,8 @@ import type {
   LandlordProfileUpdateData,
   PasswordUpdateData,
 } from '../types';
+
+import api from './client';
 
 /**
  * Validates if a string is a valid tenant code format.

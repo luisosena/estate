@@ -1,3 +1,7 @@
+import { Link, router } from '@inertiajs/react';
+import { ArrowLeft, Building2, Mail, Phone, Users } from 'lucide-react';
+import { route } from 'ziggy-js';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,9 +19,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Link, router } from '@inertiajs/react';
-import { ArrowLeft, Building2, Mail, Phone, Users } from 'lucide-react';
-import { route } from 'ziggy-js';
+
 import type { TenantRow } from './index';
 
 interface PropertyInfo {

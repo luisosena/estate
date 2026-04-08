@@ -1,16 +1,18 @@
+import { Link, router, usePage } from '@inertiajs/react';
+import { ArrowLeft, AlertCircle, CheckCircle2, Clock, XCircle, Receipt, Building, User, Home, DollarSign } from 'lucide-react';
+import { useState } from 'react';
+import { route } from 'ziggy-js';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, AlertCircle, CheckCircle2, Clock, XCircle, Receipt, Building, User, Home, DollarSign } from 'lucide-react';
-import { route } from 'ziggy-js';
-import { useState } from 'react';
+
 
 interface Property {
   id: number;

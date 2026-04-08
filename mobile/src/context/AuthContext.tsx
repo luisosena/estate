@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { deleteItem, getItem, setItem } from '../utils/storage';
+
 import { authApi } from '../api/auth';
 import type { AuthUser, LoginCredentials, RegisterData, AuthResponse } from '../types';
+import { deleteItem, getItem, setItem } from '../utils/storage';
 
 interface AuthContextType {
   user: AuthUser | null;

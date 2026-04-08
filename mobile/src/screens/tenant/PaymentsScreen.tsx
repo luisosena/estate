@@ -1,15 +1,16 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { Text, Card, Chip, Button } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { tenantApi } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency, formatDate } from '../../utils/formatters';
-import type { Payment, Tenant } from '../../types';
+import { screenStyles } from '../../constants/styles';
 import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
+import type { Payment, Tenant } from '../../types';
+import { formatCurrency, formatDate } from '../../utils/formatters';
 
 type NavigationProp = NativeStackNavigationProp<TenantPaymentsStackParamList>;
 

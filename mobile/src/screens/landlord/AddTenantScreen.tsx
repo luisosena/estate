@@ -1,12 +1,13 @@
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { Text, TextInput, Button, Card, HelperText, Switch } from 'react-native-paper';
-import { screenStyles } from '../../constants/styles';
+
 import { colors } from '../../constants/colors';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { LandlordTenantsStackParamList, LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
+import { screenStyles } from '../../constants/styles';
 import { useAddTenant } from '../../hooks/useAddTenant';
+import { LandlordTenantsStackParamList, LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
 
 type AddTenantRouteProp = RouteProp<LandlordTenantsStackParamList & LandlordPropertiesStackParamList, 'AddTenant'>;
 type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList & LandlordPropertiesStackParamList, 'AddTenant'>;

@@ -1,3 +1,8 @@
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard, Users, Building2, Home, Bell, Zap, Receipt, DollarSign, CreditCard } from 'lucide-react';
+import { route } from 'ziggy-js';
+
+import NotificationBell from '@/components/notification-bell';
 import {
     Sidebar,
     SidebarContent,
@@ -8,10 +13,6 @@ import {
     SidebarMenuItem,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, Users, Building2, Home, Bell, Zap, Receipt, DollarSign, CreditCard } from 'lucide-react';
-import { route } from 'ziggy-js';
-import NotificationBell from '@/components/notification-bell';
 
 interface Property {
     id: number;

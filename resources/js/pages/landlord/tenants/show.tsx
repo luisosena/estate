@@ -1,21 +1,22 @@
+import { Link, router } from '@inertiajs/react';
+import { AlertCircle, ArrowLeft, Edit, Home } from 'lucide-react';
+import { useState } from 'react';
+import { route } from 'ziggy-js';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
 import TenantEditModal from '@/components/tenant-edit-modal';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Link, router } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Edit, Home } from 'lucide-react';
-import { useState } from 'react';
-import { route } from 'ziggy-js';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Tenant {
   id: number;

@@ -1,8 +1,5 @@
-import api from './client';
 import type {
   Tenant,
-  Unit,
-  Tenancy,
   Payment,
   Utility,
   UtilityBill,
@@ -15,6 +12,8 @@ import type {
   TenantProfileUpdateData,
   PasswordUpdateData,
 } from '../types';
+
+import api from './client';
 
 export interface PaymentFormData {
   amount: number;

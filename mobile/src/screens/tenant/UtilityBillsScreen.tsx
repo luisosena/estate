@@ -1,15 +1,16 @@
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { Text, Card, Chip, Button } from 'react-native-paper';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { tenantApi } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
-import type { UtilityBill, UtilityBillSummary } from '../../types';
+import { screenStyles } from '../../constants/styles';
 import type { TenantUtilitiesStackParamList, TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
+import type { UtilityBill, UtilityBillSummary } from '../../types';
+import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
 
 // Combine navigation types for navigating between stacks
 type NavigationProp = NativeStackNavigationProp<

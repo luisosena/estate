@@ -1,15 +1,16 @@
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, Alert } from 'react-native';
 import { Text, Card, Chip, Button, FAB, Portal, Modal, TextInput, SegmentedButtons } from 'react-native-paper';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import { formatCurrency, capitalize } from '../../utils/formatters';
-import type { Utility, UtilityType } from '../../types';
+import { screenStyles } from '../../constants/styles';
 import type { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
+import type { Utility, UtilityType } from '../../types';
+import { formatCurrency, capitalize } from '../../utils/formatters';
 
 type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList>;
 type RouteProps = RouteProp<LandlordTenantsStackParamList, 'TenancyUtilities'>;

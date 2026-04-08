@@ -1,3 +1,17 @@
+import { Link, router } from '@inertiajs/react';
+import {
+  ArrowRight,
+  Building2,
+  Clock,
+  DollarSign,
+  Home,
+  Plus,
+  Receipt,
+  Users,
+  AlertCircle,
+} from 'lucide-react';
+import { route } from 'ziggy-js';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,19 +26,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Link, router } from '@inertiajs/react';
-import {
-  ArrowRight,
-  Building2,
-  Clock,
-  DollarSign,
-  Home,
-  Plus,
-  Receipt,
-  Users,
-  AlertCircle,
-} from 'lucide-react';
-import { route } from 'ziggy-js';
 
 interface Property {
   id: number;

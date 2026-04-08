@@ -1,14 +1,15 @@
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { Text, Card } from 'react-native-paper';
+
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
 import { colors } from '../../constants/colors';
-import type { Property } from '../../types';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { screenStyles } from '../../constants/styles';
 import { LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
+import type { Property } from '../../types';
 
 type NavigationProp = NativeStackNavigationProp<LandlordPropertiesStackParamList, 'PropertiesList'>;
 

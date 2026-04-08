@@ -18,11 +18,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
 
   useEffect(() => {
     // Elegant slow fade in and delicate scale up
+    // eslint-disable-next-line react-hooks/immutability
     opacity.value = withTiming(1, { duration: 1000, easing: Easing.out(Easing.cubic) });
+    // eslint-disable-next-line react-hooks/immutability
     scale.value = withTiming(1, { duration: 1200, easing: Easing.out(Easing.cubic) });
 
     // Hold the screen for a moment, then fade out gracefully
     const timeout = setTimeout(() => {
+       
       opacity.value = withTiming(0, { duration: 600, easing: Easing.inOut(Easing.quad) }, (finished) => {
         if (finished) {
           runOnJS(onFinish)();
