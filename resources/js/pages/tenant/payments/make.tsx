@@ -36,7 +36,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast, Toaster } from 'sonner';
 import { z } from 'zod';
 
@@ -145,6 +145,21 @@ export default function MakePayment({
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  // Check for overpayment
+  const isOverpayment = useMemo(() => {
+    const amount = Number(formData.amount?.toString().replace(/[^0-9.]/g, '')) || 0;
+    if (formData.payment_type === 'rent') {
+      return amount > (Number(pendingAmount) || 0);
+    } else if (formData.payment_type === 'utility' && formData.utility_bill_id) {
+      const bill = pendingUtilityBills.find(b => b.id === Number(formData.utility_bill_id));
+      if (bill) {
+        const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
+        return amount > outstanding;
+      }
+    }
+    return false;
+  }, [formData.amount, formData.payment_type, formData.utility_bill_id, pendingAmount, pendingUtilityBills]);
 
   // Handle input change
   const handleChange = (
@@ -340,6 +355,15 @@ export default function MakePayment({
                   )}
                   {errors.amount && (
                     <p className="text-xs text-destructive">{errors.amount}</p>
+                  )}
+                  
+                  {isOverpayment && !errors.amount && (
+                    <Alert className="mt-2 py-2 px-3 bg-yellow-50 border-yellow-200 dark:bg-yellow-900/10 dark:border-yellow-800">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+                      <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-500">
+                        The entered amount exceeds the outstanding balance. Correct if necessary, or proceed if paying in advance.
+                      </AlertDescription>
+                    </Alert>
                   )}
                 </div>
 
