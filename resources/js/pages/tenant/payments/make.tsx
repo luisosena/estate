@@ -104,8 +104,7 @@ const paymentSchema = z.object({
     })
     .pipe(
       z.number({ 
-        required_error: "Amount is required",
-        invalid_type_error: "Please enter a valid numeric amount"
+        message: "Please enter a valid numeric amount"
       }).min(1, 'Amount must be at least 1')
     ),
   payment_type: z.enum(['rent', 'utility']),
