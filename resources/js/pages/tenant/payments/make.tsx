@@ -58,6 +58,19 @@ interface PaymentMethod {
   label: string;
 }
 
+interface UtilityBill {
+  id: number;
+  amount_due: number;
+  amount_paid: number;
+  billing_month: string;
+  status: string;
+  tenancy_utility: {
+    utility_type: {
+      name: string;
+    };
+  };
+}
+
 interface ExistingPayment {
   id: number;
   amount: number;
@@ -65,6 +78,7 @@ interface ExistingPayment {
   payment_method: string;
   reference_number?: string;
   notes?: string;
+  utility_bill_id?: number | null;
 }
 
 interface Props {
@@ -73,17 +87,17 @@ interface Props {
   existingPayment?: ExistingPayment | null;
   pendingAmount?: number;
   paymentMethods?: PaymentMethod[];
+  pendingUtilityBills?: UtilityBill[];
 }
 
 // Form validation schema
 const paymentSchema = z.object({
   amount: z.coerce.number().min(1, 'Amount must be at least 1'),
   payment_type: z.enum(['rent', 'utility']),
-  payment_method: z.enum(['mobile_money', 'bank_transfer'], {
-    required_error: 'Please select a payment method',
-  }),
+  payment_method: z.enum(['mobile_money', 'bank_transfer']),
   reference_number: z.string().max(100).optional(),
   notes: z.string().max(500).optional(),
+  utility_bill_id: z.coerce.number().nullable().optional(),
 });
 
 type PaymentFormData = z.infer<typeof paymentSchema>;
@@ -101,14 +115,16 @@ export default function MakePayment({
   existingPayment,
   pendingAmount = 0,
   paymentMethods = [],
+  pendingUtilityBills = [],
 }: Props) {
   // Form state
-  const [formData, setFormData] = useState<PaymentFormData>({
-    amount: existingPayment?.amount ?? pendingAmount ?? 0,
+  const [formData, setFormData] = useState<any>({
+    amount: existingPayment?.amount ?? (existingPayment?.payment_type === 'rent' || !existingPayment ? pendingAmount : 0),
     payment_type: (existingPayment?.payment_type as 'rent' | 'utility') ?? 'rent',
     payment_method: existingPayment?.payment_method ?? '',
     reference_number: existingPayment?.reference_number ?? '',
     notes: existingPayment?.notes ?? '',
+    utility_bill_id: existingPayment?.utility_bill_id ?? null,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -121,18 +137,18 @@ export default function MakePayment({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev: any) => ({ ...prev, [name]: '' }));
     }
   };
 
   // Handle payment method selection
   const handleMethodSelect = (method: string) => {
-    setFormData((prev) => ({ ...prev, payment_method: method }));
+    setFormData((prev: any) => ({ ...prev, payment_method: method }));
     if (errors.payment_method) {
-      setErrors((prev) => ({ ...prev, payment_method: '' }));
+      setErrors((prev: any) => ({ ...prev, payment_method: '' }));
     }
   };
 
@@ -320,7 +336,12 @@ export default function MakePayment({
                   <Select
                     value={formData.payment_type}
                     onValueChange={(value: 'rent' | 'utility') =>
-                      setFormData((prev) => ({ ...prev, payment_type: value }))
+                      setFormData((prev: any) => ({ 
+                        ...prev, 
+                        payment_type: value,
+                        utility_bill_id: value === 'rent' ? null : prev.utility_bill_id,
+                        amount: value === 'rent' ? pendingAmount : prev.amount
+                      }))
                     }
                   >
                     <SelectTrigger
@@ -337,6 +358,41 @@ export default function MakePayment({
                     <p className="text-xs text-destructive">{errors.payment_type}</p>
                   )}
                 </div>
+
+                {/* Utility Bill Selection (Conditional) */}
+                {formData.payment_type === 'utility' && pendingUtilityBills && pendingUtilityBills.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="utility_bill_id">
+                      Link to Utility Bill <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={formData.utility_bill_id?.toString() || ''}
+                      onValueChange={(value) => {
+                        const bill = pendingUtilityBills.find(b => b.id.toString() === value);
+                        setFormData((prev: any) => ({ 
+                          ...prev, 
+                          utility_bill_id: parseInt(value),
+                          amount: bill ? (bill.amount_due - bill.amount_paid) : prev.amount
+                        }));
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a bill to pay" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pendingUtilityBills.map((bill) => (
+                          <SelectItem key={bill.id} value={bill.id.toString()}>
+                            {bill.tenancy_utility.utility_type.name} - {new Date(bill.billing_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} 
+                            ({formatCurrency(bill.amount_due - bill.amount_paid)} due)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.utility_bill_id && (
+                      <p className="text-xs text-destructive">{errors.utility_bill_id}</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -459,6 +515,14 @@ export default function MakePayment({
                 <span className="text-muted-foreground">Payment Type</span>
                 <span className="capitalize">{formData.payment_type}</span>
               </div>
+              {formData.payment_type === 'utility' && formData.utility_bill_id && (
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-muted-foreground">Linked Bill</span>
+                  <span className="text-right">
+                    {pendingUtilityBills?.find(b => b.id === formData.utility_bill_id)?.tenancy_utility.utility_type.name}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center py-2 border-b">
                 <span className="text-muted-foreground">Method</span>
                 <span className="capitalize">

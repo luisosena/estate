@@ -56,6 +56,19 @@ interface Unit {
   };
 }
 
+interface UtilityBill {
+  id: number;
+  amount_due: number;
+  amount_paid: number;
+  billing_month: string;
+  status: string;
+  tenancy_utility: {
+    utility_type: {
+      name: string;
+    };
+  };
+}
+
 interface Property {
   id: number;
   name: string;
@@ -75,6 +88,7 @@ interface TenantEditModalProps {
   editType?: 'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history' | 'payment' | 'add-payment' | 'end-tenancy' | 'move-tenant';
   outstandingRent?: number;
   outstandingUtilities?: number;
+  pendingUtilityBills?: UtilityBill[];
 }
 
 export default function TenantEditModal({
@@ -90,6 +104,7 @@ export default function TenantEditModal({
   editType = 'personal',
   outstandingRent = 0,
   outstandingUtilities = 0,
+  pendingUtilityBills = [],
 }: TenantEditModalProps) {
   const [formData, setFormData] = useState<any>(() => {
     // Initialize form data based on edit type
@@ -137,6 +152,7 @@ export default function TenantEditModal({
           payment_method: '',
           status: 'paid',
           paid_at: new Date().toISOString().split('T')[0],
+          utility_bill_id: null,
         };
       case 'end-tenancy':
         return {
@@ -231,6 +247,7 @@ export default function TenantEditModal({
           payment_method: '',
           status: 'paid',
           paid_at: new Date().toISOString().split('T')[0],
+          utility_bill_id: null,
         });
         break;
       case 'end-tenancy':
@@ -607,6 +624,46 @@ export default function TenantEditModal({
                 />
               </div>
             </div>
+
+            {/* Utility Bill Selection (Conditional) */}
+            {formData.payment_type === 'utility' && pendingUtilityBills && pendingUtilityBills.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="utility_bill_id">Link to Utility Bill</Label>
+                <Select 
+                  value={formData.utility_bill_id?.toString() || ''} 
+                  onValueChange={(value) => {
+                    const bill = pendingUtilityBills.find(b => b.id.toString() === value);
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      utility_bill_id: parseInt(value),
+                      amount: bill ? (bill.amount_due - bill.amount_paid) : prev.amount
+                    }));
+                  }}
+                >
+                  <SelectTrigger>
+                    {formData.utility_bill_id ? 
+                      (() => {
+                        const billId = formData.utility_bill_id.toString();
+                        const bill = pendingUtilityBills.find(b => b.id.toString() === billId);
+                        if (!bill) return 'Select a bill to pay';
+                        const outstanding = (bill.amount_due || 0) - (bill.amount_paid || 0);
+                        const typeName = bill.tenancy_utility?.utility_type?.name || 'Utility';
+                        return `${typeName} (${outstanding.toLocaleString()} TZS due)`;
+                      })()
+                      : 'Select a bill to pay'
+                    }
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {pendingUtilityBills.map((bill) => (
+                      <SelectItem key={bill.id} value={bill.id.toString()}>
+                        {bill.tenancy_utility.utility_type.name} - {new Date(bill.billing_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} 
+                        ({(bill.amount_due - bill.amount_paid).toLocaleString()} TZS due)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Overpayment Warning */}
             {((formData.payment_type === 'rent' && formData.amount > (outstandingRent || 0)) || 

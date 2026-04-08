@@ -177,32 +177,10 @@ class UtilityService
     public function processUtilityPayment(UtilityBill $bill, float $amount): void
     {
         DB::transaction(function () use ($bill, $amount) {
-            // Calculate outstanding balance
-            $outstandingBalance = $bill->amount_due - $bill->amount_paid;
+            // Use the model's built-in reconciliation logic
+            $bill->markPaid((float)$amount);
             
-            // Validate payment doesn't exceed outstanding balance
-            if ($amount > $outstandingBalance) {
-                throw new \InvalidArgumentException(
-                    sprintf(
-                        'Payment amount (%.2f) exceeds outstanding balance (%.2f). Maximum allowed: %.2f',
-                        $amount,
-                        $outstandingBalance,
-                        $outstandingBalance
-                    )
-                );
-            }
-
-            // Update the bill's paid amount
-            $bill->amount_paid += $amount;
-
-            // Determine new status
-            if ($bill->amount_paid >= $bill->amount_due) {
-                $bill->status = 'paid';
-            } elseif ($bill->amount_paid > 0) {
-                $bill->status = 'partial';
-            }
-
-            $bill->save();
+            return $bill;
         });
     }
 }

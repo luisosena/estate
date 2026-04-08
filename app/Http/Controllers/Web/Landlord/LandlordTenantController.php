@@ -659,6 +659,7 @@ class LandlordTenantController extends Controller
             'availableUnits' => $availableUnits,
             'outstandingRent' => $outstandingRent,
             'outstandingUtilities' => $outstandingUtilities,
+            'pendingUtilityBills' => $utilitySummary['bills']->whereIn('status', ['pending', 'partial', 'overdue'])->values() ?? [],
         ]);
     }
 

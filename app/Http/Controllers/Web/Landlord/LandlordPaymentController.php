@@ -12,14 +12,18 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use App\Services\UtilityService;
+use App\Models\UtilityBill;
 
 class LandlordPaymentController extends Controller
 {
     protected RentBillService $rentBillService;
+    protected UtilityService $utilityService;
 
-    public function __construct(RentBillService $rentBillService)
+    public function __construct(RentBillService $rentBillService, UtilityService $utilityService)
     {
         $this->rentBillService = $rentBillService;
+        $this->utilityService = $utilityService;
     }
 
     /**
@@ -86,6 +90,7 @@ class LandlordPaymentController extends Controller
             'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
             'paid_at' => 'required|date',
             'rent_bill_id' => 'nullable|exists:rent_bills,id',
+            'utility_bill_id' => 'nullable|exists:utility_bills,id',
         ]);
 
         try {
@@ -114,6 +119,7 @@ class LandlordPaymentController extends Controller
                 'tenant_id' => $tenant->id,
                 'tenancy_id' => $activeTenancy->id,
                 'rent_bill_id' => $rentBillId,
+                'utility_bill_id' => $validated['utility_bill_id'] ?? null,
                 'amount' => $validated['amount'],
                 'payment_type' => $validated['payment_type'],
                 'payment_method' => $validated['payment_method'],
@@ -121,7 +127,7 @@ class LandlordPaymentController extends Controller
                 'paid_at' => $validated['paid_at'],
             ];
 
-            // Create payment with transactional rent bill processing if applicable
+            // Create payment with transactional bill processing if applicable
             $payment = null;
             if ($validated['payment_type'] === 'rent' && $rentBillId && in_array($validated['status'], ['paid', 'partial'])) {
                 try {
@@ -134,8 +140,18 @@ class LandlordPaymentController extends Controller
                     // Bill already processed, continue with payment but warn
                     $payment = Payment::create($paymentData);
                 }
+            } else if ($validated['payment_type'] === 'utility' && !empty($validated['utility_bill_id'])) {
+                // Link utility payment
+                $bill = UtilityBill::find($validated['utility_bill_id']);
+                if ($bill) {
+                    $this->utilityService->processUtilityPayment($bill, $validated['amount']);
+                    // Update bill status if needed (processUtilityPayment already saves $bill)
+                    $bill->refresh();
+                    $paymentData['status'] = $bill->status;
+                }
+                $payment = Payment::create($paymentData);
             } else {
-                // No rent bill linked or not applicable - create payment normally
+                // No bill linked or not applicable - create payment normally
                 $payment = Payment::create($paymentData);
             }
 
