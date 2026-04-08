@@ -382,20 +382,12 @@ export default function TenantEditModal({
               <div className="space-y-2">
                 <Label htmlFor="monthly_rent">Monthly Rent</Label>
                 <Input
-                  id="monthly_rent"
-                  type="number"
-                  value={formData.monthly_rent?.toString() || ''}
-                  onChange={(e) => handleChange('monthly_rent', parseFloat(e.target.value) || 0)}
-                />
+                  id="monthly_rent" type="text" inputMode="decimal" value={formData.monthly_rent?.toString() || ""} onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ""); handleChange("monthly_rent", cleaned); }} placeholder="0" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="security_deposit">Security Deposit</Label>
                 <Input
-                  id="security_deposit"
-                  type="number"
-                  value={formData.security_deposit?.toString() || ''}
-                  onChange={(e) => handleChange('security_deposit', parseFloat(e.target.value) || 0)}
-                />
+                  id="security_deposit" type="text" inputMode="decimal" value={formData.security_deposit?.toString() || ""} onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ""); handleChange("security_deposit", cleaned); }} placeholder="0" />
               </div>
             </div>
           </div>
@@ -554,12 +546,7 @@ export default function TenantEditModal({
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
                 <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  value={formData.amount?.toString() || ''}
-                  onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
-                />
+                  id="amount" type="text" inputMode="decimal" value={formData.amount?.toString() || ""} onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ""); handleChange("amount", cleaned); }} placeholder="0.00" />
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -616,12 +603,7 @@ export default function TenantEditModal({
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
                 <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  value={formData.amount?.toString() || ''}
-                  onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
-                />
+                  id="amount" type="text" inputMode="decimal" value={formData.amount?.toString() || ""} onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ""); handleChange("amount", cleaned); }} placeholder="0.00" />
               </div>
             </div>
 

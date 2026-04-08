@@ -92,10 +92,21 @@ interface Props {
 
 // Form validation schema
 const paymentSchema = z.object({
-  amount: z.preprocess(
-    (val) => (val === '' || val === null ? undefined : Number(val)), 
-    z.number().min(1, 'Amount must be at least 1')
-  ),
+  amount: z.union([z.string(), z.number()])
+    .transform((val) => {
+      if (typeof val === 'number') return val;
+      if (!val || val.trim() === '') return undefined;
+      // Clean string: remove commas, spaces, currency symbols
+      const cleaned = val.replace(/[^0-9.]/g, '');
+      const num = Number(cleaned);
+      return isNaN(num) ? undefined : num;
+    })
+    .pipe(
+      z.number({ 
+        required_error: "Amount is required",
+        invalid_type_error: "Please enter a valid numeric amount"
+      }).min(1, 'Amount must be at least 1')
+    ),
   payment_type: z.enum(['rent', 'utility']),
   payment_method: z.enum(['mobile_money', 'bank_transfer']),
   reference_number: z.string().max(100).optional(),
@@ -238,7 +249,7 @@ export default function MakePayment({
               Payment Received
             </AlertTitle>
             <AlertDescription className="text-green-600 dark:text-green-500">
-              Your payment of {formatCurrency(formData.amount)} has been successfully submitted.
+              Your payment of {formatCurrency(Number(formData.amount.toString().replace(/[^0-9.]/g, '')))} has been successfully submitted.
               You will be redirected to the payments page shortly.
             </AlertDescription>
           </Alert>
@@ -314,7 +325,8 @@ export default function MakePayment({
                   <Input
                     id="amount"
                     name="amount"
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="Enter amount"
                     value={formData.amount}
                     onChange={handleChange}
