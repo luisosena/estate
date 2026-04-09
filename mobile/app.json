@@ -16,7 +16,8 @@
       "package": "com.estatepractice.app"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "expo-secure-store"
     ]
   }
 }

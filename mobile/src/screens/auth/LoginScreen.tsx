@@ -1,7 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View } from 'react-native';
 import { TextInput, Button, Text, HelperText } from 'react-native-paper';
+
+import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/errors';
@@ -43,11 +45,8 @@ export function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <ScreenContainer scrollable withKeyboard edges={['top', 'bottom', 'left', 'right']}>
+      <View style={styles.scrollContent}>
         <View style={styles.header}>
           <Text variant="headlineLarge" style={styles.title}>
             Estate Practice
@@ -114,7 +113,7 @@ export function LoginScreen() {
             </Text>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </ScreenContainer>
   );
 }

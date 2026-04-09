@@ -3,58 +3,52 @@ import { StyleSheet, Platform } from 'react-native';
 import { colors } from './colors';
 
 /**
- * Tab bar height constant for use in screen padding.
- * Use this to add bottom padding to screens with scrollable content.
- */
-export const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 84 : 70;
-
-/**
- * Additional padding for the tab bar to account for iOS safe area.
- */
-export const TAB_BAR_PADDING_BOTTOM = Platform.OS === 'ios' ? 28 : 0;
-
-/**
- * Bottom padding needed for screens to avoid tab bar overlay.
- * This is the visible height of the tab bar (excluding internal padding).
- */
-export const SCREEN_BOTTOM_PADDING = Platform.OS === 'ios' ? 56 : 70;
-
-/**
  * Shared styles used across multiple screens.
- * Avoids duplicating identical StyleSheet.create() calls in every screen file.
+ * Rebuilt for the minimal, high-contrast CRM aesthetic.
  */
 export const screenStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.background, // Very light gray #fafafa
   },
   header: {
     padding: 16,
-    paddingTop: Platform.OS === 'ios' ? 80 : 64,
+    backgroundColor: colors.surface,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  headerTitle: {
+    color: colors.text.primary,
+    fontSize: 20,
+    fontWeight: '700',
   },
   title: {
     color: colors.text.primary,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    fontSize: 24,
   },
   subtitle: {
     color: colors.text.secondary,
     marginTop: 4,
+    fontSize: 14,
   },
   card: {
     marginHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: colors.white,
-    borderRadius: 16,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 3,
+    borderColor: colors.border,
+    padding: 16,
+    // Minimal or no shadow for the clean CRM look
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 2,
+    elevation: 0, 
   },
   placeholder: {
     color: colors.text.secondary,
@@ -65,13 +59,16 @@ export const screenStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
   date: {
     color: colors.text.secondary,
-    marginTop: 2,
+    fontSize: 12,
+    marginTop: 4,
   },
   empty: {
     color: colors.text.secondary,
@@ -87,36 +84,44 @@ export const screenStyles = StyleSheet.create({
 });
 
 /**
- * Tab bar options shared between Tenant and Landlord navigators.
- * Full-width design with straight top border and bottom-spanning height.
- * Uses responsive spacing and accessible labels.
+ * Minimalist Tab Bar matching the reference UI.
+ * Pure white background, active icons are vibrant orange.
  */
-
 export const tabBarScreenOptions = {
   headerShown: false,
-  tabBarActiveTintColor: colors.primary,
-  tabBarInactiveTintColor: colors.gray[600], // Better contrast for inactive
+  tabBarActiveTintColor: colors.primary, // Orange
+  tabBarInactiveTintColor: colors.gray[400], 
   tabBarStyle: {
-    height: TAB_BAR_HEIGHT,
-    paddingBottom: TAB_BAR_PADDING_BOTTOM,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    // Subtle shadow for depth
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 4,
+    borderTopColor: colors.borderLight,
+    shadowColor: 'transparent',
+    elevation: 0, // Flat look
   },
   tabBarLabelStyle: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '500',
     marginTop: 4,
-    // Ensure accessibility - labels always visible for screen readers
   },
   tabBarItemStyle: {
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
   tabBarShowLabel: true,
 } as const;
+
+/**
+ * Standard options for Native Headers across Stack Navigators.
+ */
+export const nativeHeaderOptions = {
+  headerStyle: {
+    backgroundColor: colors.surface,
+  },
+  headerTintColor: colors.text.primary,
+  headerTitleStyle: {
+    fontWeight: '700' as const,
+    fontSize: 17,
+  },
+  headerShadowVisible: false, // Clean minimalist look
+  headerBackTitleVisible: false, // iOS cleanup
+} as const;
+

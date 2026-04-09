@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { Text, Card, Chip, Button } from 'react-native-paper';
 
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+
 import { tenantApi } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { colors } from '../../constants/colors';
@@ -58,9 +60,11 @@ export function TenantUtilitiesScreen() {
   if (loading) return <LoadingScreen />;
 
   return (
-    <ScrollView
-      style={screenStyles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    <ScreenContainer
+      scrollable
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      edges={['bottom', 'left', 'right']}
     >
       <View style={screenStyles.header}>
         <Text variant="headlineSmall" style={screenStyles.title}>Utilities</Text>
@@ -113,6 +117,6 @@ export function TenantUtilitiesScreen() {
           )}
         </Card.Content>
       </Card>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

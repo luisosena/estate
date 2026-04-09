@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 import { SplashScreen } from './src/components/SplashScreen';
 import { AuthProvider } from './src/context/AuthContext';
@@ -33,7 +34,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <PaperProvider theme={theme}>
           <AuthProvider>
             <NavigationContainer>
@@ -41,6 +42,7 @@ export default function App() {
             </NavigationContainer>
           </AuthProvider>
         </PaperProvider>
+        <StatusBar style="dark" />
       </SafeAreaProvider>
 
       {/* Render Splash Screen on top of the app as an absolute overlay */}

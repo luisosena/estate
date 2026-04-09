@@ -1,32 +1,26 @@
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
-import { Text, Card, Chip, Button } from 'react-native-paper';
+import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
+import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+
+import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { tenantApi } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { TenantUtilitiesStackParamList, TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
 import type { UtilityBill, UtilityBillSummary } from '../../types';
 import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
 
-// Combine navigation types for navigating between stacks
 type NavigationProp = NativeStackNavigationProp<
   TenantUtilitiesStackParamList & TenantPaymentsStackParamList
 >;
 
-const getStatusColor = (status: string): string => {
-  const statusColors: Record<string, string> = {
-    paid: colors.status.paid,
-    partial: colors.status.pending,
-    overdue: colors.status.overdue,
-    pending: colors.status.pending,
-    waived: colors.gray[400],
-  };
-  return statusColors[status] ?? colors.gray[400];
-};
+const FILTERS = ['All', 'Pending', 'Overdue', 'Paid'] as const;
 
 export function TenantUtilityBillsScreen() {
   const navigation = useNavigation<NavigationProp>();
@@ -34,11 +28,21 @@ export function TenantUtilityBillsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [bills, setBills] = useState<UtilityBill[]>([]);
   const [summary, setSummary] = useState<UtilityBillSummary | null>(null);
-  const [filter, setFilter] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>('All');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: 'Utility Bills',
+      headerStyle: { backgroundColor: colors.surface },
+      headerTintColor: colors.text.primary,
+      headerShadowVisible: false,
+    });
+  }, [navigation]);
 
   const fetchBills = async () => {
     try {
-      const data = await tenantApi.getUtilityBills(filter || undefined);
+      const filter = activeFilter === 'All' ? undefined : activeFilter.toLowerCase();
+      const data = await tenantApi.getUtilityBills(filter);
       setBills(data.data);
       setSummary(data.summary);
     } catch (error) {
@@ -51,13 +55,12 @@ export function TenantUtilityBillsScreen() {
 
   useEffect(() => {
     fetchBills();
-  }, [filter]);
+  }, [activeFilter]);
 
-  // Refresh bills when screen comes into focus (e.g., after making payment)
   useFocusEffect(
     useCallback(() => {
       fetchBills();
-    }, []) // Empty deps - fetchBills already has filter in its scope
+    }, [activeFilter])
   );
 
   const onRefresh = () => {
@@ -74,216 +77,239 @@ export function TenantUtilityBillsScreen() {
   if (loading) return <LoadingScreen />;
 
   return (
-    <ScrollView
-      style={screenStyles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    <ScreenContainer
+      scrollable
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      edges={['bottom', 'left', 'right']}
     >
-      <View style={screenStyles.header}>
-        <Text variant="headlineSmall" style={screenStyles.title}>Utility Bills</Text>
-        <Text variant="bodyMedium" style={screenStyles.subtitle}>Track your utility payments</Text>
+      
+      {/* Summary Header */}
+      <View style={styles.summarySection}>
+        <Text style={styles.summaryLabel}>Outstanding Utilities</Text>
+        <Text style={styles.summaryAmount}>
+          {formatCurrency(summary?.total_outstanding || 0)}
+        </Text>
+        <View style={styles.statsBar}>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Total Due</Text>
+            <Text style={styles.statValue}>{formatCurrency(summary?.total_due || 0)}</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Paid</Text>
+            <Text style={styles.statValue}>{formatCurrency(summary?.total_paid || 0)}</Text>
+          </View>
+        </View>
       </View>
 
-      {/* Summary Card */}
-      {summary && (
-        <Card style={screenStyles.card}>
-          <Card.Content>
-            <Text variant="titleMedium" style={screenStyles.title}>Summary</Text>
-            <View style={styles.summaryRow}>
-              <Text variant="bodyMedium" style={screenStyles.date}>Total Due:</Text>
-              <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                {formatCurrency(summary.total_due)}
-              </Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text variant="bodyMedium" style={screenStyles.date}>Total Paid:</Text>
-              <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: colors.status.paid }}>
-                {formatCurrency(summary.total_paid)}
-              </Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text variant="bodyMedium" style={screenStyles.date}>Outstanding:</Text>
-              <Text variant="bodyMedium" style={{ 
-                fontWeight: 'bold', 
-                color: summary.total_outstanding > 0 ? colors.status.overdue : colors.status.paid 
-              }}>
-                {formatCurrency(summary.total_outstanding)}
-              </Text>
-            </View>
-            <View style={[styles.summaryRow, { borderTopWidth: 1, borderTopColor: colors.border, marginTop: 8, paddingTop: 8 }]}>
-              <Text variant="bodyMedium" style={screenStyles.date}>Total Bills:</Text>
-              <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                {summary.bill_count}
-              </Text>
-            </View>
-            
-            {summary.total_outstanding > 0 && (
-              <Button
-                mode="contained"
-                onPress={handlePayBill}
-                style={styles.payButton}
-                buttonColor={colors.status.overdue}
-              >
-                Pay Outstanding ({formatCurrency(summary.total_outstanding)})
-              </Button>
-            )}
-          </Card.Content>
-        </Card>
-      )}
+      {/* Filter Bar */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        contentContainerStyle={styles.filterBar}
+      >
+        {FILTERS.map((f) => (
+          <TouchableOpacity
+            key={f}
+            style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
+            onPress={() => setActiveFilter(f)}
+          >
+            <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
+              {f}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
-      {/* Filter Buttons */}
-      <View style={styles.filterContainer}>
-        <Button
-          mode={filter === null ? 'contained' : 'outlined'}
-          onPress={() => setFilter(null)}
-          style={styles.filterButton}
-          compact
-        >
-          All
-        </Button>
-        <Button
-          mode={filter === 'pending' ? 'contained' : 'outlined'}
-          onPress={() => setFilter('pending')}
-          style={styles.filterButton}
-          compact
-        >
-          Pending
-        </Button>
-        <Button
-          mode={filter === 'overdue' ? 'contained' : 'outlined'}
-          onPress={() => setFilter('overdue')}
-          style={styles.filterButton}
-          compact
-        >
-          Overdue
-        </Button>
-        <Button
-          mode={filter === 'paid' ? 'contained' : 'outlined'}
-          onPress={() => setFilter('paid')}
-          style={styles.filterButton}
-          compact
-        >
-          Paid
-        </Button>
-      </View>
+      {/* List Section */}
+      <View style={styles.listSection}>
+        {bills.length > 0 ? (
+          bills.map((bill, index) => {
+            const utilityName = bill.tenancy_utility?.utility_type?.name || 'Unknown';
+            const outstanding = bill.amount_due - bill.amount_paid;
+            const isLast = index === bills.length - 1;
+            const status = bill.status as 'paid' | 'pending' | 'overdue' | 'waived';
 
-      {/* Bills List */}
-      <Card style={screenStyles.card}>
-        <Card.Content>
-          <Text variant="titleMedium" style={screenStyles.title}>Bills</Text>
-          {bills.length > 0 ? (
-            bills.map((bill) => {
-              const utilityName = bill.tenancy_utility?.utility_type?.name || 'Unknown';
-              const outstanding = bill.amount_due - bill.amount_paid;
-              
-              return (
-                <View key={bill.id} style={styles.billItem}>
-                  <View style={styles.billHeader}>
-                    <View>
-                      <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
-                        {capitalize(utilityName)}
-                      </Text>
-                      <Text variant="bodySmall" style={screenStyles.date}>
-                        Billing Month: {formatDate(bill.billing_month)}
-                      </Text>
-                    </View>
-                    <Chip
-                      mode="flat"
-                      compact
-                      style={[styles.chip, { backgroundColor: getStatusColor(bill.status) + '20' }]}
-                      textStyle={{ color: getStatusColor(bill.status) }}
-                    >
-                      {bill.status}
-                    </Chip>
+            return (
+              <View key={bill.id} style={[styles.billRow, isLast && { borderBottomWidth: 0 }]}>
+                <View style={styles.billMain}>
+                  <View style={styles.iconBox}>
+                    <Ionicons name="flash" size={18} color={colors.primary} />
                   </View>
-                  
-                  <View style={styles.billDetails}>
-                    <View style={styles.detailRow}>
-                      <Text variant="bodySmall" style={screenStyles.date}>Amount Due:</Text>
-                      <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                        {formatCurrency(bill.amount_due)}
-                      </Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                      <Text variant="bodySmall" style={screenStyles.date}>Amount Paid:</Text>
-                      <Text variant="bodyMedium" style={{ color: colors.status.paid }}>
-                        {formatCurrency(bill.amount_paid)}
-                      </Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                      <Text variant="bodySmall" style={screenStyles.date}>Outstanding:</Text>
-                      <Text variant="bodyMedium" style={{ 
-                        fontWeight: 'bold',
-                        color: outstanding > 0 ? colors.status.overdue : colors.status.paid 
-                      }}>
-                        {formatCurrency(outstanding)}
-                      </Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                      <Text variant="bodySmall" style={screenStyles.date}>Due Date:</Text>
-                      <Text variant="bodyMedium" style={{ 
-                        color: bill.status === 'overdue' ? colors.status.overdue : colors.text.secondary 
-                      }}>
-                        {formatDate(bill.due_date)}
-                      </Text>
-                    </View>
-                    {bill.units_consumed !== null && (
-                      <View style={styles.detailRow}>
-                        <Text variant="bodySmall" style={screenStyles.date}>Units Consumed:</Text>
-                        <Text variant="bodyMedium">
-                          {bill.units_consumed} {bill.tenancy_utility?.utility_type?.unit}
-                        </Text>
-                      </View>
-                    )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.billTitle}>{capitalize(utilityName)}</Text>
+                    <Text style={styles.billMeta}>Billing: {formatDate(bill.billing_month)}</Text>
+                    <Text style={styles.billDue}>Due: {formatDate(bill.due_date)}</Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.billAmount}>{formatCurrency(bill.amount_due)}</Text>
+                    <Badge 
+                      label={capitalize(bill.status)} 
+                      status={status === 'paid' ? 'active' : status === 'overdue' ? 'cancelled' : 'pending'} 
+                    />
                   </View>
                 </View>
-              );
-            })
-          ) : (
-            <Text variant="bodyMedium" style={screenStyles.empty}>No utility bills found</Text>
-          )}
-        </Card.Content>
-      </Card>
-    </ScrollView>
+
+                {outstanding > 0 && bill.status !== 'waived' && (
+                  <TouchableOpacity 
+                    style={styles.payBtn}
+                    onPress={handlePayBill}
+                  >
+                    <Text style={styles.payBtnText}>Pay Balance ({formatCurrency(outstanding)})</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            );
+          })
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="flash-outline" size={44} color={colors.gray[300]} />
+            <Text style={[screenStyles.empty, { marginTop: 12 }]}>No utility bills found</Text>
+          </View>
+        )}
+      </View>
+      <View style={{ height: 40 }} />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  summaryRow: {
+  summarySection: {
+    backgroundColor: colors.surface,
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  summaryLabel: {
+    fontSize: 13,
+    color: colors.text.secondary,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  summaryAmount: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: colors.text.primary,
+    marginBottom: 20,
+  },
+  statsBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
+    alignItems: 'center',
+    backgroundColor: colors.gray[100],
+    borderRadius: 12,
+    padding: 16,
   },
-  payButton: {
-    marginTop: 16,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    gap: 8,
-  },
-  filterButton: {
+  statItem: {
     flex: 1,
   },
-  billItem: {
-    paddingVertical: 12,
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: colors.border,
+    marginHorizontal: 16,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: colors.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  statValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  filterBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.gray[100],
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  filterChipActive: {
+    backgroundColor: colors.text.primary,
+    borderColor: colors.text.primary,
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text.secondary,
+  },
+  filterTextActive: {
+    color: colors.white,
+  },
+  listSection: {
+    backgroundColor: colors.surface,
+    marginHorizontal: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  billRow: {
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
-  billHeader: {
+  billMain: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  chip: {
-    height: 28,
+  iconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#FFF7ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  billDetails: {
-    gap: 4,
+  billTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.text.primary,
   },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  billMeta: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 2,
+  },
+  billDue: {
+    fontSize: 12,
+    color: colors.text.secondary,
+  },
+  billAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  payBtn: {
+    height: 38,
+    borderRadius: 8,
+    backgroundColor: colors.text.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  payBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.white,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
   },
 });

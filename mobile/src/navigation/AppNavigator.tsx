@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 
 import { LoadingScreen } from '../components/common/LoadingScreen';
-import { tabBarScreenOptions } from '../constants/styles';
+import { tabBarScreenOptions, nativeHeaderOptions } from '../constants/styles';
 import { useAuth } from '../context/AuthContext';
 
 // Icons
@@ -69,9 +69,9 @@ const TenantProfileStack = createNativeStackNavigator<TenantProfileStackParamLis
 
 function TenantProfileNavigator() {
   return (
-    <TenantProfileStack.Navigator screenOptions={{ headerShown: false }}>
-      <TenantProfileStack.Screen name="ProfileView" component={TenantProfileScreen} />
-      <TenantProfileStack.Screen name="EditProfile" component={TenantEditProfileScreen} />
+    <TenantProfileStack.Navigator screenOptions={nativeHeaderOptions}>
+      <TenantProfileStack.Screen name="ProfileView" component={TenantProfileScreen} options={{ headerShown: false }} />
+      <TenantProfileStack.Screen name="EditProfile" component={TenantEditProfileScreen} options={{ title: 'Edit Profile' }} />
     </TenantProfileStack.Navigator>
   );
 }
@@ -106,9 +106,9 @@ const LandlordProfileStack = createNativeStackNavigator<LandlordProfileStackPara
 
 function LandlordProfileNavigator() {
   return (
-    <LandlordProfileStack.Navigator screenOptions={{ headerShown: false }}>
-      <LandlordProfileStack.Screen name="ProfileView" component={LandlordProfileScreen} />
-      <LandlordProfileStack.Screen name="EditProfile" component={LandlordEditProfileScreen} />
+    <LandlordProfileStack.Navigator screenOptions={nativeHeaderOptions}>
+      <LandlordProfileStack.Screen name="ProfileView" component={LandlordProfileScreen} options={{ headerShown: false }} />
+      <LandlordProfileStack.Screen name="EditProfile" component={LandlordEditProfileScreen} options={{ title: 'Edit Profile' }} />
     </LandlordProfileStack.Navigator>
   );
 }
@@ -157,7 +157,7 @@ function AuthNavigator() {
 
 function TenantPaymentsNavigator() {
   return (
-    <TenantPaymentsStack.Navigator screenOptions={{ headerShown: false }}>
+    <TenantPaymentsStack.Navigator screenOptions={nativeHeaderOptions}>
       <TenantPaymentsStack.Screen name="PaymentsList" component={TenantPaymentsScreen} />
       <TenantPaymentsStack.Screen name="MakePayment" component={MakePaymentScreen} />
       <TenantPaymentsStack.Screen name="RentBills" component={TenantRentBillsScreen} />
@@ -168,7 +168,7 @@ function TenantPaymentsNavigator() {
 
 function TenantUtilitiesNavigator() {
   return (
-    <TenantUtilitiesStack.Navigator screenOptions={{ headerShown: false }}>
+    <TenantUtilitiesStack.Navigator screenOptions={nativeHeaderOptions}>
       <TenantUtilitiesStack.Screen name="UtilitiesList" component={TenantUtilitiesScreen} />
       <TenantUtilitiesStack.Screen name="UtilityBills" component={TenantUtilityBillsScreen} />
     </TenantUtilitiesStack.Navigator>
@@ -221,7 +221,7 @@ function TenantNavigator() {
 
 function LandlordPropertiesNavigator() {
   return (
-    <PropertiesStack.Navigator screenOptions={{ headerShown: false }}>
+    <PropertiesStack.Navigator screenOptions={nativeHeaderOptions}>
       <PropertiesStack.Screen name="PropertiesList" component={LandlordPropertiesScreen} options={{ title: 'Properties' }} />
       <PropertiesStack.Screen name="PropertyDetails" component={PropertyDetailsScreen} options={{ title: 'Property Details' }} />
       <PropertiesStack.Screen name="UnitDetails" component={UnitDetailsScreen} options={{ title: 'Unit Details' }} />
@@ -232,7 +232,7 @@ function LandlordPropertiesNavigator() {
 
 function LandlordTenantsNavigator() {
   return (
-    <TenantsStack.Navigator screenOptions={{ headerShown: false }}>
+    <TenantsStack.Navigator screenOptions={nativeHeaderOptions}>
       <TenantsStack.Screen name="TenantsList" component={LandlordTenantsScreen} options={{ title: 'Tenants' }} />
       <TenantsStack.Screen name="AddTenant" component={AddTenantScreen} options={{ title: 'Add Tenant' }} />
       <TenantsStack.Screen name="TenantDetails" component={TenantDetailsScreen} options={{ title: 'Tenant Details' }} />
@@ -246,7 +246,7 @@ const PaymentsStack = createNativeStackNavigator<LandlordPaymentsStackParamList>
 
 function LandlordPaymentsNavigator() {
   return (
-    <PaymentsStack.Navigator screenOptions={{ headerShown: false }}>
+    <PaymentsStack.Navigator screenOptions={nativeHeaderOptions}>
       <PaymentsStack.Screen name="PaymentsList" component={LandlordPaymentsScreen} />
       <PaymentsStack.Screen name="UtilityBills" component={LandlordUtilityBillsScreen} />
       <PaymentsStack.Screen name="RentBills" component={LandlordRentBillsScreen} />

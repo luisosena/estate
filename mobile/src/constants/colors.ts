@@ -1,68 +1,68 @@
-// Color palette - Sophisticated Deep Teal & Gold theme
-// Distinctive aesthetic avoiding generic AI slop colors
-// Optimized for accessibility with proper contrast ratios
+// Color palette - Clean White & Vibrant Orange CRM theme
+// Distinctive aesthetic focusing on high-contrast minimalism
 export const colors = {
-  // Primary colors - Deep Teal (adjusted for better contrast)
-  primary: '#0f4c4c',      // Deep Teal - lighter for better contrast
-  primaryLight: '#1a5f5f', // Teal lighter
-  primaryDark: '#0a3838',  // Teal darker
+  // Primary colors - Vibrant Orange
+  primary: '#FF5722',      // Vibrant Orange
+  primaryLight: '#FF8A65', // Lighter orange
+  primaryDark: '#E64A19',  // Darker orange
 
-  // Secondary colors - Rich Gold
-  secondary: '#d4a853',    // Rich Gold
-  secondaryLight: '#e8c77b', // Gold lighter
-  secondaryDark: '#b8923f', // Gold darker
+  // Secondary colors - Crisp Blue (for contact chips)
+  secondary: '#3B82F6',    
+  secondaryLight: '#93C5FD', 
+  secondaryDark: '#2563EB', 
 
   // Accent colors
-  tertiary: '#c46d5e',    // Terracotta
-  warning: '#e8a838',     // Warm Amber
-  error: '#c75146',       // Muted Red
-  success: '#3d9970',     // Sage Green
-  info: '#5d9ea8',        // Muted Cyan
+  tertiary: '#8B5CF6',    
+  warning: '#F59E0B',     
+  error: '#EF4444',       
+  success: '#10B981',     
+  info: '#3B82F6',        
 
-  // Neutral colors - Warm grays
+  // Neutral colors - Clean, cool grays
   white: '#ffffff',
-  black: '#1a1a1a',
+  black: '#000000',
   gray: {
-    50: '#faf8f5',   // Warm white
-    100: '#f0ebe5',  // Warm gray 100
-    200: '#e0d6cc',  // Warm gray 200
-    300: '#c9bdb0',  // Warm gray 300
-    400: '#a89b85',  // Warm gray 400
-    500: '#8a7d6a',  // Warm gray 500
-    600: '#6e6254',  // Warm gray 600
-    700: '#544a3f',  // Warm gray 700
-    800: '#3d352e',  // Warm gray 800
-    900: '#1a1a1a',  // Near black
+    50: '#F9FAFB',   // App background
+    100: '#F3F4F6',  // Hover states, subtle fills
+    200: '#E5E7EB',  // Borders, dividers
+    300: '#D1D5DB',  
+    400: '#9CA3AF',  // Disabled text
+    500: '#6B7280',  // Secondary text, labels
+    600: '#4B5563',  
+    700: '#374151',  
+    800: '#1F2937',  
+    900: '#111827',  // Primary text, headings
   },
 
   // Status colors
   status: {
-    active: '#3d9970',    // Sage Green
-    pending: '#e8a838',   // Warm Amber
-    expired: '#c75146',   // Muted Red
-    overdue: '#b03d30',   // Deep Red
-    paid: '#3d9970',      // Sage Green
-    vacant: '#a89b85',    // Warm Gray 400
-    occupied: '#3d9970',  // Sage Green
-    maintenance: '#e8a838', // Warm Amber
+    active: '#10B981',    // Emerald green
+    pending: '#F59E0B',   // Amber
+    expired: '#EF4444',   // Red
+    overdue: '#EF4444',   // Red
+    paid: '#10B981',      // Emerald green
+    vacant: '#9CA3AF',    // Gray
+    occupied: '#10B981',  // Emerald green
+    maintenance: '#F59E0B', // Amber
+    canceled: '#EF4444',  // Red
   },
 
-  // Background colors - Warm cream
-  background: '#faf8f5',  // Warm cream
-  surface: '#ffffff',
-  surfaceVariant: '#f0ebe5', // Warm gray 100
+  // Background colors - Clean bright white/gray
+  background: '#fafafa',  // Extremely light gray, almost white, for the overall frame
+  surface: '#ffffff',     // Pure white for cards/panels
+  surfaceVariant: '#F9FAFB',
 
   // Text colors
   text: {
-    primary: '#1a1a1a',   // Near black
-    secondary: '#6e6254', // Warm gray 600
-    disabled: '#a89b85',  // Warm gray 400
+    primary: '#111827',   // Slate 900
+    secondary: '#6B7280', // Slate 500
+    disabled: '#9CA3AF',  // Slate 400
     inverse: '#ffffff',
   },
 
   // Border colors
-  border: '#e0d6cc',      // Warm gray 200
-  borderLight: '#f0ebe5', // Warm gray 100
+  border: '#E5E7EB',      // Very subtle gray border
+  borderLight: '#F3F4F6', 
 };
 
 export default colors;

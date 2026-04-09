@@ -1,11 +1,17 @@
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet, Alert } from 'react-native';
-import { Text, Card, Chip, Button, FAB, Portal, Modal, TextInput, SegmentedButtons } from 'react-native-paper';
+import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
+import { View, ScrollView, RefreshControl, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { Text, Portal, Modal, TextInput, SegmentedButtons } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+
+import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Card } from '../../components/common/Card';
+import { Badge } from '../../components/common/Badge';
+import { Button } from '../../components/common/Button';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
@@ -15,13 +21,10 @@ import { formatCurrency, capitalize } from '../../utils/formatters';
 type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList>;
 type RouteProps = RouteProp<LandlordTenantsStackParamList, 'TenancyUtilities'>;
 
-const getStatusColor = (status: string): string => {
-  const statusColors: Record<string, string> = {
-    active: colors.status.active,
-    suspended: colors.status.pending,
-    disconnected: colors.status.overdue,
-  };
-  return statusColors[status] ?? colors.gray[400];
+const getStatusType = (status: string): 'active' | 'pending' | 'default' => {
+  if (status === 'active') return 'active';
+  if (status === 'suspended') return 'pending';
+  return 'default';
 };
 
 const billingCycleLabels: Record<string, string> = {
@@ -54,6 +57,20 @@ export function TenancyUtilitiesScreen() {
   const [meterNumber, setMeterNumber] = useState('');
   const [status, setStatus] = useState<'active' | 'suspended' | 'disconnected'>('active');
   const [notes, setNotes] = useState('');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: 'Manage Utilities',
+      headerStyle: { backgroundColor: colors.surface },
+      headerTintColor: colors.text.primary,
+      headerShadowVisible: false,
+      headerRight: () => (
+         <TouchableOpacity style={{ padding: 8 }} onPress={openAddModal}>
+            <Ionicons name="add" size={24} color={colors.primary} />
+         </TouchableOpacity>
+      )
+    });
+  }, [navigation]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -140,8 +157,7 @@ export function TenancyUtilitiesScreen() {
       fetchData();
     } catch (error: any) {
       console.error('Failed to save utility:', error);
-      const message = error?.response?.data?.message || error?.response?.data?.error || 'Failed to save utility. Please try again.';
-      Alert.alert('Error', message);
+      Alert.alert('Error', error?.response?.data?.message || 'Failed to save utility.');
     } finally {
       setSubmitting(false);
     }
@@ -161,9 +177,7 @@ export function TenancyUtilitiesScreen() {
               await landlordApi.deleteTenancyUtility(utility.id);
               fetchData();
             } catch (error: any) {
-              console.error('Failed to delete utility:', error);
-              const message = error?.response?.data?.message || error?.response?.data?.error || 'Failed to delete utility.';
-              Alert.alert('Error', message);
+              Alert.alert('Error', error?.response?.data?.message || 'Failed to delete utility.');
             }
           },
         },
@@ -173,101 +187,81 @@ export function TenancyUtilitiesScreen() {
 
   if (loading) return <LoadingScreen />;
 
-  // Filter out already assigned utility types
   const assignedTypeIds = utilities.map(u => u.utility_type_id);
   const availableTypes = utilityTypes.filter(t => !assignedTypeIds.includes(t.id) && t.is_active);
 
   return (
-    <View style={screenStyles.container}>
-      <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        <View style={screenStyles.header}>
-          <Text variant="headlineSmall" style={screenStyles.title}>
-            Utilities for {tenantName}
-          </Text>
-          <Text variant="bodyMedium" style={screenStyles.subtitle}>
-            Manage utility connections for this tenancy
-          </Text>
-        </View>
+    <>
+      <ScreenContainer
+      scrollable
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      edges={['bottom', 'left', 'right']}
+    >
+      <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 }}>
+        <Text style={{ fontSize: 13, color: colors.text.secondary }}>Tenant</Text>
+        <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text.primary }}>{tenantName}</Text>
+      </View>
 
-        <Card mode="contained" style={screenStyles.card}>
-          <Card.Content>
-            <Text variant="titleMedium" style={screenStyles.title}>
-              Assigned Utilities
-            </Text>
-            {utilities.length > 0 ? (
-              utilities.map((utility) => (
-                <View key={utility.id} style={styles.utilityItem}>
-                  <View style={styles.utilityHeader}>
-                    <View>
-                      <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
-                        {capitalize(utility.utility_type?.name || 'Unknown')}
-                      </Text>
-                      <Text variant="bodySmall" style={screenStyles.date}>
-                        {billingCycleLabels[utility.billing_cycle]}
-                      </Text>
-                    </View>
-                    <Chip
-                      mode="flat"
-                      compact
-                      style={[styles.chip, { backgroundColor: getStatusColor(utility.status) + '20' }]}
-                      textStyle={{ color: getStatusColor(utility.status) }}
-                    >
-                      {utility.status}
-                    </Chip>
-                  </View>
-                  <View style={styles.utilityDetails}>
-                    <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: colors.primary }}>
-                      {formatCurrency(utility.amount)}
-                    </Text>
-                    {utility.provider && (
-                      <Text variant="bodySmall" style={screenStyles.date}>
-                        Provider: {utility.provider}
-                      </Text>
-                    )}
-                    {utility.meter_number && (
-                      <Text variant="bodySmall" style={screenStyles.date}>
-                        Meter: {utility.meter_number}
-                      </Text>
-                    )}
-                  </View>
-                  <View style={styles.utilityActions}>
-                    <Button mode="outlined" onPress={() => openEditModal(utility)} compact>
-                      Edit
-                    </Button>
-                    <Button 
-                      mode="outlined" 
-                      onPress={() => handleDelete(utility)} 
-                      compact 
-                      textColor={colors.error}
-                    >
-                      Delete
-                    </Button>
-                  </View>
+      <View style={{ paddingHorizontal: 20 }}>
+        {utilities.length > 0 ? (
+          utilities.map((utility) => (
+            <Card key={utility.id} style={{ marginBottom: 16 }}>
+              <View style={styles.utilityHeader}>
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text.primary }}>
+                    {capitalize(utility.utility_type?.name || 'Unknown')}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.text.secondary }}>
+                    {billingCycleLabels[utility.billing_cycle]}
+                  </Text>
                 </View>
-              ))
-            ) : (
-              <>
-                <Text variant="bodyMedium" style={screenStyles.empty}>
-                  No utilities assigned to this tenancy yet
+                <Badge 
+                   label={utility.status.toUpperCase()} 
+                   status={getStatusType(utility.status)} 
+                />
+              </View>
+              
+              <View style={styles.utilityDetails}>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: colors.primary }}>
+                  {formatCurrency(utility.amount)}
                 </Text>
-                <Text variant="bodySmall" style={[screenStyles.date, { marginTop: 8 }]}>
-                  Tap the + button to add utilities like water, electricity, or security
-                </Text>
-              </>
-            )}
-          </Card.Content>
-        </Card>
-      </ScrollView>
-
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={openAddModal}
-      />
-
-      {/* Add/Edit Modal */}
+                {utility.provider && (
+                  <Text style={{ fontSize: 13, color: colors.text.secondary, marginTop: 4 }}>
+                    Provider: {utility.provider}
+                  </Text>
+                )}
+                {utility.meter_number && (
+                  <Text style={{ fontSize: 13, color: colors.text.secondary, marginTop: 2 }}>
+                    Meter: {utility.meter_number}
+                  </Text>
+                )}
+              </View>
+              
+              <View style={styles.utilityActions}>
+                <Button 
+                   variant="outline" 
+                   label="Edit" 
+                   onPress={() => openEditModal(utility)} 
+                   style={{ flex: 1, marginRight: 8 }} 
+                />
+                <Button 
+                   variant="ghost" 
+                   label="Delete" 
+                   icon="trash-outline"
+                   onPress={() => handleDelete(utility)}
+                />
+              </View>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <Text style={screenStyles.empty}>No utilities assigned to this tenancy yet.</Text>
+          </Card>
+        )}
+      </View>
+      <View style={{ height: 40 }} />
+      </ScreenContainer>
       <Portal>
         <Modal
           visible={showModal}
@@ -275,28 +269,32 @@ export function TenancyUtilitiesScreen() {
           contentContainerStyle={styles.modal}
         >
           <ScrollView>
-            <Text variant="titleLarge" style={screenStyles.title}>
+            <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text.primary, marginBottom: 16 }}>
               {editingUtility ? 'Edit Utility' : 'Add Utility'}
             </Text>
 
             {!editingUtility && availableTypes.length > 0 && (
-              <>
-                <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
-                  Select Utility Type *
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ fontSize: 13, color: colors.text.secondary, marginBottom: 8 }}>
+                  Utility Type *
                 </Text>
                 <View style={styles.typeGrid}>
-                  {availableTypes.map((type) => (
-                    <Chip
-                      key={type.id}
-                      selected={selectedTypeId === type.id}
-                      onPress={() => setSelectedTypeId(type.id)}
-                      style={styles.typeChip}
-                    >
-                      {type.name}
-                    </Chip>
-                  ))}
+                  {availableTypes.map((type) => {
+                     const isSelected = selectedTypeId === type.id;
+                     return (
+                       <TouchableOpacity
+                         key={type.id}
+                         onPress={() => setSelectedTypeId(type.id)}
+                         style={[styles.typeChip, { backgroundColor: isSelected ? colors.primary : colors.gray[100] }]}
+                       >
+                         <Text style={{ color: isSelected ? colors.white : colors.text.primary, fontWeight: '500' }}>
+                           {type.name}
+                         </Text>
+                       </TouchableOpacity>
+                     )
+                  })}
                 </View>
-              </>
+              </View>
             )}
 
             <TextInput
@@ -306,20 +304,22 @@ export function TenancyUtilitiesScreen() {
               keyboardType="numeric"
               mode="outlined"
               style={styles.input}
+              activeOutlineColor={colors.primary}
             />
 
-            <Text variant="bodyMedium" style={{ marginTop: 16, marginBottom: 8 }}>
-              Billing Cycle *
-            </Text>
-            <SegmentedButtons
-              value={billingCycle}
-              onValueChange={(value) => setBillingCycle(value as 'monthly' | 'quarterly' | 'annual')}
-              buttons={[
-                { value: 'monthly', label: 'Monthly' },
-                { value: 'quarterly', label: 'Quarterly' },
-                { value: 'annual', label: 'Annual' },
-              ]}
-            />
+            <View style={{ marginVertical: 16 }}>
+               <Text style={{ fontSize: 13, color: colors.text.secondary, marginBottom: 8 }}>Billing Cycle *</Text>
+               <SegmentedButtons
+                 value={billingCycle}
+                 onValueChange={(value) => setBillingCycle(value as 'monthly' | 'quarterly' | 'annual')}
+                 buttons={[
+                   { value: 'monthly', label: 'Monthly' },
+                   { value: 'quarterly', label: 'Quarterly' },
+                   { value: 'annual', label: 'Annual' },
+                 ]}
+                 theme={{ colors: { secondaryContainer: colors.primaryLight } }}
+               />
+            </View>
 
             <TextInput
               label="Provider (Optional)"
@@ -327,6 +327,7 @@ export function TenancyUtilitiesScreen() {
               onChangeText={setProvider}
               mode="outlined"
               style={styles.input}
+              activeOutlineColor={colors.primary}
             />
 
             <TextInput
@@ -335,6 +336,7 @@ export function TenancyUtilitiesScreen() {
               onChangeText={setAccountNumber}
               mode="outlined"
               style={styles.input}
+              activeOutlineColor={colors.primary}
             />
 
             <TextInput
@@ -343,20 +345,21 @@ export function TenancyUtilitiesScreen() {
               onChangeText={setMeterNumber}
               mode="outlined"
               style={styles.input}
+              activeOutlineColor={colors.primary}
             />
 
-            <Text variant="bodyMedium" style={{ marginTop: 16, marginBottom: 8 }}>
-              Status *
-            </Text>
-            <SegmentedButtons
-              value={status}
-              onValueChange={(value) => setStatus(value as 'active' | 'suspended' | 'disconnected')}
-              buttons={[
-                { value: 'active', label: 'Active' },
-                { value: 'suspended', label: 'Suspended' },
-                { value: 'disconnected', label: 'Off' },
-              ]}
-            />
+            <View style={{ marginVertical: 16 }}>
+               <Text style={{ fontSize: 13, color: colors.text.secondary, marginBottom: 8 }}>Status *</Text>
+               <SegmentedButtons
+                 value={status}
+                 onValueChange={(value) => setStatus(value as 'active' | 'suspended' | 'disconnected')}
+                 buttons={[
+                   { value: 'active', label: 'Active' },
+                   { value: 'suspended', label: 'Suspended' },
+                   { value: 'disconnected', label: 'Off' },
+                 ]}
+               />
+            </View>
 
             <TextInput
               label="Notes (Optional)"
@@ -366,62 +369,47 @@ export function TenancyUtilitiesScreen() {
               multiline
               numberOfLines={2}
               style={styles.input}
+              activeOutlineColor={colors.primary}
             />
 
             <View style={styles.modalActions}>
-              <Button mode="outlined" onPress={() => setShowModal(false)} style={styles.modalButton}>
-                Cancel
-              </Button>
-              <Button mode="contained" onPress={handleSave} loading={submitting} style={styles.modalButton}>
-                {editingUtility ? 'Update' : 'Add'}
-              </Button>
+              <Button variant="outline" label="Cancel" onPress={() => setShowModal(false)} />
+              <View style={{ width: 12 }} />
+              <Button variant="primary" label={editingUtility ? 'Update' : 'Add'} onPress={handleSave} loading={submitting} />
             </View>
           </ScrollView>
         </Modal>
       </Portal>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  utilityItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
   utilityHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-  },
-  chip: {
-    height: 28,
+    marginBottom: 8,
   },
   utilityDetails: {
-    marginTop: 8,
+    marginBottom: 16,
   },
   utilityActions: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.primary,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderLight,
+    paddingTop: 16,
   },
   modal: {
     backgroundColor: colors.white,
     padding: 20,
     margin: 20,
     maxHeight: '80%',
-    borderRadius: 8,
+    borderRadius: 12,
   },
   input: {
+    backgroundColor: colors.surface,
     marginTop: 12,
-    backgroundColor: colors.white,
   },
   typeGrid: {
     flexDirection: 'row',
@@ -429,15 +417,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   typeChip: {
-    marginBottom: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 12,
     marginTop: 24,
-  },
-  modalButton: {
-    minWidth: 100,
   },
 });
