@@ -7,34 +7,6 @@ import { colors } from './colors';
  * Rebuilt for the minimal, high-contrast CRM aesthetic.
  */
 export const screenStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background, // Very light gray #fafafa
-  },
-  header: {
-    padding: 16,
-    backgroundColor: colors.surface,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  headerTitle: {
-    color: colors.text.primary,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  title: {
-    color: colors.text.primary,
-    fontWeight: '700',
-    fontSize: 24,
-  },
-  subtitle: {
-    color: colors.text.secondary,
-    marginTop: 4,
-    fontSize: 14,
-  },
   card: {
     marginHorizontal: 16,
     marginBottom: 16,
@@ -50,33 +22,10 @@ export const screenStyles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 0, 
   },
-  placeholder: {
-    color: colors.text.secondary,
-    textAlign: 'center',
-    paddingVertical: 40,
-  },
-  listItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  date: {
-    color: colors.text.secondary,
-    fontSize: 12,
-    marginTop: 4,
-  },
   empty: {
     color: colors.text.secondary,
     textAlign: 'center',
     paddingVertical: 16,
-  },
-  chip: {
-    height: 28,
   },
   input: {
     marginBottom: 12,

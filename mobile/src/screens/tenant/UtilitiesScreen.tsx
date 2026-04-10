@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
-import { View, ScrollView, RefreshControl } from 'react-native';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
+import { View, StyleSheet, RefreshControl } from 'react-native';
 import { Text, Card, Chip, Button } from 'react-native-paper';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
@@ -48,9 +48,12 @@ export function TenantUtilitiesScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchUtilities();
-  }, []);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: 'Utilities',
+      headerShown: true,
+    });
+  }, [navigation]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -66,9 +69,10 @@ export function TenantUtilitiesScreen() {
       onRefresh={onRefresh}
       edges={['bottom', 'left', 'right']}
     >
-      <View style={screenStyles.header}>
-        <Text variant="headlineSmall" style={screenStyles.title}>Utilities</Text>
-        <Text variant="bodyMedium" style={screenStyles.subtitle}>Track your utility connections</Text>
+      <View style={{ paddingHorizontal: 20, paddingTop: 20, marginBottom: 16 }}>
+        <Text variant="bodyMedium" style={{ color: colors.text.secondary }}>
+          Track your utility connections and billing cycles
+        </Text>
       </View>
 
       <Button
@@ -84,16 +88,16 @@ export function TenantUtilitiesScreen() {
         <Card.Content>
           {utilities?.length > 0 ? (
             utilities.map((utility) => (
-              <View key={utility.id} style={screenStyles.listItem}>
+              <View key={utility.id} style={styles.listItem}>
                 <View>
                   <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
                     {capitalize(utility.utility_type?.name || 'Unknown')}
                   </Text>
-                  <Text variant="bodySmall" style={screenStyles.date}>
+                  <Text variant="bodySmall" style={styles.infoLabel}>
                     Billing: {utility.billing_cycle}
                   </Text>
                   {utility.provider && (
-                    <Text variant="bodySmall" style={screenStyles.date}>
+                    <Text variant="bodySmall" style={styles.infoLabel}>
                       Provider: {utility.provider}
                     </Text>
                   )}
@@ -105,7 +109,7 @@ export function TenantUtilitiesScreen() {
                   <Chip
                     mode="flat"
                     compact
-                    style={[screenStyles.chip, { backgroundColor: getUtilityStatusColor(utility.status) + '20' }]}
+                    style={[styles.statusChip, { backgroundColor: getUtilityStatusColor(utility.status) + '20' }]}
                   >
                     {utility.status}
                   </Chip>
@@ -120,3 +124,23 @@ export function TenantUtilitiesScreen() {
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  infoLabel: {
+    color: colors.text.secondary,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  statusChip: {
+    height: 24,
+    marginTop: 4,
+  },
+});

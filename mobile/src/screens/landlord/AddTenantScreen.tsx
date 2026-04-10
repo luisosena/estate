@@ -1,7 +1,7 @@
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import { Text, TextInput, HelperText, Switch } from 'react-native-paper';
 
 import { colors } from '../../constants/colors';

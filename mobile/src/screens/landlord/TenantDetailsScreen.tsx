@@ -163,19 +163,19 @@ export function TenantDetailsScreen() {
             </View>
             {activeTenancy ? (
                <View>
-                  <View style={screenStyles.listItem}>
-                    <Text style={screenStyles.date}>Unit</Text>
+                   <View style={styles.listItem}>
+                    <Text style={styles.infoLabel}>Unit</Text>
                     <Text style={{ fontWeight: '600' }}>
                       {activeTenancy.unit?.unit_number || activeTenancy.unit?.unit_name || `Unit ${activeTenancy.unit?.id}`}
                     </Text>
                   </View>
-                  <View style={screenStyles.listItem}>
-                    <Text style={screenStyles.date}>Move-in Date</Text>
+                  <View style={styles.listItem}>
+                    <Text style={styles.infoLabel}>Move-in Date</Text>
                     <Text style={{ fontWeight: '600' }}>{formatDate(activeTenancy.move_in_date)}</Text>
                   </View>
                   {(activeTenancy.security_deposit ?? 0) > 0 && (
-                     <View style={screenStyles.listItem}>
-                       <Text style={screenStyles.date}>Security Deposit</Text>
+                     <View style={styles.listItem}>
+                       <Text style={styles.infoLabel}>Security Deposit</Text>
                        <Text style={{ fontWeight: '600' }}>{formatCurrency(activeTenancy.security_deposit || 0)}</Text>
                      </View>
                   )}
@@ -192,12 +192,12 @@ export function TenantDetailsScreen() {
                  <View style={styles.sectionHeader}>
                    <Text style={styles.sectionTitle}>Emergency</Text>
                  </View>
-                 <View style={screenStyles.listItem}>
-                   <Text style={screenStyles.date}>Name</Text>
+                 <View style={styles.listItem}>
+                   <Text style={styles.infoLabel}>Name</Text>
                    <Text style={{ fontWeight: '600' }}>{tenant.emergency_contact_name}</Text>
                  </View>
-                 <View style={screenStyles.listItem}>
-                   <Text style={screenStyles.date}>Phone</Text>
+                 <View style={styles.listItem}>
+                   <Text style={styles.infoLabel}>Phone</Text>
                    <Text style={{ fontWeight: '600' }}>{tenant.emergency_contact_phone}</Text>
                  </View>
               </>
@@ -353,6 +353,19 @@ const styles = StyleSheet.create({
   },
   contactButtonBlueText: {
     color: '#2563EB', // Blue 600
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  infoLabel: {
+    color: colors.text.secondary,
     fontSize: 14,
     fontWeight: '500',
   },

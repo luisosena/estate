@@ -42,7 +42,7 @@ export default function App() {
             </NavigationContainer>
           </AuthProvider>
         </PaperProvider>
-        <StatusBar style="dark" />
+        <StatusBar style="dark" translucent backgroundColor="transparent" />
       </SafeAreaProvider>
 
       {/* Render Splash Screen on top of the app as an absolute overlay */}

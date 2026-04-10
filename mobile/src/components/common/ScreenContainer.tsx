@@ -20,6 +20,7 @@ interface ScreenContainerProps {
   refreshing?: boolean;
   onRefresh?: () => void;
   withKeyboard?: boolean;
+  keyboardOffset?: number;
 }
 
 /**
@@ -38,6 +39,7 @@ export function ScreenContainer({
   refreshing = false,
   onRefresh,
   withKeyboard = true,
+  keyboardOffset = 0,
 }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
 
@@ -66,6 +68,7 @@ export function ScreenContainer({
         ) : undefined
       }
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       {children}
     </ScrollView>
@@ -78,8 +81,12 @@ export function ScreenContainer({
       {withKeyboard ? (
         <KeyboardAvoidingView
           style={safeAreaStyle}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+          behavior="padding"
+          keyboardVerticalOffset={
+            keyboardOffset !== 0 
+              ? keyboardOffset 
+              : (!edges.includes('top') ? (Platform.OS === 'android' ? 100 : 0) : 0)
+          }
         >
           {content}
         </KeyboardAvoidingView>

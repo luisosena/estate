@@ -93,7 +93,7 @@ export function LandlordRentBillDetailsScreen() {
   if (loading) return <LoadingScreen />;
   if (!bill) {
     return (
-      <View style={[screenStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
         <Text style={screenStyles.empty}>Rent bill not found</Text>
       </View>
     );
@@ -104,7 +104,7 @@ export function LandlordRentBillDetailsScreen() {
 
   return (
     <ScrollView
-      style={screenStyles.container}
+      style={{ flex: 1, backgroundColor: colors.background }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       {/* Hero Section */}

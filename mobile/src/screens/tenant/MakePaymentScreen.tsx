@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import {
   View,
   ScrollView,
-  KeyboardAvoidingView,
   Platform,
   Alert,
   StyleSheet,

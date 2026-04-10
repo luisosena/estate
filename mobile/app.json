@@ -13,7 +13,8 @@
       }
     },
     "android": {
-      "package": "com.estatepractice.app"
+      "package": "com.estatepractice.app",
+      "softwareKeyboardLayoutMode": "adjustResize"
     },
     "plugins": [
       "expo-font",
