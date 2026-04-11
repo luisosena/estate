@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
@@ -34,12 +34,7 @@ export function LandlordPropertiesScreen() {
       headerRight: () => (
         <TouchableOpacity 
           style={styles.headerButton}
-          onPress={() => {
-            // Placeholder since there's no AddProperty screen yet
-            import('react-native').then(({ Alert }) => {
-              Alert.alert('Coming Soon', 'The ability to add properties is being implemented.');
-            });
-          }}
+          onPress={() => navigation.navigate('AddProperty')}
         >
           <Ionicons name="add" size={24} color={colors.text.primary} />
         </TouchableOpacity>
@@ -64,9 +59,11 @@ export function LandlordPropertiesScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProperties();
+    }, [])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);

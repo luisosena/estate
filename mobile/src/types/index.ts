@@ -135,6 +135,8 @@ export interface Property {
   id: number;
   name: string;
   address: string;
+  property_type?: string;
+  description?: string;
   total_units: number;
   occupied_units: number;
   vacant_units: number;

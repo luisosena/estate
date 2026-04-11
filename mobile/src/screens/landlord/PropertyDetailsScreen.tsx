@@ -1,4 +1,4 @@
-import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
+import { RouteProp, useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
@@ -67,9 +67,11 @@ export function PropertyDetailsScreen() {
     }
   }, [propertyId]);
 
-  useEffect(() => {
-    fetchPropertyAndUnits();
-  }, [fetchPropertyAndUnits]);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchPropertyAndUnits();
+    }, [fetchPropertyAndUnits])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -132,7 +134,7 @@ export function PropertyDetailsScreen() {
       <View style={styles.listSection}>
         <View style={styles.sectionHeader}>
           <Text style={styles.listSectionTitle}>Units</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('AddUnit', { propertyId })}>
              <Ionicons name="add" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>

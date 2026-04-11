@@ -15,7 +15,7 @@ import { Button } from '../../components/common/Button';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
-import type { Tenant } from '../../types';
+import type { Tenant, TenantDashboard } from '../../types';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
 type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList>;
@@ -29,7 +29,7 @@ export function TenantDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [dashboardData, setDashboardData] = useState<TenantDashboard | null>(null);
   const [activeTab, setActiveTab] = useState<'information' | 'payments' | 'utilities'>('information');
 
   useLayoutEffect(() => {
@@ -53,7 +53,7 @@ export function TenantDetailsScreen() {
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch tenant details
       const data = await landlordApi.getTenant(tenantCode);
-      setTenant(data);
+      setDashboardData(data);
     } catch (err) {
       setError('Failed to load tenant details. Please try again.');
     } finally {
@@ -71,7 +71,9 @@ export function TenantDetailsScreen() {
     fetchTenant();
   };
 
-  const activeTenancy = tenant?.tenancies?.find((t) => t.status === 'active');
+  const tenant = dashboardData?.tenant;
+  const activeTenancy = dashboardData?.tenancy;
+  const activeUnit = dashboardData?.unit;
   
   return (
     <ScreenContainer 
@@ -193,7 +195,7 @@ export function TenantDetailsScreen() {
                      <View style={styles.listItem}>
                       <Text style={styles.infoLabel}>Unit</Text>
                       <Text style={{ fontWeight: '600' }}>
-                        {activeTenancy.unit?.unit_name || activeTenancy.unit?.unit_code || `Unit ${activeTenancy.unit?.id}`}
+                        {activeUnit?.unit_name || activeUnit?.unit_code || `Unit ${activeUnit?.id}`}
                       </Text>
                     </View>
                     <View style={styles.listItem}>

@@ -16,9 +16,9 @@ class Tenancy extends Model
         'security_deposit',
         'tenancy_agreement_path',
         'status',
-        'end_reason',
         'deposit_return_status',
         'final_meter_readings',
+        'rent_due_day',
     ];
 
     protected $appends = ['tenant_code'];

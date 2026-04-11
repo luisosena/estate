@@ -6,6 +6,7 @@ import type {
   Payment,
   Notification,
   LandlordDashboard,
+  TenantDashboard,
   PaginatedResponse,
   UtilityType,
   Utility,
@@ -84,7 +85,7 @@ export const landlordApi = {
   getVacantUnits: (propertyId?: number): Promise<PaginatedResponse<Unit>> =>
     api.get<PaginatedResponse<Unit>>('/landlord/units', {
       ...(propertyId && { property_id: propertyId }),
-      status: 'vacant',
+      status: 'available',
     }),
 
   getUnit: (unitId: number): Promise<Unit> =>
@@ -108,9 +109,9 @@ export const landlordApi = {
    * Security: Uses tenant_code instead of tenant ID to prevent enumeration attacks.
    * @param tenantIdentifier - The tenant code (e.g., 'TEN-ABC123') or numeric ID
    */
-  getTenant: (tenantIdentifier: string): Promise<Tenant> => {
+  getTenant: (tenantIdentifier: string): Promise<TenantDashboard> => {
     const validated = validateTenantIdentifier(tenantIdentifier);
-    return api.get<Tenant>(`/landlord/tenants/${validated}`);
+    return api.get<TenantDashboard>(`/landlord/tenants/${validated}`);
   },
 
   createTenant: (data: Partial<Tenant>): Promise<Tenant> =>

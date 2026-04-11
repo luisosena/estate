@@ -21,6 +21,8 @@ import { LandlordPaymentsScreen } from '../screens/landlord/PaymentsScreen';
 import { LandlordProfileScreen } from '../screens/landlord/ProfileScreen';
 import { LandlordPropertiesScreen } from '../screens/landlord/PropertiesScreen';
 import { PropertyDetailsScreen } from '../screens/landlord/PropertyDetailsScreen';
+import { AddPropertyScreen } from '../screens/landlord/AddPropertyScreen';
+import { AddUnitScreen } from '../screens/landlord/AddUnitScreen';
 import { LandlordRentBillDetailsScreen } from '../screens/landlord/RentBillDetailsScreen';
 import { LandlordRentBillsScreen } from '../screens/landlord/RentBillsScreen';
 import { TenancyUtilitiesScreen } from '../screens/landlord/TenancyUtilitiesScreen';
@@ -117,6 +119,8 @@ function LandlordProfileNavigator() {
 export type LandlordPropertiesStackParamList = {
   PropertiesList: undefined;
   PropertyDetails: { propertyId: number };
+  AddProperty: undefined;
+  AddUnit: { propertyId: number };
   UnitDetails: { unitId: number };
   AddTenant: { unitId?: number };
 };
@@ -224,6 +228,8 @@ function LandlordPropertiesNavigator() {
     <PropertiesStack.Navigator screenOptions={nativeHeaderOptions}>
       <PropertiesStack.Screen name="PropertiesList" component={LandlordPropertiesScreen} options={{ title: 'Properties' }} />
       <PropertiesStack.Screen name="PropertyDetails" component={PropertyDetailsScreen} options={{ title: 'Property Details' }} />
+      <PropertiesStack.Screen name="AddProperty" component={AddPropertyScreen} options={{ title: 'Add Property' }} />
+      <PropertiesStack.Screen name="AddUnit" component={AddUnitScreen} options={{ title: 'Add Unit' }} />
       <PropertiesStack.Screen name="UnitDetails" component={UnitDetailsScreen} options={{ title: 'Unit Details' }} />
       <PropertiesStack.Screen name="AddTenant" component={AddTenantScreen} options={{ title: 'Add Tenant' }} />
     </PropertiesStack.Navigator>
