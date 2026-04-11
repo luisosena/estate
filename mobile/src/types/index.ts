@@ -22,25 +22,8 @@ export interface AuthUser {
   email: string;
   phone?: string;
   role: 'tenant' | 'landlord' | 'admin';
-  tenant?: TenantProfile;
-  landlord?: LandlordProfile;
-}
-
-export interface TenantProfile {
-  id: number;
-  full_name: string;
-  phone: string;
-  email: string;
-  emergency_contact_name?: string;
-  emergency_contact_phone?: string;
-  emergency_contact_relation?: string;
-}
-
-export interface LandlordProfile {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
+  tenant?: Tenant;
+  // Landlord profile is flat on the user for now
 }
 
 export interface AuthResponse {
@@ -69,16 +52,18 @@ export interface Tenant {
 
 export interface Unit {
   id: number;
-  unit_number: string;
-  unit_name?: string;
-  unit_code?: string;
-  property_id: number;
-  property_name?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  rent_amount?: number;
+  unit_code: string;
+  unit_name: string;
+  property_id?: number;
   status?: 'occupied' | 'vacant' | 'maintenance' | 'available';
+  property?: {
+    id: number;
+    name: string;
+    address?: string;
+  };
   tenancies?: UnitTenancy[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface UnitTenancy {
@@ -86,6 +71,8 @@ export interface UnitTenancy {
   status: string;
   start_date?: string;
   end_date?: string | null;
+  monthly_rent?: number;
+  security_deposit?: number;
   tenant?: {
     id: number;
     full_name: string;

@@ -11,6 +11,8 @@ import { tenantApi } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
+import { Skeleton } from '../../components/common/Skeleton';
+import { DetailBoxSkeleton, ListSectionSkeleton } from '../../components/common/SkeletonVariants';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
@@ -40,6 +42,9 @@ export function TenantRentBillDetailsScreen() {
 
   const fetchBill = useCallback(async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
       const response = await tenantApi.getRentBill(billId);
       // Backend consistency check: handles both { data: RentBill } and direct RentBill responses
       const billData = (response as any).data || response;
@@ -71,9 +76,7 @@ export function TenantRentBillDetailsScreen() {
     });
   };
 
-  if (loading) return <LoadingScreen />;
-
-  if (!bill) {
+  if (!bill && !loading) {
     return (
       <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
         <Text style={screenStyles.empty}>Rent bill not found</Text>
@@ -81,8 +84,8 @@ export function TenantRentBillDetailsScreen() {
     );
   }
 
-  const outstanding = bill.amount_due - bill.amount_paid;
-  const paidPercent = bill.amount_due > 0 ? Math.min(100, (bill.amount_paid / bill.amount_due) * 100) : 0;
+  const outstanding = bill ? (bill.amount_due - bill.amount_paid) : 0;
+  const paidPercent = (bill && bill.amount_due > 0) ? Math.min(100, (bill.amount_paid / bill.amount_due) * 100) : 0;
 
   return (
     <ScreenContainer
@@ -93,60 +96,85 @@ export function TenantRentBillDetailsScreen() {
     >
       {/* Hero Section */}
       <View style={styles.heroSection}>
-        <View style={styles.heroTop}>
-          <View>
-            <Text style={styles.heroLabel}>Rent for {formatDate(bill.billing_month)}</Text>
-            <Text style={styles.heroAmount}>{formatCurrency(bill.amount_due)}</Text>
-          </View>
-          <Badge
-            label={bill.status.toUpperCase()}
-            status={bill.status === 'paid' ? 'active' : bill.status === 'overdue' ? 'cancelled' : 'pending'}
-          />
-        </View>
+        {loading ? (
+          <>
+            <View style={styles.heroTop}>
+              <View>
+                <Skeleton width={120} height={14} style={{ marginBottom: 8 }} />
+                <Skeleton width={180} height={32} />
+              </View>
+              <Skeleton width={80} height={24} borderRadius={12} />
+            </View>
+            <View style={{ marginTop: 24 }}>
+               <Skeleton width="100%" height={6} borderRadius={3} style={{ marginBottom: 12 }} />
+               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Skeleton width="30%" height={12} />
+                  <Skeleton width="30%" height={12} />
+               </View>
+            </View>
+          </>
+        ) : bill && (
+          <>
+            <View style={styles.heroTop}>
+              <View>
+                <Text style={styles.heroLabel}>Rent for {formatDate(bill.billing_month)}</Text>
+                <Text style={styles.heroAmount}>{formatCurrency(bill.amount_due)}</Text>
+              </View>
+              <Badge
+                label={bill.status.toUpperCase()}
+                status={bill.status === 'paid' ? 'active' : bill.status === 'overdue' ? 'cancelled' : 'pending'}
+              />
+            </View>
 
-        {/* Progress Bar */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${paidPercent}%` as any }]} />
-          </View>
-          <View style={styles.progressLabels}>
-            <Text style={styles.progressText}>Paid: {formatCurrency(bill.amount_paid)}</Text>
-            <Text style={[styles.progressText, { color: outstanding > 0 ? colors.status.overdue : colors.status.paid }]}>
-              {outstanding > 0 ? `Outstanding: ${formatCurrency(outstanding)}` : 'Fully Paid'}
-            </Text>
-          </View>
-        </View>
+            {/* Progress Bar */}
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: `${paidPercent}%` as any }]} />
+              </View>
+              <View style={styles.progressLabels}>
+                <Text style={styles.progressText}>Paid: {formatCurrency(bill.amount_paid)}</Text>
+                <Text style={[styles.progressText, { color: outstanding > 0 ? colors.status.overdue : colors.status.paid }]}>
+                  {outstanding > 0 ? `Outstanding: ${formatCurrency(outstanding)}` : 'Fully Paid'}
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
       </View>
 
       {/* Bill Details */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Summary</Text>
-        <View style={styles.detailBox}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Billing Month</Text>
-            <Text style={styles.detailValue}>{formatDate(bill.billing_month)}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Due Date</Text>
-            <Text style={[styles.detailValue, { color: bill.status === 'overdue' ? colors.status.overdue : colors.text.primary }]}>
-              {formatDate(bill.due_date)}
-            </Text>
-          </View>
-          {bill.property && (
+        {loading ? (
+          <DetailBoxSkeleton rows={4} />
+        ) : bill && (
+          <View style={styles.detailBox}>
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Property</Text>
-              <Text style={styles.detailValue}>{bill.property.name}</Text>
+              <Text style={styles.detailLabel}>Billing Month</Text>
+              <Text style={styles.detailValue}>{formatDate(bill.billing_month)}</Text>
             </View>
-          )}
-          {bill.unit && (
-            <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
-              <Text style={styles.detailLabel}>Unit</Text>
-              <Text style={styles.detailValue}>Unit {bill.unit.unit_number}</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Due Date</Text>
+              <Text style={[styles.detailValue, { color: bill.status === 'overdue' ? colors.status.overdue : colors.text.primary }]}>
+                {formatDate(bill.due_date)}
+              </Text>
             </View>
-          )}
-        </View>
+            {bill.property && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Property</Text>
+                <Text style={styles.detailValue}>{bill.property.name}</Text>
+              </View>
+            )}
+            {bill.unit && (
+              <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
+                <Text style={styles.detailLabel}>Unit</Text>
+                <Text style={styles.detailValue}>Unit {bill.unit.unit_number}</Text>
+              </View>
+            )}
+          </View>
+        )}
 
-        {bill.notes && (
+        {!loading && bill && bill.notes && (
           <>
             <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Notes</Text>
             <View style={styles.notesBox}>
@@ -157,9 +185,11 @@ export function TenantRentBillDetailsScreen() {
       </View>
 
       {/* Payment History */}
-      {bill.payments && bill.payments.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment History</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Payment History</Text>
+        {loading ? (
+          <ListSectionSkeleton items={2} />
+        ) : bill && bill.payments && bill.payments.length > 0 ? (
           <View style={styles.listContainer}>
             {bill.payments.map((payment, index) => {
               const isLast = index === bill.payments!.length - 1;
@@ -183,11 +213,13 @@ export function TenantRentBillDetailsScreen() {
               );
             })}
           </View>
-        </View>
-      )}
+        ) : !loading && (
+          <Text style={[screenStyles.empty, { textAlign: 'left', marginLeft: 0 }]}>No payments made yet.</Text>
+        )}
+      </View>
 
       {/* Pay Now Button */}
-      {outstanding > 0 && bill.status !== 'waived' && (
+      {!loading && bill && outstanding > 0 && bill.status !== 'waived' && (
         <View style={styles.footer}>
           <Button
             variant="primary"

@@ -17,10 +17,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { tenantApi, PaymentFormData } from '../../api/tenant';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { Skeleton } from '../../components/common/Skeleton';
+import { DetailBoxSkeleton, ListSectionSkeleton } from '../../components/common/SkeletonVariants';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
@@ -41,12 +42,12 @@ export function MakePaymentScreen() {
   const route = useRoute<MakePaymentRouteProp>();
   const { monthlyRent = 0, pendingAmount = 0, rentBillId } = route.params || {};
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [utilityBills, setUtilityBills] = useState<UtilityBill[]>([]);
   const [rentBills, setRentBills] = useState<RentBill[]>([]);
-  const [loadingBills, setLoadingBills] = useState(false);
+  const [loadingBills, setLoadingBills] = useState(true);
 
   // Form state
   const [amount, setAmount] = useState('');
@@ -74,6 +75,9 @@ export function MakePaymentScreen() {
     const fetchBills = async () => {
       setLoadingBills(true);
       try {
+        // TEMPORARY: Delay for testing skeletons
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        
         if (paymentType === 'utility') {
           const response = await tenantApi.getUtilityBills();
           const pending = response.data.filter(b => b.status !== 'paid' && b.status !== 'waived');
@@ -102,6 +106,7 @@ export function MakePaymentScreen() {
         console.error('Failed to fetch bills:', error);
       } finally {
         setLoadingBills(false);
+        setLoading(false);
       }
     };
     fetchBills();
@@ -154,8 +159,6 @@ export function MakePaymentScreen() {
       setSubmitting(false);
     }
   };
-
-  if (loading) return <LoadingScreen />;
 
   if (showConfirmation) {
     const selectedBill = paymentType === 'rent' 
@@ -269,15 +272,19 @@ export function MakePaymentScreen() {
         <Text style={styles.fieldLabel}>Amount to Pay</Text>
         <View style={styles.amountContainer}>
           <Text style={styles.currencySymbol}>$</Text>
-          <TextInput
-            style={styles.amountInput}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
-            placeholder="0.00"
-            underlineColor="transparent"
-            activeUnderlineColor="transparent"
-          />
+          {loading ? (
+             <Skeleton width={150} height={48} style={{ marginVertical: 6 }} />
+          ) : (
+            <TextInput
+              style={styles.amountInput}
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="numeric"
+              placeholder="0.00"
+              underlineColor="transparent"
+              activeUnderlineColor="transparent"
+            />
+          )}
         </View>
         {errors.amount && <Text style={styles.errorText}>{errors.amount}</Text>}
       </View>
@@ -286,7 +293,20 @@ export function MakePaymentScreen() {
       <View style={styles.formSection}>
         <Text style={styles.fieldLabel}>Select {paymentType === 'rent' ? 'Rent' : 'Utility'} Bill</Text>
         {loadingBills ? (
-           <Text style={styles.loadingText}>Loading bills...</Text>
+           <View style={styles.billList}>
+              {Array(2).fill(0).map((_, i) => (
+                <View key={`bill-skeleton-${i}`} style={styles.billOptionSkeleton}>
+                   <View style={{ flex: 1 }}>
+                      <Skeleton width="40%" height={16} style={{ marginBottom: 6 }} />
+                      <Skeleton width="60%" height={12} />
+                   </View>
+                   <View style={{ alignItems: 'flex-end' }}>
+                      <Skeleton width={60} height={14} style={{ marginBottom: 6 }} />
+                      <Skeleton variant="circle" width={20} height={20} />
+                   </View>
+                </View>
+              ))}
+           </View>
         ) : (
           <View style={styles.billList}>
             {(paymentType === 'rent' ? rentBills : utilityBills).map(bill => {
@@ -463,6 +483,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   billOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    backgroundColor: colors.surface,
+  },
+  billOptionSkeleton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,

@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { TenantCardSkeleton } from '../../components/common/SkeletonVariants';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
@@ -21,13 +21,14 @@ type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList, '
 export function LandlordTenantsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [tenants, setTenants] = useState<Tenant[]>([]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      headerTitle: 'Tenants', // Aligned with the reference
+      headerTitle: 'Tenants',
       headerStyle: { backgroundColor: colors.surface },
       headerTintColor: colors.text.primary,
       headerShadowVisible: false,
@@ -44,8 +45,13 @@ export function LandlordTenantsScreen() {
 
   const fetchTenants = async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch tenants
       const data = await landlordApi.getTenants();
       setTenants(data.data);
+      setHasLoaded(true);
     } catch (error) {
       console.error('Failed to fetch tenants:', error);
     } finally {
@@ -63,8 +69,6 @@ export function LandlordTenantsScreen() {
     fetchTenants();
   };
 
-  if (loading) return <LoadingScreen />;
-
   return (
     <ScreenContainer
       scrollable
@@ -73,9 +77,12 @@ export function LandlordTenantsScreen() {
       edges={['bottom', 'left', 'right']}
     >
       <View style={styles.listContainer}>
-        {tenants?.length > 0 ? (
+        {loading ? (
+          Array(6).fill(0).map((_, i) => (
+            <TenantCardSkeleton key={`skeleton-${i}`} />
+          ))
+        ) : tenants.length > 0 ? (
           tenants.map((tenant) => {
-            // Assume active if they have an active tenancy (mocking based on standard logic)
             const isActive = true; 
 
             return (
@@ -94,14 +101,12 @@ export function LandlordTenantsScreen() {
                 }}
               >
                 <View style={styles.tenantRow}>
-                  {/* Avatar Space */}
                   <View style={styles.avatar}>
                     <Text style={styles.avatarText}>
                       {tenant.full_name.charAt(0).toUpperCase()}
                     </Text>
                   </View>
 
-                  {/* Main Details */}
                   <View style={styles.tenantInfo}>
                     <Text style={styles.tenantName}>{tenant.full_name}</Text>
                     <Text style={styles.tenantLocation}>{tenant.email}</Text>
@@ -112,7 +117,6 @@ export function LandlordTenantsScreen() {
                     </View>
                   </View>
 
-                  {/* Right Action / Status */}
                   <View style={styles.tenantRight}>
                     {isActive ? (
                        <Badge label="Active" status="active" icon="checkmark-circle" />

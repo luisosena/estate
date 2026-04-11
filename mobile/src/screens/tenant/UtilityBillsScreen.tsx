@@ -8,6 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { tenantApi } from '../../api/tenant';
+import { Skeleton } from '../../components/common/Skeleton';
+import { SummaryHeaderSkeleton, BillRowSkeleton } from '../../components/common/SkeletonVariants';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
@@ -25,6 +27,7 @@ const FILTERS = ['All', 'Pending', 'Overdue', 'Paid'] as const;
 export function TenantUtilityBillsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [bills, setBills] = useState<UtilityBill[]>([]);
   const [summary, setSummary] = useState<UtilityBillSummary | null>(null);
@@ -41,10 +44,14 @@ export function TenantUtilityBillsScreen() {
 
   const fetchBills = async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
       const filter = activeFilter === 'All' ? undefined : activeFilter.toLowerCase();
       const data = await tenantApi.getUtilityBills(filter);
       setBills(data.data);
       setSummary(data.summary);
+      setHasLoaded(true);
     } catch (error) {
       console.error('Failed to fetch utility bills:', error);
     } finally {
@@ -74,8 +81,6 @@ export function TenantUtilityBillsScreen() {
     });
   };
 
-  if (loading) return <LoadingScreen />;
-
   return (
     <ScreenContainer
       scrollable
@@ -85,23 +90,31 @@ export function TenantUtilityBillsScreen() {
     >
       
       {/* Summary Header */}
-      <View style={styles.summarySection}>
-        <Text style={styles.summaryLabel}>Outstanding Utilities</Text>
-        <Text style={styles.summaryAmount}>
-          {formatCurrency(summary?.total_outstanding || 0)}
-        </Text>
-        <View style={styles.statsBar}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Total Due</Text>
-            <Text style={styles.statValue}>{formatCurrency(summary?.total_due || 0)}</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Paid</Text>
-            <Text style={styles.statValue}>{formatCurrency(summary?.total_paid || 0)}</Text>
+      {loading && !hasLoaded ? (
+        <SummaryHeaderSkeleton />
+      ) : (
+        <View style={styles.summarySection}>
+          <Text style={styles.summaryLabel}>Outstanding Utilities</Text>
+          {loading ? (
+            <Skeleton width={200} height={36} style={{ marginVertical: 4 }} />
+          ) : (
+            <Text style={styles.summaryAmount}>
+              {formatCurrency(summary?.total_outstanding || 0)}
+            </Text>
+          )}
+          <View style={styles.statsBar}>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Total Due</Text>
+              <Text style={styles.statValue}>{formatCurrency(summary?.total_due || 0)}</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Paid</Text>
+              <Text style={styles.statValue}>{formatCurrency(summary?.total_paid || 0)}</Text>
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
       {/* Filter Bar */}
       <ScrollView 
@@ -109,22 +122,32 @@ export function TenantUtilityBillsScreen() {
         showsHorizontalScrollIndicator={false} 
         contentContainerStyle={styles.filterBar}
       >
-        {FILTERS.map((f) => (
-          <TouchableOpacity
-            key={f}
-            style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
-            onPress={() => setActiveFilter(f)}
-          >
-            <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
-              {f}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {loading && !hasLoaded ? (
+           Array(4).fill(0).map((_, i) => (
+              <Skeleton key={`filter-skeleton-${i}`} width={80} height={36} borderRadius={20} style={{ marginRight: 8 }} />
+           ))
+        ) : (
+          FILTERS.map((f) => (
+            <TouchableOpacity
+              key={f}
+              style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
+              onPress={() => setActiveFilter(f)}
+            >
+              <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
+                {f}
+              </Text>
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
 
       {/* List Section */}
       <View style={styles.listSection}>
-        {bills.length > 0 ? (
+        {loading ? (
+           Array(5).fill(0).map((_, i) => (
+              <BillRowSkeleton key={`bill-skeleton-${i}`} />
+           ))
+        ) : bills.length > 0 ? (
           bills.map((bill, index) => {
             const utilityName = bill.tenancy_utility?.utility_type?.name || 'Unknown';
             const outstanding = bill.amount_due - bill.amount_paid;
@@ -217,6 +240,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 2,
+    fontWeight: '600',
   },
   statValue: {
     fontSize: 14,

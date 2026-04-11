@@ -1,11 +1,15 @@
 /**
  * Format a number as Tanzanian Shillings (TZS).
  */
-export const formatCurrency = (amount: number): string =>
-  new Intl.NumberFormat('en-TZ', {
+export const formatCurrency = (amount: number | string | null | undefined): string => {
+  const numericAmount = Number(amount);
+  const safeAmount = isNaN(numericAmount) ? 0 : numericAmount;
+  
+  return new Intl.NumberFormat('en-TZ', {
     style: 'currency',
     currency: 'TZS',
-  }).format(amount);
+  }).format(safeAmount);
+};
 
 /**
  * Format an ISO date string into a short, human-readable date.

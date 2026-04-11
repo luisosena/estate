@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { tenantApi } from '../../api/tenant';
+import { Skeleton } from '../../components/common/Skeleton';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
@@ -43,6 +44,8 @@ export function TenantDashboardScreen() {
 
   const fetchDashboard = async () => {
     try {
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
       setData(await tenantApi.getDashboard());
     } catch (error) {
       console.error('Failed to fetch dashboard:', error);
@@ -60,8 +63,6 @@ export function TenantDashboardScreen() {
     setRefreshing(true);
     fetchDashboard();
   };
-
-  if (loading) return <LoadingScreen />;
 
   const outstandingRent = data?.current_month_bill 
     ? data.current_month_bill.amount_due - data.current_month_bill.amount_paid 
@@ -83,38 +84,56 @@ export function TenantDashboardScreen() {
 
       {/* Main Action Card */}
       <View style={styles.actionCardContainer}>
-        <View style={styles.actionCard}>
-          <View>
-            <Text style={styles.actionLabel}>Current Balance</Text>
-            <Text style={styles.actionAmount}>{formatCurrency(outstandingRent)}</Text>
-            {data?.current_month_bill && (
-              <Text style={styles.actionDue}>Due: {formatDate(data.current_month_bill.due_date)}</Text>
-            )}
+        {loading ? (
+          <Skeleton width="100%" height={100} borderRadius={16} />
+        ) : (
+          <View style={styles.actionCard}>
+            <View>
+              <Text style={styles.actionLabel}>Current Balance</Text>
+              <Text style={styles.actionAmount}>{formatCurrency(outstandingRent)}</Text>
+              {data?.current_month_bill && (
+                <Text style={styles.actionDue}>Due: {formatDate(data.current_month_bill.due_date)}</Text>
+              )}
+            </View>
+            <Button
+              variant="primary"
+              label="Pay Rent"
+              onPress={() => navigation.navigate('MakePayment', { 
+                monthlyRent: data?.current_month_bill?.amount_due,
+                pendingAmount: outstandingRent,
+                rentBillId: data?.current_month_bill?.id
+              })}
+            />
           </View>
-          <Button
-            variant="primary"
-            label="Pay Rent"
-            onPress={() => navigation.navigate('MakePayment', { 
-              monthlyRent: data?.current_month_bill?.amount_due,
-              pendingAmount: outstandingRent,
-              rentBillId: data?.current_month_bill?.id
-            })}
-          />
-        </View>
+        )}
       </View>
 
       {/* Unit Info Section */}
-      {data?.unit && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Residence</Text>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Your Residence</Text>
+        {loading ? (
+          <Card>
+             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                <Skeleton variant="circle" width={48} height={48} style={{ marginRight: 12 }} />
+                <View style={{ flex: 1 }}>
+                   <Skeleton width="40%" height={16} style={{ marginBottom: 6 }} />
+                   <Skeleton width="60%" height={12} />
+                </View>
+             </View>
+             <View style={{ flexDirection: 'row', gap: 12, borderTopWidth: 1, borderTopColor: colors.borderLight, paddingTop: 16 }}>
+                <View style={{ flex: 1 }}><Skeleton width="40%" height={10} style={{ marginBottom: 4 }} /><Skeleton width="70%" height={14} /></View>
+                <View style={{ flex: 1 }}><Skeleton width="40%" height={10} style={{ marginBottom: 4 }} /><Skeleton width="70%" height={14} /></View>
+             </View>
+          </Card>
+        ) : data?.unit ? (
           <Card>
             <View style={styles.unitHeader}>
               <View style={styles.unitIcon}>
                 <Ionicons name="home-outline" size={24} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.unitNumber}>Unit {data.unit.unit_number}</Text>
-                <Text style={styles.propertyName}>{data.unit.property_name}</Text>
+                <Text style={styles.unitNumber}>Unit {data.unit.unit_name || data.unit.unit_code}</Text>
+                <Text style={styles.propertyName}>{data.unit.property?.name}</Text>
               </View>
               {data.tenancy && (
                 <Badge 
@@ -128,7 +147,9 @@ export function TenantDashboardScreen() {
               <View style={styles.unitDetails}>
                 <View style={styles.unitDetailItem}>
                   <Text style={styles.detailLabel}>Monthly Rent</Text>
-                  <Text style={styles.detailValue}>{formatCurrency(data.tenancy.rent_amount)}</Text>
+                  <Text style={styles.detailValue}>
+                    {formatCurrency(data.tenancy.rent_amount || (data.tenancy as any).monthly_rent)}
+                  </Text>
                 </View>
                 <View style={styles.unitDetailItem}>
                   <Text style={styles.detailLabel}>Move-in Date</Text>
@@ -137,8 +158,10 @@ export function TenantDashboardScreen() {
               </View>
             )}
           </Card>
-        </View>
-      )}
+        ) : (
+          <Card><Text style={screenStyles.empty}>No active unit</Text></Card>
+        )}
+      </View>
 
       {/* Recent Payments */}
       <View style={styles.section}>
@@ -149,7 +172,20 @@ export function TenantDashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        {data?.payments && data.payments.length > 0 ? (
+        {loading ? (
+          <View style={styles.listContainer}>
+             {Array(3).fill(0).map((_, i) => (
+               <View key={`pay-skeleton-${i}`} style={styles.paymentRow}>
+                  <Skeleton width={36} height={36} borderRadius={8} style={{ marginRight: 12 }} />
+                  <View style={{ flex: 1 }}>
+                     <Skeleton width="40%" height={14} style={{ marginBottom: 6 }} />
+                     <Skeleton width="30%" height={10} />
+                  </View>
+                  <Skeleton width={60} height={20} />
+               </View>
+             ))}
+          </View>
+        ) : data?.payments && data.payments.length > 0 ? (
           <View style={styles.listContainer}>
             {data.payments.slice(0, 3).map((payment, index) => {
               const isLast = index === Math.min(data.payments.length, 3) - 1;
@@ -318,7 +354,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },

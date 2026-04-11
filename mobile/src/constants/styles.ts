@@ -27,6 +27,13 @@ export const screenStyles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 16,
   },
+  empty_inline: {
+    color: colors.text.secondary,
+    textAlign: 'center',
+    paddingVertical: 8,
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
   input: {
     marginBottom: 12,
   },
@@ -44,16 +51,23 @@ export const tabBarScreenOptions = {
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.borderLight,
-    shadowColor: 'transparent',
-    elevation: 0, // Flat look
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 8,
+    // Raise the bar higher
+    height: Platform.OS === 'ios' ? 88 : 72,
+    paddingBottom: Platform.OS === 'ios' ? 32 : 12,
   },
   tabBarLabelStyle: {
     fontSize: 11,
-    fontWeight: '500',
-    marginTop: 4,
+    fontWeight: '600',
+    marginTop: 0,
+    marginBottom: Platform.OS === 'ios' ? 0 : 4,
   },
   tabBarItemStyle: {
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   tabBarShowLabel: true,
 } as const;

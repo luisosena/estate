@@ -1,14 +1,14 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { BillRowSkeleton, PaymentRowSkeleton } from '../../components/common/SkeletonVariants';
 import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
@@ -42,6 +42,10 @@ export function LandlordPaymentsScreen() {
 
   const fetchPayments = async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch payments
       const data = await landlordApi.getPayments();
       setPayments(data.data);
     } catch (error) {
@@ -60,8 +64,6 @@ export function LandlordPaymentsScreen() {
     setRefreshing(true);
     fetchPayments();
   };
-
-  if (loading) return <LoadingScreen />;
 
   return (
     <ScreenContainer
@@ -101,7 +103,13 @@ export function LandlordPaymentsScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Recent Transactions</Text>
 
-        {payments?.length > 0 ? (
+        {loading ? (
+          <View style={styles.listContainer}>
+            {Array(6).fill(0).map((_, i) => (
+              <PaymentRowSkeleton key={`skeleton-${i}`} />
+            ))}
+          </View>
+        ) : payments?.length > 0 ? (
           <View style={styles.listContainer}>
             {payments.map((payment, index) => {
               const dateSource = payment.paid_at || payment.due_date;

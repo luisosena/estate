@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Skeleton } from '../../components/common/Skeleton';
+import { ProfileHeaderSkeleton, DetailsStatsSkeleton } from '../../components/common/SkeletonVariants';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
@@ -48,6 +49,9 @@ export function PropertyDetailsScreen() {
   const fetchPropertyAndUnits = useCallback(async () => {
     try {
       setError(null);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch property and units details
       const [propData, unitsData] = await Promise.all([
         landlordApi.getProperty(propertyId),
         landlordApi.getUnits(propertyId)
@@ -72,15 +76,6 @@ export function PropertyDetailsScreen() {
     fetchPropertyAndUnits();
   };
 
-  if (loading) return <LoadingScreen />;
-  if (error || !property) {
-    return (
-      <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={screenStyles.empty}>{error || 'Property not found.'}</Text>
-      </ScreenContainer>
-    );
-  }
-
   return (
     <ScreenContainer 
       scrollable
@@ -88,41 +83,49 @@ export function PropertyDetailsScreen() {
       onRefresh={onRefresh}
       edges={['bottom', 'left', 'right']}
     >
-      {/* Property Header Data */}
       <View style={styles.profileSection}>
-        <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Ionicons name="business" size={28} color={colors.white} />
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.propertyName}>{property.name}</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-              <Ionicons name="location-outline" size={14} color={colors.text.secondary} />
-              <Text style={styles.subtext} numberOfLines={1}> {property.address}</Text>
+        {loading ? (
+          <>
+            <ProfileHeaderSkeleton />
+            <DetailsStatsSkeleton />
+          </>
+        ) : property ? (
+          <>
+            <View style={styles.profileHeader}>
+              <View style={styles.avatar}>
+                <Ionicons name="business" size={28} color={colors.white} />
+              </View>
+              <View style={styles.profileInfo}>
+                <Text style={styles.propertyName}>{property.name}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                  <Ionicons name="location-outline" size={14} color={colors.text.secondary} />
+                  <Text style={styles.subtext} numberOfLines={1}> {property.address}</Text>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
 
-        <View style={styles.statsCard}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{property.total_units}</Text>
-            <Text style={styles.statLabel}>Total Units</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statBox}>
-            <Text style={[styles.statValue, { color: property.occupied_units > 0 ? colors.status.occupied : colors.text.primary }]}>
-              {property.occupied_units}
-            </Text>
-            <Text style={styles.statLabel}>Occupied</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statBox}>
-            <Text style={[styles.statValue, { color: property.vacant_units > 0 ? colors.status.expired : colors.text.primary }]}>
-              {property.vacant_units}
-            </Text>
-            <Text style={styles.statLabel}>Vacant</Text>
-          </View>
-        </View>
+            <View style={styles.statsCard}>
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>{property.total_units}</Text>
+                <Text style={styles.statLabel}>Total Units</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statBox}>
+                <Text style={[styles.statValue, { color: property.occupied_units > 0 ? colors.status.occupied : colors.text.primary }]}>
+                  {property.occupied_units}
+                </Text>
+                <Text style={styles.statLabel}>Occupied</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statBox}>
+                <Text style={[styles.statValue, { color: property.vacant_units > 0 ? colors.status.expired : colors.text.primary }]}>
+                  {property.vacant_units}
+                </Text>
+                <Text style={styles.statLabel}>Vacant</Text>
+              </View>
+            </View>
+          </>
+        ) : null}
       </View>
 
       {/* Units List */}
@@ -134,9 +137,20 @@ export function PropertyDetailsScreen() {
           </TouchableOpacity>
         </View>
         
-        {units?.length > 0 ? (
-          <View style={styles.unitsContainer}>
-            {units.map((unit) => {
+        <View style={styles.unitsContainer}>
+          {loading ? (
+            Array(5).fill(0).map((_, i) => (
+              <View key={`unit-skeleton-${i}`} style={styles.rowItem}>
+                 <Skeleton width={40} height={40} borderRadius={8} style={{ marginRight: 16 }} />
+                 <View style={{ flex: 1 }}>
+                    <Skeleton width="40%" height={14} style={{ marginBottom: 6 }} />
+                    <Skeleton width="60%" height={12} />
+                 </View>
+                 <Skeleton width={60} height={24} borderRadius={12} />
+              </View>
+            ))
+          ) : units?.length > 0 ? (
+            units.map((unit) => {
               const isActive = (unit.status === 'occupied');
               return (
                 <TouchableOpacity
@@ -149,8 +163,8 @@ export function PropertyDetailsScreen() {
                       <Ionicons name="home-outline" size={18} color={isActive ? colors.status.occupied : colors.text.secondary} />
                     </View>
                     <View style={styles.rowInfo}>
-                      <Text style={styles.rowTitle}>Unit {unit.unit_number}</Text>
-                      <Text style={styles.rowSubtitle}>Rent: {formatCurrency(unit.rent_amount ?? 0)}</Text>
+                      <Text style={styles.rowTitle}>{unit.unit_name || unit.unit_code}</Text>
+                      <Text style={styles.rowSubtitle}>Code: {unit.unit_code}</Text>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Badge 
@@ -161,13 +175,13 @@ export function PropertyDetailsScreen() {
                   </View>
                 </TouchableOpacity>
               )
-            })}
-          </View>
-        ) : (
-          <Card>
-            <Text style={screenStyles.empty}>No units found for this property.</Text>
-          </Card>
-        )}
+            })
+          ) : (
+            <Card>
+              <Text style={screenStyles.empty}>No units found for this property.</Text>
+            </Card>
+          )}
+        </View>
       </View>
       <View style={{ height: 40 }} />
     </ScreenContainer>

@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { PropertyRowSkeleton } from '../../components/common/SkeletonVariants';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
@@ -21,6 +21,7 @@ type NavigationProp = NativeStackNavigationProp<LandlordPropertiesStackParamList
 export function LandlordPropertiesScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
 
@@ -48,8 +49,13 @@ export function LandlordPropertiesScreen() {
 
   const fetchProperties = async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch properties
       const data = await landlordApi.getProperties();
       setProperties(data.data);
+      setHasLoaded(true);
     } catch (error) {
       console.error('Failed to fetch properties:', error);
     } finally {
@@ -67,8 +73,6 @@ export function LandlordPropertiesScreen() {
     fetchProperties();
   };
 
-  if (loading) return <LoadingScreen />;
-
   return (
     <ScreenContainer
       scrollable
@@ -77,7 +81,11 @@ export function LandlordPropertiesScreen() {
       edges={['bottom', 'left', 'right']}
     >
       <View style={{ paddingVertical: 12 }}>
-        {properties?.length > 0 ? (
+        {loading ? (
+          Array(4).fill(0).map((_, i) => (
+            <PropertyRowSkeleton key={`skeleton-${i}`} />
+          ))
+        ) : properties?.length > 0 ? (
           properties.map((property) => {
             const isFull = property.occupied_units === property.total_units;
             
@@ -88,12 +96,10 @@ export function LandlordPropertiesScreen() {
                 onPress={() => navigation.navigate('PropertyDetails', { propertyId: property.id })}
               >
                 <View style={styles.propertyRow}>
-                  {/* Avatar Space */}
                   <View style={styles.buildingIcon}>
                     <Ionicons name="business" size={24} color={colors.white} />
                   </View>
 
-                  {/* Main Details */}
                   <View style={styles.propertyInfo}>
                     <Text style={styles.propertyName}>{property.name}</Text>
                     <Text style={styles.propertyLocation} numberOfLines={1}>{property.address}</Text>
@@ -111,7 +117,6 @@ export function LandlordPropertiesScreen() {
                     </View>
                   </View>
 
-                  {/* Right Action / Status */}
                   <View style={styles.propertyRight}>
                     {isFull ? (
                        <Badge label="Full" status="active" />

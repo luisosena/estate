@@ -8,10 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
+import { Skeleton } from '../../components/common/Skeleton';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
@@ -64,16 +64,20 @@ export function TenancyUtilitiesScreen() {
       headerStyle: { backgroundColor: colors.surface },
       headerTintColor: colors.text.primary,
       headerShadowVisible: false,
-      headerRight: () => (
+      headerRight: () => (!loading && (
          <TouchableOpacity style={{ padding: 8 }} onPress={openAddModal}>
             <Ionicons name="add" size={24} color={colors.primary} />
          </TouchableOpacity>
-      )
+      ))
     });
-  }, [navigation]);
+  }, [navigation, loading]);
 
   const fetchData = useCallback(async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch utility readings
       const [utilitiesRes, typesRes] = await Promise.all([
         landlordApi.getTenancyUtilities(tenancyId),
         landlordApi.getUtilityTypes(),
@@ -185,83 +189,103 @@ export function TenancyUtilitiesScreen() {
     );
   };
 
-  if (loading) return <LoadingScreen />;
-
   const assignedTypeIds = utilities.map(u => u.utility_type_id);
   const availableTypes = utilityTypes.filter(t => !assignedTypeIds.includes(t.id) && t.is_active);
 
   return (
     <>
       <ScreenContainer
-      scrollable
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      edges={['bottom', 'left', 'right']}
-    >
-      <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 }}>
-        <Text style={{ fontSize: 13, color: colors.text.secondary }}>Tenant</Text>
-        <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text.primary }}>{tenantName}</Text>
-      </View>
+        scrollable
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        edges={['bottom', 'left', 'right']}
+      >
+        <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 }}>
+          <Text style={{ fontSize: 13, color: colors.text.secondary }}>Tenant</Text>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text.primary }}>{tenantName}</Text>
+        </View>
 
-      <View style={{ paddingHorizontal: 20 }}>
-        {utilities.length > 0 ? (
-          utilities.map((utility) => (
-            <Card key={utility.id} style={{ marginBottom: 16 }}>
-              <View style={styles.utilityHeader}>
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text.primary }}>
-                    {capitalize(utility.utility_type?.name || 'Unknown')}
-                  </Text>
-                  <Text style={{ fontSize: 13, color: colors.text.secondary }}>
-                    {billingCycleLabels[utility.billing_cycle]}
-                  </Text>
+        <View style={{ paddingHorizontal: 20 }}>
+          {loading ? (
+             Array(2).fill(0).map((_, i) => (
+                <Card key={`utility-skeleton-${i}`} style={{ marginBottom: 16 }}>
+                   <View style={styles.utilityHeader}>
+                      <View>
+                         <Skeleton width={120} height={16} style={{ marginBottom: 4 }} />
+                         <Skeleton width={80} height={12} />
+                      </View>
+                      <Skeleton width={80} height={20} borderRadius={10} />
+                   </View>
+                   <View style={[styles.utilityDetails, { marginTop: 8 }]}>
+                      <Skeleton width={100} height={24} style={{ marginBottom: 8 }} />
+                      <Skeleton width="60%" height={12} style={{ marginBottom: 4 }} />
+                      <Skeleton width="40%" height={12} />
+                   </View>
+                   <View style={[styles.utilityActions, { borderTopWidth: 0 }]}>
+                      <Skeleton width="45%" height={40} borderRadius={8} style={{ marginRight: 8 }} />
+                      <Skeleton width="45%" height={40} borderRadius={8} />
+                   </View>
+                </Card>
+             ))
+          ) : utilities.length > 0 ? (
+            utilities.map((utility) => (
+              <Card key={utility.id} style={{ marginBottom: 16 }}>
+                <View style={styles.utilityHeader}>
+                  <View>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text.primary }}>
+                      {capitalize(utility.utility_type?.name || 'Unknown')}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: colors.text.secondary }}>
+                      {billingCycleLabels[utility.billing_cycle]}
+                    </Text>
+                  </View>
+                  <Badge 
+                     label={utility.status.toUpperCase()} 
+                     status={getStatusType(utility.status)} 
+                  />
                 </View>
-                <Badge 
-                   label={utility.status.toUpperCase()} 
-                   status={getStatusType(utility.status)} 
-                />
-              </View>
-              
-              <View style={styles.utilityDetails}>
-                <Text style={{ fontSize: 20, fontWeight: '700', color: colors.primary }}>
-                  {formatCurrency(utility.amount)}
-                </Text>
-                {utility.provider && (
-                  <Text style={{ fontSize: 13, color: colors.text.secondary, marginTop: 4 }}>
-                    Provider: {utility.provider}
+                
+                <View style={styles.utilityDetails}>
+                  <Text style={{ fontSize: 20, fontWeight: '700', color: colors.primary }}>
+                    {formatCurrency(utility.amount)}
                   </Text>
-                )}
-                {utility.meter_number && (
-                  <Text style={{ fontSize: 13, color: colors.text.secondary, marginTop: 2 }}>
-                    Meter: {utility.meter_number}
-                  </Text>
-                )}
-              </View>
-              
-              <View style={styles.utilityActions}>
-                <Button 
-                   variant="outline" 
-                   label="Edit" 
-                   onPress={() => openEditModal(utility)} 
-                   style={{ flex: 1, marginRight: 8 }} 
-                />
-                <Button 
-                   variant="ghost" 
-                   label="Delete" 
-                   icon="trash-outline"
-                   onPress={() => handleDelete(utility)}
-                />
-              </View>
+                  {utility.provider && (
+                    <Text style={{ fontSize: 13, color: colors.text.secondary, marginTop: 4 }}>
+                      Provider: {utility.provider}
+                    </Text>
+                  )}
+                  {utility.meter_number && (
+                    <Text style={{ fontSize: 13, color: colors.text.secondary, marginTop: 2 }}>
+                      Meter: {utility.meter_number}
+                    </Text>
+                  )}
+                </View>
+                
+                <View style={styles.utilityActions}>
+                  <Button 
+                     variant="outline" 
+                     label="Edit" 
+                     onPress={() => openEditModal(utility)} 
+                     style={{ flex: 1, marginRight: 8 }} 
+                  />
+                  <Button 
+                     variant="ghost" 
+                     label="Delete" 
+                     icon="trash-outline"
+                     onPress={() => handleDelete(utility)}
+                  />
+                </View>
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <Text style={screenStyles.empty}>No utilities assigned to this tenancy yet.</Text>
             </Card>
-          ))
-        ) : (
-          <Card>
-            <Text style={screenStyles.empty}>No utilities assigned to this tenancy yet.</Text>
-          </Card>
-        )}
-      </View>
-      <View style={{ height: 40 }} />
+          )}
+        </View>
+        <View style={{ height: 40 }} />
       </ScreenContainer>
+
       <Portal>
         <Modal
           visible={showModal}

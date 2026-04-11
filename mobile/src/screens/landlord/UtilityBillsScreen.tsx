@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Skeleton } from '../../components/common/Skeleton';
+import { BillRowSkeleton } from '../../components/common/SkeletonVariants';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
@@ -33,6 +34,7 @@ const FILTERS = ['All', 'Pending', 'Overdue', 'Paid'] as const;
 export function LandlordUtilityBillsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [bills, setBills] = useState<UtilityBill[]>([]);
   const [page, setPage] = useState(1);
@@ -62,6 +64,11 @@ export function LandlordUtilityBillsScreen() {
 
   const fetchBills = useCallback(async (pageNum: number = 1) => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch utility bills
+      
       const params: any = { page: pageNum };
       if (activeFilter !== 'All') {
         params.status = activeFilter.toLowerCase();
@@ -70,6 +77,7 @@ export function LandlordUtilityBillsScreen() {
       setBills(response.data);
       setTotalPages(response.meta.total_pages);
       setPage(pageNum);
+      setHasLoaded(true);
     } catch (error) {
       console.error('Failed to fetch utility bills:', error);
     } finally {
@@ -153,8 +161,6 @@ export function LandlordUtilityBillsScreen() {
     );
   };
 
-  if (loading) return <LoadingScreen />;
-
   const totalOutstanding = bills.reduce((sum, b) => sum + (b.amount_due - b.amount_paid), 0);
 
   return (
@@ -168,8 +174,21 @@ export function LandlordUtilityBillsScreen() {
 
         {/* Summary Header */}
         <View style={styles.summarySection}>
-          <Text style={styles.summaryLabel}>Total Outstanding</Text>
-          <Text style={styles.summaryAmount}>{formatCurrency(totalOutstanding)}</Text>
+          {loading && !hasLoaded ? (
+            <>
+              <Skeleton width={120} height={14} style={{ marginBottom: 8 }} />
+              <Skeleton width={180} height={32} />
+            </>
+          ) : (
+            <>
+              <Text style={styles.summaryLabel}>Total Outstanding</Text>
+              {loading ? (
+                <Skeleton width={180} height={32} style={{ marginVertical: 4 }} />
+              ) : (
+                <Text style={styles.summaryAmount}>{formatCurrency(totalOutstanding)}</Text>
+              )}
+            </>
+          )}
         </View>
 
         {/* Filter Tabs */}
@@ -178,11 +197,18 @@ export function LandlordUtilityBillsScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterBar}
         >
-          {FILTERS.map((f) => (
+          {loading && !hasLoaded ? (
+            Array(4).fill(0).map((_, i) => (
+              <Skeleton key={`f-skel-${i}`} width={80} height={36} borderRadius={20} style={{ marginRight: 8 }} />
+            ))
+          ) : FILTERS.map((f) => (
             <TouchableOpacity
               key={f}
               style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
-              onPress={() => setActiveFilter(f)}
+              onPress={() => {
+                 setActiveFilter(f);
+                 setPage(1);
+              }}
             >
               <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
                 {f}
@@ -193,7 +219,11 @@ export function LandlordUtilityBillsScreen() {
 
         {/* Bills List */}
         <View style={styles.listSection}>
-          {bills.length > 0 ? (
+          {loading ? (
+            Array(6).fill(0).map((_, i) => (
+              <BillRowSkeleton key={`skeleton-${i}`} />
+            ))
+          ) : bills.length > 0 ? (
             bills.map((bill, index) => {
               const utilityName = bill.tenancy_utility?.utility_type?.name || 'Unknown';
               const outstanding = bill.amount_due - bill.amount_paid;
@@ -260,7 +290,7 @@ export function LandlordUtilityBillsScreen() {
         </View>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {!loading && totalPages > 1 && (
           <View style={styles.pagination}>
             <Button variant="outline" label="Previous" size="sm" onPress={() => fetchBills(page - 1)} disabled={page === 1} />
             <Text style={{ color: colors.text.secondary, fontWeight: '500' }}>{page} / {totalPages}</Text>

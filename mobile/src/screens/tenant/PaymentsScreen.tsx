@@ -1,36 +1,38 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
-
 import { tenantApi } from '../../api/tenant';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Skeleton } from '../../components/common/Skeleton';
+import { BillRowSkeleton } from '../../components/common/SkeletonVariants';
+import { Card } from '../../components/common/Card';
+import { PaymentRowSkeleton } from '../../components/common/SkeletonVariants';
 import { Badge } from '../../components/common/Badge';
-import { Button } from '../../components/common/Button';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
 import type { Payment } from '../../types';
-import { formatCurrency, capitalize } from '../../utils/formatters';
+import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
 
 type NavigationProp = NativeStackNavigationProp<TenantPaymentsStackParamList>;
 
 export function TenantPaymentsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [pendingAmount, setPendingAmount] = useState(0);
-  const [monthlyRent, setMonthlyRent] = useState(0);
+  const [lastPayment, setLastPayment] = useState<Payment | null>(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: '',
+      headerTitle: 'Payments',
       headerShown: true,
       headerStyle: { backgroundColor: colors.surface },
       headerTintColor: colors.text.primary,
@@ -40,14 +42,25 @@ export function TenantPaymentsScreen() {
 
   const fetchPayments = async () => {
     try {
+      setLoading(true);
       setError(null);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
       const data = await tenantApi.getPayments();
       setPayments(data.payments);
       setPendingAmount(data.pendingAmount);
-      setMonthlyRent(data.tenancy?.monthly_rent || 0);
-    } catch (error) {
-      console.error('Failed to fetch payments:', error);
-      setError('Failed to load payments. Pull to refresh.');
+      
+      // Find the most recent paid payment
+      const sorted = [...data.payments].filter(p => p.status === 'paid').sort((a, b) => {
+        const dateA = a.paid_at ?? a.created_at ?? '';
+        const dateB = b.paid_at ?? b.created_at ?? '';
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      });
+      setLastPayment(sorted[0] || null);
+      setHasLoaded(true);
+    } catch (err) {
+      console.error('Failed to load payments history:', err);
+      setError('Failed to load payments history.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -63,49 +76,76 @@ export function TenantPaymentsScreen() {
     fetchPayments();
   };
 
-  const handleMakePayment = () => {
-    navigation.navigate('MakePayment', {
-      monthlyRent,
-      pendingAmount,
-    });
-  };
-
-  if (loading) return <LoadingScreen />;
-
   return (
-    <ScreenContainer
+    <ScreenContainer 
       scrollable
       refreshing={refreshing}
       onRefresh={onRefresh}
       edges={['bottom', 'left', 'right']}
     >
-      {/* Balance Section */}
-      <View style={styles.balanceSection}>
-        <Text style={styles.balanceLabel}>Current Pending Balance</Text>
-        <Text style={styles.balanceAmount}>{formatCurrency(pendingAmount)}</Text>
-        <View style={styles.balanceActions}>
-          <Button
-            variant="primary"
-            label="Make a Payment"
-            onPress={handleMakePayment}
-            style={{ flex: 1 }}
-            icon="card-outline"
-          />
-        </View>
-        <TouchableOpacity 
-          style={styles.billsLink}
-          onPress={() => navigation.navigate('RentBills')}
-        >
-          <Text style={styles.billsLinkText}>View All Rent Bills</Text>
-          <Ionicons name="chevron-forward" size={14} color={colors.primary} />
-        </TouchableOpacity>
+      <View style={styles.headerCards}>
+        {loading && !hasLoaded ? (
+          <>
+            <Skeleton width="100%" height={120} borderRadius={16} style={{ marginBottom: 16 }} />
+            <Skeleton width="100%" height={120} borderRadius={16} />
+          </>
+        ) : (
+          <>
+            <Card style={styles.balanceCard}>
+               <View style={styles.cardHeader}>
+                 <Text style={styles.cardLabel}>Pending Balance</Text>
+                 <View style={styles.iconCircle}>
+                    <Ionicons name="alert-circle" size={18} color={colors.status.pending} />
+                 </View>
+               </View>
+               {loading ? (
+                 <Skeleton width={180} height={32} style={{ marginVertical: 4 }} />
+               ) : (
+                 <Text style={styles.balanceAmount}>{formatCurrency(pendingAmount)}</Text>
+               )}
+               <TouchableOpacity 
+                 style={styles.payBtn}
+                 onPress={() => navigation.navigate('MakePayment', { pendingAmount })}
+               >
+                 <Text style={styles.payBtnText}>Pay Now</Text>
+                 <Ionicons name="chevron-forward" size={16} color={colors.white} />
+               </TouchableOpacity>
+            </Card>
+
+            <Card style={styles.recentCard}>
+               <View style={styles.cardHeader}>
+                 <Text style={styles.cardLabel}>Last Payment</Text>
+                 <Ionicons name="checkmark-done" size={18} color={colors.status.paid} />
+               </View>
+               {lastPayment ? (
+                 <>
+                   {loading ? (
+                     <Skeleton width={120} height={28} style={{ marginVertical: 4 }} />
+                   ) : (
+                     <Text style={styles.recentAmount}>{formatCurrency(lastPayment.amount)}</Text>
+                   )}
+                   <Text style={styles.recentDate}>
+                     on {formatDate(lastPayment.paid_at ?? lastPayment.created_at ?? '')}
+                   </Text>
+                 </>
+               ) : (
+                 <Text style={styles.recentAmount}>No payments</Text>
+               )}
+            </Card>
+          </>
+        )}
       </View>
 
-      {/* Transaction History */}
-      <View style={styles.section}>
+      <View style={styles.listSection}>
         <Text style={styles.sectionTitle}>Transaction History</Text>
-
-        {payments?.length > 0 ? (
+        
+        {loading ? (
+          <View style={styles.listContainer}>
+            {Array(6).fill(0).map((_, i) => (
+              <PaymentRowSkeleton key={`skeleton-${i}`} />
+            ))}
+          </View>
+        ) : payments.length > 0 ? (
           <View style={styles.listContainer}>
             {payments.map((payment, index) => {
               const isLast = index === payments.length - 1;
@@ -165,52 +205,84 @@ export function TenantPaymentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  balanceSection: {
-    backgroundColor: colors.surface,
-    padding: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    alignItems: 'center',
+  headerCards: {
+    padding: 20,
+    gap: 16,
   },
-  balanceLabel: {
-    fontSize: 13,
-    color: colors.text.secondary,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  balanceCard: {
+    padding: 20,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  recentCard: {
+    padding: 20,
+    backgroundColor: colors.gray[100],
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
+  cardLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  iconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.status.pending + '10',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   balanceAmount: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.text.primary,
-    marginBottom: 24,
-  },
-  balanceActions: {
-    flexDirection: 'row',
-    width: '100%',
-    gap: 12,
     marginBottom: 16,
   },
-  billsLink: {
+  recentAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  recentDate: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 2,
+  },
+  payBtn: {
+    height: 44,
+    backgroundColor: colors.text.primary,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    gap: 8,
   },
-  billsLinkText: {
+  payBtnText: {
+    color: colors.white,
     fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
+    fontWeight: '700',
   },
-  section: {
+  listSection: {
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 8,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.text.primary,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   listContainer: {
     backgroundColor: colors.surface,
@@ -223,7 +295,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },

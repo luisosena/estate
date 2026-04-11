@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(userData);
       }
     } catch (error) {
-      console.log('Auth check failed:', error);
+      // Auth check silent failure is intentional for guest state
       await clearTokens();
     } finally {
       setIsLoading(false);
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authApi.logout();
     } catch (error) {
-      console.log('Logout API error:', error);
+      // Logout failure usually due to expired token already
     } finally {
       await clearTokens();
       setUser(null);

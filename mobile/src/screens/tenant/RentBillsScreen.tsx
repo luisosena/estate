@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { tenantApi } from '../../api/tenant';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Skeleton } from '../../components/common/Skeleton';
+import { SummaryHeaderSkeleton, BillRowSkeleton } from '../../components/common/SkeletonVariants';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { colors } from '../../constants/colors';
@@ -24,6 +25,7 @@ const FILTERS = ['All', 'Pending', 'Overdue', 'Paid'] as const;
 export function TenantRentBillsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [bills, setBills] = useState<RentBill[]>([]);
   const [summary, setSummary] = useState<RentBillSummary | null>(null);
@@ -41,6 +43,9 @@ export function TenantRentBillsScreen() {
 
   const fetchBills = useCallback(async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
       const data = await tenantApi.getRentBills();
       let filteredBills = data.data;
       
@@ -51,6 +56,7 @@ export function TenantRentBillsScreen() {
       
       setBills(filteredBills);
       setSummary(data.summary);
+      setHasLoaded(true);
     } catch (error) {
       console.error('Failed to fetch rent bills:', error);
     } finally {
@@ -83,8 +89,6 @@ export function TenantRentBillsScreen() {
     });
   };
 
-  if (loading) return <LoadingScreen />;
-
   return (
     <ScreenContainer
       scrollable
@@ -92,21 +96,28 @@ export function TenantRentBillsScreen() {
       onRefresh={onRefresh}
       edges={['bottom', 'left', 'right']}
     >
-      {/* Summary Header */}
-      <View style={styles.summarySection}>
-        <Text style={styles.summaryLabel}>Outstanding Rent</Text>
-        <Text style={styles.summaryAmount}>
-          {formatCurrency(summary?.total_outstanding || 0)}
-        </Text>
-        <View style={styles.statusBadges}>
-          {summary && summary.overdue_count > 0 && (
-            <Badge label={`${summary.overdue_count} Overdue`} status="cancelled" style={{ marginRight: 8 }} />
+      {loading && !hasLoaded ? (
+        <SummaryHeaderSkeleton />
+      ) : (
+        <View style={styles.summarySection}>
+          <Text style={styles.summaryLabel}>Outstanding Rent</Text>
+          {loading ? (
+            <Skeleton width={200} height={36} style={{ marginVertical: 4 }} />
+          ) : (
+            <Text style={styles.summaryAmount}>
+              {formatCurrency(summary?.total_outstanding || 0)}
+            </Text>
           )}
-          {summary && summary.pending_count > 0 && (
-            <Badge label={`${summary.pending_count} Pending`} status="pending" />
-          )}
+          <View style={styles.statusBadges}>
+            {summary && summary.overdue_count > 0 && (
+              <Badge label={`${summary.overdue_count} Overdue`} status="cancelled" style={{ marginRight: 8 }} />
+            )}
+            {summary && summary.pending_count > 0 && (
+              <Badge label={`${summary.pending_count} Pending`} status="pending" />
+            )}
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Filter Bar */}
       <ScrollView 
@@ -114,7 +125,11 @@ export function TenantRentBillsScreen() {
         showsHorizontalScrollIndicator={false} 
         contentContainerStyle={styles.filterBar}
       >
-        {FILTERS.map((f) => (
+        {loading && !hasLoaded ? (
+          Array(4).fill(0).map((_, i) => (
+             <Skeleton key={`filter-skeleton-${i}`} width={80} height={36} borderRadius={20} style={{ marginRight: 8 }} />
+          ))
+        ) : FILTERS.map((f) => (
           <TouchableOpacity
             key={f}
             style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
@@ -133,7 +148,11 @@ export function TenantRentBillsScreen() {
 
       {/* List Section */}
       <View style={styles.listSection}>
-        {bills.length > 0 ? (
+        {loading ? (
+           Array(5).fill(0).map((_, i) => (
+              <BillRowSkeleton key={`bill-skeleton-${i}`} />
+           ))
+        ) : bills.length > 0 ? (
           bills.map((bill, index) => {
             const outstanding = bill.amount_due - bill.amount_paid;
             const isLast = index === bills.length - 1;
@@ -255,7 +274,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   billRow: {
-    padding: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },

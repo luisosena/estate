@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Skeleton } from '../../components/common/Skeleton';
+import { StatCardSkeleton } from '../../components/common/SkeletonVariants';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
@@ -45,6 +46,9 @@ export function LandlordDashboardScreen() {
 
   const fetchDashboard = async () => {
     try {
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch dashboard
       setData(await landlordApi.getDashboard());
     } catch (error) {
       console.error('Failed to fetch dashboard:', error);
@@ -63,8 +67,6 @@ export function LandlordDashboardScreen() {
     fetchDashboard();
   };
 
-  if (loading) return <LoadingScreen />;
-
   return (
     <ScreenContainer
       scrollable
@@ -78,58 +80,80 @@ export function LandlordDashboardScreen() {
       </View>
 
       {/* Summary Stats Grid */}
-      {data && (
-        <View style={styles.statsGrid}>
-          <View style={styles.statSquare}>
-            <View style={[styles.statIconBox, { backgroundColor: colors.gray[100] }]}>
-              <Ionicons name="business" size={18} color={colors.text.primary} />
+      <View style={styles.statsGrid}>
+        {loading ? (
+          Array(3).fill(0).map((_, i) => <StatCardSkeleton key={`stat-skeleton-${i}`} />)
+        ) : data ? (
+          <>
+            <View style={styles.statSquare}>
+              <View style={[styles.statIconBox, { backgroundColor: colors.gray[100] }]}>
+                <Ionicons name="business" size={18} color={colors.text.primary} />
+              </View>
+              <Text style={styles.statGridValue}>{data.total_properties}</Text>
+              <Text style={styles.statGridLabel}>Properties</Text>
             </View>
-            <Text style={styles.statGridValue}>{data.total_properties}</Text>
-            <Text style={styles.statGridLabel}>Properties</Text>
-          </View>
-          <View style={styles.statSquare}>
-            <View style={[styles.statIconBox, { backgroundColor: '#ECFDF5' }]}>
-              <Ionicons name="people" size={18} color={colors.status.occupied} />
+            <View style={styles.statSquare}>
+              <View style={[styles.statIconBox, { backgroundColor: '#ECFDF5' }]}>
+                <Ionicons name="people" size={18} color={colors.status.occupied} />
+              </View>
+              <Text style={styles.statGridValue}>{data.total_tenants}</Text>
+              <Text style={styles.statGridLabel}>Tenants</Text>
             </View>
-            <Text style={styles.statGridValue}>{data.total_tenants}</Text>
-            <Text style={styles.statGridLabel}>Tenants</Text>
-          </View>
-          <View style={styles.statSquare}>
-            <View style={[styles.statIconBox, { backgroundColor: '#FEF2F2' }]}>
-              <Ionicons name="home-outline" size={18} color={colors.status.expired} />
+            <View style={styles.statSquare}>
+              <View style={[styles.statIconBox, { backgroundColor: '#FEF2F2' }]}>
+                <Ionicons name="home-outline" size={18} color={colors.status.expired} />
+              </View>
+              <Text style={styles.statGridValue}>{data.vacant_units}</Text>
+              <Text style={styles.statGridLabel}>Vacant</Text>
             </View>
-            <Text style={styles.statGridValue}>{data.vacant_units}</Text>
-            <Text style={styles.statGridLabel}>Vacant</Text>
-          </View>
-        </View>
-      )}
+          </>
+        ) : null}
+      </View>
 
       {/* Outstanding Balances */}
-      {data && (
-        <Card style={styles.cardSpacing}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Rent Outstanding</Text>
-            {data.pending_rent_bills > 0 || data.overdue_rent_bills > 0 ? (
-              <Badge label={`${data.pending_rent_bills + data.overdue_rent_bills} Pending`} status="pending" />
-            ) : null}
+      <Card style={styles.cardSpacing}>
+        {loading ? (
+          <View>
+            <Skeleton width="40%" height={12} style={{ marginBottom: 12 }} />
+            <Skeleton width="60%" height={32} />
           </View>
-          
-          <Text style={styles.largeMoney}>{formatCurrency(data.total_rent_outstanding || 0)}</Text>
-          
-          <Button
-            label="Manage Rent Bills"
-            variant="outline"
-            style={{ marginTop: 16 }}
-            onPress={() => navigation.navigate('RentBills')}
-          />
-        </Card>
-      )}
+        ) : data ? (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Rent Outstanding</Text>
+              {data.pending_rent_bills > 0 || data.overdue_rent_bills > 0 ? (
+                <Badge label={`${data.pending_rent_bills + data.overdue_rent_bills} Pending`} status="pending" />
+              ) : null}
+            </View>
+            
+            <Text style={styles.largeMoney}>{formatCurrency(data.total_rent_outstanding || 0)}</Text>
+            
+            <Button
+              label="Manage Rent Bills"
+              variant="outline"
+              style={{ marginTop: 16 }}
+              onPress={() => navigation.navigate('RentBills')}
+            />
+          </>
+        ) : null}
+      </Card>
 
       {/* Recent Payments List */}
-      {data?.recent_payments && data.recent_payments.length > 0 && (
-        <View style={styles.listSection}>
-          <Text style={styles.listSectionTitle}>Recent Payments</Text>
-          {data.recent_payments.slice(0, 5).map((payment) => (
+      <View style={styles.listSection}>
+        <Text style={styles.listSectionTitle}>Recent Payments</Text>
+        {loading ? (
+          Array(3).fill(0).map((_, i) => (
+            <View key={`pay-skeleton-${i}`} style={styles.rowItem}>
+               <Skeleton variant="circle" width={40} height={40} style={{ marginRight: 12 }} />
+               <View style={{ flex: 1 }}>
+                 <Skeleton width="50%" height={14} style={{ marginBottom: 8 }} />
+                 <Skeleton width="30%" height={10} />
+               </View>
+               <Skeleton width={80} height={20} />
+            </View>
+          ))
+        ) : data?.recent_payments && data.recent_payments.length > 0 ? (
+          data.recent_payments.slice(0, 5).map((payment) => (
             <View key={payment.id} style={styles.rowItem}>
               <View style={styles.rowIcon}>
                 <Ionicons name="cash-outline" size={20} color={colors.status.paid} />
@@ -145,9 +169,11 @@ export function LandlordDashboardScreen() {
                 </Text>
               </View>
             </View>
-          ))}
-        </View>
-      )}
+          ))
+        ) : (
+          <Text style={screenStyles.empty}>No recent payments</Text>
+        )}
+      </View>
       <View style={{ height: 40 }} />
     </ScreenContainer>
   );

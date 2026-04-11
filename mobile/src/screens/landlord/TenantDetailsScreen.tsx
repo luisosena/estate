@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Skeleton } from '../../components/common/Skeleton';
+import { ProfileHeaderSkeleton, DetailsStatsSkeleton } from '../../components/common/SkeletonVariants';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { colors } from '../../constants/colors';
@@ -48,6 +49,9 @@ export function TenantDetailsScreen() {
   const fetchTenant = useCallback(async () => {
     try {
       setError(null);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch tenant details
       const data = await landlordApi.getTenant(tenantCode);
       setTenant(data);
     } catch (err) {
@@ -67,16 +71,7 @@ export function TenantDetailsScreen() {
     fetchTenant();
   };
 
-  if (loading) return <LoadingScreen />;
-  if (error || !tenant) {
-    return (
-      <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={screenStyles.empty}>{error || 'Tenant not found.'}</Text>
-      </ScreenContainer>
-    );
-  }
-
-  const activeTenancy = tenant.tenancies?.find((t) => t.status === 'active');
+  const activeTenancy = tenant?.tenancies?.find((t) => t.status === 'active');
   
   return (
     <ScreenContainer 
@@ -85,40 +80,48 @@ export function TenantDetailsScreen() {
        onRefresh={onRefresh}
        edges={['bottom', 'left', 'right']}
     >
-      {/* Top Profile Data */}
       <View style={styles.profileSection}>
-        <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{tenant.full_name.charAt(0).toUpperCase()}</Text>
-          </View>
-          <View style={styles.profileInfo}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <Text style={styles.tenantName}>{tenant.full_name}</Text>
-              <Badge label="Active" status="active" icon="checkmark-circle" style={{ marginLeft: 8 }} />
+        {loading ? (
+           <>
+              <ProfileHeaderSkeleton />
+              <DetailsStatsSkeleton />
+           </>
+        ) : tenant ? (
+          <>
+            <View style={styles.profileHeader}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{tenant.full_name.charAt(0).toUpperCase()}</Text>
+              </View>
+              <View style={styles.profileInfo}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                  <Text style={styles.tenantName}>{tenant.full_name}</Text>
+                  <Badge label="Active" status="active" icon="checkmark-circle" style={{ marginLeft: 8 }} />
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="mail-outline" size={14} color={colors.text.secondary} />
+                  <Text style={styles.subtext}> {tenant.email}</Text>
+                  <Text style={styles.subtext}>  •  </Text>
+                  <Ionicons name="pricetag-outline" size={14} color={colors.text.secondary} />
+                  <Text style={styles.subtext}> {tenant.tenant_code || 'N/A'}</Text>
+                </View>
+              </View>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="mail-outline" size={14} color={colors.text.secondary} />
-              <Text style={styles.subtext}> {tenant.email}</Text>
-              <Text style={styles.subtext}>  •  </Text>
-              <Ionicons name="pricetag-outline" size={14} color={colors.text.secondary} />
-              <Text style={styles.subtext}> {tenant.tenant_code || 'N/A'}</Text>
-            </View>
-          </View>
-        </View>
 
-        {activeTenancy && (
-          <View style={styles.statsCard}>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{formatCurrency(activeTenancy.monthly_rent || activeTenancy.rent_amount || 0)}</Text>
-              <Text style={styles.statLabel}>Monthly Rent</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>1</Text>
-              <Text style={styles.statLabel}>Active Tenancy</Text>
-            </View>
-          </View>
-        )}
+            {activeTenancy && (
+              <View style={styles.statsCard}>
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>{formatCurrency(activeTenancy.monthly_rent || activeTenancy.rent_amount || 0)}</Text>
+                  <Text style={styles.statLabel}>Monthly Rent</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>1</Text>
+                  <Text style={styles.statLabel}>Active Tenancy</Text>
+                </View>
+              </View>
+            )}
+          </>
+        ) : null}
       </View>
 
       {/* Tabs */}
@@ -126,6 +129,7 @@ export function TenantDetailsScreen() {
         {(['information', 'payments', 'utilities'] as const).map((tab) => (
           <TouchableOpacity 
             key={tab}
+            disabled={loading}
             style={[styles.tab, activeTab === tab && styles.tabActive]}
             onPress={() => setActiveTab(tab)}
           >
@@ -138,82 +142,106 @@ export function TenantDetailsScreen() {
 
       {/* Tab Content */}
       <View style={styles.tabContent}>
-        {activeTab === 'information' && (
-          <>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Contact Information</Text>
-              <TouchableOpacity>
-                <Text style={styles.editLink}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.contactButtonsRow}>
-              <TouchableOpacity style={styles.contactButtonBlue}>
-                <Text style={styles.contactButtonBlueText}>{tenant.email}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.contactButtonBlue}>
-                <Text style={styles.contactButtonBlueText}>{tenant.phone}</Text>
-              </TouchableOpacity>
-            </View>
+        {loading ? (
+           <View>
+              <View style={styles.sectionHeader}>
+                 <Skeleton width="40%" height={16} />
+              </View>
+              <View style={{ gap: 8 }}>
+                 <Skeleton width="100%" height={40} borderRadius={8} />
+                 <Skeleton width="60%" height={40} borderRadius={8} />
+              </View>
+              <View style={{ height: 24 }} />
+              <View style={styles.sectionHeader}>
+                 <Skeleton width="40%" height={16} />
+              </View>
+              <View style={{ gap: 12 }}>
+                 {Array(3).fill(0).map((_, i) => (
+                    <View key={`tab-skeleton-${i}`} style={styles.listItem}>
+                       <Skeleton width="30%" height={14} />
+                       <Skeleton width="40%" height={14} />
+                    </View>
+                 ))}
+              </View>
+           </View>
+        ) : (
+          activeTab === 'information' && tenant && (
+            <>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Contact Information</Text>
+                <TouchableOpacity>
+                  <Text style={styles.editLink}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.contactButtonsRow}>
+                <TouchableOpacity style={styles.contactButtonBlue}>
+                  <Text style={styles.contactButtonBlueText}>{tenant.email}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.contactButtonBlue}>
+                  <Text style={styles.contactButtonBlueText}>{tenant.phone}</Text>
+                </TouchableOpacity>
+              </View>
 
-            <View style={{ height: 24 }} />
+              <View style={{ height: 24 }} />
 
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Tenancy Details</Text>
-            </View>
-            {activeTenancy ? (
-               <View>
-                   <View style={styles.listItem}>
-                    <Text style={styles.infoLabel}>Unit</Text>
-                    <Text style={{ fontWeight: '600' }}>
-                      {activeTenancy.unit?.unit_number || activeTenancy.unit?.unit_name || `Unit ${activeTenancy.unit?.id}`}
-                    </Text>
-                  </View>
-                  <View style={styles.listItem}>
-                    <Text style={styles.infoLabel}>Move-in Date</Text>
-                    <Text style={{ fontWeight: '600' }}>{formatDate(activeTenancy.move_in_date)}</Text>
-                  </View>
-                  {(activeTenancy.security_deposit ?? 0) > 0 && (
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Tenancy Details</Text>
+              </View>
+              {activeTenancy ? (
+                 <View>
                      <View style={styles.listItem}>
-                       <Text style={styles.infoLabel}>Security Deposit</Text>
-                       <Text style={{ fontWeight: '600' }}>{formatCurrency(activeTenancy.security_deposit || 0)}</Text>
-                     </View>
-                  )}
-               </View>
-            ) : (
-               <Text style={screenStyles.empty}>No active tenancy found.</Text>
-            )}
+                      <Text style={styles.infoLabel}>Unit</Text>
+                      <Text style={{ fontWeight: '600' }}>
+                        {activeTenancy.unit?.unit_name || activeTenancy.unit?.unit_code || `Unit ${activeTenancy.unit?.id}`}
+                      </Text>
+                    </View>
+                    <View style={styles.listItem}>
+                      <Text style={styles.infoLabel}>Move-in Date</Text>
+                      <Text style={{ fontWeight: '600' }}>{formatDate(activeTenancy.move_in_date)}</Text>
+                    </View>
+                    {(activeTenancy.security_deposit ?? 0) > 0 && (
+                       <View style={styles.listItem}>
+                         <Text style={styles.infoLabel}>Security Deposit</Text>
+                         <Text style={{ fontWeight: '600' }}>{formatCurrency(activeTenancy.security_deposit || 0)}</Text>
+                       </View>
+                    )}
+                 </View>
+              ) : (
+                 <Text style={screenStyles.empty}>No active tenancy found.</Text>
+              )}
 
-            <View style={{ height: 24 }} />
+              <View style={{ height: 24 }} />
 
-             {/* Emergency Contact section styled minimally */}
-            {(tenant.emergency_contact_name || tenant.emergency_contact_phone) && (
-              <>
-                 <View style={styles.sectionHeader}>
-                   <Text style={styles.sectionTitle}>Emergency</Text>
-                 </View>
-                 <View style={styles.listItem}>
-                   <Text style={styles.infoLabel}>Name</Text>
-                   <Text style={{ fontWeight: '600' }}>{tenant.emergency_contact_name}</Text>
-                 </View>
-                 <View style={styles.listItem}>
-                   <Text style={styles.infoLabel}>Phone</Text>
-                   <Text style={{ fontWeight: '600' }}>{tenant.emergency_contact_phone}</Text>
-                 </View>
-              </>
-            )}
-          </>
+               {/* Emergency Contact section styled minimally */}
+              {(tenant.emergency_contact_name || tenant.emergency_contact_phone) && (
+                <>
+                   <View style={styles.sectionHeader}>
+                     <Text style={styles.sectionTitle}>Emergency</Text>
+                   </View>
+                   <View style={styles.listItem}>
+                     <Text style={styles.infoLabel}>Name</Text>
+                     <Text style={{ fontWeight: '600' }}>{tenant.emergency_contact_name}</Text>
+                   </View>
+                   <View style={styles.listItem}>
+                     <Text style={styles.infoLabel}>Phone</Text>
+                     <Text style={{ fontWeight: '600' }}>{tenant.emergency_contact_phone}</Text>
+                   </View>
+                </>
+              )}
+            </>
+          )
         )}
         
-        {activeTab === 'payments' && (
+        {activeTab === 'payments' && !loading && (
            <View style={{ alignItems: 'center', paddingTop: 40 }}>
               <Text style={screenStyles.empty}>Payment history will appear here.</Text>
            </View>
         )}
         
-        {activeTab === 'utilities' && (
+        {activeTab === 'utilities' && !loading && (
            <View style={{ alignItems: 'center', paddingTop: 40 }}>
-              {activeTenancy ? (
+              {activeTenancy && tenant ? (
                  <Button 
                     label="Manage Utilities" 
                     icon="flash"
@@ -243,9 +271,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',

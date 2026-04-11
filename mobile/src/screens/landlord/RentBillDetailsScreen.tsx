@@ -6,9 +6,11 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
+import { Skeleton } from '../../components/common/Skeleton';
+import { DetailBoxSkeleton, ListSectionSkeleton } from '../../components/common/SkeletonVariants';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
@@ -46,6 +48,10 @@ export function LandlordRentBillDetailsScreen() {
 
   const fetchBill = useCallback(async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch bill details
       const response = await landlordApi.getRentBill(billId);
       // Backend consistency check: handles both { data: RentBill } and direct RentBill responses
       const billData = (response as any).data || response;
@@ -90,94 +96,130 @@ export function LandlordRentBillDetailsScreen() {
     );
   };
 
-  if (loading) return <LoadingScreen />;
-  if (!bill) {
+  if (!bill && !loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+      <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
         <Text style={screenStyles.empty}>Rent bill not found</Text>
-      </View>
+      </ScreenContainer>
     );
   }
 
-  const outstanding = bill.amount_due - bill.amount_paid;
-  const paidPercent = bill.amount_due > 0 ? Math.min(100, (bill.amount_paid / bill.amount_due) * 100) : 0;
+  const outstanding = bill ? (bill.amount_due - bill.amount_paid) : 0;
+  const paidPercent = (bill && bill.amount_due > 0) ? Math.min(100, (bill.amount_paid / bill.amount_due) * 100) : 0;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    <ScreenContainer
+      scrollable
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      edges={['bottom', 'left', 'right']}
     >
       {/* Hero Section */}
       <View style={styles.heroSection}>
-        <View style={styles.heroTop}>
-          <View>
-            <Text style={styles.heroLabel}>Bill for {formatDate(bill.billing_month)}</Text>
-            <Text style={styles.heroAmount}>{formatCurrency(bill.amount_due)}</Text>
-          </View>
-          <Badge
-            label={bill.status.toUpperCase()}
-            status={getBadgeStatus(bill.status)}
-          />
-        </View>
+        {loading ? (
+          <>
+            <View style={styles.heroTop}>
+              <View>
+                <Skeleton width={120} height={14} style={{ marginBottom: 8 }} />
+                <Skeleton width={180} height={32} />
+              </View>
+              <Skeleton width={80} height={24} borderRadius={12} />
+            </View>
+            <View style={{ marginTop: 24 }}>
+               <Skeleton width="100%" height={6} borderRadius={3} style={{ marginBottom: 12 }} />
+               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Skeleton width="30%" height={12} />
+                  <Skeleton width="30%" height={12} />
+               </View>
+            </View>
+          </>
+        ) : bill && (
+          <>
+            <View style={styles.heroTop}>
+              <View>
+                <Text style={styles.heroLabel}>Bill for {formatDate(bill.billing_month)}</Text>
+                <Text style={styles.heroAmount}>{formatCurrency(bill.amount_due)}</Text>
+              </View>
+              <Badge
+                label={bill.status.toUpperCase()}
+                status={getBadgeStatus(bill.status)}
+              />
+            </View>
 
-        {/* Progress Bar */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${paidPercent}%` as any }]} />
-          </View>
-          <View style={styles.progressLabels}>
-            <Text style={styles.progressText}>Paid: {formatCurrency(bill.amount_paid)}</Text>
-            <Text style={[styles.progressText, { color: outstanding > 0 ? colors.status.overdue : colors.status.paid }]}>
-              Outstanding: {formatCurrency(outstanding)}
-            </Text>
-          </View>
-        </View>
+            {/* Progress Bar */}
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: `${paidPercent}%` as any }]} />
+              </View>
+              <View style={styles.progressLabels}>
+                <Text style={styles.progressText}>Paid: {formatCurrency(bill.amount_paid)}</Text>
+                <Text style={[styles.progressText, { color: outstanding > 0 ? colors.status.overdue : colors.status.paid }]}>
+                  Outstanding: {formatCurrency(outstanding)}
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
       </View>
 
       {/* Tenant Row */}
-      <TouchableOpacity style={styles.tenantRow} activeOpacity={0.7}>
-        <View style={styles.tenantAvatar}>
-          <Text style={styles.tenantAvatarText}>
-            {(bill.tenant?.full_name || 'U').charAt(0).toUpperCase()}
-          </Text>
+      {loading ? (
+        <View style={styles.tenantRowSkeleton}>
+          <Skeleton variant="circle" width={44} height={44} style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
+            <Skeleton width="50%" height={16} style={{ marginBottom: 6 }} />
+            <Skeleton width="70%" height={12} />
+          </View>
+          <Skeleton width={20} height={20} />
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.tenantName}>{bill.tenant?.full_name || 'Unknown'}</Text>
-          <Text style={styles.tenantEmail}>{bill.tenant?.email || ''}</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
-      </TouchableOpacity>
+      ) : bill && (
+        <TouchableOpacity style={styles.tenantRow} activeOpacity={0.7}>
+          <View style={styles.tenantAvatar}>
+            <Text style={styles.tenantAvatarText}>
+              {(bill.tenant?.full_name || 'U').charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.tenantName}>{bill.tenant?.full_name || 'Unknown'}</Text>
+            <Text style={styles.tenantEmail}>{bill.tenant?.email || ''}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
+        </TouchableOpacity>
+      )}
 
       {/* Details Section */}
       <View style={styles.detailsSection}>
         <Text style={styles.sectionTitle}>Bill Details</Text>
-
-        <View style={styles.detailBox}>
-          {bill.property && (
+        {loading ? (
+          <DetailBoxSkeleton rows={4} />
+        ) : bill && (
+          <View style={styles.detailBox}>
+            {bill.property && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Property</Text>
+                <Text style={styles.detailValue}>{bill.property.name}</Text>
+              </View>
+            )}
+            {bill.unit && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Unit</Text>
+                <Text style={styles.detailValue}>Unit {bill.unit.unit_number}</Text>
+              </View>
+            )}
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Property</Text>
-              <Text style={styles.detailValue}>{bill.property.name}</Text>
+              <Text style={styles.detailLabel}>Billing Month</Text>
+              <Text style={styles.detailValue}>{formatDate(bill.billing_month)}</Text>
             </View>
-          )}
-          {bill.unit && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Unit</Text>
-              <Text style={styles.detailValue}>Unit {bill.unit.unit_number}</Text>
+            <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
+              <Text style={styles.detailLabel}>Due Date</Text>
+              <Text style={[styles.detailValue, { color: bill.status === 'overdue' ? colors.status.overdue : colors.text.primary }]}>
+                {formatDate(bill.due_date)}
+              </Text>
             </View>
-          )}
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Billing Month</Text>
-            <Text style={styles.detailValue}>{formatDate(bill.billing_month)}</Text>
           </View>
-          <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.detailLabel}>Due Date</Text>
-            <Text style={[styles.detailValue, { color: bill.status === 'overdue' ? colors.status.overdue : colors.text.primary }]}>
-              {formatDate(bill.due_date)}
-            </Text>
-          </View>
-        </View>
+        )}
 
-        {bill.notes && (
+        {!loading && bill && bill.notes && (
           <>
             <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Notes</Text>
             <View style={styles.notesBox}>
@@ -188,9 +230,11 @@ export function LandlordRentBillDetailsScreen() {
       </View>
 
       {/* Payment History */}
-      {bill.payments && bill.payments.length > 0 && (
-        <View style={styles.detailsSection}>
-          <Text style={styles.sectionTitle}>Payment History</Text>
+      <View style={styles.detailsSection}>
+        <Text style={styles.sectionTitle}>Payment History</Text>
+        {loading ? (
+          <ListSectionSkeleton items={1} />
+        ) : bill && bill.payments && bill.payments.length > 0 ? (
           <View style={styles.detailBox}>
             {bill.payments.map((payment, idx) => (
               <View
@@ -217,11 +261,13 @@ export function LandlordRentBillDetailsScreen() {
               </View>
             ))}
           </View>
-        </View>
-      )}
+        ) : !loading && (
+          <Text style={screenStyles.empty_inline}>No payments recorded.</Text>
+        )}
+      </View>
 
       {/* Waive Action */}
-      {bill.status !== 'waived' && bill.status !== 'paid' && (
+      {!loading && bill && bill.status !== 'waived' && bill.status !== 'paid' && (
         <View style={{ paddingHorizontal: 20, marginTop: 8, marginBottom: 40 }}>
           <Button
             variant="outline"
@@ -233,7 +279,7 @@ export function LandlordRentBillDetailsScreen() {
       )}
 
       <View style={{ height: 40 }} />
-    </ScrollView>
+    </ScreenContainer>
   );
 }
 
@@ -284,6 +330,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tenantRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+    marginTop: 8,
+  },
+  tenantRowSkeleton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,

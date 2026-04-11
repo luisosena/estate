@@ -8,10 +8,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
+import { Skeleton } from '../../components/common/Skeleton';
+import { ProfileHeaderSkeleton, DetailBoxSkeleton, TenantCardSkeleton } from '../../components/common/SkeletonVariants';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import { LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
@@ -34,7 +35,11 @@ export function UnitDetailsScreen() {
 
   const fetchUnit = useCallback(async () => {
     try {
+      setLoading(true);
       setError(null);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch unit details
       const data = await landlordApi.getUnit(unitId);
       setUnit(data);
     } catch (err) {
@@ -53,7 +58,7 @@ export function UnitDetailsScreen() {
       headerTintColor: colors.text.primary,
       headerShadowVisible: false,
       headerRight: () => {
-        if (unit && (unit.status === 'vacant' || unit.status === 'available')) {
+        if (!loading && unit && (unit.status === 'vacant' || unit.status === 'available')) {
           return (
             <Button
                label="Add Tenant"
@@ -62,14 +67,17 @@ export function UnitDetailsScreen() {
             />
           );
         }
-        return (
-          <TouchableOpacity style={{ padding: 8 }}>
-             <Ionicons name="ellipsis-horizontal" size={20} color={colors.text.primary} />
-          </TouchableOpacity>
-        );
+        if (!loading) {
+          return (
+            <TouchableOpacity style={{ padding: 8 }}>
+               <Ionicons name="ellipsis-horizontal" size={20} color={colors.text.primary} />
+            </TouchableOpacity>
+          );
+        }
+        return null;
       },
     });
-  }, [navigation, unit, unitId]);
+  }, [navigation, unit, unitId, loading]);
 
   useEffect(() => {
     fetchUnit();
@@ -80,8 +88,7 @@ export function UnitDetailsScreen() {
     fetchUnit();
   };
 
-  if (loading) return <LoadingScreen />;
-  if (error || !unit) {
+  if (error || (!unit && !loading)) {
     return (
       <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
         <Text style={screenStyles.empty}>{error || 'Unit not found.'}</Text>
@@ -89,7 +96,7 @@ export function UnitDetailsScreen() {
     );
   }
 
-  const activeTenancy = unit.tenancies?.find((t) => t.status === 'active');
+  const activeTenancy = unit?.tenancies?.find((t) => t.status === 'active');
   const currentTenant = activeTenancy?.tenant;
 
   return (
@@ -101,25 +108,29 @@ export function UnitDetailsScreen() {
     >
       {/* Profile/Header Section */}
       <View style={styles.profileSection}>
-        <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Ionicons name="home" size={24} color={colors.primary} />
-          </View>
-          <View style={styles.profileInfo}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <Text style={styles.propertyTitle}>Unit {unit.unit_number || unit.id}</Text>
-              <Badge 
-                label={unit.status ? unit.status.charAt(0).toUpperCase() + unit.status.slice(1) : 'Unknown'} 
-                status={unit.status === 'occupied' ? 'active' : unit.status === 'vacant' ? 'pending' : 'default'} 
-                style={{ marginLeft: 8 }} 
-              />
+        {loading ? (
+          <ProfileHeaderSkeleton />
+        ) : unit && (
+          <View style={styles.profileHeader}>
+            <View style={styles.avatar}>
+              <Ionicons name="home" size={24} color={colors.primary} />
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="business-outline" size={14} color={colors.text.secondary} />
-              <Text style={styles.subtext}> {unit.property_name}</Text>
+            <View style={styles.profileInfo}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <Text style={styles.propertyTitle}>{unit.unit_name || unit.unit_code || `Unit ${unit.id}`}</Text>
+                <Badge 
+                  label={unit.status ? unit.status.charAt(0).toUpperCase() + unit.status.slice(1) : 'Unknown'} 
+                  status={unit.status === 'occupied' ? 'active' : unit.status === 'available' ? 'pending' : 'default'} 
+                  style={{ marginLeft: 8 }} 
+                />
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="business-outline" size={14} color={colors.text.secondary} />
+                <Text style={styles.subtext}> {unit.property?.name || 'Unknown Property'}</Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </View>
 
       {/* Tabs */}
@@ -127,6 +138,7 @@ export function UnitDetailsScreen() {
         {(['information', 'tenants'] as const).map((tab) => (
           <TouchableOpacity 
             key={tab}
+            disabled={loading}
             style={[styles.tab, activeTab === tab && styles.tabActive]}
             onPress={() => setActiveTab(tab)}
           >
@@ -139,42 +151,37 @@ export function UnitDetailsScreen() {
 
       {/* Tab Content */}
       <View style={styles.tabContent}>
-        {activeTab === 'information' && (
+        {loading ? (
           <View>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Specifications</Text>
-            </View>
-            
-            <View style={styles.specificationBox}>
-              {unit.rent_amount !== undefined && (
-                <View style={styles.specRow}>
-                  <Text style={styles.specLabel}>Rent Amount</Text>
-                  <Text style={styles.specValueMain}>{formatCurrency(unit.rent_amount)}/mo</Text>
-                </View>
-              )}
-              {unit.bedrooms !== undefined && (
-                <View style={styles.specRow}>
-                  <Text style={styles.specLabel}>Bedrooms</Text>
-                  <Text style={styles.specValue}>{unit.bedrooms}</Text>
-                </View>
-              )}
-              {unit.bathrooms !== undefined && (
-                <View style={styles.specRow}>
-                  <Text style={styles.specLabel}>Bathrooms</Text>
-                  <Text style={styles.specValue}>{unit.bathrooms}</Text>
-                </View>
-              )}
-              {unit.unit_code && (
+             <View style={styles.sectionHeader}>
+                <Skeleton width="40%" height={16} />
+             </View>
+             <DetailBoxSkeleton rows={4} />
+          </View>
+        ) : (
+          activeTab === 'information' && unit && (
+            <View>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Specifications</Text>
+              </View>
+              
+              <View style={styles.specificationBox}>
                 <View style={styles.specRow}>
                   <Text style={styles.specLabel}>Unit Code</Text>
                   <Text style={styles.specValue}>{unit.unit_code}</Text>
                 </View>
-              )}
+                <View style={[styles.specRow, { borderBottomWidth: 0 }]}>
+                  <Text style={styles.specLabel}>Status</Text>
+                  <Text style={[styles.specValue, { color: unit.status === 'occupied' ? colors.success : colors.warning }]}>
+                    {capitalize(unit.status || 'unknown')}
+                  </Text>
+                </View>
+              </View>
             </View>
-          </View>
+          )
         )}
         
-        {activeTab === 'tenants' && (
+        {!loading && activeTab === 'tenants' && unit && (
           <View>
             {/* Current Tenant */}
             <View style={styles.sectionHeader}>
@@ -186,7 +193,12 @@ export function UnitDetailsScreen() {
                    <Text style={styles.tenantAvatarText}>{currentTenant.full_name.charAt(0).toUpperCase()}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                   <Text style={styles.tenantTitle}>{currentTenant.full_name}</Text>
+                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <Text style={styles.tenantTitle}>{currentTenant.full_name}</Text>
+                     {activeTenancy?.monthly_rent && (
+                       <Text style={styles.specValueMain}>{formatCurrency(activeTenancy.monthly_rent)}/mo</Text>
+                     )}
+                   </View>
                    <Text style={styles.tenantSubtitle}>{currentTenant.email}</Text>
                    {activeTenancy?.start_date && (
                      <Text style={styles.tenantDate}>Since {formatDate(activeTenancy.start_date)}</Text>
@@ -194,7 +206,7 @@ export function UnitDetailsScreen() {
                 </View>
               </View>
             ) : (
-              <Text style={screenStyles.empty}>No active tenant.</Text>
+              <Text style={screenStyles.empty_inline}>No active tenant.</Text>
             )}
 
             <View style={{ height: 24 }} />
@@ -205,7 +217,7 @@ export function UnitDetailsScreen() {
                  <View style={styles.sectionHeader}>
                    <Text style={styles.sectionTitle}>Past Tenants</Text>
                  </View>
-                 <View style={styles.tenantRowBox}>
+                 <View style={styles.pastTenantsBox}>
                    {unit.tenancies.filter(t => t.status !== 'active').map((tenancy, idx, arr) => (
                      <View key={tenancy.id} style={[styles.pastTenantRow, idx === arr.length - 1 && { borderBottomWidth: 0 }]}>
                        <Text style={styles.tenantTitle}>{tenancy.tenant?.full_name || 'Unknown'}</Text>
@@ -299,7 +311,7 @@ const styles = StyleSheet.create({
   specRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
   specLabel: {
     fontSize: 14,
@@ -323,6 +335,14 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  pastTenantsBox: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   tenantAvatar: {
     width: 44,
@@ -354,7 +374,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   pastTenantRow: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
     width: '100%',

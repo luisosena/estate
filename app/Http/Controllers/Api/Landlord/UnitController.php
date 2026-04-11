@@ -113,6 +113,8 @@ class UnitController extends Controller
                     'status' => $tenancy->status,
                     'start_date' => $tenancy->move_in_date,
                     'end_date' => $tenancy->move_out_date,
+                    'monthly_rent' => $tenancy->monthly_rent,
+                    'security_deposit' => $tenancy->security_deposit,
                     'tenant' => $tenancy->tenant,
                 ];
             }),

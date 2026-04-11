@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { Skeleton } from '../../components/common/Skeleton';
+import { SummaryHeaderSkeleton, BillRowSkeleton } from '../../components/common/SkeletonVariants';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { colors } from '../../constants/colors';
@@ -37,6 +38,7 @@ const getBadgeStatus = (status: string): 'active' | 'pending' | 'cancelled' | 'd
 export function LandlordRentBillsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [bills, setBills] = useState<RentBill[]>([]);
   const [page, setPage] = useState(1);
@@ -56,6 +58,10 @@ export function LandlordRentBillsScreen() {
 
   const fetchBills = useCallback(async (pageNum?: number) => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch rent bills
       const currentPage = pageNum ?? pageRef.current;
       const params: RentBillParams = { page: currentPage };
       if (statusFilterRef.current) {
@@ -66,6 +72,7 @@ export function LandlordRentBillsScreen() {
       setTotalPages(response.meta.total_pages);
       setPage(currentPage);
       pageRef.current = currentPage;
+      setHasLoaded(true);
     } catch (error) {
       console.error('Failed to fetch rent bills:', error);
     } finally {
@@ -94,30 +101,6 @@ export function LandlordRentBillsScreen() {
     fetchBills();
   };
 
-  const handleWaive = (bill: RentBill) => {
-    Alert.alert(
-      'Waive Rent Bill',
-      `Are you sure you want to waive ${formatCurrency(bill.amount_due)} for this bill?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Waive',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await landlordApi.waiveRentBill(bill.id);
-              fetchBills(page);
-            } catch (error: any) {
-              Alert.alert('Error', error?.response?.data?.message || 'Failed to waive bill.');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  if (loading) return <LoadingScreen />;
-
   const totalOutstanding = bills.reduce((sum, b) => sum + (b.amount_due - b.amount_paid), 0);
   const pendingCount = bills.filter(b => b.status === 'pending').length;
   const overdueCount = bills.filter(b => b.status === 'overdue').length;
@@ -129,15 +112,22 @@ export function LandlordRentBillsScreen() {
       onRefresh={onRefresh}
       edges={['bottom', 'left', 'right']}
     >
-      {/* Summary Header */}
-      <View style={styles.summarySection}>
-        <Text style={styles.summaryLabel}>Total Outstanding</Text>
-        <Text style={styles.summaryAmount}>{formatCurrency(totalOutstanding)}</Text>
-        <View style={styles.summaryBadges}>
-          <Badge label={`${pendingCount} Pending`} status="pending" style={{ marginRight: 8 }} />
-          <Badge label={`${overdueCount} Overdue`} status="cancelled" />
+      {loading && !hasLoaded ? (
+        <SummaryHeaderSkeleton />
+      ) : (
+        <View style={styles.summarySection}>
+          <Text style={styles.summaryLabel}>Total Outstanding</Text>
+          {loading ? (
+            <Skeleton width={160} height={28} style={{ marginVertical: 4 }} />
+          ) : (
+            <Text style={styles.summaryAmount}>{formatCurrency(totalOutstanding)}</Text>
+          )}
+          <View style={styles.summaryBadges}>
+            <Badge label={`${pendingCount} Pending`} status="pending" style={{ marginRight: 8 }} />
+            <Badge label={`${overdueCount} Overdue`} status="cancelled" />
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Filter Tabs */}
       <ScrollView
@@ -145,7 +135,11 @@ export function LandlordRentBillsScreen() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filterBar}
       >
-        {FILTERS.map((f) => (
+        {loading && !hasLoaded ? (
+          Array(4).fill(0).map((_, i) => (
+            <Skeleton key={`filter-skeleton-${i}`} width={80} height={36} borderRadius={20} style={{ marginRight: 8 }} />
+          ))
+        ) : FILTERS.map((f) => (
           <TouchableOpacity
             key={f}
             style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
@@ -165,7 +159,11 @@ export function LandlordRentBillsScreen() {
 
       {/* Bills List */}
       <View style={styles.listSection}>
-        {bills.length > 0 ? (
+        {loading ? (
+           Array(6).fill(0).map((_, i) => (
+              <BillRowSkeleton key={`bill-skeleton-${i}`} />
+           ))
+        ) : bills.length > 0 ? (
           bills.map((bill, index) => {
             const outstanding = bill.amount_due - bill.amount_paid;
             const isLast = index === bills.length - 1;
@@ -224,7 +222,7 @@ export function LandlordRentBillsScreen() {
       </View>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {!loading && totalPages > 1 && (
         <View style={styles.pagination}>
           <Button
             variant="outline"
