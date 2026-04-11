@@ -36,7 +36,7 @@ Login and obtain access tokens.
 **Request**:
 ```json
 {
-  "email": "user@example.com",
+  "username": "user.name",
   "password": "your-password"
 }
 ```
@@ -160,8 +160,36 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| email | string | Yes | User email |
+| username | string | Yes | User username |
 | password | string | Yes | User password |
+
+**Response** (200):
+```json
+{
+  "access_token": "...",
+  "refresh_token": "...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "username": "john.doe",
+    "email": "john@example.com",
+    "role": "landlord"
+  }
+}
+```
+
+#### POST /api/auth/register
+**Description**: Register a new user and obtain tokens
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | Full name |
+| username | string | Yes | Unique login username |
+| email | string | Yes | User email |
+| password | string | Yes | Password (min 8 chars) |
+| password_confirmation | string | Yes | Confirm password |
 
 **Response** (200):
 ```json

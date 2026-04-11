@@ -174,17 +174,17 @@ php artisan make:resource PropertyCollection
 
 ## Non-Obvious Behaviors
 
-### 1. Tenant Auto-Username Generation
+### 1. Tenant Auto-Username vs Manual Username Registration
 
-**Behavior**: When creating a tenant, the system auto-generates a username
+**Behavior**: While landlords can auto-generate usernames for tenants during backend creation, mobile self-registering users now manually provide their own `username`. The primary login method for the mobile app relies entirely on this `username` instead of email.
 
-**Format**: `firstname.lastname{randomNumber}`
+**Format (Auto-generated)**: `firstname.lastname{randomNumber}`
 
 **Example**: `john.doe837`
 
-**Location**: `app/Services/TenantService.php`
+**Location**: `app/Services/TenantService.php` and `app/Actions/Fortify/CreateNewUser.php`
 
-**Why**: Ensures unique usernames while being human-readable
+**Why**: Ensures unique usernames while being human-readable for backend-created tenants, while empowering self-registered users with custom login identities.
 
 ---
 

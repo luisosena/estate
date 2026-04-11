@@ -287,7 +287,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 ### 5. Current Functional State
 
 - **Authentication & user management**
-  - Fortify-based auth including registration, login, password reset, email verification, and 2FA.
+  - Fortify-based auth including registration, username-based login (for mobile), password reset, email verification, and 2FA.
   - Profile editing and deletion, with dedicated form request validation.
   - Password update flow with throttling and validation.
 

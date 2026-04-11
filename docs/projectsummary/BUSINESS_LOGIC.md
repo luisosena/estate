@@ -384,11 +384,11 @@ sequenceDiagram
 ```
 
 **Auto-Generated Username**:
-The system auto-generates usernames using the format:
+While self-registering users manually set their `username`, the system auto-generates usernames for landlord-created tenants using the format:
 ```
 firstname.lastname{randomNumber}
 ```
-Example: `john.doe837`
+Example: `john.doe837`. NOTE: Primary mobile login relies on `username`.
 
 **Service Implementation**:
 ```php
@@ -1028,7 +1028,7 @@ $request = new Request([
 
 // Result:
 // - Tenant record created
-// - User account created with username: john.doe[random]
+// - User account created with username: john.doe[random] (or manually set if self-registered)
 // - Tenancy created for unit 5
 // - Unit 5 status changed to 'occupied'
 ```

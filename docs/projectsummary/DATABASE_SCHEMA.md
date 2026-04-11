@@ -81,8 +81,8 @@ erDiagram
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | tenant_id | BIGINT | FOREIGN KEY (nullable, cascade) | Reference to tenant (for tenant role) |
 | name | VARCHAR(255) | NOT NULL | User's full name |
-| username | VARCHAR(255) | UNIQUE, NOT NULL | Unique username for login |
-| email | VARCHAR(255) | UNIQUE, NOT NULL | User's email address |
+| username | VARCHAR(255) | UNIQUE, NOT NULL | Unique username (primary credential for mobile login) |
+| email | VARCHAR(255) | UNIQUE, NOT NULL | User's email address (secondary/web login) |
 | email_verified_at | TIMESTAMP | NULLABLE | Email verification timestamp |
 | password | VARCHAR(255) | NOT NULL | Bcrypt hashed password |
 | remember_token | VARCHAR(100) | NULLABLE | Remember me token |

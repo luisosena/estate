@@ -23,6 +23,7 @@ This is a Laravel 12 + React 19 full-stack property management application calle
 - **Target**: iOS and Android
 - **State Management**: React Context for auth, React Query for server state
 - **Navigation**: React Navigation with bottom tabs and nested stacks
+- **UI Component Strategy**: Hybrid approach using `react-native-paper` for foundational elements and custom `react-native-reanimated` components (like Skeleton Loaders) for polished interfaces.
 
 ## Mobile App Screens
 
