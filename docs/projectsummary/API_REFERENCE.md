@@ -476,11 +476,17 @@ GET /api/landlord/tenants?page=2&per_page=25
 **Request**:
 ```json
 {
-  "first_name": "John",
-  "last_name": "Doe",
+  "full_name": "John Doe",
   "email": "john@example.com",
   "phone": "+255712345678",
-  "emergency_contact": "+255700000000"
+  "emergency_contact_name": "Jane Doe",
+  "emergency_contact_phone": "+255700000000",
+  "emergency_contact_relation": "Spouse",
+  "unit_id": 1,
+  "move_in_date": "2024-01-01",
+  "monthly_rent": 500.00,
+  "rent_due_day": 5,
+  "security_deposit": 1000.00
 }
 ```
 
@@ -496,32 +502,35 @@ GET /api/landlord/tenants?page=2&per_page=25
 **Response** (200):
 ```json
 {
-  "id": 1,
-  "tenant_code": "TEN-ABC123",
-  "full_name": "John Doe",
-  "phone": "+255712345678",
-  "email": "john@example.com",
-  "emergency_contact_name": "Jane Doe",
-  "emergency_contact_phone": "+255700000000",
-  "emergency_contact_relation": "Spouse",
-  "tenancies": [
-    {
+  "tenant": {
+    "id": 1,
+    "tenant_code": "TEN-ABC123",
+    "full_name": "John Doe",
+    "phone": "+255712345678",
+    "email": "john@example.com",
+    "emergency_contact_name": "Jane Doe",
+    "emergency_contact_phone": "+255700000000"
+  },
+  "unit": {
+    "id": 5,
+    "unit_name": "Unit 101",
+    "unit_code": "U101",
+    "status": "occupied",
+    "property": {
       "id": 1,
-      "status": "active",
-      "move_in_date": "2024-01-01",
-      "move_out_date": null,
-      "monthly_rent": 500.00,
-      "security_deposit": 1000.00,
-      "unit": {
-        "id": 5,
-        "unit_name": "Unit 101",
-        "unit_code": "U101",
-        "unit_number": "101",
-        "property_name": "Sunset Apartments",
-        "property_address": "123 Main Street"
-      }
+      "name": "Sunset Apartments",
+      "address": "123 Main Street"
     }
-  ]
+  },
+  "tenancy": {
+    "id": 1,
+    "status": "active",
+    "move_in_date": "2024-01-01",
+    "monthly_rent": 500.00,
+    "security_deposit": 1000.00,
+    "rent_due_day": 5
+  },
+  "payments": [...]
 }
 ```
 

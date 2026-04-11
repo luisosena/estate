@@ -320,3 +320,9 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - Linting and formatting set up for both PHP and JS/TS.
   - Testing powered by Pest with coverage for auth, dashboard, and settings behaviors.
 
+- **Landlord Workflow Refinements (Q2 2026)**
+  - **Add Tenant Flow**: Completely restructured mobile form with full-width vertical stacking for premium UX.
+  - **Unit Selection**: Real-time "available" unit filtering with card-based dropdown menus.
+  - **Tenant Details**: High-fidelity dashboard view with nested data structures showing active tenancy, units, and billing history.
+  - **Crash Resilience**: Implementation of nested data handling for Tenant Dashboard API responses, eliminating client-side TypeErrors.
+

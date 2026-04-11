@@ -228,6 +228,7 @@ erDiagram
 | move_in_date | DATE | NOT NULL | Tenancy start date |
 | move_out_date | DATE | NULLABLE | Tenancy end date (planned) |
 | monthly_rent | DECIMAL(12,2) | NOT NULL | Monthly rent amount |
+| rent_due_day | INT | DEFAULT 5 | Day of month rent is due (1-31) |
 | security_deposit | DECIMAL(12,2) | NULLABLE | Security deposit amount |
 | status | ENUM('active', 'ended', 'pending', 'expired') | DEFAULT 'pending' | Tenancy status |
 | termination_reason | VARCHAR(255) | NULLABLE | Reason for termination |

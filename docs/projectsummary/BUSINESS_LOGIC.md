@@ -113,9 +113,10 @@ erDiagram
     
     TENANT {
         bigint id PK
-        bigint user_id FK
-        string first_name
-        string last_name
+        string tenant_code UK
+        string full_name
+        string phone
+        string email
     }
     
     PROPERTY {
@@ -407,11 +408,12 @@ public function createWithUser(array $data): array
         
         // Create tenant
         $tenant = Tenant::create([
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
+            'full_name' => $data['full_name'],
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,
-            'emergency_contact' => $data['emergency_contact'] ?? null,
+            'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
+            'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,
+            'emergency_contact_relation' => $data['emergency_contact_relation'] ?? null,
         ]);
         
         // Generate temporary password
@@ -419,7 +421,7 @@ public function createWithUser(array $data): array
         
         // Create user account
         $user = User::create([
-            'name' => $data['first_name'] . ' ' . $data['last_name'],
+            'name' => $data['full_name'],
             'username' => $username,
             'email' => $data['email'],
             'password' => Hash::make($tempPassword),
@@ -427,18 +429,15 @@ public function createWithUser(array $data): array
             'tenant_id' => $tenant->id,
         ]);
         
-        // Link user to tenant
-        $tenant->update(['user_id' => $user->id]);
-        
         // Create tenancy if provided
         $tenancy = null;
         if (isset($data['unit_id'])) {
             $tenancy = Tenancy::create([
                 'tenant_id' => $tenant->id,
                 'unit_id' => $data['unit_id'],
-                'start_date' => $data['start_date'],
-                'end_date' => $data['end_date'] ?? null,
-                'rent_amount' => $data['rent_amount'],
+                'move_in_date' => $data['move_in_date'],
+                'monthly_rent' => $data['monthly_rent'],
+                'rent_due_day' => $data['rent_due_day'] ?? 5,
                 'security_deposit' => $data['security_deposit'] ?? null,
                 'status' => 'active',
             ]);
