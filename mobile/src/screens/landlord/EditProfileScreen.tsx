@@ -29,6 +29,7 @@ export function LandlordEditProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
+    username: user?.username || '',
     email: user?.email || '',
     phone: '',
   });
@@ -54,6 +55,7 @@ export function LandlordEditProfileScreen() {
       const profileUser = response.user;
       setFormData({
         name: profileUser.name || '',
+        username: profileUser.username || '',
         email: profileUser.email || '',
         phone: profileUser.phone || '',
       });
@@ -68,6 +70,9 @@ export function LandlordEditProfileScreen() {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
+    }
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
     }
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
@@ -121,6 +126,22 @@ export function LandlordEditProfileScreen() {
               placeholder="Enter your full name"
             />
             {errors.name && <HelperText type="error" style={styles.errorText}>{errors.name}</HelperText>}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Username</Text>
+            <TextInput
+              value={formData.username}
+              onChangeText={(value) => updateField('username', value)}
+              mode="outlined"
+              outlineColor={colors.border}
+              activeOutlineColor={colors.primary}
+              style={styles.input}
+              autoCapitalize="none"
+              error={!!errors.username}
+              placeholder="Enter your username"
+            />
+            {errors.username && <HelperText type="error" style={styles.errorText}>{errors.username}</HelperText>}
           </View>
 
           <View style={styles.inputGroup}>

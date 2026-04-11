@@ -3,12 +3,13 @@
 // ──────────────────────────────────────────
 
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface RegisterData {
   name: string;
+  username: string;
   email: string;
   password: string;
   password_confirmation: string;
@@ -17,6 +18,7 @@ export interface RegisterData {
 export interface AuthUser {
   id: number;
   name: string;
+  username: string;
   email: string;
   phone?: string;
   role: 'tenant' | 'landlord' | 'admin';
@@ -310,6 +312,7 @@ export interface User {
 export interface UserProfile {
   id: number;
   name: string;
+  username: string;
   email: string;
   phone?: string;
   role: 'tenant' | 'landlord' | 'admin';

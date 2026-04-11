@@ -10,25 +10,20 @@ import { getErrorMessage } from '../../utils/errors';
 
 import { authStyles as styles } from './authStyles';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 
 export function LoginScreen() {
   const { login } = useAuth();
   const navigation = useNavigation();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      setError('Please enter both email and password');
-      return;
-    }
-
-    if (!EMAIL_REGEX.test(email.trim())) {
-      setError('Please enter a valid email address');
+    if (!username || !password) {
+      setError('Please enter both username and password');
       return;
     }
 
@@ -36,7 +31,7 @@ export function LoginScreen() {
     setLoading(true);
 
     try {
-      await login({ email, password });
+      await login({ username: username.trim(), password });
     } catch (err) {
       setError(getErrorMessage(err, 'Login failed. Please try again.'));
     } finally {
@@ -58,13 +53,12 @@ export function LoginScreen() {
 
         <View style={styles.form}>
           <TextInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
+            label="Username"
+            value={username}
+            onChangeText={setUsername}
             mode="outlined"
-            keyboardType="email-address"
             autoCapitalize="none"
-            autoComplete="email"
+            autoComplete="username"
             style={styles.input}
           />
 

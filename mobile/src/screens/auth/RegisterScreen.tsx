@@ -14,6 +14,7 @@ export function RegisterScreen() {
   const { register } = useAuth();
   const navigation = useNavigation();
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,7 +23,7 @@ export function RegisterScreen() {
   const [error, setError] = useState('');
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !username || !email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -41,7 +42,7 @@ export function RegisterScreen() {
     setLoading(true);
 
     try {
-      await register({ name, email, password, password_confirmation: confirmPassword });
+      await register({ name, username: username.trim(), email, password, password_confirmation: confirmPassword });
     } catch (err) {
       setError(getErrorMessage(err, 'Registration failed. Please try again.'));
     } finally {
@@ -68,6 +69,15 @@ export function RegisterScreen() {
             onChangeText={setName}
             mode="outlined"
             autoCapitalize="words"
+            style={styles.input}
+          />
+
+          <TextInput
+            label="Username"
+            value={username}
+            onChangeText={setUsername}
+            mode="outlined"
+            autoCapitalize="none"
             style={styles.input}
           />
 
