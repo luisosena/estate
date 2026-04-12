@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Events\PaymentConfirmed;
+use App\Listeners\ProcessPaymentConfirmed;
 use App\Services\DocSyncService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -29,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        // Event → Listener Registrations
+        Event::listen(PaymentConfirmed::class, ProcessPaymentConfirmed::class);
 
         $this->configureDefaults();
     }

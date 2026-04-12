@@ -16,7 +16,7 @@ class AdminDashboardController extends Controller
         try {
             $user = $request->user();
 
-            if (!$user || $user->role !== 'admin') {
+            if (!$user || $user->role !== \App\Enums\Role::ADMIN) {
                 return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
             }
         } catch (\Exception $e) {

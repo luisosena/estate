@@ -157,7 +157,7 @@ class LandlordTenantController extends Controller
         $landlord = $request->user();
 
         // Authorization: ensure this property belongs to the authenticated landlord.
-        if ($property->owner_id !== $landlord->id) {
+        if ($landlord->cannot('update', $property)) {
             abort(403, 'You do not have access to this property.');
         }
 
@@ -361,7 +361,7 @@ class LandlordTenantController extends Controller
         $landlord = $request->user();
         
         // Authorization: ensure this tenancy belongs to the landlord's property
-        if ($tenancy->unit->property->owner_id !== $landlord->id) {
+        if ($landlord->cannot('update', $tenancy->unit->property)) {
             abort(403, 'You do not have access to this tenant.');
         }
 
@@ -414,7 +414,7 @@ class LandlordTenantController extends Controller
         $landlord = $request->user();
         
         // Authorization: ensure this tenancy belongs to the landlord's property
-        if ($tenancy->unit->property->owner_id !== $landlord->id) {
+        if ($landlord->cannot('update', $tenancy->unit->property)) {
             abort(403, 'You do not have access to this tenancy.');
         }
 
@@ -762,7 +762,7 @@ class LandlordTenantController extends Controller
         $landlord = $request->user();
         
         // Authorization: ensure tenancy belongs to landlord's property
-        if ($tenancy->unit->property->owner_id !== $landlord->id) {
+        if ($landlord->cannot('update', $tenancy->unit->property)) {
             abort(403, 'You do not have access to modify this tenancy.');
         }
 
@@ -775,7 +775,7 @@ class LandlordTenantController extends Controller
             $newUnit = Unit::findOrFail($validated['new_unit_id']);
             
             // Ensure new unit belongs to the same landlord and is available
-            if ($newUnit->property->owner_id !== $landlord->id) {
+            if ($landlord->cannot('update', $newUnit->property)) {
                 return redirect()
                     ->back()
                     ->with('error', 'The selected unit does not belong to your properties.');

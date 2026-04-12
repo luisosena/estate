@@ -2,8 +2,11 @@
 
 ### 1. Summary
 
-**Estate Practice** is a Laravel + Inertia + React/TypeScript application for property/tenant management, with role‑oriented dashboards (landlord, tenant), a mail view, and a modern glassmorphism UI.  
-It uses Laravel 12 on the backend with Fortify for authentication and Inertia for the SPA layer, and a Vite + Tailwind + React 19 front‑end.
+**Estate Practice** is a Laravel 12 application that serves two distinct surfaces:
+- A **web SPA** (Inertia.js + React 19 + TypeScript) for administration and web access.
+- A **REST API** (`/api/v1/*`) consumed by a cross-platform **Expo/React Native mobile app** for landlords and tenants.
+
+The system is a property management platform supporting three roles: **Admin**, **Landlord**, and **Tenant**. The backend has been refactored (Phases 1–4, Q2 2026) from a monolithic controller architecture into a **service-oriented, event-driven** architecture with a consolidated payment gateway abstraction, async webhook processing, and automated PDF receipt generation.
 
 ---
 
@@ -14,11 +17,14 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - **Framework**: Laravel ^12.0 (`laravel/framework`)
   - **SPA adapter**: `inertiajs/inertia-laravel` ^2.0
   - **Authentication & security**:
-    - `laravel/fortify` ^1.30 for auth flows (registration, login, password reset, email verification, 2FA)
-    - `Laravel\Fortify\Features` toggles features like registration
+    - `laravel/fortify` ^1.30 for auth flows (registration, username-based login for mobile, password reset, email verification, 2FA)
+    - Token-based API authentication for mobile (`/api/v1/*`)
+  - **Payment Integrations** *(added Phase 3–4)*:
+    - `barryvdh/laravel-dompdf` ^3.1 — PDF receipt generation
+    - `twilio/sdk` ^8.3 — WhatsApp and SMS notifications
   - **Routing & URLs**:
     - `laravel/wayfinder` ^0.1.9
-    - `tightenco/ziggy` ^2.6 (mirrored on the frontend with `ziggy-js`)
+    - `tightenco/ziggy` ^2.6
   - **Dev & tooling**:
     - `laravel/tinker` (REPL)
     - `laravel/pail` (log viewer)
@@ -108,38 +114,67 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - `CreateNewUser.php`, `ResetUserPassword.php`: Fortify hooks for user creation and password reset.
 
 - **`Concerns`**
-  - `PasswordValidationRules.php`, `ProfileValidationRules.php`: reusable validation traits for user/password/profile operations.
+  - `PasswordValidationRules.php`, `ProfileValidationRules.php`: reusable validation traits.
+
+- **`Contracts`** *(new — Phase 3)*
+  - `PaymentGatewayInterface.php`: interface for all payment gateway drivers.
+
+- **`Enums`** *(new — Phase 1)*
+  - `Role.php`: `enum Role: string { ADMIN, LANDLORD, TENANT }` — standardised role values.
+
+- **`Events`** *(new — Phase 3)*
+  - `PaymentConfirmed.php`: dispatched by webhook controller after M-Pesa callback confirms a payment.
 
 - **`Http/Controllers`**
   - `Controller.php`: base controller.
-  - `Settings/PasswordController.php`: password change UI/logic.
-  - `Settings/ProfileController.php`: profile edit/update/delete.
-  - `Settings/TwoFactorAuthenticationController.php`: 2FA management endpoints.
+  - `Api/Auth/`: login, register, logout, user endpoints.
+  - `Api/Landlord/`: `PaymentController`, `RentBillController`, `TenantController`, `PropertyController`, `UnitController`, `TenancyUtilityController`, `UtilityBillController`, `UtilityTypeController`, `DashboardController`, `NotificationController`, `ProfileController`.
+  - `Api/Tenant/`: `PaymentsController`, `RentBillController`, `UtilitiesController`, `DashboardController`, `ProfileController`.
+  - `Api/UserController`, `Api/PasswordController`: shared endpoints.
+  - `Webhook/MpesaWebhookController.php` *(new — Phase 3)*: handles M-Pesa STK push callbacks and fires `PaymentConfirmed`.
 
-- **`Http/Middleware`**
-  - `HandleAppearance.php`: handles user appearance/theme preferences.
-  - `HandleInertiaRequests.php`: standard Inertia middleware (shared props, asset versioning).
+- **`Http/Resources`** *(new — Phase 1)*
+  - `PaymentResource.php`: standardised JSON transformer for `Payment` models.
+  - `RentBillResource.php`: standardised JSON transformer for `RentBill` models.
 
-- **`Http/Requests/Settings`**
-  - `PasswordUpdateRequest.php`, `ProfileDeleteRequest.php`, `ProfileUpdateRequest.php`, `TwoFactorAuthenticationRequest.php`: form request validators for settings routes.
+- **`Listeners`** *(new — Phase 3)*
+  - `ProcessPaymentConfirmed.php`: queued listener that syncs rent/utility bills, generates receipts, and sends notifications after a gateway confirms a payment.
 
 - **`Models`**
-  - `User.php`: main auth user model (Fortify enabled).
-  - `Tenant.php`: domain model for tenants.
-  - `UtilityType.php`: utility category catalog (water, electricity, security, etc.).
-  - `TenancyUtility.php`: links tenancies to utility types with billing amounts.
-  - `UtilityBill.php`: monthly charge records for utilities.
-  - `Payment.php`: tracks all payments including utility payments.
+  - `User.php`, `Tenant.php`, `Property.php`, `Unit.php`, `Tenancy.php`.
+  - `Payment.php`: gateway columns added (`gateway`, `checkout_request_id`, `gateway_reference`, `gateway_status`, `gateway_metadata`, `gateway_confirmed_at`, `receipt_path`).
+  - `RentBill.php`, `UtilityBill.php`, `UtilityType.php`, `TenancyUtility.php`.
 
-- **`Services`**
-  - `UtilityService.php`: service for managing utility connections (legacy system).
+- **`Notifications`** *(new — Phase 2)*
+  - `PaymentReceived.php`, `RentBillGenerated.php`, `RentBillOverdue.php`: all implement `ShouldQueue`; delivered via `database`, `WhatsAppChannel`, and `ExpoPushChannel`.
+
+- **`Notifications/Channels`** *(new — Phase 2)*
+  - `WhatsAppChannel.php`: sends messages via Twilio WhatsApp API.
+  - `ExpoPushChannel.php`: sends push notifications to the Expo mobile app.
+
+- **`PaymentGateways`** *(new — Phase 3)*
+  - `ManualGateway.php`: synchronous/manual payment driver — instantly resolves to `success`.
+  - `MpesaGateway.php`: async M-Pesa STK push driver — initiates STK push, waits for webhook callback.
+
+- **`Policies`** *(new — Phase 1)*
+  - `PaymentPolicy.php`: enforces ownership-based authorisation for payment actions.
 
 - **`Rules`**
   - `UtilityBillBelongsToTenancy.php`: validation rule ensuring utility bills belong to the correct tenancy.
 
+- **`Services`**
+  - `PaymentService.php` *(refactored — Phase 3)*: single source of truth for all payment processing. Implements a 30-second idempotency window and pluggable `PaymentGatewayInterface`.
+  - `ReceiptService.php` *(new — Phase 4)*: generates PDF receipts via DomPDF and stores them using the `Storage` facade (local or cloud-agnostic).
+  - `NotificationService.php` *(new — Phase 2)*: thin facade over Laravel notification dispatch for payment and rent bill events.
+  - `RentBillService.php`: manages rent bill creation, payment linking, sync, and automatic overdue marking.
+  - `UtilityService.php`: manages utility connections and bill processing.
+  - `TenantService.php`: tenant onboarding with atomic user + tenancy creation.
+  - `DocSyncService.php`: documentation sync utilities.
+
 - **`Providers`**
-  - `AppServiceProvider.php`: app bootstrapping and bindings.
+  - `AppServiceProvider.php` *(updated)*: registers `DocSyncService` singleton; registers `PaymentConfirmed → ProcessPaymentConfirmed` event binding; forces HTTPS in production.
   - `FortifyServiceProvider.php`: Fortify configuration (features, views, actions).
+  - `PaymentGatewayServiceProvider.php` *(new — Phase 3)*: binds `PaymentGatewayInterface` to the correct driver based on `PAYMENTS_DEFAULT_GATEWAY` env var.
 
 - **`dashboard/data.json`**
   - Seed/fixture data for dashboard UI (cards, charts, etc.).
@@ -147,10 +182,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 #### `config/`
 
 - Standard Laravel config: `app.php`, `auth.php`, `cache.php`, `database.php`, `filesystems.php`, `fortify.php`, `inertia.php`, `logging.php`, `mail.php`, `queue.php`, `services.php`, `session.php`.
-- Key configs:
-  - **`fortify.php`**: authentication features (registration, 2FA, etc.).
-  - **`inertia.php`**: Inertia integration (SSR, root view).
-  - **`auth.php`**: guards, providers, password brokers.
+- **`payments.php`** *(new — Phase 3)*: payment gateway configuration — `default_gateway` (manual/mpesa) and `mpesa.*` credentials, all read from environment variables.
 
 #### `database/`
 
@@ -267,7 +299,8 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 
 #### `storage/`
 
-- Standard Laravel storage structure: `app/`, `framework/`, `logs/` with `.gitignore` placeholders.
+- Standard Laravel storage structure: `app/`, `framework/`, `logs/`.
+- `storage/app/receipts/` (or cloud disk equivalent): stores generated PDF receipt files keyed `{payment_id}-{date}.pdf`. Disk is configurable via `FILESYSTEM_DISK`.
 
 #### `tests/`
 
@@ -287,42 +320,53 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 ### 5. Current Functional State
 
 - **Authentication & user management**
-  - Fortify-based auth including registration, username-based login (for mobile), password reset, email verification, and 2FA.
-  - Profile editing and deletion, with dedicated form request validation.
-  - Password update flow with throttling and validation.
+  - Fortify-based auth: registration, **username-based login** (primary for mobile), password reset, email verification, 2FA.
+  - Token-based API authentication for mobile (`/api/v1/auth/*`).
+  - Profile editing, password change, session management endpoints.
 
-- **Tenants and dashboards**
-  - `Tenant` model and migration, with routes and pages for:
-    - Landlord dashboard (`/landlorddashboard`).
-    - Tenant dashboard (`/tenant/{id}`) with per-tenant data.
-    - Main authenticated dashboard (`/dashboard`) listing all tenants.
+- **Property & Unit Management**
+  - Landlords manage properties and units via the mobile app API.
+  - Units have a state machine: `available → occupied → available`.
 
-- **Settings area**
-  - `/settings/profile`, `/settings/password`, `/settings/appearance`, `/settings/two-factor` implemented via controllers + Inertia pages.
-  - React layouts and components for a cohesive settings experience.
+- **Tenant Onboarding**
+  - Atomic creation of `Tenant` + `User` + optional `Tenancy` via `TenantService`.
+  - Auto-generated `username` in format `firstname.lastname{n}` for landlord-created tenants.
+  - Add Tenant mobile form uses full-width vertical layout with real-time available-unit filtering.
 
-- **UI/UX**
-  - Modern glassmorphism UI built on Tailwind + shadcn/glasscn-inspired components.
-  - App shell with sidebar/header/navigation, responsive behavior, and dark/light theming.
-  - Reusable components for tables, charts, cards, navigation, forms, and notifications.
+- **Payment Architecture** *(refactored Q2 2026 — Phases 3 & 4)*
+  - **Single source of truth**: all payment processing flows through `PaymentService`.
+  - **Pluggable gateway drivers**: `ManualGateway` (synchronous) and `MpesaGateway` (async STK push) implement `PaymentGatewayInterface`. Active driver is configured via `PAYMENTS_DEFAULT_GATEWAY`.
+  - **Idempotency**: 30-second deduplication window on `tenancy_id + amount + payment_type` prevents double-payments.
+  - **Event-driven async side-effects**: `PaymentConfirmed` event dispatched by `MpesaWebhookController`; `ProcessPaymentConfirmed` queued listener handles: rent/utility bill synchronisation (status derived from bill, not hardcoded), receipt PDF generation, and multi-channel notification dispatch.
+  - **Receipt generation**: `ReceiptService` generates PDF receipts via `barryvdh/laravel-dompdf`, stored via the `Storage` facade (disk-agnostic: `local`/`s3` via `FILESYSTEM_DISK`). On-the-fly generation if receipt not yet stored.
+  - Tenant and Landlord retrieve signed receipt URLs via `GET /api/v1/{role}/payments/{id}/receipt`.
 
-- **Mobile App (React Native/Expo)**
-  - Cross-platform mobile application for iOS and Android.
-  - Role-based screens for both landlords and tenants.
-  - **Premium Onboarding**: Minimalistic custom splash screen with background loading to ensure a "zero-flicker" transition to the main app.
-  - **Rent Billing System**: Complete mobile integration with rent bill viewing, payment linking, and status tracking.
-    - Tenant: View rent bills, current month bill, make payments linked to specific bills.
-    - Landlord: Manage rent bills, view overdue/pending bills, waive bills.
-  - Dashboard enhancements showing rent bill statistics.
-  - Token-based authentication with API client.
+- **Rent & Utility Billing**
+  - Monthly rent bills auto-generated on the 1st of each month (`rent-bills:generate-monthly`).
+  - Daily overdue marking for rent bills and utility bills.
+  - Landlords can waive bills. Payment sync updates `amount_paid` and `status` atomically; `syncPaymentWithRentBill` guards against double-crediting.
+
+- **Notifications** *(refactored Q2 2026 — Phase 2)*
+  - `NotificationService` dispatches `PaymentReceived`, `RentBillGenerated`, `RentBillOverdue`.
+  - All notification classes implement `ShouldQueue` — non-blocking delivery.
+  - Multi-channel: `database`, `WhatsAppChannel` (Twilio), `ExpoPushChannel`.
+
+- **API Layer**
+  - 73 registered routes under `/api/v1/` (verified via `route:list`).
+  - Responses standardised via `PaymentResource`, `RentBillResource` API resources.
+  - Webhook endpoint: `POST /webhooks/mpesa/callback` (no auth, CSRF-exempt).
+
+- **Mobile App** *(React Native/Expo)*
+  - Role-based screens: full landlord and tenant feature sets.
+  - TypeScript API clients (`tenant.ts`, `landlord.ts`) with `getPaymentReceipt()` and `createPayment()` fully typed.
+  - `Payment` TypeScript interface includes all new gateway, receipt, and bill fields.
+  - Premium animated splash screen with zero-flicker background loading.
+
+- **Settings & Web**
+  - `/settings/profile`, `/settings/password`, `/settings/appearance`, `/settings/two-factor` via Inertia pages.
+  - Modern glassmorphism UI (Tailwind 4 + shadcn/ui, dark/light theming).
 
 - **Quality & tooling**
-  - Linting and formatting set up for both PHP and JS/TS.
-  - Testing powered by Pest with coverage for auth, dashboard, and settings behaviors.
-
-- **Landlord Workflow Refinements (Q2 2026)**
-  - **Add Tenant Flow**: Completely restructured mobile form with full-width vertical stacking for premium UX.
-  - **Unit Selection**: Real-time "available" unit filtering with card-based dropdown menus.
-  - **Tenant Details**: High-fidelity dashboard view with nested data structures showing active tenancy, units, and billing history.
-  - **Crash Resilience**: Implementation of nested data handling for Tenant Dashboard API responses, eliminating client-side TypeErrors.
-
+  - Laravel Pint for PHP; ESLint + Prettier for JS/TS.
+  - Pest tests with coverage for auth, dashboard, and settings.
+  - Post-refactoring verified: `php artisan event:list`, `route:list`, `config:show payments`.

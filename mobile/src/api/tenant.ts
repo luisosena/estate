@@ -95,6 +95,9 @@ export const tenantApi = {
 
   getRentBill: (rentBillId: number): Promise<{ data: RentBill }> =>
     api.get<{ data: RentBill }>(`/tenant/rent-bills/${rentBillId}`),
+
+  getPaymentReceipt: (paymentId: number): Promise<{ url: string }> =>
+    api.get<{ url: string }>(`/tenant/payments/${paymentId}/receipt`),
 };
 
 export default tenantApi;

@@ -84,7 +84,7 @@ class LandlordUtilityBillController extends Controller
 
         // Verify landlord owns this utility bill - with null safety checks
         $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             abort(403);
         }
 
@@ -109,7 +109,7 @@ class LandlordUtilityBillController extends Controller
 
         // Verify landlord owns this utility bill - with null safety checks
         $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             abort(403);
         }
 

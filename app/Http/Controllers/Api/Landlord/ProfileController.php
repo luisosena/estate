@@ -15,7 +15,7 @@ class ProfileController extends Controller
     {
         $user = request()->user();
         
-        if ($user->role !== 'landlord') {
+        if ($user->role !== \App\Enums\Role::LANDLORD) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
         
@@ -37,7 +37,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         
-        if ($user->role !== 'landlord') {
+        if ($user->role !== \App\Enums\Role::LANDLORD) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
         

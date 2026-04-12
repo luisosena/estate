@@ -196,6 +196,27 @@ interface RentBillSummary {
   paid_count: number;
 }
 
+// Payment - represents a rent or utility payment
+export interface Payment {
+  id: number;
+  amount: number;
+  payment_type: 'rent' | 'utility' | 'deposit' | 'penalty' | 'other';
+  payment_method: 'cash' | 'bank_transfer' | 'mobile_money' | 'card' | 'other';
+  status: 'pending' | 'paid' | 'partial' | 'overdue' | 'cancelled';
+  paid_at: string;
+  gateway?: string;
+  gateway_status?: string;
+  gateway_reference?: string;
+  receipt_path?: string;
+  notes?: string;
+  tenant_code?: string;
+  unit_number?: string;
+  property_name?: string;
+  tenant_name?: string;
+  rent_bill_id?: number;
+  utility_bill_id?: number;
+}
+
 // Payment Form Data - with rent bill linking (NEW)
 interface PaymentFormData {
   amount: number;

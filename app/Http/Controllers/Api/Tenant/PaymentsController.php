@@ -5,13 +5,7 @@ namespace App\Http\Controllers\Api\Tenant;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use App\Models\Tenancy;
-use App\Models\RentBill;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\UtilityService;
-use App\Services\RentBillService;
-use App\Models\UtilityBill;
 
 class PaymentsController extends Controller
 {
@@ -93,7 +87,7 @@ class PaymentsController extends Controller
     /**
      * Store a new payment.
      */
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\PaymentService $paymentService)
     {
         $user = $request->user();
         $tenant = $user->tenant;
@@ -119,190 +113,24 @@ class PaymentsController extends Controller
         }
 
         try {
-            // Use DB transaction with row locking to prevent race conditions
-            $result = DB::transaction(function () use ($activeTenancy, $validated, $tenant) {
-                // Lock the tenancy row itself for update to prevent concurrent modifications
-                $lockedTenancy = Tenancy::lockForUpdate()->find($activeTenancy->id);
+            $result = $paymentService->processPayment($validated, $activeTenancy);
 
-                // If tenancy was deleted during concurrent request, fail gracefully
-                if (!$lockedTenancy) {
-                    return ['error' => 'Transaction conflict. Please try again.'];
-                }
-
-                // Duplicate Payment Prevention: Check for recent duplicate payments
-                $recentDuplicate = $activeTenancy->payments()
-                    ->where('amount', $validated['amount'])
-                    ->where('payment_method', $validated['payment_method'])
-                    ->where('payment_type', $validated['payment_type'])
-                    ->where('created_at', '>=', now()->subSeconds(30))
-                    ->exists();
-
-                if ($recentDuplicate) {
-                    return ['error' => 'A duplicate payment was recently submitted. Please wait a moment and try again.'];
-                }
-
-                // Calculate status based on total paid vs monthly rent
-                $monthlyRent = $activeTenancy->monthly_rent ?? 0;
-                $currentTotalPaid = $activeTenancy->payments()
-                    ->whereIn('status', ['paid', 'partial'])
-                    ->where('payment_type', 'rent')
-                    ->sum('amount');
-                $newTotalPaid = $currentTotalPaid + $validated['amount'];
-
-                // Calculate excess amount for rent payments (overpayment handling)
-                $excessAmount = 0;
-                $rentAmount = $validated['amount'];
-                
-                if ($validated['payment_type'] === 'rent' && $monthlyRent > 0) {
-                    $remainingBalance = max(0, $monthlyRent - $currentTotalPaid);
-                    if ($validated['amount'] > $remainingBalance) {
-                        $excessAmount = $validated['amount'] - $remainingBalance;
-                        $rentAmount = $remainingBalance;
-                    }
-                }
-
-                // Determine initial status for this payment
-                // For utility payments: status will be synced from utility bill below
-                // For rent payments: status will be determined by rent bill after processing
-                $status = 'pending';
-
-                // Handle rent_bill_id for rent payments using the service
-                $rentBillId = null;
-                $rentBillError = null;
-                if ($validated['payment_type'] === 'rent') {
-                    $billLinkResult = app(RentBillService::class)->linkPaymentToBill(
-                        $activeTenancy->id,
-                        !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
-                        false // Not required - allows payments without bill
-                    );
-                    $rentBillId = $billLinkResult['rent_bill_id'];
-                    $rentBillError = $billLinkResult['error'];
-                }
-
-                // Create payment
-                $paymentData = [
-                    'tenant_id' => $tenant->id,
-                    'tenancy_id' => $activeTenancy->id,
-                    'rent_bill_id' => $rentBillId,
-                    'amount' => $validated['amount'],
-                    'payment_type' => $validated['payment_type'],
-                    'payment_method' => $validated['payment_method'],
-                    'status' => $status,
-                    'paid_at' => now(),
-                    'reference_number' => $validated['reference_number'] ?? null,
-                    'notes' => $validated['notes'] ?? null,
-                ];
-
-                // Link to utility bill if provided
-                if ($validated['payment_type'] === 'utility' && !empty($validated['utility_bill_id'])) {
-                    $utilityBill = UtilityBill::with('tenancyUtility.tenancy.unit.property')
-                        ->find($validated['utility_bill_id']);
-                    
-                    // Verify the bill exists and belongs to this tenant's tenancy
-                    if (!$utilityBill) {
-                        return response()->json([
-                            'error' => 'Utility bill not found.',
-                        ], 422);
-                    }
-                    
-                    if ($utilityBill->tenancyUtility->tenancy_id !== $activeTenancy->id) {
-                        return response()->json([
-                            'error' => 'This utility bill does not belong to your active tenancy.',
-                        ], 422);
-                    }
-                    
-                    // Verify the bill is payable (not already paid or waived)
-                    if (in_array($utilityBill->status, ['paid', 'waived'])) {
-                        return response()->json([
-                            'error' => 'This utility bill has already been ' . $utilityBill->status . '.',
-                        ], 422);
-                    }
-                    
-                    $paymentData['utility_bill_id'] = $utilityBill->id;
-                    
-                    // Process the utility bill payment
-                    try {
-                        app(UtilityService::class)->processUtilityPayment($utilityBill, $validated['amount']);
-                    } catch (\InvalidArgumentException $e) {
-                        return response()->json(['error' => $e->getMessage()], 422);
-                    }
-                    
-                    // Sync payment status with utility bill status
-                    // Refresh the utility bill to get the updated status
-                    $utilityBill->refresh();
-                    $paymentData['status'] = $utilityBill->status;
-
-                    // Validate the synced status is allowed
-                    if (!in_array($paymentData['status'], ['paid', 'partial', 'overdue', 'pending'])) {
-                        Log::warning('Unexpected utility bill status after payment', [
-                            'utility_bill_id' => $utilityBill->id,
-                            'status' => $paymentData['status']
-                        ]);
-                        $paymentData['status'] = 'partial'; // Safe fallback
-                    }
-                }
-
-                // Create payment with transactional rent bill processing
-                $payment = null;
-                $rentBillWarning = null;
-                
-                if ($validated['payment_type'] === 'rent' && $rentBillId) {
-                    try {
-                        // Use transactional service method for atomic payment + rent bill update
-                        $payment = app(RentBillService::class)->createPaymentWithRentBill(
-                            $paymentData,
-                            $rentBillId,
-                            $validated['amount']
-                        );
-                    } catch (\InvalidArgumentException $e) {
-                        // Bill already processed, continue with payment but warn
-                        $rentBillWarning = $e->getMessage();
-                        $payment = Payment::create($paymentData);
-                        Log::warning('Rent bill payment processing skipped', [
-                            'rent_bill_id' => $rentBillId,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                } else {
-                    // No rent bill linked - create payment normally
-                    $payment = Payment::create($paymentData);
-                }
-
-                Log::info('Payment created via API by tenant', [
-                    'payment_id' => $payment->id,
-                    'tenant_id' => $tenant->id,
-                    'amount' => $validated['amount'],
-                    'status' => $status,
-                ]);
-
-                return ['success' => true, 'payment' => $payment, 'excessAmount' => $excessAmount];
-            });
-
-            // Handle duplicate payment response
-            if (isset($result['error'])) {
-                return response()->json([
-                    'error' => $result['error'],
-                ], 422);
-            }
-
-            // Include warning if rent bill was not found/linked properly
             $response = [
                 'success' => true,
                 'message' => 'Payment processed successfully!',
-                'payment' => $result['payment'],
-                'excessAmount' => $result['excessAmount'] ?? 0,
+                'payment' => new \App\Http\Resources\PaymentResource($result['payment']),
             ];
             
-            if (!empty($rentBillWarning)) {
-                $response['warning'] = $rentBillWarning;
-            }
-            
-            if (!empty($rentBillError)) {
-                $response['rent_bill_warning'] = $rentBillError;
+            if (!empty($result['warning'])) {
+                $response['warning'] = $result['warning'];
             }
             
             return response()->json($response, 201);
 
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Failed to process payment via API', [
                 'tenant_id' => $tenant->id,
@@ -310,8 +138,47 @@ class PaymentsController extends Controller
             ]);
 
             return response()->json([
-                'error' => 'Failed to process payment. Please try again.',
+                'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Get the receipt URL for a payment.
+     */
+    public function receipt(Request $request, $id, \App\Services\ReceiptService $receiptService)
+    {
+        $tenant = $request->user()->tenant;
+        
+        $payment = Payment::where('id', $id)
+            ->where('tenant_id', $tenant->id)
+            ->first();
+
+        if (!$payment) {
+            return response()->json(['error' => 'Payment not found or unauthorized.'], 404);
+        }
+
+        if (!$payment->receipt_path) {
+            // Generate it on the fly if it doesn't exist yet but is paid
+            if ($payment->status === 'paid' || $payment->status === 'partial') {
+                try {
+                    $receiptService->generate($payment);
+                    $payment->refresh();
+                } catch (\Exception $e) {
+                    Log::error("Failed generating receipt on the fly for {$payment->id}: " . $e->getMessage());
+                    return response()->json(['error' => 'Failed to generate receipt.'], 500);
+                }
+            } else {
+                return response()->json(['error' => 'Receipt not available for unpaid payments.'], 400);
+            }
+        }
+
+        $url = $receiptService->getUrl($payment);
+
+        if (!$url) {
+            return response()->json(['error' => 'Unable to retrieve receipt url.'], 500);
+        }
+
+        return response()->json(['url' => $url]);
     }
 }

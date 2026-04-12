@@ -153,6 +153,32 @@ DB_PASSWORD=secret
 
 ---
 
+### Payment Gateway Configuration *(new — Phase 3)*
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| PAYMENTS_DEFAULT_GATEWAY | Yes | `manual` | Active gateway driver: `manual` or `mpesa` |
+| MPESA_CONSUMER_KEY | Mpesa only | — | Daraja API consumer key |
+| MPESA_CONSUMER_SECRET | Mpesa only | — | Daraja API consumer secret |
+| MPESA_BUSINESS_SHORT_CODE | Mpesa only | — | M-Pesa business short code (Paybill/Till) |
+| MPESA_PASSKEY | Mpesa only | — | Lipa Na M-Pesa passkey |
+| MPESA_CALLBACK_URL | Mpesa only | — | Public URL for STK push callback |
+| MPESA_ENVIRONMENT | Yes | `sandbox` | `sandbox` or `production` |
+
+**Config file**: `config/payments.php` reads these values. Use `php artisan config:show payments` to verify.
+
+---
+
+### Notification / Twilio Configuration *(new — Phase 2)*
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| TWILIO_SID | WhatsApp channel | — | Twilio Account SID |
+| TWILIO_TOKEN | WhatsApp channel | — | Twilio Auth Token |
+| TWILIO_WHATSAPP_FROM | WhatsApp channel | `whatsapp:+14155238886` | Twilio WhatsApp sender number |
+
+---
+
 ### Mobile App Configuration
 
 | Variable | Required | Default | Description |
@@ -500,6 +526,29 @@ return [
 ```
 
 ---
+
+### config/payments.php *(new — Phase 3)*
+
+Payment gateway configuration (reads from `.env`):
+
+```php
+<?php
+
+return [
+    'default_gateway' => env('PAYMENTS_DEFAULT_GATEWAY', 'manual'),
+
+    'mpesa' => [
+        'consumer_key'        => env('MPESA_CONSUMER_KEY'),
+        'consumer_secret'     => env('MPESA_CONSUMER_SECRET'),
+        'business_short_code' => env('MPESA_BUSINESS_SHORT_CODE'),
+        'passkey'             => env('MPESA_PASSKEY'),
+        'callback_url'        => env('MPESA_CALLBACK_URL'),
+        'environment'         => env('MPESA_ENVIRONMENT', 'sandbox'),
+    ],
+];
+```
+
+Inspectable via: `php artisan config:show payments`
 
 ## Feature Flags
 

@@ -97,6 +97,7 @@ export interface Tenancy {
 export interface Payment {
   id: number;
   tenant_name?: string;
+  tenant_code?: string;
   unit_number?: string;
   property_name?: string;
   amount: number;
@@ -107,6 +108,19 @@ export interface Payment {
   payment_method: 'mobile_money' | 'bank_transfer' | null;
   reference_number: string | null;
   notes: string | null;
+  receipt_path?: string | null;
+  // Gateway tracking fields (present after refactoring)
+  gateway?: string | null;
+  gateway_status?: string | null;
+  gateway_reference?: string | null;
+  // Linked bill fields (present in PaymentResource responses)
+  rent_bill_id?: number | null;
+  utility_bill_id?: number | null;
+  rent_bill?: {
+    id: number;
+    billing_month: string; // 'YYYY-MM'
+    status: RentBillStatus;
+  } | null;
   created_at?: string;
   updated_at?: string;
 }

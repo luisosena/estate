@@ -66,6 +66,7 @@ $defineApiRoutes = function (): void {
         Route::prefix('tenant')->group(function () {
             Route::get('dashboard', [DashboardController::class, 'index']);
             Route::get('payments', [PaymentsController::class, 'index']);
+            Route::get('payments/{id}/receipt', [PaymentsController::class, 'receipt']);
             Route::middleware('throttle:10,1')->group(function () {
                 Route::post('payments', [PaymentsController::class, 'store']);
             });
@@ -109,6 +110,7 @@ $defineApiRoutes = function (): void {
             
             Route::get('payments', [PaymentController::class, 'index']);
             Route::get('payments/{paymentId}', [PaymentController::class, 'show']);
+            Route::get('payments/{paymentId}/receipt', [PaymentController::class, 'receipt']);
             Route::post('payments', [PaymentController::class, 'store']);
             Route::put('payments/{paymentId}', [PaymentController::class, 'update']);
             Route::delete('payments/{paymentId}', [PaymentController::class, 'destroy']);
@@ -157,8 +159,6 @@ $defineApiRoutes = function (): void {
     });
 };
 
-// Unversioned routes (e.g. /api/auth/login)
-$defineApiRoutes();
-
-// Versioned routes for mobile/web clients (e.g. /api/v1/auth/login)
+// Only use versioned routes for mobile/web clients (e.g. /api/v1/auth/login)
 Route::prefix('v1')->group($defineApiRoutes);
+

@@ -23,7 +23,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy - with null safety checks
         $property = $tenancy->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -47,7 +47,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy - with null safety checks
         $property = $tenancy->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -112,7 +112,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy utility - with null safety checks
         $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -131,7 +131,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy utility - with null safety checks
         $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -179,7 +179,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy utility - with null safety checks
         $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

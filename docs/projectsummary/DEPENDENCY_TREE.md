@@ -36,6 +36,13 @@ This document provides a complete inventory of all dependencies, their exact ver
 | pestphp/pest-plugin-laravel | ^4.0 | Laravel Pest integration |
 | fakerphp/faker | ^1.23 | Fake data generation |
 
+### integrations (Added during Refactoring)
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| twilio/sdk | ^8.3 | WhatsApp & SMS Notifications |
+| barryvdh/laravel-dompdf | ^3.1 | Receipt Generation |
+
 ---
 
 ## Node.js Dependencies

@@ -79,7 +79,7 @@ class UtilityBillController extends Controller
 
         // Verify landlord owns this utility bill - with null safety checks
         $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -104,7 +104,7 @@ class UtilityBillController extends Controller
 
         // Verify landlord owns this utility bill - with null safety checks
         $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -150,7 +150,7 @@ class UtilityBillController extends Controller
 
         // Verify landlord owns this utility bill - with null safety checks
         $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (!$property || $landlord->cannot('update', $property)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

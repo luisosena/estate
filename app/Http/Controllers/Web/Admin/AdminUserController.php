@@ -19,7 +19,7 @@ class AdminUserController extends Controller
         try {
             $user = $request->user();
 
-            if (!$user || $user->role !== 'admin') {
+            if (!$user || $user->role !== \App\Enums\Role::ADMIN) {
                 return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
             }
         } catch (\Exception $e) {
@@ -75,7 +75,7 @@ class AdminUserController extends Controller
         try {
             $user = request()->user();
 
-            if (!$user || $user->role !== 'admin') {
+            if (!$user || $user->role !== \App\Enums\Role::ADMIN) {
                 return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
             }
         } catch (\Exception $e) {
@@ -124,7 +124,7 @@ class AdminUserController extends Controller
      */
     public function show(User $landlord)
     {
-        if ($landlord->role !== 'landlord') {
+        if ($landlord->role !== \App\Enums\Role::LANDLORD) {
             return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
         }
 
@@ -154,7 +154,7 @@ class AdminUserController extends Controller
      */
     public function edit(User $landlord)
     {
-        if ($landlord->role !== 'landlord') {
+        if ($landlord->role !== \App\Enums\Role::LANDLORD) {
             return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
         }
 
@@ -168,7 +168,7 @@ class AdminUserController extends Controller
      */
     public function update(Request $request, User $landlord)
     {
-        if ($landlord->role !== 'landlord') {
+        if ($landlord->role !== \App\Enums\Role::LANDLORD) {
             return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
         }
 
@@ -202,7 +202,7 @@ class AdminUserController extends Controller
      */
     public function destroy(User $landlord)
     {
-        if ($landlord->role !== 'landlord') {
+        if ($landlord->role !== \App\Enums\Role::LANDLORD) {
             return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
         }
 
@@ -225,7 +225,7 @@ class AdminUserController extends Controller
      */
     public function toggleStatus(User $landlord)
     {
-        if ($landlord->role !== 'landlord') {
+        if ($landlord->role !== \App\Enums\Role::LANDLORD) {
             return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
         }
 

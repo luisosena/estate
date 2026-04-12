@@ -118,6 +118,20 @@ class RentBillService
     }
 
     /**
+     * Sync an existing (usually async confirmed) payment to a rent bill.
+     * Guards against double-crediting if the bill was already synced synchronously.
+     */
+    public function syncPaymentWithRentBill(Payment $payment): void
+    {
+        if ($payment->rent_bill_id) {
+            $rentBill = RentBill::find($payment->rent_bill_id);
+            if ($rentBill && !in_array($rentBill->status, ['paid', 'waived'])) {
+                $this->processRentPayment($rentBill, $payment->amount);
+            }
+        }
+    }
+
+    /**
      * Waive a rent bill.
      *
      * @param RentBill $rentBill The rent bill to waive
@@ -169,10 +183,9 @@ class RentBillService
      */
     public function calculateTotalOutstanding(int $tenancyId): float
     {
-        return RentBill::where('tenancy_id', $tenancyId)
+        return (float) RentBill::where('tenancy_id', $tenancyId)
             ->whereIn('status', ['pending', 'partial', 'overdue'])
-            ->sum('amount_due') -
-            RentBill::where('tenancy_id', $tenancyId)
-                ->sum('amount_paid');
+            ->selectRaw('SUM(amount_due - amount_paid) as outstanding')
+            ->value('outstanding') ?? 0.0;
     }
 }

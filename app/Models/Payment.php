@@ -79,6 +79,12 @@ class Payment extends Model
         'due_date',
         'reference_number',
         'notes',
+        'gateway',
+        'checkout_request_id',
+        'gateway_reference',
+        'gateway_status',
+        'gateway_metadata',
+        'gateway_confirmed_at',
     ];
 
     /**

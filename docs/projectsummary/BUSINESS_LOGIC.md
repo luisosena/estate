@@ -960,22 +960,22 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Tenant logs in] --> B[View dashboard]
-    B --> C[Click Make Payment]
-    C --> D[Select payment type]
-    D --> E[Enter amount]
-    E --> F[Select payment method]
-    F --> G[Confirm payment]
-    G --> H{Confirm?}
-    H -->|No| B
-    H -->|Yes| I[Process payment]
-    I --> J{Payment successful?}
-    J -->|No| K[Show error message]
-    K --> G
-    J -->|Yes| L[Update payment status]
-    L --> M[Generate receipt]
-    M --> N[Send confirmation notification]
-    N --> O[Redirect to payment history]
+    A[Tenant/Landlord initiates payment] --> B[Enter amount & select method]
+    B --> C[PaymentService: processPayment]
+    C --> D[Create pending Payment record]
+    D --> E{Gateway Driver?}
+    E -->|Manual| F[Instantly resolve to success]
+    E -->|M-Pesa| G[Initiate STK Push]
+    G --> H((Async Wait))
+    H --> I[Webhook receives M-Pesa Callback]
+    I --> J[Verify & update Payment record]
+    F --> K{Payment Confirmed}
+    J --> K
+    K --> L[Fire PaymentConfirmed Event]
+    L --> M[ProcessPaymentConfirmed Listener]
+    M --> N[Sync Rent/Utility Bill Status]
+    M --> O[Generate PDF Receipt]
+    M --> P[Dispatch Notifications]
 ```
 
 ---

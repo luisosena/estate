@@ -15,7 +15,7 @@ class ProfileController extends Controller
     {
         $user = request()->user();
         
-        if ($user->role !== 'tenant') {
+        if ($user->role !== \App\Enums\Role::TENANT) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
         
@@ -40,7 +40,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         
-        if ($user->role !== 'tenant') {
+        if ($user->role !== \App\Enums\Role::TENANT) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
         

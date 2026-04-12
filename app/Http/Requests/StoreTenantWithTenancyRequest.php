@@ -13,7 +13,7 @@ class StoreTenantWithTenancyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->user() && auth()->user()->role === 'landlord';
+        return auth()->user() && auth()->user()->role === \App\Enums\Role::LANDLORD;
     }
 
     /**

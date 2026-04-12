@@ -149,6 +149,20 @@ export const landlordApi = {
   getPayments: (page = 1): Promise<PaginatedResponse<Payment>> =>
     api.get<PaginatedResponse<Payment>>('/landlord/payments', { page }),
 
+  createPayment: (data: {
+    tenant_id: number;
+    amount: number;
+    payment_type: 'rent' | 'utility';
+    payment_method: string;
+    status: 'paid' | 'partial' | 'overdue' | 'pending';
+    paid_at: string;
+    rent_bill_id?: number;
+  }): Promise<{ message: string; payment: Payment; warning?: string }> =>
+    api.post<{ message: string; payment: Payment; warning?: string }>('/landlord/payments', data),
+
+  getPaymentReceipt: (paymentId: number): Promise<{ url: string }> =>
+    api.get<{ url: string }>(`/landlord/payments/${paymentId}/receipt`),
+
   // Notifications
   getNotifications: (): Promise<{ notifications: Notification[] }> =>
     api.get<{ notifications: Notification[] }>('/landlord/notifications'),

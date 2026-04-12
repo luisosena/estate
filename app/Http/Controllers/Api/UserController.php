@@ -25,7 +25,7 @@ class UserController extends Controller
         $query = User::query()->with('tenant');
 
         // Landlords can only see their own account and tenants in their properties
-        if ($request->user()->role === 'landlord') {
+        if ($request->user()->role === \App\Enums\Role::LANDLORD) {
             $landlordId = $request->user()->id;
             $query->where(function ($q) use ($landlordId) {
                 $q->where('id', $landlordId)
@@ -73,7 +73,7 @@ class UserController extends Controller
         }
 
         // Landlords can only view their own account or tenants in their properties
-        if ($request->user()->role === 'landlord') {
+        if ($request->user()->role === \App\Enums\Role::LANDLORD) {
             $isOwner = $request->user()->id === $id;
             
             // Eager load relationships to prevent N+1 query issue
@@ -102,7 +102,7 @@ class UserController extends Controller
         $user = $request->user();
         
         // Only admin can create admins; landlords can only create tenants
-        if ($user->role === 'landlord') {
+        if ($user->role === \App\Enums\Role::LANDLORD) {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'email', 'unique:users,email'],
@@ -110,7 +110,7 @@ class UserController extends Controller
                 'role' => ['required', Rule::in(['tenant'])], // Landlords can only create tenants
                 'phone' => ['nullable', 'string', 'max:20'],
             ]);
-        } elseif ($user->role !== 'admin') {
+        } elseif ($user->role !== \App\Enums\Role::ADMIN) {
             return response()->json(['message' => 'Forbidden'], 403);
         } else {
             // Admin can create any role
@@ -148,7 +148,7 @@ class UserController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         // Users can only update their own profile unless admin
-        if ($request->user()->role !== 'admin' && $request->user()->id !== $id) {
+        if ($request->user()->role !== \App\Enums\Role::ADMIN && $request->user()->id !== $id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -166,7 +166,7 @@ class UserController extends Controller
         ]);
 
         // Non-admin users cannot change their own role
-        if ($request->user()->role !== 'admin') {
+        if ($request->user()->role !== \App\Enums\Role::ADMIN) {
             unset($validated['role']);
         }
 
@@ -184,7 +184,7 @@ class UserController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        if ($request->user()->role !== 'admin') {
+        if ($request->user()->role !== \App\Enums\Role::ADMIN) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
