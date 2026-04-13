@@ -6,8 +6,12 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenancy;
+use App\Models\RentBill;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\UtilityService;
+use App\Services\RentBillService;
+use App\Models\UtilityBill;
 
 class PaymentsController extends Controller
 {
@@ -16,27 +20,58 @@ class PaymentsController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
+        // Get the active tenancy for payment calculations
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
-            ->with(['payments'])
+            ->with(['unit', 'unit.property'])
             ->first();
 
-        $payments = $activeTenancy?->payments
+        // Get the most recent tenancy (active or ended) to show unit/property info if no active tenancy
+        $latestTenancy = $tenant->tenancies()
+            ->with(['unit', 'unit.property'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Use active tenancy for unit/property info, fallback to latest if no active tenancy
+        $displayTenancy = $activeTenancy ?? $latestTenancy;
+        $unit = $displayTenancy?->unit;
+        $property = $unit?->property;
+
+        // Get payments from active tenancy only for privacy
+        $paymentsQuery = $activeTenancy
+            ? $activeTenancy->payments()
+                ->with(['tenancy.unit', 'tenancy.unit.property'])
+            : Payment::whereNull('id'); // Empty query if no active tenancy
+
+        $payments = $paymentsQuery->get()
             ->sortByDesc('paid_at')
+            ->map(function ($payment) use ($tenant, $unit, $property) {
+                return [
+                    'id' => $payment->id,
+                    'amount' => $payment->amount,
+                    'payment_type' => $payment->payment_type,
+                    'payment_method' => $payment->payment_method,
+                    'status' => $payment->status,
+                    'paid_at' => $payment->paid_at,
+                    'due_date' => $payment->due_date,
+                    'created_at' => $payment->created_at,
+                    'tenant_name' => $tenant->full_name,
+                    'unit_number' => $unit?->unit_code,
+                    'property_name' => $property?->name,
+                ];
+            })
             ->values() ?? collect();
 
-        // Calculate pending amount
+        // Calculate pending amount from active tenancy rent payments only
         $pendingAmount = 0;
-        $monthlyRent = 0;
-        if ($activeTenancy) {
-            $monthlyRent = $activeTenancy->monthly_rent ?? 0;
-            // Only consider rent payments for pending amount calculation
-            $totalPaid = $activeTenancy->payments()
+        $monthlyRent = $activeTenancy?->monthly_rent ?? 0;
+        $totalPaid = $activeTenancy
+            ? $activeTenancy->payments()
                 ->whereIn('status', ['paid', 'partial'])
                 ->where('payment_type', 'rent')
-                ->sum('amount');
-            $pendingAmount = max(0, $monthlyRent - $totalPaid);
-        }
+                ->sum('amount')
+            : 0;
+        $pendingAmount = max(0, $monthlyRent - $totalPaid);
 
         return response()->json([
             'tenant' => [
@@ -45,9 +80,10 @@ class PaymentsController extends Controller
                 'phone' => $tenant->phone,
                 'email' => $tenant->email,
             ],
-            'tenancy' => $activeTenancy ? [
-                'id' => $activeTenancy->id,
+            'tenancy' => $displayTenancy ? [
+                'id' => $displayTenancy->id,
                 'monthly_rent' => $monthlyRent,
+                'status' => $activeTenancy ? 'active' : 'ended',
             ] : null,
             'payments' => $payments,
             'pendingAmount' => $pendingAmount,
@@ -66,6 +102,8 @@ class PaymentsController extends Controller
             'amount' => 'required|numeric|min:1|max:100000000',
             'payment_type' => 'required|in:rent,utility',
             'payment_method' => 'required|in:mobile_money,bank_transfer',
+            'utility_bill_id' => 'required_if:payment_type,utility|nullable|exists:utility_bills,id',
+            'rent_bill_id' => 'nullable|exists:rent_bills,id',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
         ]);
@@ -123,18 +161,29 @@ class PaymentsController extends Controller
                     }
                 }
 
-                // Determine status for this payment
-                $status = 'partial';
-                if ($validated['payment_type'] !== 'rent') {
-                    $status = 'pending'; // Utility payments start as pending until approved
-                } elseif ($newTotalPaid >= $monthlyRent) {
-                    $status = 'paid';
+                // Determine initial status for this payment
+                // For utility payments: status will be synced from utility bill below
+                // For rent payments: status will be determined by rent bill after processing
+                $status = 'pending';
+
+                // Handle rent_bill_id for rent payments using the service
+                $rentBillId = null;
+                $rentBillError = null;
+                if ($validated['payment_type'] === 'rent') {
+                    $billLinkResult = app(RentBillService::class)->linkPaymentToBill(
+                        $activeTenancy->id,
+                        !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                        false // Not required - allows payments without bill
+                    );
+                    $rentBillId = $billLinkResult['rent_bill_id'];
+                    $rentBillError = $billLinkResult['error'];
                 }
 
                 // Create payment
-                $payment = Payment::create([
+                $paymentData = [
                     'tenant_id' => $tenant->id,
                     'tenancy_id' => $activeTenancy->id,
+                    'rent_bill_id' => $rentBillId,
                     'amount' => $validated['amount'],
                     'payment_type' => $validated['payment_type'],
                     'payment_method' => $validated['payment_method'],
@@ -142,7 +191,82 @@ class PaymentsController extends Controller
                     'paid_at' => now(),
                     'reference_number' => $validated['reference_number'] ?? null,
                     'notes' => $validated['notes'] ?? null,
-                ]);
+                ];
+
+                // Link to utility bill if provided
+                if ($validated['payment_type'] === 'utility' && !empty($validated['utility_bill_id'])) {
+                    $utilityBill = UtilityBill::with('tenancyUtility.tenancy.unit.property')
+                        ->find($validated['utility_bill_id']);
+                    
+                    // Verify the bill exists and belongs to this tenant's tenancy
+                    if (!$utilityBill) {
+                        return response()->json([
+                            'error' => 'Utility bill not found.',
+                        ], 422);
+                    }
+                    
+                    if ($utilityBill->tenancyUtility->tenancy_id !== $activeTenancy->id) {
+                        return response()->json([
+                            'error' => 'This utility bill does not belong to your active tenancy.',
+                        ], 422);
+                    }
+                    
+                    // Verify the bill is payable (not already paid or waived)
+                    if (in_array($utilityBill->status, ['paid', 'waived'])) {
+                        return response()->json([
+                            'error' => 'This utility bill has already been ' . $utilityBill->status . '.',
+                        ], 422);
+                    }
+                    
+                    $paymentData['utility_bill_id'] = $utilityBill->id;
+                    
+                    // Process the utility bill payment
+                    try {
+                        app(UtilityService::class)->processUtilityPayment($utilityBill, $validated['amount']);
+                    } catch (\InvalidArgumentException $e) {
+                        return response()->json(['error' => $e->getMessage()], 422);
+                    }
+                    
+                    // Sync payment status with utility bill status
+                    // Refresh the utility bill to get the updated status
+                    $utilityBill->refresh();
+                    $paymentData['status'] = $utilityBill->status;
+
+                    // Validate the synced status is allowed
+                    if (!in_array($paymentData['status'], ['paid', 'partial', 'overdue', 'pending'])) {
+                        Log::warning('Unexpected utility bill status after payment', [
+                            'utility_bill_id' => $utilityBill->id,
+                            'status' => $paymentData['status']
+                        ]);
+                        $paymentData['status'] = 'partial'; // Safe fallback
+                    }
+                }
+
+                // Create payment with transactional rent bill processing
+                $payment = null;
+                $rentBillWarning = null;
+                
+                if ($validated['payment_type'] === 'rent' && $rentBillId) {
+                    try {
+                        // Use transactional service method for atomic payment + rent bill update
+                        $payment = app(RentBillService::class)->createPaymentWithRentBill(
+                            $paymentData,
+                            $rentBillId,
+                            $validated['amount']
+                        );
+                    } catch (\InvalidArgumentException $e) {
+                        // Bill already processed, continue with payment but warn
+                        $rentBillWarning = $e->getMessage();
+                        $payment = Payment::create($paymentData);
+                        Log::warning('Rent bill payment processing skipped', [
+                            'rent_bill_id' => $rentBillId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                } else {
+                    // No rent bill linked - create payment normally
+                    $payment = Payment::create($paymentData);
+                }
 
                 Log::info('Payment created via API by tenant', [
                     'payment_id' => $payment->id,
@@ -161,12 +285,23 @@ class PaymentsController extends Controller
                 ], 422);
             }
 
-            return response()->json([
+            // Include warning if rent bill was not found/linked properly
+            $response = [
                 'success' => true,
                 'message' => 'Payment processed successfully!',
                 'payment' => $result['payment'],
                 'excessAmount' => $result['excessAmount'] ?? 0,
-            ], 201);
+            ];
+            
+            if (!empty($rentBillWarning)) {
+                $response['warning'] = $rentBillWarning;
+            }
+            
+            if (!empty($rentBillError)) {
+                $response['rent_bill_warning'] = $rentBillError;
+            }
+            
+            return response()->json($response, 201);
 
         } catch (\Exception $e) {
             Log::error('Failed to process payment via API', [

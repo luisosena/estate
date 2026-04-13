@@ -1,26 +1,57 @@
-import React, { useEffect, useState } from 'react';
-import { View, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card } from 'react-native-paper';
-import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
-import type { Tenant } from '../../types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
+import { View, ScrollView, RefreshControl, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+
+import { landlordApi } from '../../api/landlord';
+import { TenantCardSkeleton } from '../../components/common/SkeletonVariants';
+import { Card } from '../../components/common/Card';
+import { Badge } from '../../components/common/Badge';
+import { colors } from '../../constants/colors';
+import { screenStyles } from '../../constants/styles';
 import { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
+import type { Tenant } from '../../types';
 
 type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList, 'TenantsList'>;
 
 export function LandlordTenantsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [tenants, setTenants] = useState<Tenant[]>([]);
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      headerTitle: 'Tenants',
+      headerStyle: { backgroundColor: colors.surface },
+      headerTintColor: colors.text.primary,
+      headerShadowVisible: false,
+      headerRight: () => (
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={() => navigation.navigate('AddTenant', {})}
+        >
+          <Ionicons name="add" size={24} color={colors.text.primary} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
   const fetchTenants = async () => {
     try {
+      setLoading(true);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch tenants
       const data = await landlordApi.getTenants();
       setTenants(data.data);
+      setHasLoaded(true);
     } catch (error) {
       console.error('Failed to fetch tenants:', error);
     } finally {
@@ -38,47 +69,133 @@ export function LandlordTenantsScreen() {
     fetchTenants();
   };
 
-  if (loading) return <LoadingScreen />;
-
   return (
-    <ScrollView
-      style={screenStyles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    <ScreenContainer
+      scrollable
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      edges={['bottom', 'left', 'right']}
     >
-      <View style={screenStyles.header}>
-        <Text variant="headlineSmall" style={screenStyles.title}>Tenants</Text>
-        <Text variant="bodyMedium" style={screenStyles.subtitle}>
-          {tenants.length} {tenants.length === 1 ? 'tenant' : 'tenants'}
-        </Text>
-      </View>
+      <View style={styles.listContainer}>
+        {loading ? (
+          Array(6).fill(0).map((_, i) => (
+            <TenantCardSkeleton key={`skeleton-${i}`} />
+          ))
+        ) : tenants.length > 0 ? (
+          tenants.map((tenant) => {
+            const isActive = true; 
 
-      {tenants.length > 0 ? (
-        tenants.map((tenant) => (
-          <Card 
-            key={tenant.id} 
-            style={screenStyles.card}
-            onPress={() => navigation.navigate('TenantDetails', { tenantId: tenant.id })}
-          >
-            <Card.Title title={tenant.full_name} titleVariant="titleMedium" />
-            <Card.Content>
-              <View style={screenStyles.listItem}>
-                <Text variant="bodyMedium" style={screenStyles.date}>Email</Text>
-                <Text variant="bodyMedium">{tenant.email}</Text>
-              </View>
-              <View style={screenStyles.listItem}>
-                <Text variant="bodyMedium" style={screenStyles.date}>Phone</Text>
-                <Text variant="bodyMedium">{tenant.phone}</Text>
-              </View>
-            </Card.Content>
+            return (
+              <TouchableOpacity
+                key={tenant.id}
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (!tenant.tenant_code) {
+                    Alert.alert(
+                      'Unable to View Details',
+                      `Tenant ${tenant.full_name} cannot be viewed at this time.`
+                    );
+                    return;
+                  }
+                  navigation.navigate('TenantDetails', { tenantCode: tenant.tenant_code });
+                }}
+              >
+                <View style={styles.tenantRow}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>
+                      {tenant.full_name.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+
+                  <View style={styles.tenantInfo}>
+                    <Text style={styles.tenantName}>{tenant.full_name}</Text>
+                    <Text style={styles.tenantLocation}>{tenant.email}</Text>
+                    <View style={styles.tenantStatsRow}>
+                      <Text style={styles.statsText}>
+                        Phone: <Text style={{ fontWeight: '600', color: colors.text.primary }}>{tenant.phone}</Text>
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tenantRight}>
+                    {isActive ? (
+                       <Badge label="Active" status="active" icon="checkmark-circle" />
+                    ) : (
+                       <Badge label="Inactive" status="default" />
+                    )}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        ) : (
+          <Card>
+            <Text style={screenStyles.empty}>No tenants found</Text>
           </Card>
-        ))
-      ) : (
-        <Card style={screenStyles.card}>
-          <Card.Content>
-            <Text variant="bodyMedium" style={screenStyles.empty}>No tenants yet</Text>
-          </Card.Content>
-        </Card>
-      )}
-    </ScrollView>
+        )}
+      </View>
+    </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  headerButton: {
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    backgroundColor: colors.surface,
+  },
+  listContainer: {
+    paddingVertical: 12,
+  },
+  tenantRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  tenantInfo: {
+    flex: 1,
+  },
+  tenantName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 2,
+  },
+  tenantLocation: {
+    fontSize: 13,
+    color: colors.text.secondary,
+    marginBottom: 8,
+  },
+  tenantStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statsText: {
+    fontSize: 12,
+    color: colors.text.secondary,
+  },
+  tenantRight: {
+    alignItems: 'flex-end',
+    marginLeft: 8,
+  },
+});

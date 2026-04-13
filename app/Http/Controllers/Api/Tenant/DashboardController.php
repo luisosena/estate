@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Tenant;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Inertia\Inertia;
+use App\Models\RentBill;
 
 class DashboardController extends Controller
 {
@@ -31,8 +31,46 @@ class DashboardController extends Controller
 
             $activeTenancy = $tenant->tenancies()
                 ->where('status', 'active')
-                ->with(['unit', 'payments', 'utilities'])
+                ->with(['unit', 'payments', 'tenancyUtilities.utilityType'])
                 ->first();
+
+            // Get rent bills for the tenant
+            $rentBills = [];
+            $currentMonthBill = null;
+            
+            if ($activeTenancy) {
+                $rentBills = RentBill::where('tenancy_id', $activeTenancy->id)
+                    ->orderBy('billing_month', 'desc')
+                    ->take(5)
+                    ->get()
+                    ->map(function ($bill) {
+                        return [
+                            'id' => $bill->id,
+                            'billing_month' => $bill->billing_month->format('Y-m'),
+                            'amount_due' => $bill->amount_due,
+                            'amount_paid' => $bill->amount_paid,
+                            'outstanding_amount' => $bill->outstanding_amount,
+                            'due_date' => $bill->due_date->format('Y-m-d'),
+                            'status' => $bill->status,
+                        ];
+                    });
+
+                $currentMonthBill = RentBill::where('tenancy_id', $activeTenancy->id)
+                    ->where('billing_month', now()->startOfMonth())
+                    ->first();
+                
+                if ($currentMonthBill) {
+                    $currentMonthBill = [
+                        'id' => $currentMonthBill->id,
+                        'billing_month' => $currentMonthBill->billing_month->format('Y-m'),
+                        'amount_due' => $currentMonthBill->amount_due,
+                        'amount_paid' => $currentMonthBill->amount_paid,
+                        'outstanding_amount' => $currentMonthBill->outstanding_amount,
+                        'due_date' => $currentMonthBill->due_date->format('Y-m-d'),
+                        'status' => $currentMonthBill->status,
+                    ];
+                }
+            }
 
             return response()->json([
                 'tenant' => [
@@ -56,7 +94,10 @@ class DashboardController extends Controller
                     ->take(5)
                     ->values() ?? [],
 
-                'utilities' => $activeTenancy?->utilities,
+                'rent_bills' => $rentBills,
+                'current_month_bill' => $currentMonthBill,
+
+                'utilities' => $activeTenancy?->tenancyUtilities,
 
                 'notifications' => $tenant->notifications()
                     ->latest()

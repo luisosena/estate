@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { deleteItem, getItem, setItem } from '../utils/storage';
+
 import { authApi } from '../api/auth';
 import type { AuthUser, LoginCredentials, RegisterData, AuthResponse } from '../types';
+import { deleteItem, getItem, setItem } from '../utils/storage';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -11,6 +12,7 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: AuthUser) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(userData);
       }
     } catch (error) {
-      console.log('Auth check failed:', error);
+      // Auth check silent failure is intentional for guest state
       await clearTokens();
     } finally {
       setIsLoading(false);
@@ -68,10 +70,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authApi.logout();
     } catch (error) {
-      console.log('Logout API error:', error);
+      // Logout failure usually due to expired token already
     } finally {
       await clearTokens();
       setUser(null);
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      const userData = await authApi.me();
+      setUser(userData);
+    } catch (error) {
+      console.error('Error refreshing user:', error);
     }
   };
 
@@ -85,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         updateUser: setUser,
+        refreshUser,
       }}
     >
       {children}

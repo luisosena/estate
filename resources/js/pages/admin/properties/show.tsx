@@ -1,9 +1,10 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Link, router } from '@inertiajs/react';
 import { Building, Edit, Home, Settings, Users, ArrowLeft, MapPin, Plus, Trash2 } from 'lucide-react';
 import { route } from 'ziggy-js';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Landlord {
   id: number;

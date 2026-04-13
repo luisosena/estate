@@ -1,3 +1,8 @@
+import { router } from '@inertiajs/react';
+
+import { ChartColumn } from '@/components/animate-ui/icons/chart-column';
+import { LayoutDashboard } from '@/components/animate-ui/icons/layout-dashboard';
+import { Users } from '@/components/animate-ui/icons/users';
 import {
     Sidebar,
     SidebarContent,
@@ -11,10 +16,6 @@ import {
     SidebarMenuSubItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { router } from '@inertiajs/react';
-import { ChartColumn } from '@/components/animate-ui/icons/chart-column';
-import { LayoutDashboard } from '@/components/animate-ui/icons/layout-dashboard';
-import { Users } from '@/components/animate-ui/icons/users';
 
 export function AppSidebar() {
     const { state, setOpen } = useSidebar();

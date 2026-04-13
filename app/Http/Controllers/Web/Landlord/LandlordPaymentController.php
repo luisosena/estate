@@ -6,13 +6,61 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Services\RentBillService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use App\Services\UtilityService;
+use App\Models\UtilityBill;
 
 class LandlordPaymentController extends Controller
 {
+    protected RentBillService $rentBillService;
+    protected UtilityService $utilityService;
+
+    public function __construct(RentBillService $rentBillService, UtilityService $utilityService)
+    {
+        $this->rentBillService = $rentBillService;
+        $this->utilityService = $utilityService;
+    }
+
+    /**
+     * Display a listing of payments for the landlord.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Inertia\Response
+     */
+    public function index(Request $request)
+    {
+        $landlord = $request->user();
+        
+        // Base query for filtering payments belonging to landlord's properties
+        $baseQuery = \App\Models\Payment::whereHas('tenant.tenancies.unit.property', function ($query) use ($landlord) {
+            $query->where('owner_id', $landlord->id);
+        });
+
+        // Get paginated payments with eager loading
+        $payments = (clone $baseQuery)
+            ->with(['tenant', 'tenancy.unit.property', 'rentBill'])
+            ->orderBy('paid_at', 'desc')
+            ->paginate(20);
+
+        // Calculate stats using cloned base queries (avoids N+1 problem)
+        $thisMonth = now()->startOfMonth();
+        $stats = [
+            'total_payments' => (clone $baseQuery)->count(),
+            'total_amount' => (clone $baseQuery)->sum('amount'),
+            'this_month_amount' => (clone $baseQuery)->where('paid_at', '>=', $thisMonth)->sum('amount'),
+        ];
+
+        return Inertia::render('landlord/payments/index', [
+            'payments' => $payments,
+            'stats' => $stats,
+        ]);
+    }
+
     /**
      * Store a new payment record for a tenant.
      *
@@ -39,8 +87,10 @@ class LandlordPaymentController extends Controller
             'amount' => 'required|numeric|min:0',
             'payment_type' => ['required', Rule::in(['rent', 'utility'])],
             'payment_method' => 'required|string|max:255',
-            'status' => ['required', Rule::in(['paid', 'partial', 'overdue'])],
+            'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
             'paid_at' => 'required|date',
+            'rent_bill_id' => 'nullable|exists:rent_bills,id',
+            'utility_bill_id' => 'nullable|exists:utility_bills,id',
         ]);
 
         try {
@@ -53,16 +103,57 @@ class LandlordPaymentController extends Controller
                     ->with('error', 'This tenant has no active tenancy.');
             }
 
-            // Create the payment record
-            $payment = Payment::create([
+            // Handle rent_bill_id for rent payments using the service
+            $rentBillId = null;
+            if ($validated['payment_type'] === 'rent') {
+                $billLinkResult = $this->rentBillService->linkPaymentToBill(
+                    $activeTenancy->id,
+                    !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                    false // Not required - allows payments without bill
+                );
+                $rentBillId = $billLinkResult['rent_bill_id'];
+            }
+
+            // Prepare payment data
+            $paymentData = [
                 'tenant_id' => $tenant->id,
                 'tenancy_id' => $activeTenancy->id,
+                'rent_bill_id' => $rentBillId,
+                'utility_bill_id' => $validated['utility_bill_id'] ?? null,
                 'amount' => $validated['amount'],
                 'payment_type' => $validated['payment_type'],
                 'payment_method' => $validated['payment_method'],
                 'status' => $validated['status'],
                 'paid_at' => $validated['paid_at'],
-            ]);
+            ];
+
+            // Create payment with transactional bill processing if applicable
+            $payment = null;
+            if ($validated['payment_type'] === 'rent' && $rentBillId && in_array($validated['status'], ['paid', 'partial'])) {
+                try {
+                    $payment = $this->rentBillService->createPaymentWithRentBill(
+                        $paymentData,
+                        $rentBillId,
+                        $validated['amount']
+                    );
+                } catch (\InvalidArgumentException $e) {
+                    // Bill already processed, continue with payment but warn
+                    $payment = Payment::create($paymentData);
+                }
+            } else if ($validated['payment_type'] === 'utility' && !empty($validated['utility_bill_id'])) {
+                // Link utility payment
+                $bill = UtilityBill::find($validated['utility_bill_id']);
+                if ($bill) {
+                    $this->utilityService->processUtilityPayment($bill, $validated['amount']);
+                    // Update bill status if needed (processUtilityPayment already saves $bill)
+                    $bill->refresh();
+                    $paymentData['status'] = $bill->status;
+                }
+                $payment = Payment::create($paymentData);
+            } else {
+                // No bill linked or not applicable - create payment normally
+                $payment = Payment::create($paymentData);
+            }
 
             Log::info('Payment record created', [
                 'payment_id' => $payment->id,
@@ -115,7 +206,7 @@ class LandlordPaymentController extends Controller
             'amount' => 'required|numeric|min:0',
             'payment_type' => ['required', Rule::in(['rent', 'utility'])],
             'payment_method' => 'required|string|max:255',
-            'status' => ['required', Rule::in(['paid', 'partial', 'overdue'])],
+            'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
             'paid_at' => 'required|date',
         ]);
 

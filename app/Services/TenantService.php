@@ -5,16 +5,18 @@ namespace App\Services;
 use App\Models\Tenant;
 use App\Models\Tenancy;
 use App\Models\Unit;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TenantService
 {
+    /**
+     * Get dashboard data for a specific tenant.
+     */
     public function getTenantDashboardData(Tenant $tenant): array
     {
-        $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
-            ->with(['unit', 'payments', 'utilities'])
-            ->first();
+        $activeTenancy = $this->getActiveTenancy($tenant);
 
         return [
             'tenant' => [
@@ -22,11 +24,17 @@ class TenantService
                 'full_name' => $tenant->full_name,
                 'phone' => $tenant->phone,
                 'email' => $tenant->email,
+                'tenant_code' => $tenant->tenant_code,
+                'emergency_contact_name' => $tenant->emergency_contact_name,
+                'emergency_contact_phone' => $tenant->emergency_contact_phone,
             ],
             'unit' => $activeTenancy?->unit,
             'tenancy' => $activeTenancy ? [
+                'id' => $activeTenancy->id,
                 'move_in_date' => $activeTenancy->move_in_date,
                 'status' => $activeTenancy->status,
+                'monthly_rent' => $activeTenancy->monthly_rent,
+                'security_deposit' => $activeTenancy->security_deposit,
             ] : null,
             'payments' => $activeTenancy?->payments
                 ->sortByDesc(function ($payment) {
@@ -34,7 +42,7 @@ class TenantService
                 })
                 ->take(5)
                 ->values() ?? [],
-            'utilities' => $activeTenancy?->utilities,
+            'utilities' => $activeTenancy?->tenancyUtilities,
             'notifications' => $tenant->notifications()
                 ->latest()
                 ->take(5)
@@ -42,11 +50,84 @@ class TenantService
         ];
     }
 
+    /**
+     * Get the currently active tenancy for a tenant.
+     */
     public function getActiveTenancy(Tenant $tenant): ?Tenancy
     {
         return $tenant->tenancies()
             ->where('status', 'active')
-            ->with(['unit', 'payments', 'utilities'])
+            ->with(['unit', 'payments', 'tenancyUtilities'])
             ->first();
+    }
+
+    /**
+     * Create a tenant, user account, and optional tenancy in one atomic action.
+     */
+    public function createTenantWithTenancy(array $data, User $landlord): array
+    {
+        return DB::transaction(function () use ($data, $landlord) {
+            // 1. Create Tenant
+            $tenant = Tenant::create([
+                'full_name' => $data['full_name'],
+                'phone' => $data['phone'],
+                'email' => $data['email'],
+                'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
+                'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,
+                'emergency_contact_relation' => $data['emergency_contact_relation'] ?? null,
+            ]);
+
+            // 2. Create User Account
+            $username = $this->generateUniqueUsername($tenant->full_name);
+            $user = User::create([
+                'name' => $tenant->full_name,
+                'username' => $username,
+                'email' => $tenant->email,
+                'password' => $username, // Cast handles hashing
+                'role' => 'tenant',
+                'tenant_id' => $tenant->id,
+            ]);
+
+            // 3. Handle Tenancy (if unit_id provided)
+            $tenancy = null;
+            if (!empty($data['unit_id'])) {
+                $tenancy = Tenancy::create([
+                    'tenant_id' => $tenant->id,
+                    'unit_id' => $data['unit_id'],
+                    'move_in_date' => $data['move_in_date'],
+                    'monthly_rent' => $data['monthly_rent'],
+                    'security_deposit' => $data['security_deposit'],
+                    'rent_due_day' => $data['rent_due_day'] ?? 5,
+                    'status' => 'active',
+                ]);
+
+                // Update unit status
+                Unit::find($data['unit_id'])->update(['status' => 'occupied']);
+            }
+
+            return [
+                'tenant' => $tenant,
+                'tenancy' => $tenancy,
+                'user' => $user,
+                'credentials' => [
+                    'username' => $username,
+                    'password' => $username,
+                ]
+            ];
+        });
+    }
+
+    /**
+     * Generate a unique username based on the full name.
+     */
+    private function generateUniqueUsername(string $fullName): string
+    {
+        do {
+            $nameParts = explode(' ', trim($fullName));
+            $base = strtolower(implode('.', array_slice($nameParts, 0, 3)));
+            $username = $base . rand(100, 999);
+        } while (User::where('username', $username)->exists());
+
+        return $username;
     }
 }

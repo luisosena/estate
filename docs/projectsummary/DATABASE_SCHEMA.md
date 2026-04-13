@@ -13,12 +13,58 @@ erDiagram
     TENANT ||--o{ TENANCY : "has"
     UNIT ||--o{ TENANCY : "has active"
     TENANCY ||--o{ PAYMENT : "tracks"
-    TENANCY ||--o{ UTILITY : "tracks"
+    TENANCY ||--o{ TENANCY_UTILITY : "has"
+    TENANCY ||--o{ RENT_BILL : "generates"
+    TENANCY_UTILITY ||--o{ UTILITY_BILL : "generates"
+    TENANCY_UTILITY }|..| UTILITY_TYPE : "references"
+    UTILITY_BILL ||--o{ PAYMENT : "linked to"
+    RENT_BILL ||--o{ PAYMENT : "linked to"
     USER ||--o{ NOTIFICATION : "receives"
     USER ||--o{ API_TOKEN : "has"
     USER ||--o{ SECURITY_EVENT : "generates"
     TENANT ||--o{ TENANT_IDENTIFICATION : "has"
     TENANT ||--o{ MESSAGE : "sends/receives"
+    
+    RENT_BILL {
+        bigint id PK
+        bigint tenancy_id FK
+        date billing_month
+        decimal amount_due
+        decimal amount_paid
+        date due_date
+        enum status
+    }
+    
+    UTILITY_TYPE {
+        bigint id PK
+        string name
+        string unit
+        text description
+        boolean is_metered
+        boolean is_active
+    }
+    
+    TENANCY_UTILITY {
+        bigint id PK
+        bigint tenancy_id FK
+        bigint utility_type_id FK
+        decimal amount
+        enum billing_cycle
+        string provider
+        string meter_number
+        enum status
+    }
+    
+    UTILITY_BILL {
+        bigint id PK
+        bigint tenancy_utility_id FK
+        date billing_month
+        decimal units_consumed
+        decimal amount_due
+        decimal amount_paid
+        date due_date
+        enum status
+    }
 ```
 
 ## Tables
@@ -35,8 +81,8 @@ erDiagram
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | tenant_id | BIGINT | FOREIGN KEY (nullable, cascade) | Reference to tenant (for tenant role) |
 | name | VARCHAR(255) | NOT NULL | User's full name |
-| username | VARCHAR(255) | UNIQUE, NOT NULL | Unique username for login |
-| email | VARCHAR(255) | UNIQUE, NOT NULL | User's email address |
+| username | VARCHAR(255) | UNIQUE, NOT NULL | Unique username (primary credential for mobile login) |
+| email | VARCHAR(255) | UNIQUE, NOT NULL | User's email address (secondary/web login) |
 | email_verified_at | TIMESTAMP | NULLABLE | Email verification timestamp |
 | password | VARCHAR(255) | NOT NULL | Bcrypt hashed password |
 | remember_token | VARCHAR(100) | NULLABLE | Remember me token |
@@ -72,22 +118,24 @@ erDiagram
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
-| user_id | BIGINT | FOREIGN KEY (nullable) | Reference to user account |
-| first_name | VARCHAR(255) | NOT NULL | Tenant's first name |
-| last_name | VARCHAR(255) | NOT NULL | Tenant's last name |
-| email | VARCHAR(255) | NOT NULL | Tenant's email |
-| phone | VARCHAR(50) | NULLABLE | Contact phone number |
-| emergency_contact | VARCHAR(255) | NULLABLE | Emergency contact info |
+| tenant_code | VARCHAR(255) | UNIQUE, NOT NULL | Unique tenant code |
+| full_name | VARCHAR(255) | NOT NULL | Tenant's full name |
+| phone | VARCHAR(50) | NOT NULL | Contact phone number |
+| email | VARCHAR(255) | NULLABLE | Tenant's email |
+| emergency_contact_name | VARCHAR(255) | NOT NULL | Emergency contact name |
+| emergency_contact_phone | VARCHAR(255) | NOT NULL | Emergency contact phone |
+| emergency_contact_relation | VARCHAR(255) | NOT NULL | Emergency contact relation |
+| deleted_at | TIMESTAMP | NULLABLE | Soft delete timestamp |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
 **Indexes**:
 - PRIMARY KEY (id)
-- INDEX on user_id
+- UNIQUE INDEX on tenant_code
 - INDEX on email
 
 **Relationships**:
-- HasOne User
+- HasOne User (via users.tenant_id)
 - HasMany Tenancy
 - HasMany TenantIdentification
 - HasMany Payment
@@ -142,24 +190,17 @@ erDiagram
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | property_id | BIGINT | FOREIGN KEY (properties.id) | Parent property |
-| unit_number | VARCHAR(50) | NOT NULL | Unit identifier (e.g., "101", "2A") |
-| type | ENUM('studio', '1bedroom', '2bedroom', '3bedroom', 'commercial') | NOT NULL | Unit type |
-| floor | INT | NULLABLE | Floor number |
-| size_sqm | DECIMAL(10,2) | NULLABLE | Unit size in square meters |
-| bedrooms | INT | DEFAULT 0 | Number of bedrooms |
-| bathrooms | DECIMAL(3,1) | DEFAULT 1.0 | Number of bathrooms |
-| rent_amount | DECIMAL(12,2) | NOT NULL | Monthly rent |
-| status | ENUM('available', 'occupied', 'maintenance', 'unavailable') | DEFAULT 'available' | Unit availability |
-| description | TEXT | NULLABLE | Unit description |
-| features | JSON | NULLABLE | Array of features (parking, balcony, etc.) |
+| unit_code | VARCHAR(255) | UNIQUE, NOT NULL | Unit identifier |
+| unit_name | VARCHAR(255) | NOT NULL | Human-readable unit name |
+| status | ENUM('available', 'occupied', 'maintenance') | DEFAULT 'available' | Unit availability |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
 **Indexes**:
 - PRIMARY KEY (id)
+- UNIQUE INDEX on unit_code
 - INDEX on property_id
 - INDEX on status
-- Composite INDEX on (property_id, unit_number)
 
 **Relationships**:
 - BelongsTo Property
@@ -184,9 +225,10 @@ erDiagram
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | tenant_id | BIGINT | FOREIGN KEY (tenants.id) | Tenant reference |
 | unit_id | BIGINT | FOREIGN KEY (units.id) | Rented unit |
-| start_date | DATE | NOT NULL | Tenancy start date |
-| end_date | DATE | NULLABLE | Tenancy end date (planned) |
-| rent_amount | DECIMAL(12,2) | NOT NULL | Monthly rent amount |
+| move_in_date | DATE | NOT NULL | Tenancy start date |
+| move_out_date | DATE | NULLABLE | Tenancy end date (planned) |
+| monthly_rent | DECIMAL(12,2) | NOT NULL | Monthly rent amount |
+| rent_due_day | INT | DEFAULT 5 | Day of month rent is due (1-31) |
 | security_deposit | DECIMAL(12,2) | NULLABLE | Security deposit amount |
 | status | ENUM('active', 'ended', 'pending', 'expired') | DEFAULT 'pending' | Tenancy status |
 | termination_reason | VARCHAR(255) | NULLABLE | Reason for termination |
@@ -215,17 +257,24 @@ erDiagram
 
 **Migration**: `database/migrations/2026_02_03_154927_create_payments_table.php`
 
+**Additional Migrations**:
+- `database/migrations/2026_03_20_000004_add_utility_bill_id_to_payments_table.php` - Adds utility_bill_id for linkage to utility bills
+- `database/migrations/2026_03_20_000005_add_pending_status_to_payments_table.php` - Adds 'pending' status to payment status enum
+- `database/migrations/2026_03_21_000002_add_rent_bill_id_to_payments_table.php` - Adds rent_bill_id for linkage to rent bills
+
 **Attributes**:
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | tenancy_id | BIGINT | FOREIGN KEY (tenancies.id) | Related tenancy |
 | tenant_id | BIGINT | FOREIGN KEY (tenants.id) | Tenant making payment |
+| utility_bill_id | BIGINT | FOREIGN KEY (nullable, nullOnDelete) | Link to utility bill (for utility payments) |
+| rent_bill_id | BIGINT | FOREIGN KEY (nullable, nullOnDelete) | Link to rent bill (for rent payments) |
 | amount | DECIMAL(12,2) | NOT NULL | Payment amount |
-| type | ENUM('rent', 'deposit', 'utility', 'penalty', 'other') | NOT NULL | Payment type |
-| method | ENUM('cash', 'bank_transfer', 'mobile_money', 'card', 'other') | NOT NULL | Payment method |
-| status | ENUM('pending', 'completed', 'failed', 'refunded') | DEFAULT 'pending' | Payment status |
-| payment_date | DATE | NOT NULL | Date payment was made |
+| payment_type | ENUM('rent', 'deposit', 'utility', 'penalty', 'other') | NOT NULL | Payment type |
+| payment_method | ENUM('cash', 'bank_transfer', 'mobile_money', 'card', 'other') | NOT NULL | Payment method |
+| status | ENUM('paid', 'partial', 'overdue', 'cancelled', 'pending') | DEFAULT 'pending' | Payment status |
+| paid_at | TIMESTAMP | NOT NULL | Date payment was made |
 | due_date | DATE | NOT NULL | Date payment was due |
 | reference_number | VARCHAR(100) | NULLABLE | External payment reference |
 | notes | TEXT | NULLABLE | Payment notes |
@@ -236,22 +285,164 @@ erDiagram
 - PRIMARY KEY (id)
 - INDEX on tenancy_id
 - INDEX on tenant_id
+- INDEX on utility_bill_id
+- INDEX on rent_bill_id
 - INDEX on status
 - INDEX on payment_date
 
 **Relationships**:
 - BelongsTo Tenancy
 - BelongsTo Tenant
+- BelongsTo UtilityBill (optional, for utility payments)
+- BelongsTo RentBill (optional, for rent payments)
 
 ---
 
-### 7. utilities
+### 7. utility_types
 
-**Purpose**: Tracks utility consumption and payments.
+**Purpose**: Catalog of utility categories (admin-managed). Replaces hardcoded ENUM values.
 
-**Migration**: `database/migrations/2026_01_30_120843_create_utilities_table.php`
+**Migration**: `database/migrations/2026_03_20_000001_create_utility_types_table.php`
+
+**Seeder**: `database/seeders/UtilityTypeSeeder.php` - Seeds default utility types (Water, Electricity, Gas, Internet, Security, Janitor, Garbage, Parking)
 
 **Attributes**:
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
+| name | VARCHAR(100) | NOT NULL | Utility name (e.g., 'Water', 'Electricity', 'Security') |
+| unit | VARCHAR(50) | NULLABLE | Unit of measurement (e.g., 'cubic metres', 'kWh', 'flat rate') |
+| description | TEXT | NULLABLE | Optional detail for landlord UI |
+| is_metered | BOOLEAN | DEFAULT false | true = usage-based billing, false = flat rate |
+| is_active | BOOLEAN | DEFAULT true | Whether utility type is available |
+| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
+| updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
+
+**Indexes**:
+- PRIMARY KEY (id)
+- UNIQUE INDEX on name
+
+**Relationships**:
+- HasMany TenancyUtility
+
+---
+
+### 8. tenancy_utilities
+
+**Purpose**: Links a tenancy to the utility types that apply to it, with agreed billing amounts. This is the join table between tenancies and utility types.
+
+**Migration**: `database/migrations/2026_03_20_000002_create_tenancy_utilities_table.php`
+
+**Attributes**:
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
+| tenancy_id | BIGINT | FOREIGN KEY (tenancies.id, cascadeOnDelete) | Related tenancy |
+| utility_type_id | BIGINT | FOREIGN KEY (utility_types.id, restrictOnDelete) | Utility type reference |
+| amount | DECIMAL(12,2) | NOT NULL | Agreed fixed amount (for flat-rate utilities) |
+| billing_cycle | ENUM('monthly', 'quarterly', 'annual') | DEFAULT 'monthly' | Billing frequency |
+| provider | VARCHAR(255) | NULLABLE | Service provider name |
+| account_number | VARCHAR(100) | NULLABLE | Utility account number |
+| meter_number | VARCHAR(100) | NULLABLE | Meter number |
+| status | ENUM('active', 'suspended', 'disconnected') | DEFAULT 'active' | Utility status |
+| notes | TEXT | NULLABLE | Additional notes |
+| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
+| updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
+
+**Indexes**:
+- PRIMARY KEY (id)
+- UNIQUE CONSTRAINT on (tenancy_id, utility_type_id) - 'uq_tenancy_utility'
+- INDEX on tenancy_id
+- INDEX on utility_type_id
+- INDEX on status
+
+**Relationships**:
+- BelongsTo Tenancy
+- BelongsTo UtilityType
+- HasMany UtilityBill
+
+---
+
+### 9. utility_bills
+
+**Purpose**: Individual monthly charge records. One row per utility per billing period.
+
+**Migration**: `database/migrations/2026_03_20_000003_create_utility_bills_table.php`
+
+**Attributes**:
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
+| tenancy_utility_id | BIGINT | FOREIGN KEY (tenancy_utilities.id, cascadeOnDelete) | Reference to tenancy utility |
+| billing_month | DATE | NOT NULL | First day of billing month (e.g., 2026-03-01) |
+| units_consumed | DECIMAL(10,3) | NULLABLE | Usage amount (null for flat-rate utilities) |
+| amount_due | DECIMAL(12,2) | NOT NULL | Total amount due |
+| amount_paid | DECIMAL(12,2) | DEFAULT 0 | Amount paid so far |
+| due_date | DATE | NOT NULL | Payment due date |
+| status | ENUM('pending', 'paid', 'partial', 'overdue', 'waived') | DEFAULT 'pending' | Bill status |
+| notes | TEXT | NULLABLE | Additional notes |
+| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
+| updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
+
+**Indexes**:
+- PRIMARY KEY (id)
+- UNIQUE CONSTRAINT on (tenancy_utility_id, billing_month) - 'uq_utility_bill_month'
+- INDEX on tenancy_utility_id
+- INDEX on billing_month
+- INDEX on status
+- INDEX on due_date
+
+**Relationships**:
+- BelongsTo TenancyUtility
+- HasMany Payment
+
+---
+
+### 10. rent_bills
+
+**Purpose**: Individual monthly rent charge records. One row per tenancy per billing month. Tracks rent payments, outstanding amounts, and payment status.
+
+**Migration**: `database/migrations/2026_03_21_000001_create_rent_bills_table.php`
+
+**Attributes**:
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
+| tenancy_id | BIGINT | FOREIGN KEY (tenancies.id, cascadeOnDelete) | Reference to tenancy |
+| billing_month | DATE | NOT NULL | First day of billing month (e.g., 2026-03-01) |
+| amount_due | DECIMAL(12,2) | NOT NULL | Monthly rent amount |
+| amount_paid | DECIMAL(12,2) | DEFAULT 0 | Amount paid so far |
+| due_date | DATE | NOT NULL | Payment due date (default: 5th of month) |
+| status | ENUM('pending', 'paid', 'partial', 'overdue', 'waived') | DEFAULT 'pending' | Bill status |
+| notes | TEXT | NULLABLE | Additional notes |
+| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
+| updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
+
+**Indexes**:
+- PRIMARY KEY (id)
+- UNIQUE CONSTRAINT on (tenancy_id, billing_month) - 'uq_rent_bill_month'
+- INDEX on tenancy_id
+- INDEX on billing_month
+- INDEX on status
+- INDEX on due_date
+
+**Relationships**:
+- BelongsTo Tenancy
+- HasMany Payment
+
+---
+
+### 11. utilities (DROPPED)
+
+**Purpose**: **DROPPED** - Original utility tracking table. Has been replaced by the utility_types + tenancy_utilities + utility_bills system.
+
+> **Warning**: This table was dropped in migration `database/migrations/2026_03_19_120000_drop_deprecated_utilities_table.php`. The new three-table utility system (utility_types, tenancy_utilities, utility_bills) should be used instead.
+
+**Migration**: `database/migrations/2026_01_30_120843_create_utilities_table.php` (original creation)
+
+**Dropped Migration**: `database/migrations/2026_03_19_120000_drop_deprecated_utilities_table.php`
+
+**Historical Attributes** (for reference only):
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
@@ -274,7 +465,7 @@ erDiagram
 
 ---
 
-### 8. tenant_identifications
+### 11. tenant_identifications
 
 **Purpose**: Stores tenant identification documents.
 
@@ -303,7 +494,7 @@ erDiagram
 
 ---
 
-### 9. notifications
+### 12. notifications
 
 **Purpose**: In-app notifications for users.
 
@@ -312,7 +503,7 @@ erDiagram
 **Attributes**:
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
+| id | UUID | PRIMARY KEY | Unique identifier |
 | notifiable_type | VARCHAR(255) | NOT NULL | Model type (User/Tenant) |
 | notifiable_id | BIGINT | NOT NULL | Model ID |
 | type | VARCHAR(255) | NOT NULL | Notification class/type |
@@ -331,7 +522,7 @@ erDiagram
 
 ---
 
-### 10. messages
+### 13. messages
 
 **Purpose**: Internal messaging between users.
 
@@ -343,9 +534,7 @@ erDiagram
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | sender_id | BIGINT | FOREIGN KEY (users.id) | Message sender |
 | receiver_id | BIGINT | FOREIGN KEY (users.id) | Message receiver |
-| subject | VARCHAR(255) | NULLABLE | Message subject |
-| body | TEXT | NOT NULL | Message content |
-| read_at | TIMESTAMP | NULLABLE | When message was read |
+| message | TEXT | NOT NULL | Message content |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -360,7 +549,7 @@ erDiagram
 
 ---
 
-### 11. api_tokens
+### 14. api_tokens
 
 **Purpose**: API authentication tokens for mobile/web API access.
 
@@ -393,7 +582,7 @@ erDiagram
 
 ---
 
-### 12. security_events
+### 15. security_events
 
 **Purpose**: Audit log for security-related events.
 
@@ -436,7 +625,7 @@ erDiagram
 
 ---
 
-### 13. Laravel System Tables
+### 16. Laravel System Tables
 
 The following tables are created by Laravel framework:
 
@@ -466,11 +655,7 @@ The following tables are created by Laravel framework:
 
 ### JSON Fields
 
-#### units.features
-Stores an array of unit features:
-```json
-["parking", "balcony", "air_conditioning", "furnished"]
-```
+*(No custom JSON fields for units table in the current schema)*
 
 #### api_tokens.abilities
 Stores token permissions:
@@ -518,11 +703,13 @@ erDiagram
     
     TENANT {
         bigint id PK
-        bigint user_id FK
-        string first_name
-        string last_name
-        string email
+        string tenant_code UK
+        string full_name
         string phone
+        string email
+        string emergency_contact_name
+        string emergency_contact_phone
+        string emergency_contact_relation
     }
     
     PROPERTY {
@@ -536,9 +723,8 @@ erDiagram
     UNIT {
         bigint id PK
         bigint property_id FK
-        string unit_number
-        enum type
-        decimal rent_amount
+        string unit_code UK
+        string unit_name
         enum status
     }
     
@@ -546,9 +732,9 @@ erDiagram
         bigint id PK
         bigint tenant_id FK
         bigint unit_id FK
-        date start_date
-        date end_date
-        decimal rent_amount
+        date move_in_date
+        date move_out_date
+        decimal monthly_rent
         enum status
     }
     
@@ -556,10 +742,40 @@ erDiagram
         bigint id PK
         bigint tenancy_id FK
         bigint tenant_id FK
+        bigint utility_bill_id FK
         decimal amount
-        enum type
+        enum payment_type
+        enum payment_method
         enum status
-        date payment_date
+        timestamp paid_at
+    }
+    
+    UTILITY_TYPE {
+        bigint id PK
+        string name
+        string unit
+        boolean is_metered
+        boolean is_active
+    }
+    
+    TENANCY_UTILITY {
+        bigint id PK
+        bigint tenancy_id FK
+        bigint utility_type_id FK
+        decimal amount
+        enum billing_cycle
+        enum status
+    }
+    
+    UTILITY_BILL {
+        bigint id PK
+        bigint tenancy_utility_id FK
+        date billing_month
+        decimal units_consumed
+        decimal amount_due
+        decimal amount_paid
+        date due_date
+        enum status
     }
     
     UTILITY {
@@ -602,5 +818,8 @@ erDiagram
     PROPERTY ||--o{ UNIT : "contains"
     UNIT ||--o{ TENANCY : "has"
     TENANCY ||--o{ PAYMENT : "tracks"
-    TENANCY ||--o{ UTILITY : "tracks"
+    TENANCY ||--o{ TENANCY_UTILITY : "has"
+    TENANCY_UTILITY }|..|{ UTILITY_TYPE : "references"
+    TENANCY_UTILITY ||--o{ UTILITY_BILL : "generates"
+    UTILITY_BILL ||--o{ PAYMENT : "linked to"
 ```

@@ -1,3 +1,8 @@
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard, Users, Building2, Home, Bell, Zap, Receipt, DollarSign, CreditCard } from 'lucide-react';
+import { route } from 'ziggy-js';
+
+import NotificationBell from '@/components/notification-bell';
 import {
     Sidebar,
     SidebarContent,
@@ -8,10 +13,6 @@ import {
     SidebarMenuItem,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, Users, Building2, Home, Bell } from 'lucide-react';
-import { route } from 'ziggy-js';
-import NotificationBell from '@/components/notification-bell';
 
 interface Property {
     id: number;
@@ -48,6 +49,30 @@ const mainNavItems = [
         icon: Users,
         href: () => route('landlord.tenants.index'),
         routeName: 'landlord.tenants.index',
+    },
+    {
+        label: 'Payments',
+        icon: CreditCard,
+        href: () => route('landlord.payments.index'),
+        routeName: 'landlord.payments.index',
+    },
+    {
+        label: 'Utilities',
+        icon: Zap,
+        href: () => route('landlord.utilities.index'),
+        routeName: 'landlord.utilities.index',
+    },
+    {
+        label: 'Utility Bills',
+        icon: Receipt,
+        href: () => route('landlord.utility-bills.index'),
+        routeName: 'landlord.utility-bills.index',
+    },
+    {
+        label: 'Rent Bills',
+        icon: DollarSign,
+        href: () => route('landlord.rent-bills.index'),
+        routeName: 'landlord.rent-bills.index',
     },
     {
         label: 'Notifications',
@@ -127,10 +152,7 @@ export function LandlordSidebar({ properties = [], unreadNotificationsCount = 0 
                                         isActive={isPropertyActive(property.id)}
                                     >
                                         <Link
-                                            href={route(
-                                                'landlord.properties.tenants',
-                                                { property: property.id },
-                                            )}
+                                            href={route('landlord.properties.tenants', { property: property.id })}
                                         >
                                             <Building2 className="h-4 w-4" />
                                             <span>{property.name}</span>

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\Unit;
 
 class StoreTenantWithTenancyRequest extends FormRequest
 {
@@ -25,19 +26,20 @@ class StoreTenantWithTenancyRequest extends FormRequest
         return [
             // Tenant Information
             'full_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
+            'phone' => 'required|string|max:50',
             'email' => 'required|email|max:255|unique:tenants,email|unique:users,email',
-            'emergency_contact_name' => 'required|string|max:255',
-            'emergency_contact_phone' => 'required|string|max:20',
-            'emergency_contact_relation' => 'required|string|max:100',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:50',
+            'emergency_contact_relation' => 'nullable|string|max:100',
 
-            // Unit Assignment
-            'unit_id' => 'required|exists:units,id',
+            // Unit Assignment (Optional)
+            'unit_id' => 'nullable|exists:units,id',
             
-            // Tenancy Information
-            'move_in_date' => 'required|date|after_or_equal:today',
-            'monthly_rent' => 'required|numeric|min:0',
-            'security_deposit' => 'nullable|numeric|min:0',
+            // Tenancy Information (Required if unit_id is present)
+            'move_in_date' => 'required_with:unit_id|nullable|date',
+            'monthly_rent' => 'required_with:unit_id|nullable|numeric|min:0',
+            'security_deposit' => 'required_with:unit_id|nullable|numeric|min:0',
+            'rent_due_day' => 'nullable|integer|min:1|max:28',
             'tenancy_agreement' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ];
     }
@@ -50,15 +52,11 @@ class StoreTenantWithTenancyRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'unit_id.required' => 'Please select a unit for the tenant.',
             'unit_id.exists' => 'The selected unit is invalid.',
             'email.required' => 'Email address is required for user account creation.',
             'email.unique' => 'This email address is already in use.',
-            'move_in_date.after_or_equal' => 'Move-in date cannot be in the past.',
-            'monthly_rent.min' => 'Monthly rent must be a positive number.',
-            'security_deposit.min' => 'Security deposit must be a positive number.',
-            'tenancy_agreement.mimes' => 'Tenancy agreement must be a PDF or Word document.',
-            'tenancy_agreement.max' => 'Tenancy agreement file size cannot exceed 10MB.',
+            'monthly_rent.required_with' => 'Monthly rent is required when assigning a unit.',
+            'move_in_date.required_with' => 'Move-in date is required when assigning a unit.',
         ];
     }
 
@@ -71,8 +69,12 @@ class StoreTenantWithTenancyRequest extends FormRequest
             $landlord = auth()->user();
             $unitId = $this->input('unit_id');
 
+            if (!$unitId) {
+                return;
+            }
+
             // Check if unit belongs to landlord
-            $unit = \App\Models\Unit::find($unitId);
+            $unit = Unit::find($unitId);
             if (!$unit || $unit->property->owner_id !== $landlord->id) {
                 $validator->errors()->add('unit_id', 'You do not have access to this unit.');
                 return;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Actions\Fortify\CreateNewUser;
 use App\Models\ApiToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -11,19 +12,52 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function register(Request $request, CreateNewUser $creator)
+    {
+        $user = $creator->create($request->all());
+
+        // Log the registration event if needed
+        $user->forceFill(['last_login_at' => now()])->save();
+
+        $rawToken = bin2hex(random_bytes(32));
+        $rawRefreshToken = bin2hex(random_bytes(32));
+
+        ApiToken::create([
+            'user_id' => $user->id,
+            'token_hash' => hash('sha256', $rawToken),
+            'refresh_token_hash' => hash('sha256', $rawRefreshToken),
+            'expires_at' => now()->addHours(8),
+            'refresh_expires_at' => now()->addDays(30),
+            'last_used_at' => now(),
+        ]);
+
+        return response()->json([
+            'token' => $rawToken,
+            'refresh_token' => $rawRefreshToken,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role' => $user->role,
+                'tenant' => null, // New users don't have tenant records yet
+            ],
+        ]);
+    }
+
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'email' => ['required', 'email'],
+            'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
         /** @var User|null $user */
-        $user = User::query()->where('email', $validated['email'])->first();
+        $user = User::query()->where('username', $validated['username'])->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'username' => ['The provided credentials are incorrect.'],
             ]);
         }
 

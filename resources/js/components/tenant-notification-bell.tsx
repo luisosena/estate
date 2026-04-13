@@ -1,3 +1,9 @@
+import { Link, router } from '@inertiajs/react';
+import { Bell, Check, CheckCheck, ExternalLink, X, CreditCard, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { route } from 'ziggy-js';
+
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -7,11 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { Bell, Check, CheckCheck, ExternalLink, X, CreditCard, Zap } from 'lucide-react';
-import { Link, router } from '@inertiajs/react';
-import { route } from 'ziggy-js';
-import { useEffect, useState } from 'react';
+
 
 interface Notification {
   id: string;

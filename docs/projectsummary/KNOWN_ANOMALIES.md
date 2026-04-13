@@ -91,19 +91,26 @@ php artisan make:resource PropertyCollection
 
 ---
 
-### 3. Incomplete Mobile App
+### 3. Mobile App (Partially Implemented)
 
-**Issue**: Mobile app is partially implemented
+**Issue**: Mobile app has core screens but may be missing some features
 
 **Location**: `mobile/`
+
+**Implemented Screens**:
+- **Auth**: Login, Register screens
+- **Tenant**: Dashboard, Payments, MakePayment, Utilities, UtilityBills, Profile
+- **Landlord**: Dashboard, Properties, PropertyDetails, Units, Tenants, TenantDetails, TenancyUtilities, Payments, UtilityBills, Profile
 
 **Status**:
 - Basic API client implemented
 - Auth module implemented
 - Landlord API module implemented
-- No UI screens fully implemented
+- Tenant API module implemented
+- Core UI screens implemented for both roles
+- Navigation with bottom tabs and nested stacks
 
-**Impact**: Mobile app not production-ready
+**Impact**: Core functionality available, additional features may be added over time
 
 ---
 
@@ -167,17 +174,17 @@ php artisan make:resource PropertyCollection
 
 ## Non-Obvious Behaviors
 
-### 1. Tenant Auto-Username Generation
+### 1. Tenant Auto-Username vs Manual Username Registration
 
-**Behavior**: When creating a tenant, the system auto-generates a username
+**Behavior**: While landlords can auto-generate usernames for tenants during backend creation, mobile self-registering users now manually provide their own `username`. The primary login method for the mobile app relies entirely on this `username` instead of email.
 
-**Format**: `firstname.lastname{randomNumber}`
+**Format (Auto-generated)**: `firstname.lastname{randomNumber}`
 
 **Example**: `john.doe837`
 
-**Location**: `app/Services/TenantService.php`
+**Location**: `app/Services/TenantService.php` and `app/Actions/Fortify/CreateNewUser.php`
 
-**Why**: Ensures unique usernames while being human-readable
+**Why**: Ensures unique usernames while being human-readable for backend-created tenants, while empowering self-registered users with custom login identities.
 
 ---
 

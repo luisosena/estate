@@ -1,4 +1,17 @@
+import { Link, router } from '@inertiajs/react';
+import {
+  ArrowRight,
+  Building2,
+  Home,
+  Users,
+  MapPin,
+  TrendingUp,
+  BedDouble,
+  Plus
+} from 'lucide-react';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -12,18 +25,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
-import { Link, router } from '@inertiajs/react';
-import {
-  ArrowRight,
-  Building2,
-  Home,
-  Users,
-  MapPin,
-  TrendingUp,
-  BedDouble,
-  Plus
-} from 'lucide-react';
 
 interface Property {
   id: number;

@@ -1,4 +1,9 @@
+import { Head, Link } from '@inertiajs/react';
+import { Building2, Home, Plus, Eye, ArrowLeft } from 'lucide-react';
+import { route } from 'ziggy-js';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -12,10 +17,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
-import { Head, Link } from '@inertiajs/react';
-import { Building2, Home, Plus, Eye, ArrowLeft } from 'lucide-react';
-import { route } from 'ziggy-js';
 
 interface Unit {
   id: number;

@@ -3,14 +3,73 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
 {
     use SoftDeletes;
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (Payment $payment) {
+            // Validate utility_bill_id if provided
+            if ($payment->utility_bill_id !== null) {
+                // Skip validation if utility_bill_id wasn't changed
+                if (!$payment->isDirty('utility_bill_id')) {
+                    return;
+                }
+
+                $bill = $payment->utilityBill;
+
+                if (!$bill) {
+                    throw new \InvalidArgumentException(
+                        "utility_bill_id {$payment->utility_bill_id} does not exist."
+                    );
+                }
+
+                if (!$bill->tenancyUtility || $bill->tenancyUtility->tenancy_id !== $payment->tenancy_id) {
+                    throw new \InvalidArgumentException(
+                        "Payment tenancy_id ({$payment->tenancy_id}) does not match " .
+                        "the tenancy of utility_bill_id ({$payment->utility_bill_id}). " .
+                        "Tenancy mismatch detected."
+                    );
+                }
+            }
+
+            // Validate rent_bill_id if provided
+            if ($payment->rent_bill_id !== null) {
+                // Skip validation if rent_bill_id wasn't changed
+                if (!$payment->isDirty('rent_bill_id')) {
+                    return;
+                }
+
+                $rentBill = $payment->rentBill;
+
+                if (!$rentBill) {
+                    throw new \InvalidArgumentException(
+                        "rent_bill_id {$payment->rent_bill_id} does not exist."
+                    );
+                }
+
+                if ($rentBill->tenancy_id !== $payment->tenancy_id) {
+                    throw new \InvalidArgumentException(
+                        "Payment tenancy_id ({$payment->tenancy_id}) does not match " .
+                        "the tenancy of rent_bill_id ({$payment->rent_bill_id}). " .
+                        "Tenancy mismatch detected."
+                    );
+                }
+            }
+        });
+    }
+
     protected $fillable = [
         'tenant_id',
         'tenancy_id',
+        'utility_bill_id',
+        'rent_bill_id',
         'amount',
         'payment_type',
         'payment_method',
@@ -44,6 +103,22 @@ class Payment extends Model
     public function tenancy()
     {
         return $this->belongsTo(Tenancy::class);
+    }
+
+    /**
+     * Link to the utility bill this payment covers (for utility payments).
+     */
+    public function utilityBill(): BelongsTo
+    {
+        return $this->belongsTo(UtilityBill::class);
+    }
+
+    /**
+     * Link to the rent bill this payment covers (for rent payments).
+     */
+    public function rentBill(): BelongsTo
+    {
+        return $this->belongsTo(RentBill::class);
     }
 
     /**
@@ -89,7 +164,7 @@ class Payment extends Model
             return 'partial';
         }
 
-        return 'overdue';
+        return 'pending';
     }
 
     /**

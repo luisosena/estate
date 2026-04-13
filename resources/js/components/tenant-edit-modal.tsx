@@ -1,16 +1,18 @@
+import { AlertCircleIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircleIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Textarea } from '@/components/ui/textarea';
+
 
 interface Payment {
   id: number;
@@ -56,6 +58,19 @@ interface Unit {
   };
 }
 
+interface UtilityBill {
+  id: number;
+  amount_due: number;
+  amount_paid: number;
+  billing_month: string;
+  status: string;
+  tenancy_utility: {
+    utility_type: {
+      name: string;
+    };
+  };
+}
+
 interface Property {
   id: number;
   name: string;
@@ -73,6 +88,9 @@ interface TenantEditModalProps {
   selectedPayment?: Payment | null;
   onSave: (data: any) => void;
   editType?: 'personal' | 'emergency' | 'tenancy' | 'unit' | 'property' | 'payments' | 'history' | 'payment' | 'add-payment' | 'end-tenancy' | 'move-tenant';
+  outstandingRent?: number;
+  outstandingUtilities?: number;
+  pendingUtilityBills?: UtilityBill[];
 }
 
 export default function TenantEditModal({
@@ -86,6 +104,9 @@ export default function TenantEditModal({
   selectedPayment = null,
   onSave,
   editType = 'personal',
+  outstandingRent = 0,
+  outstandingUtilities = 0,
+  pendingUtilityBills = [],
 }: TenantEditModalProps) {
   const [formData, setFormData] = useState<any>(() => {
     // Initialize form data based on edit type
@@ -133,6 +154,7 @@ export default function TenantEditModal({
           payment_method: '',
           status: 'paid',
           paid_at: new Date().toISOString().split('T')[0],
+          utility_bill_id: null,
         };
       case 'end-tenancy':
         return {
@@ -227,6 +249,7 @@ export default function TenantEditModal({
           payment_method: '',
           status: 'paid',
           paid_at: new Date().toISOString().split('T')[0],
+          utility_bill_id: null,
         });
         break;
       case 'end-tenancy':
@@ -361,20 +384,12 @@ export default function TenantEditModal({
               <div className="space-y-2">
                 <Label htmlFor="monthly_rent">Monthly Rent</Label>
                 <Input
-                  id="monthly_rent"
-                  type="number"
-                  value={formData.monthly_rent?.toString() || ''}
-                  onChange={(e) => handleChange('monthly_rent', parseFloat(e.target.value) || 0)}
-                />
+                  id="monthly_rent" type="text" inputMode="decimal" value={formData.monthly_rent?.toString() || ""} onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ""); handleChange("monthly_rent", cleaned); }} placeholder="0" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="security_deposit">Security Deposit</Label>
                 <Input
-                  id="security_deposit"
-                  type="number"
-                  value={formData.security_deposit?.toString() || ''}
-                  onChange={(e) => handleChange('security_deposit', parseFloat(e.target.value) || 0)}
-                />
+                  id="security_deposit" type="text" inputMode="decimal" value={formData.security_deposit?.toString() || ""} onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ""); handleChange("security_deposit", cleaned); }} placeholder="0" />
               </div>
             </div>
           </div>
@@ -533,12 +548,7 @@ export default function TenantEditModal({
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
                 <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  value={formData.amount?.toString() || ''}
-                  onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
-                />
+                  id="amount" type="text" inputMode="decimal" value={formData.amount?.toString() || ""} onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ""); handleChange("amount", cleaned); }} placeholder="0.00" />
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -595,14 +605,69 @@ export default function TenantEditModal({
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
                 <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  value={formData.amount?.toString() || ''}
-                  onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
-                />
+                  id="amount" type="text" inputMode="decimal" value={formData.amount?.toString() || ""} onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9.]/g, ""); handleChange("amount", cleaned); }} placeholder="0.00" />
               </div>
             </div>
+
+            {/* Utility Bill Selection (Conditional) */}
+            {formData.payment_type === 'utility' && pendingUtilityBills && pendingUtilityBills.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="utility_bill_id">Link to Utility Bill</Label>
+                <Select 
+                  value={formData.utility_bill_id?.toString() || ''} 
+                  onValueChange={(value) => {
+                    const bill = pendingUtilityBills.find(b => b.id.toString() === value);
+                    if (bill) {
+                      const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        utility_bill_id: parseInt(value),
+                        amount: outstanding > 0 ? outstanding : 0
+                      }));
+                    } else {
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        utility_bill_id: parseInt(value)
+                      }));
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    {formData.utility_bill_id ? 
+                      (() => {
+                        const billId = formData.utility_bill_id.toString();
+                        const bill = pendingUtilityBills.find(b => b.id.toString() === billId);
+                        if (!bill) return 'Select a bill to pay';
+                        const outstanding = (bill.amount_due || 0) - (bill.amount_paid || 0);
+                        const typeName = bill.tenancy_utility?.utility_type?.name || 'Utility';
+                        return `${typeName} (${outstanding.toLocaleString()} TZS due)`;
+                      })()
+                      : 'Select a bill to pay'
+                    }
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {pendingUtilityBills.map((bill) => (
+                      <SelectItem key={bill.id} value={bill.id.toString()}>
+                        {bill.tenancy_utility.utility_type.name} - {new Date(bill.billing_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} 
+                        ({(bill.amount_due - bill.amount_paid).toLocaleString()} TZS due)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Overpayment Warning */}
+            {((formData.payment_type === 'rent' && formData.amount > (outstandingRent || 0)) || 
+              (formData.payment_type === 'utility' && formData.amount > (outstandingUtilities || 0))) && (
+              <Alert className="bg-amber-50 border-amber-200">
+                <AlertCircleIcon className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-700">
+                  Note: The amount entered is more than the {formData.payment_type} amount due ({formData.payment_type === 'rent' ? outstandingRent : outstandingUtilities} TZS) and it will be recorded as is.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="payment_method">Payment Method</Label>

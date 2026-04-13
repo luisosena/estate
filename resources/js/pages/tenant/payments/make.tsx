@@ -1,33 +1,4 @@
-import { TenantSidebar } from '@/components/layout/tenant-sidebar';
-import TenantNotificationBell from '@/components/tenant-notification-bell';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
 import { Link, router } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { route } from 'ziggy-js';
 import {
   ArrowLeft,
   CreditCard,
@@ -36,9 +7,39 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast, Toaster } from 'sonner';
+import { route } from 'ziggy-js';
 import { z } from 'zod';
+
+import { TenantSidebar } from '@/components/layout/tenant-sidebar';
+import TenantNotificationBell from '@/components/tenant-notification-bell';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { Textarea } from '@/components/ui/textarea';
 
 // Types
 interface Tenant {
@@ -58,6 +59,19 @@ interface PaymentMethod {
   label: string;
 }
 
+interface UtilityBill {
+  id: number;
+  amount_due: number;
+  amount_paid: number;
+  billing_month: string;
+  status: string;
+  tenancy_utility: {
+    utility_type: {
+      name: string;
+    };
+  };
+}
+
 interface ExistingPayment {
   id: number;
   amount: number;
@@ -65,6 +79,7 @@ interface ExistingPayment {
   payment_method: string;
   reference_number?: string;
   notes?: string;
+  utility_bill_id?: number | null;
 }
 
 interface Props {
@@ -73,17 +88,30 @@ interface Props {
   existingPayment?: ExistingPayment | null;
   pendingAmount?: number;
   paymentMethods?: PaymentMethod[];
+  pendingUtilityBills?: UtilityBill[];
 }
 
 // Form validation schema
 const paymentSchema = z.object({
-  amount: z.coerce.number().min(1, 'Amount must be at least 1'),
+  amount: z.union([z.string(), z.number()])
+    .transform((val) => {
+      if (typeof val === 'number') return val;
+      if (!val || val.trim() === '') return undefined;
+      // Clean string: remove commas, spaces, currency symbols
+      const cleaned = val.replace(/[^0-9.]/g, '');
+      const num = Number(cleaned);
+      return isNaN(num) ? undefined : num;
+    })
+    .pipe(
+      z.number({ 
+        message: "Please enter a valid numeric amount"
+      }).min(1, 'Amount must be at least 1')
+    ),
   payment_type: z.enum(['rent', 'utility']),
-  payment_method: z.enum(['mobile_money', 'bank_transfer'], {
-    required_error: 'Please select a payment method',
-  }),
+  payment_method: z.enum(['mobile_money', 'bank_transfer']),
   reference_number: z.string().max(100).optional(),
   notes: z.string().max(500).optional(),
+  utility_bill_id: z.coerce.number().nullable().optional(),
 });
 
 type PaymentFormData = z.infer<typeof paymentSchema>;
@@ -101,38 +129,55 @@ export default function MakePayment({
   existingPayment,
   pendingAmount = 0,
   paymentMethods = [],
+  pendingUtilityBills = [],
 }: Props) {
   // Form state
-  const [formData, setFormData] = useState<PaymentFormData>({
-    amount: existingPayment?.amount ?? pendingAmount ?? 0,
+  const [formData, setFormData] = useState<any>({
+    amount: Number(existingPayment?.amount || 0) || (existingPayment?.payment_type === 'rent' || !existingPayment ? (Number(pendingAmount) || 0) : 0),
     payment_type: (existingPayment?.payment_type as 'rent' | 'utility') ?? 'rent',
     payment_method: existingPayment?.payment_method ?? '',
     reference_number: existingPayment?.reference_number ?? '',
     notes: existingPayment?.notes ?? '',
+    utility_bill_id: existingPayment?.utility_bill_id ?? null,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  // Check for overpayment
+  const isOverpayment = useMemo(() => {
+    const amount = Number(formData.amount?.toString().replace(/[^0-9.]/g, '')) || 0;
+    if (formData.payment_type === 'rent') {
+      return amount > (Number(pendingAmount) || 0);
+    } else if (formData.payment_type === 'utility' && formData.utility_bill_id) {
+      const bill = pendingUtilityBills.find(b => b.id === Number(formData.utility_bill_id));
+      if (bill) {
+        const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
+        return amount > outstanding;
+      }
+    }
+    return false;
+  }, [formData.amount, formData.payment_type, formData.utility_bill_id, pendingAmount, pendingUtilityBills]);
 
   // Handle input change
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev: any) => ({ ...prev, [name]: '' }));
     }
   };
 
   // Handle payment method selection
   const handleMethodSelect = (method: string) => {
-    setFormData((prev) => ({ ...prev, payment_method: method }));
+    setFormData((prev: any) => ({ ...prev, payment_method: method }));
     if (errors.payment_method) {
-      setErrors((prev) => ({ ...prev, payment_method: '' }));
+      setErrors((prev: any) => ({ ...prev, payment_method: '' }));
     }
   };
 
@@ -219,7 +264,7 @@ export default function MakePayment({
               Payment Received
             </AlertTitle>
             <AlertDescription className="text-green-600 dark:text-green-500">
-              Your payment of {formatCurrency(formData.amount)} has been successfully submitted.
+              Your payment of {formatCurrency(Number(formData.amount.toString().replace(/[^0-9.]/g, '')))} has been successfully submitted.
               You will be redirected to the payments page shortly.
             </AlertDescription>
           </Alert>
@@ -295,7 +340,8 @@ export default function MakePayment({
                   <Input
                     id="amount"
                     name="amount"
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="Enter amount"
                     value={formData.amount}
                     onChange={handleChange}
@@ -310,6 +356,15 @@ export default function MakePayment({
                   {errors.amount && (
                     <p className="text-xs text-destructive">{errors.amount}</p>
                   )}
+                  
+                  {isOverpayment && !errors.amount && (
+                    <Alert className="mt-2 py-2 px-3 bg-yellow-50 border-yellow-200 dark:bg-yellow-900/10 dark:border-yellow-800">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+                      <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-500">
+                        The entered amount exceeds the outstanding balance. Correct if necessary, or proceed if paying in advance.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
 
                 {/* Payment Type */}
@@ -320,7 +375,12 @@ export default function MakePayment({
                   <Select
                     value={formData.payment_type}
                     onValueChange={(value: 'rent' | 'utility') =>
-                      setFormData((prev) => ({ ...prev, payment_type: value }))
+                      setFormData((prev: any) => ({ 
+                        ...prev, 
+                        payment_type: value,
+                        utility_bill_id: value === 'rent' ? null : prev.utility_bill_id,
+                        amount: value === 'rent' ? pendingAmount : prev.amount
+                      }))
                     }
                   >
                     <SelectTrigger
@@ -337,6 +397,49 @@ export default function MakePayment({
                     <p className="text-xs text-destructive">{errors.payment_type}</p>
                   )}
                 </div>
+
+                {/* Utility Bill Selection (Conditional) */}
+                {formData.payment_type === 'utility' && pendingUtilityBills && pendingUtilityBills.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="utility_bill_id">
+                      Link to Utility Bill <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={formData.utility_bill_id?.toString() || ''}
+                      onValueChange={(value) => {
+                        const bill = pendingUtilityBills.find(b => b.id.toString() === value);
+                        if (bill) {
+                          const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
+                          setFormData((prev: any) => ({ 
+                            ...prev, 
+                            utility_bill_id: parseInt(value),
+                            amount: outstanding > 0 ? outstanding : 0
+                          }));
+                        } else {
+                          setFormData((prev: any) => ({ 
+                            ...prev, 
+                            utility_bill_id: parseInt(value)
+                          }));
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a bill to pay" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pendingUtilityBills.map((bill) => (
+                          <SelectItem key={bill.id} value={bill.id.toString()}>
+                            {bill.tenancy_utility.utility_type.name} - {new Date(bill.billing_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} 
+                            ({formatCurrency(bill.amount_due - bill.amount_paid)} due)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.utility_bill_id && (
+                      <p className="text-xs text-destructive">{errors.utility_bill_id}</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -459,6 +562,14 @@ export default function MakePayment({
                 <span className="text-muted-foreground">Payment Type</span>
                 <span className="capitalize">{formData.payment_type}</span>
               </div>
+              {formData.payment_type === 'utility' && formData.utility_bill_id && (
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-muted-foreground">Linked Bill</span>
+                  <span className="text-right">
+                    {pendingUtilityBills?.find(b => b.id === formData.utility_bill_id)?.tenancy_utility.utility_type.name}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center py-2 border-b">
                 <span className="text-muted-foreground">Method</span>
                 <span className="capitalize">

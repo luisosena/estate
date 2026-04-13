@@ -1,18 +1,26 @@
-import api from './client';
 import type {
   Tenant,
-  Unit,
-  Tenancy,
   Payment,
   Utility,
+  UtilityBill,
+  UtilityBillSummary,
   Notification,
   TenantDashboard,
+  RentBill,
+  RentBillSummary,
+  UserProfile,
+  TenantProfileUpdateData,
+  PasswordUpdateData,
 } from '../types';
+
+import api from './client';
 
 export interface PaymentFormData {
   amount: number;
   payment_type: 'rent' | 'utility';
   payment_method: 'mobile_money' | 'bank_transfer';
+  utility_bill_id?: number;
+  rent_bill_id?: number; // Link payment to specific rent bill
   reference_number?: string;
   notes?: string;
 }
@@ -43,20 +51,50 @@ export const tenantApi = {
   createPayment: (data: PaymentFormData): Promise<CreatePaymentResponse> =>
     api.post<CreatePaymentResponse>('/tenant/payments', data),
 
-  getUtilities: (): Promise<{ utilities: Utility[]; tenant: Tenant }> =>
-    api.get<{ utilities: Utility[]; tenant: Tenant }>('/tenant/utilities'),
+  /**
+   * Fetches utilities for the authenticated tenant.
+   * @returns Promise resolving to utilities array and tenancy info including monthly rent
+   */
+  getUtilities: (): Promise<{ data: Utility[]; tenancy: { id: number; monthly_rent: number } }> =>
+    api.get<{ data: Utility[]; tenancy: { id: number; monthly_rent: number } }>('/tenant/utilities'),
 
-  getProfile: (): Promise<{ tenant: Tenant }> =>
-    api.get<{ tenant: Tenant }>('/tenant/profile'),
+  getUtilityBills: (status?: string): Promise<{ data: UtilityBill[]; summary: UtilityBillSummary }> =>
+    api.get<{ data: UtilityBill[]; summary: UtilityBillSummary }>('/tenant/utility-bills', {
+      ...(status && { status }),
+    }),
 
-  updateProfile: (data: Partial<Tenant>): Promise<{ tenant: Tenant }> =>
-    api.put<{ tenant: Tenant }>('/tenant/profile', data),
+  // Profile Management
+  getProfile: (): Promise<{ user: UserProfile }> =>
+    api.get<{ user: UserProfile }>('/tenant/profile'),
+
+  updateProfile: (data: TenantProfileUpdateData): Promise<{ message: string; user: UserProfile }> =>
+    api.put<{ message: string; user: UserProfile }>('/tenant/profile', data),
+
+  // Password Update
+  updatePassword: (data: PasswordUpdateData): Promise<{ message: string }> =>
+    api.put<{ message: string }>('/tenant/password', data),
 
   getNotifications: (): Promise<{ notifications: Notification[] }> =>
     api.get<{ notifications: Notification[] }>('/tenant/notifications'),
 
   markNotificationRead: (notificationId: number): Promise<void> =>
     api.put(`/tenant/notifications/${notificationId}/read`),
+
+  // Rent Bills
+  getRentBills: (): Promise<{
+    data: RentBill[];
+    summary: RentBillSummary;
+  }> =>
+    api.get<{
+      data: RentBill[];
+      summary: RentBillSummary;
+    }>('/tenant/rent-bills'),
+
+  getCurrentMonthRentBill: (): Promise<{ data: RentBill | null }> =>
+    api.get<{ data: RentBill | null }>('/tenant/rent-bills/current'),
+
+  getRentBill: (rentBillId: number): Promise<{ data: RentBill }> =>
+    api.get<{ data: RentBill }>(`/tenant/rent-bills/${rentBillId}`),
 };
 
 export default tenantApi;

@@ -1,205 +1,402 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, RefreshControl } from 'react-native';
-import { Text, Card } from 'react-native-paper';
-import { landlordApi } from '../../api/landlord';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { screenStyles } from '../../constants/styles';
-import { colors } from '../../constants/colors';
-import { formatCurrency, formatDate } from '../../utils/formatters';
-import { RouteProp, useRoute } from '@react-navigation/native';
-import { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
-import type { Tenant } from '../../types';
+import { useNavigation, RouteProp, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
+import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+
+import { landlordApi } from '../../api/landlord';
+import { Skeleton } from '../../components/common/Skeleton';
+import { ProfileHeaderSkeleton, DetailsStatsSkeleton } from '../../components/common/SkeletonVariants';
+import { Badge } from '../../components/common/Badge';
+import { Button } from '../../components/common/Button';
+import { colors } from '../../constants/colors';
+import { screenStyles } from '../../constants/styles';
+import { LandlordTenantsStackParamList } from '../../navigation/AppNavigator';
+import type { Tenant, TenantDashboard } from '../../types';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+
+type NavigationProp = NativeStackNavigationProp<LandlordTenantsStackParamList>;
 type TenantDetailsRouteProp = RouteProp<LandlordTenantsStackParamList, 'TenantDetails'>;
 
 export function TenantDetailsScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const route = useRoute<TenantDetailsRouteProp>();
-  const { tenantId } = route.params;
+  const { tenantCode } = route.params;
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [dashboardData, setDashboardData] = useState<TenantDashboard | null>(null);
+  const [activeTab, setActiveTab] = useState<'information' | 'payments' | 'utilities'>('information');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: 'Tenant Details',
+      headerStyle: { backgroundColor: colors.surface },
+      headerTintColor: colors.text.primary,
+      headerShadowVisible: false,
+      headerRight: () => (
+        <TouchableOpacity style={{ padding: 8 }}>
+          <Ionicons name="ellipsis-horizontal" size={20} color={colors.text.primary} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   const fetchTenant = useCallback(async () => {
     try {
       setError(null);
-      const data = await landlordApi.getTenant(tenantId);
-      setTenant(data);
+      // 200ms delay for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Fetch tenant details
+      const data = await landlordApi.getTenant(tenantCode);
+      setDashboardData(data);
     } catch (err) {
-      console.error('Failed to fetch tenant details:', err);
       setError('Failed to load tenant details. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [tenantId]);
+  }, [tenantCode]);
 
   useEffect(() => {
     fetchTenant();
-  }, [tenantId]);
+  }, [fetchTenant]);
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchTenant();
   };
 
-  if (loading) return <LoadingScreen />;
-  if (error) {
-    return (
-      <View style={[screenStyles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-        <Text style={[screenStyles.empty, { color: colors.error, marginBottom: 16 }]}>{error}</Text>
-      </View>
-    );
-  }
-  if (!tenant) {
-    return (
-      <View style={[screenStyles.container, { justifyContent: 'center' }]}>
-        <Text style={screenStyles.empty}>Tenant not found.</Text>
-      </View>
-    );
-  }
-
-  const activeTenancy = tenant.tenancies?.find((t) => t.status === 'active');
-  const pastTenancies = tenant.tenancies?.filter((t) => t.status !== 'active') || [];
-
+  const tenant = dashboardData?.tenant;
+  const activeTenancy = dashboardData?.tenancy;
+  const activeUnit = dashboardData?.unit;
+  
   return (
-    <ScrollView 
-       style={screenStyles.container}
-       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    <ScreenContainer 
+       scrollable
+       refreshing={refreshing}
+       onRefresh={onRefresh}
+       edges={['bottom', 'left', 'right']}
     >
-      <View style={screenStyles.header}>
-        <Text variant="headlineSmall" style={screenStyles.title}>{tenant.full_name}</Text>
-        <Text variant="bodyMedium" style={screenStyles.subtitle}>{tenant.email}</Text>
-        {tenant.tenant_code && (
-          <Text variant="bodySmall" style={[screenStyles.subtitle, { marginTop: 4 }]}>
-            Code: {tenant.tenant_code}
-          </Text>
+      <View style={styles.profileSection}>
+        {loading ? (
+           <>
+              <ProfileHeaderSkeleton />
+              <DetailsStatsSkeleton />
+           </>
+        ) : tenant ? (
+          <>
+            <View style={styles.profileHeader}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{tenant.full_name.charAt(0).toUpperCase()}</Text>
+              </View>
+              <View style={styles.profileInfo}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                  <Text style={styles.tenantName}>{tenant.full_name}</Text>
+                  <Badge label="Active" status="active" icon="checkmark-circle" style={{ marginLeft: 8 }} />
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="mail-outline" size={14} color={colors.text.secondary} />
+                  <Text style={styles.subtext}> {tenant.email}</Text>
+                  <Text style={styles.subtext}>  •  </Text>
+                  <Ionicons name="pricetag-outline" size={14} color={colors.text.secondary} />
+                  <Text style={styles.subtext}> {tenant.tenant_code || 'N/A'}</Text>
+                </View>
+              </View>
+            </View>
+
+            {activeTenancy && (
+              <View style={styles.statsCard}>
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>{formatCurrency(activeTenancy.monthly_rent || activeTenancy.rent_amount || 0)}</Text>
+                  <Text style={styles.statLabel}>Monthly Rent</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statBox}>
+                  <Text style={styles.statValue}>1</Text>
+                  <Text style={styles.statLabel}>Active Tenancy</Text>
+                </View>
+              </View>
+            )}
+          </>
+        ) : null}
+      </View>
+
+      {/* Tabs */}
+      <View style={styles.tabBar}>
+        {(['information', 'payments', 'utilities'] as const).map((tab) => (
+          <TouchableOpacity 
+            key={tab}
+            disabled={loading}
+            style={[styles.tab, activeTab === tab && styles.tabActive]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Tab Content */}
+      <View style={styles.tabContent}>
+        {loading ? (
+           <View>
+              <View style={styles.sectionHeader}>
+                 <Skeleton width="40%" height={16} />
+              </View>
+              <View style={{ gap: 8 }}>
+                 <Skeleton width="100%" height={40} borderRadius={8} />
+                 <Skeleton width="60%" height={40} borderRadius={8} />
+              </View>
+              <View style={{ height: 24 }} />
+              <View style={styles.sectionHeader}>
+                 <Skeleton width="40%" height={16} />
+              </View>
+              <View style={{ gap: 12 }}>
+                 {Array(3).fill(0).map((_, i) => (
+                    <View key={`tab-skeleton-${i}`} style={styles.listItem}>
+                       <Skeleton width="30%" height={14} />
+                       <Skeleton width="40%" height={14} />
+                    </View>
+                 ))}
+              </View>
+           </View>
+        ) : (
+          activeTab === 'information' && tenant && (
+            <>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Contact Information</Text>
+                <TouchableOpacity>
+                  <Text style={styles.editLink}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.contactButtonsRow}>
+                <TouchableOpacity style={styles.contactButtonBlue}>
+                  <Text style={styles.contactButtonBlueText}>{tenant.email}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.contactButtonBlue}>
+                  <Text style={styles.contactButtonBlueText}>{tenant.phone}</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={{ height: 24 }} />
+
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Tenancy Details</Text>
+              </View>
+              {activeTenancy ? (
+                 <View>
+                     <View style={styles.listItem}>
+                      <Text style={styles.infoLabel}>Unit</Text>
+                      <Text style={{ fontWeight: '600' }}>
+                        {activeUnit?.unit_name || activeUnit?.unit_code || `Unit ${activeUnit?.id}`}
+                      </Text>
+                    </View>
+                    <View style={styles.listItem}>
+                      <Text style={styles.infoLabel}>Move-in Date</Text>
+                      <Text style={{ fontWeight: '600' }}>{formatDate(activeTenancy.move_in_date)}</Text>
+                    </View>
+                    {(activeTenancy.security_deposit ?? 0) > 0 && (
+                       <View style={styles.listItem}>
+                         <Text style={styles.infoLabel}>Security Deposit</Text>
+                         <Text style={{ fontWeight: '600' }}>{formatCurrency(activeTenancy.security_deposit || 0)}</Text>
+                       </View>
+                    )}
+                 </View>
+              ) : (
+                 <Text style={screenStyles.empty}>No active tenancy found.</Text>
+              )}
+
+              <View style={{ height: 24 }} />
+
+               {/* Emergency Contact section styled minimally */}
+              {(tenant.emergency_contact_name || tenant.emergency_contact_phone) && (
+                <>
+                   <View style={styles.sectionHeader}>
+                     <Text style={styles.sectionTitle}>Emergency</Text>
+                   </View>
+                   <View style={styles.listItem}>
+                     <Text style={styles.infoLabel}>Name</Text>
+                     <Text style={{ fontWeight: '600' }}>{tenant.emergency_contact_name}</Text>
+                   </View>
+                   <View style={styles.listItem}>
+                     <Text style={styles.infoLabel}>Phone</Text>
+                     <Text style={{ fontWeight: '600' }}>{tenant.emergency_contact_phone}</Text>
+                   </View>
+                </>
+              )}
+            </>
+          )
+        )}
+        
+        {activeTab === 'payments' && !loading && (
+           <View style={{ alignItems: 'center', paddingTop: 40 }}>
+              <Text style={screenStyles.empty}>Payment history will appear here.</Text>
+           </View>
+        )}
+        
+        {activeTab === 'utilities' && !loading && (
+           <View style={{ alignItems: 'center', paddingTop: 40 }}>
+              {activeTenancy && tenant ? (
+                 <Button 
+                    label="Manage Utilities" 
+                    icon="flash"
+                    onPress={() => navigation.navigate('TenancyUtilities', { 
+                       tenancyId: activeTenancy.id, 
+                       tenantName: tenant.full_name 
+                    })} 
+                 />
+              ) : (
+                 <Text style={screenStyles.empty}>No active utilities.</Text>
+              )}
+           </View>
         )}
       </View>
-
-      {/* Tenancy Information */}
-      {activeTenancy && (
-        <Card style={screenStyles.card}>
-          <Card.Title title="Current Tenancy" titleVariant="titleMedium" />
-          <Card.Content>
-            {activeTenancy.unit && (
-              <>
-                <View style={screenStyles.listItem}>
-                  <Text variant="bodyMedium" style={screenStyles.date}>Unit</Text>
-                  <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                    {activeTenancy.unit.unit_number || activeTenancy.unit.unit_name || `Unit ${activeTenancy.unit.id}`}
-                  </Text>
-                </View>
-                {activeTenancy.unit.property_name && (
-                  <View style={screenStyles.listItem}>
-                    <Text variant="bodyMedium" style={screenStyles.date}>Property</Text>
-                    <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                      {activeTenancy.unit.property_name}
-                    </Text>
-                  </View>
-                )}
-              </>
-            )}
-            <View style={screenStyles.listItem}>
-              <Text variant="bodyMedium" style={screenStyles.date}>Move-in Date</Text>
-              <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                {formatDate(activeTenancy.move_in_date)}
-              </Text>
-            </View>
-            <View style={screenStyles.listItem}>
-              <Text variant="bodyMedium" style={screenStyles.date}>Monthly Rent</Text>
-              <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: colors.primary }}>
-                {formatCurrency(activeTenancy.monthly_rent || activeTenancy.rent_amount || 0)}
-              </Text>
-            </View>
-            {activeTenancy.security_deposit && activeTenancy.security_deposit > 0 && (
-              <View style={screenStyles.listItem}>
-                <Text variant="bodyMedium" style={screenStyles.date}>Security Deposit</Text>
-                <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
-                  {formatCurrency(activeTenancy.security_deposit || 0)}
-                </Text>
-              </View>
-            )}
-            <View style={screenStyles.listItem}>
-              <Text variant="bodyMedium" style={screenStyles.date}>Status</Text>
-              <Text variant="bodyMedium" style={{ 
-                fontWeight: 'bold', 
-                color: activeTenancy.status === 'active' ? colors.status.occupied : colors.gray[400] 
-              }}>
-                {activeTenancy.status.charAt(0).toUpperCase() + activeTenancy.status.slice(1)}
-              </Text>
-            </View>
-          </Card.Content>
-        </Card>
-      )}
-
-      <Card style={screenStyles.card}>
-         <Card.Title title="Contact Information" />
-         <Card.Content>
-            <View style={screenStyles.listItem}>
-               <Text variant="bodyMedium" style={screenStyles.date}>Phone</Text>
-               <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>{tenant.phone}</Text>
-            </View>
-            {tenant.identification_number && (
-               <View style={screenStyles.listItem}>
-                  <Text variant="bodyMedium" style={screenStyles.date}>{tenant.identification_type || 'ID'}</Text>
-                  <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>{tenant.identification_number}</Text>
-               </View>
-            )}
-         </Card.Content>
-      </Card>
-
-      {/* Emergency Contact */}
-      {(tenant.emergency_contact_name || tenant.emergency_contact_phone) && (
-        <Card style={screenStyles.card}>
-          <Card.Title title="Emergency Contact" />
-          <Card.Content>
-            {tenant.emergency_contact_name && (
-              <View style={screenStyles.listItem}>
-                <Text variant="bodyMedium" style={screenStyles.date}>Name</Text>
-                <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>{tenant.emergency_contact_name}</Text>
-              </View>
-            )}
-            {tenant.emergency_contact_phone && (
-              <View style={screenStyles.listItem}>
-                <Text variant="bodyMedium" style={screenStyles.date}>Phone</Text>
-                <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>{tenant.emergency_contact_phone}</Text>
-              </View>
-            )}
-            {tenant.emergency_contact_relation && (
-              <View style={screenStyles.listItem}>
-                <Text variant="bodyMedium" style={screenStyles.date}>Relationship</Text>
-                <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>{tenant.emergency_contact_relation}</Text>
-              </View>
-            )}
-          </Card.Content>
-        </Card>
-      )}
-
-      {/* Past Tenancies */}
-      {pastTenancies.length > 0 && (
-        <Card style={screenStyles.card}>
-          <Card.Title title="Past Tenancies" titleVariant="titleMedium" />
-          <Card.Content>
-            {pastTenancies.map((tenancy) => (
-              <View key={tenancy.id} style={screenStyles.listItem}>
-                <View>
-                  <Text variant="bodyMedium">
-                    {tenancy.unit?.unit_number || tenancy.unit?.unit_name || `Unit ${tenancy.unit?.id}`}
-                  </Text>
-                  <Text variant="bodySmall" style={screenStyles.date}>
-                    {tenancy.move_out_date ? `Ended: ${formatDate(tenancy.move_out_date)}` : tenancy.status}
-                  </Text>
-                </View>
-                <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: colors.gray[400] }}>
-                  {formatCurrency(tenancy.monthly_rent || tenancy.rent_amount || 0)}/mo
-                </Text>
-              </View>
-            ))}
-          </Card.Content>
-        </Card>
-      )}
-    </ScrollView>
+    </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  profileSection: {
+    backgroundColor: colors.surface,
+    padding: 20,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  tenantName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  subtext: {
+    fontSize: 13,
+    color: colors.text.secondary,
+  },
+  statsCard: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    borderRadius: 12,
+    paddingVertical: 16,
+  },
+  statBox: {
+    flex: 1,
+    paddingLeft: 20,
+    justifyContent: 'center',
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: colors.borderLight,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    fontWeight: '500',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  tab: {
+    marginRight: 24,
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: colors.primary,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.secondary,
+  },
+  tabTextActive: {
+    color: colors.text.primary,
+  },
+  tabContent: {
+    padding: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  editLink: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+    textDecorationLine: 'underline',
+  },
+  contactButtonsRow: {
+    gap: 8,
+  },
+  contactButtonBlue: {
+    backgroundColor: '#EFF6FF', // Light blue
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignSelf: 'flex-start',
+  },
+  contactButtonBlueText: {
+    color: '#2563EB', // Blue 600
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  infoLabel: {
+    color: colors.text.secondary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});

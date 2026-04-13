@@ -1,9 +1,10 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Link, router } from '@inertiajs/react';
 import { ArrowLeft, Edit, Trash2, Mail, Phone, MapPin, Building, Home, Users, Calendar, CheckCircle, XCircle } from 'lucide-react';
 import { route } from 'ziggy-js';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Property {
   id: number;

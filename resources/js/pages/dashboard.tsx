@@ -1,3 +1,5 @@
+import { usePage } from '@inertiajs/react';
+
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -8,7 +10,6 @@ import {
 } from '@/components/ui/sidebar';
 import { type SharedData } from '@/types';
 import { Tenant } from '@/types/index';
-import { usePage } from '@inertiajs/react';
 
 export default function Page() {
     const { tenants } = usePage<SharedData & { tenants: Tenant[] }>().props;

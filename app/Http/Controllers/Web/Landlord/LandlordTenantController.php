@@ -9,6 +9,9 @@ use App\Models\Tenancy;
 use App\Models\Unit;
 use App\Models\User;
 use App\Http\Requests\StoreTenantWithTenancyRequest;
+use App\Services\RentBillService;
+use App\Services\UtilityService;
+use App\Notifications\TenancyEndedWithBalance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +20,14 @@ use Inertia\Inertia;
 
 class LandlordTenantController extends Controller
 {
+    protected RentBillService $rentBillService;
+    protected UtilityService $utilityService;
+
+    public function __construct(RentBillService $rentBillService, UtilityService $utilityService)
+    {
+        $this->rentBillService = $rentBillService;
+        $this->utilityService = $utilityService;
+    }
     /**
      * Display ALL tenants across every property owned by the authenticated landlord.
      *
@@ -346,6 +357,7 @@ class LandlordTenantController extends Controller
      */
     public function removeTenant(Request $request, Tenancy $tenancy)
     {
+        $tenancy->load(['unit.property', 'tenant']);
         $landlord = $request->user();
         
         // Authorization: ensure this tenancy belongs to the landlord's property
@@ -362,6 +374,16 @@ class LandlordTenantController extends Controller
 
             // Update unit status back to 'available'
             $tenancy->unit->update(['status' => 'available']);
+
+            // Check for outstanding balance and notify landlord
+            $outstandingRent = $this->rentBillService->calculateTotalOutstanding($tenancy->id);
+            $utilitySummary = $this->utilityService->getBillsForTenant($tenancy->tenant);
+            $outstandingUtilities = $utilitySummary['outstanding'] ?? 0;
+            $totalOutstanding = $outstandingRent + $outstandingUtilities;
+
+            if ($totalOutstanding > 0) {
+                $landlord->notify(new TenancyEndedWithBalance($tenancy, $totalOutstanding));
+            }
 
             return redirect()
                 ->back()
@@ -388,6 +410,7 @@ class LandlordTenantController extends Controller
      */
     public function endTenancy(Request $request, Tenancy $tenancy)
     {
+        $tenancy->load(['unit.property', 'tenant']);
         $landlord = $request->user();
         
         // Authorization: ensure this tenancy belongs to the landlord's property
@@ -421,6 +444,16 @@ class LandlordTenantController extends Controller
 
             // Update unit status back to 'available'
             $tenancy->unit->update(['status' => 'available']);
+
+            // Check for outstanding balance and notify landlord
+            $outstandingRent = $this->rentBillService->calculateTotalOutstanding($tenancy->id);
+            $utilitySummary = $this->utilityService->getBillsForTenant($tenancy->tenant);
+            $outstandingUtilities = $utilitySummary['outstanding'] ?? 0;
+            $totalOutstanding = $outstandingRent + $outstandingUtilities;
+
+            if ($totalOutstanding > 0) {
+                $landlord->notify(new TenancyEndedWithBalance($tenancy, $totalOutstanding));
+            }
 
             // Log additional ending information
             \Log::info('Tenancy ended with details', [
@@ -586,6 +619,11 @@ class LandlordTenantController extends Controller
         // Get available units for unit editing
         $availableUnits = $this->getAvailableUnitsForLandlord($landlord);
 
+        // Get outstanding balances
+        $outstandingRent = $this->rentBillService->calculateTotalOutstanding($activeTenancy->id ?? 0);
+        $utilitySummary = $this->utilityService->getBillsForTenant($tenant);
+        $outstandingUtilities = $utilitySummary['outstanding'] ?? 0;
+
         return Inertia::render('landlord/tenants/show', [
             'tenant' => [
                 'id' => $tenant->id,
@@ -619,6 +657,9 @@ class LandlordTenantController extends Controller
             ]),
             'properties' => $properties,
             'availableUnits' => $availableUnits,
+            'outstandingRent' => $outstandingRent,
+            'outstandingUtilities' => $outstandingUtilities,
+            'pendingUtilityBills' => $utilitySummary['bills']->whereIn('status', ['pending', 'partial', 'overdue'])->values() ?? [],
         ]);
     }
 

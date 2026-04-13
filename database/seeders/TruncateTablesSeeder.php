@@ -8,18 +8,22 @@ use Illuminate\Support\Facades\DB;
 class TruncateTablesSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Truncate all application tables in dependency order.
+     * Disables FK checks for MySQL during truncation.
      */
     public function run(): void
     {
-        // Disable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
-        // Truncate tables in correct order (respecting foreign keys)
         DB::table('messages')->truncate();
         DB::table('notifications')->truncate();
-        DB::table('utilities')->truncate();
+        DB::table('security_events')->truncate();
+        DB::table('api_tokens')->truncate();
         DB::table('payments')->truncate();
+        DB::table('rent_bills')->truncate();
+        DB::table('utility_bills')->truncate();
+        DB::table('tenancy_utilities')->truncate();
+        DB::table('utility_types')->truncate();
         DB::table('tenant_identifications')->truncate();
         DB::table('tenancies')->truncate();
         DB::table('users')->truncate();
@@ -27,7 +31,6 @@ class TruncateTablesSeeder extends Seeder
         DB::table('units')->truncate();
         DB::table('properties')->truncate();
 
-        // Re-enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 }

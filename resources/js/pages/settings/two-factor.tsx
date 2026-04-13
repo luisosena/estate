@@ -2,9 +2,9 @@ import { Form, Head } from '@inertiajs/react';
 import { ShieldBan, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 
-import HeadingSmall from '@/components/shared/heading-small';
 import TwoFactorRecoveryCodes from '@/components/shared/auth/two-factor-recovery-codes';
 import TwoFactorSetupModal from '@/components/shared/auth/two-factor-setup-modal';
+import HeadingSmall from '@/components/shared/heading-small';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTwoFactorAuth } from '@/hooks/use-two-factor-auth';

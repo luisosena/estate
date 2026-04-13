@@ -6,6 +6,9 @@ use App\Models\Tenancy;
 use App\Models\User;
 use App\Notifications\TenancyEndedNotification;
 use App\Notifications\TenancyExpiringNotification;
+use App\Notifications\TenancyEndedWithBalance;
+use App\Services\RentBillService;
+use App\Services\UtilityService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -28,7 +31,7 @@ class EndExpiredTenancies extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(RentBillService $rentBillService, UtilityService $utilityService)
     {
         $this->info('Starting expired tenancy check...');
         
@@ -45,7 +48,7 @@ class EndExpiredTenancies extends Command
         $this->checkUpcomingExpirations(3, '3 days');
 
         // Check for expired tenancies (move_out_date is today or in the past)
-        $this->checkExpiredTenancies($dryRun);
+        $this->checkExpiredTenancies($dryRun, $rentBillService, $utilityService);
 
         $this->info('Expired tenancy check completed.');
     }
@@ -70,6 +73,7 @@ class EndExpiredTenancies extends Command
         $this->info("Found {$upcomingTenancies->count()} tenancy(ies) ending in {$period}:");
 
         foreach ($upcomingTenancies as $tenancy) {
+            /** @var \App\Models\Tenancy $tenancy */
             $this->line("- {$tenancy->tenant->full_name} ({$tenancy->tenant->tenant_code}) - Unit: {$tenancy->unit->unit_name} - Ends: {$tenancy->move_out_date}");
 
             // Send notification to tenant
@@ -106,9 +110,10 @@ class EndExpiredTenancies extends Command
     /**
      * Check for expired tenancies and end them automatically.
      */
-    private function checkExpiredTenancies(bool $dryRun)
+    private function checkExpiredTenancies(bool $dryRun, RentBillService $rentBillService, UtilityService $utilityService)
     {
-        $expiredTenancies = Tenancy::with(['tenant', 'unit.property'])
+        $expiredTenancies = Tenancy::query()
+            ->with(['tenant', 'unit.property'])
             ->where('status', 'active')
             ->whereDate('move_out_date', '<=', now()->toDateString())
             ->get();
@@ -121,6 +126,7 @@ class EndExpiredTenancies extends Command
         $this->info("Found {$expiredTenancies->count()} expired tenancy(ies):");
 
         foreach ($expiredTenancies as $tenancy) {
+            /** @var \App\Models\Tenancy $tenancy */
             $this->line("- {$tenancy->tenant->full_name} ({$tenancy->tenant->tenant_code}) - Unit: {$tenancy->unit->unit_name} - Expired: {$tenancy->move_out_date}");
 
             if ($dryRun) {
@@ -156,6 +162,17 @@ class EndExpiredTenancies extends Command
                     if ($landlord) {
                         $landlord->notify(new TenancyEndedNotification($tenancy, false));
                         $this->info("  ✓ End notification sent to landlord: {$landlord->email}");
+                        
+                        // Check for outstanding balance and notify separately
+                        $outstandingRent = $rentBillService->calculateTotalOutstanding($tenancy->id);
+                        $utilitySummary = $utilityService->getBillsForTenant($tenancy->tenant);
+                        $outstandingUtilities = $utilitySummary['outstanding'] ?? 0;
+                        $totalOutstanding = $outstandingRent + $outstandingUtilities;
+
+                        if ($totalOutstanding > 0) {
+                            $landlord->notify(new TenancyEndedWithBalance($tenancy, $totalOutstanding));
+                            $this->info("  ! Balance notification sent to landlord: " . number_format($totalOutstanding, 2) . " TZS");
+                        }
                     }
                 } catch (\Exception $e) {
                     $this->error("  ✗ Failed to send end notification to landlord: {$e->getMessage()}");

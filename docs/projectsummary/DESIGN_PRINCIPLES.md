@@ -495,6 +495,27 @@ it('creates a tenant with valid data', function () {
 
 ---
 
+## Mobile UX Patterns
+
+### 1. Human-Centered Splash Experience
+The mobile app uses a custom `SplashScreen` to provide a premium first impression:
+- **Branding**: Utilizes the "Deep Teal & Gold" palette for a sophisticated look.
+- **Animations**: 60fps fade and scale-up transitions using `react-native-reanimated`.
+- **Minimalism**: Avoids "AI slop" or generic loaders in favor of clean, human-centered typography and spacing.
+
+### 2. Background Loading Overlay
+To eliminate "popping" or half-loaded components:
+- The `AppNavigator` mounts *behind* the `SplashScreen` overlay.
+- Data fetching and component mounting occur invisibly during the ~2.5s splash animation.
+- Results in an instant, fully-rendered UI when the splash fades away.
+
+### 3. Skeleton Loaders and Hybrid UI Strategy
+As part of the transition towards a "Minimalist Luxury" design system:
+- **Skeleton Loaders**: Custom `react-native-reanimated` skeleton screens (`Skeleton.tsx`, `SkeletonVariants.tsx`) replace standard loading spinners across mobile screens. This eliminates screen content jumping and provides a polished, non-blocking data fetching experience.
+- **Hybrid UI**: While `react-native-paper` is still utilized for foundational elements (Typography, Inputs), the application is actively adopting custom specialized components where native aesthetics and animations provide a superior premium feel.
+
+---
+
 ## Summary
 
 This project follows:
@@ -506,3 +527,4 @@ This project follows:
 6. **Service layer pattern** - Encapsulate business logic in services
 7. **Form Request validation** - Use Laravel form requests for validation
 8. **Role-based access control** - Three-tier permission system
+9. **Premium Mobile UX** - Background loading, custom skeleton loaders, and human-centered animations via a hybrid React Native Paper/Custom Component strategy.

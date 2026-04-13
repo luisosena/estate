@@ -48,6 +48,8 @@ class PropertyController extends Controller
                 'id' => $property->id,
                 'name' => $property->name,
                 'address' => $property->address,
+                'property_type' => $property->property_type,
+                'description' => $property->description,
                 'total_units' => $property->total_units,
                 'units_count' => $property->units_count,
                 'active_tenants_count' => $property->tenancies->count(),
@@ -99,6 +101,8 @@ class PropertyController extends Controller
             'id' => $property->id,
             'name' => $property->name,
             'address' => $property->address,
+            'property_type' => $property->property_type,
+            'description' => $property->description,
             'total_units' => $property->total_units,
             'units_count' => $property->units_count,
             'active_tenants_count' => $property->tenancies->count(),
@@ -122,11 +126,15 @@ class PropertyController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:500',
+            'property_type' => 'nullable|string|max:100',
+            'description' => 'nullable|string',
         ]);
 
         $property = Property::create([
             'name' => $validated['name'],
             'address' => $validated['address'],
+            'property_type' => $validated['property_type'] ?? null,
+            'description' => $validated['description'] ?? null,
             'owner_id' => $landlord->id,
             'total_units' => 0,
         ]);
@@ -137,6 +145,8 @@ class PropertyController extends Controller
                 'id' => $property->id,
                 'name' => $property->name,
                 'address' => $property->address,
+                'property_type' => $property->property_type,
+                'description' => $property->description,
                 'total_units' => $property->total_units,
                 'created_at' => $property->created_at,
             ],
@@ -157,6 +167,8 @@ class PropertyController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'address' => 'sometimes|string|max:500',
+            'property_type' => 'nullable|string|max:100',
+            'description' => 'nullable|string',
         ]);
 
         $property->update($validated);
@@ -167,6 +179,8 @@ class PropertyController extends Controller
                 'id' => $property->id,
                 'name' => $property->name,
                 'address' => $property->address,
+                'property_type' => $property->property_type,
+                'description' => $property->description,
                 'total_units' => $property->total_units,
                 'updated_at' => $property->updated_at,
             ],

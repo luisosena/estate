@@ -20,6 +20,7 @@ class UnitController extends Controller
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
         $propertyId = $request->get('property_id');
+        $status = $request->get('status');
 
         // Build base query for filtering
         $baseQuery = Unit::whereHas('property', function ($query) use ($landlord) {
@@ -28,6 +29,11 @@ class UnitController extends Controller
 
         if ($propertyId) {
             $baseQuery->where('property_id', $propertyId);
+        }
+
+        // Filter by status (available, occupied, vacant)
+        if ($status) {
+            $baseQuery->where('status', $status);
         }
 
         // Calculate stats using efficient COUNT queries (not loading all records)
@@ -107,6 +113,8 @@ class UnitController extends Controller
                     'status' => $tenancy->status,
                     'start_date' => $tenancy->move_in_date,
                     'end_date' => $tenancy->move_out_date,
+                    'monthly_rent' => $tenancy->monthly_rent,
+                    'security_deposit' => $tenancy->security_deposit,
                     'tenant' => $tenancy->tenant,
                 ];
             }),

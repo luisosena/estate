@@ -1,13 +1,17 @@
+import { Link, router } from '@inertiajs/react';
+import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus } from 'lucide-react';
+import { useState } from 'react';
+
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -16,9 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Link, router } from '@inertiajs/react';
-import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus } from 'lucide-react';
-import { useState } from 'react';
 
 export interface TenantRow {
   id: number;

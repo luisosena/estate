@@ -9,9 +9,17 @@ use App\Models\Tenancy;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\UtilityService;
+use App\Models\UtilityBill;
 
 class TenantPaymentsController extends Controller
 {
+  protected $utilityService;
+
+  public function __construct(UtilityService $utilityService)
+  {
+    $this->utilityService = $utilityService;
+  }
   public function index(Request $request)
   {
     $user = $request->user();
@@ -87,6 +95,18 @@ class TenantPaymentsController extends Controller
       ->sum('amount');
     $pendingAmount = max(0, $monthlyRent - $totalPaid);
 
+    // Fetch pending utility bills for this tenancy
+    $pendingUtilityBills = [];
+    if ($activeTenancy) {
+      $pendingUtilityBills = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
+          $q->where('tenancy_id', $activeTenancy->id);
+        })
+        ->whereIn('status', ['pending', 'partial', 'overdue'])
+        ->with('tenancyUtility.utilityType')
+        ->orderBy('due_date', 'asc')
+        ->get();
+    }
+
     return Inertia::render('tenant/payments/make', [
       'tenant' => [
         'id' => $tenant->id,
@@ -100,6 +120,7 @@ class TenantPaymentsController extends Controller
       ],
       'existingPayment' => $existingPayment,
       'pendingAmount' => $pendingAmount,
+      'pendingUtilityBills' => $pendingUtilityBills,
       'paymentMethods' => [
         ['value' => 'mobile_money', 'label' => 'Mobile Money'],
         ['value' => 'bank_transfer', 'label' => 'Bank Transfer'],
@@ -121,6 +142,7 @@ class TenantPaymentsController extends Controller
       'payment_method' => 'required|in:mobile_money,bank_transfer',
       'reference_number' => 'nullable|string|max:100',
       'notes' => 'nullable|string|max:500',
+      'utility_bill_id' => 'nullable|exists:utility_bills,id',
     ]);
 
     $activeTenancy = $tenant->tenancies()
@@ -187,8 +209,22 @@ class TenantPaymentsController extends Controller
 
         // Determine status for this payment
         $status = 'partial';
-        if ($newTotalPaid >= $monthlyRent) {
-          $status = 'paid';
+        $utilityBillId = $validated['utility_bill_id'] ?? null;
+
+        if ($validated['payment_type'] === 'utility' && $utilityBillId) {
+          $bill = UtilityBill::find($utilityBillId);
+          if ($bill) {
+            // Reconcile the utility bill using the service
+            $this->utilityService->processUtilityPayment($bill, $validated['amount']);
+            
+            // Set payment status based on bill status (source of truth)
+            $bill->refresh();
+            $status = $bill->status;
+          }
+        } else if ($validated['payment_type'] === 'rent') {
+          if ($newTotalPaid >= $monthlyRent) {
+            $status = 'paid';
+          }
         }
 
         // Create or update payment
@@ -197,6 +233,7 @@ class TenantPaymentsController extends Controller
             'amount' => $validated['amount'],
             'payment_type' => $validated['payment_type'],
             'payment_method' => $validated['payment_method'],
+            'utility_bill_id' => $utilityBillId,
             'status' => $status,
             'paid_at' => now(),
             'reference_number' => $validated['reference_number'] ?? null,
@@ -214,6 +251,7 @@ class TenantPaymentsController extends Controller
           $payment = Payment::create([
             'tenant_id' => $tenant->id,
             'tenancy_id' => $activeTenancy->id,
+            'utility_bill_id' => $utilityBillId,
             'amount' => $validated['amount'],
             'payment_type' => $validated['payment_type'],
             'payment_method' => $validated['payment_method'],

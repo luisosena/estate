@@ -1,3 +1,7 @@
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard, CreditCard, Zap, Bell, FileText, DollarSign } from 'lucide-react';
+import { route } from 'ziggy-js';
+
 import {
     Sidebar,
     SidebarContent,
@@ -6,9 +10,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, CreditCard, Zap, Bell } from 'lucide-react';
-import { route } from 'ziggy-js';
 
 const navItems = [
     {
@@ -28,6 +29,18 @@ const navItems = [
         icon: Zap,
         href: () => route('tenant.utilities'),
         routeName: 'tenant.utilities',
+    },
+    {
+        label: 'Utility Bills',
+        icon: FileText,
+        href: () => route('tenant.utilities.bills'),
+        routeName: 'tenant.utilities.bills',
+    },
+    {
+        label: 'Rent Bills',
+        icon: DollarSign,
+        href: () => route('tenant.rent-bills.index'),
+        routeName: 'tenant.rent-bills.index',
     },
     {
         label: 'Notifications',

@@ -2,14 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     * Single source of truth: DevelopmentSeeder handles all data including utility types.
      */
     public function run(): void
     {

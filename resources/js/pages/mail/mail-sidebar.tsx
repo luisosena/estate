@@ -1,5 +1,5 @@
-import { Sidebar, SidebarInset, SidebarTrigger, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton} from "@/components/ui/sidebar"
 import { Item, ItemContent, ItemGroup, ItemHeader, ItemTitle } from "@/components/shared/item"
+import { Sidebar, SidebarInset, SidebarTrigger, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton} from "@/components/ui/sidebar"
 
 export function MailSidebar(){
   return (

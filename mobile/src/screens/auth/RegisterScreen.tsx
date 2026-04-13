@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { TextInput, Button, Text, HelperText } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View } from 'react-native';
+import { TextInput, Button, Text, HelperText } from 'react-native-paper';
+
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/errors';
+
 import { authStyles as styles } from './authStyles';
 
 export function RegisterScreen() {
   const { register } = useAuth();
   const navigation = useNavigation();
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,7 +23,7 @@ export function RegisterScreen() {
   const [error, setError] = useState('');
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !username || !email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -37,7 +42,7 @@ export function RegisterScreen() {
     setLoading(true);
 
     try {
-      await register({ name, email, password, password_confirmation: confirmPassword });
+      await register({ name, username: username.trim(), email, password, password_confirmation: confirmPassword });
     } catch (err) {
       setError(getErrorMessage(err, 'Registration failed. Please try again.'));
     } finally {
@@ -46,11 +51,8 @@ export function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <ScreenContainer scrollable withKeyboard edges={['top', 'bottom', 'left', 'right']}>
+      <View style={styles.scrollContent}>
         <View style={styles.header}>
           <Text variant="headlineLarge" style={styles.title}>
             Create Account
@@ -67,6 +69,15 @@ export function RegisterScreen() {
             onChangeText={setName}
             mode="outlined"
             autoCapitalize="words"
+            style={styles.input}
+          />
+
+          <TextInput
+            label="Username"
+            value={username}
+            onChangeText={setUsername}
+            mode="outlined"
+            autoCapitalize="none"
             style={styles.input}
           />
 
@@ -135,7 +146,7 @@ export function RegisterScreen() {
             </Text>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </ScreenContainer>
   );
 }

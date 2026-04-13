@@ -1,8 +1,12 @@
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { PaperProvider, MD3LightTheme } from 'react-native-paper';
+import React, { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { PaperProvider, MD3LightTheme } from 'react-native-paper';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+
+import { SplashScreen } from './src/components/SplashScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
@@ -26,9 +30,11 @@ const theme = {
 };
 
 export default function App() {
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <PaperProvider theme={theme}>
           <AuthProvider>
             <NavigationContainer>
@@ -36,7 +42,15 @@ export default function App() {
             </NavigationContainer>
           </AuthProvider>
         </PaperProvider>
+        <StatusBar style="dark" translucent backgroundColor="transparent" />
       </SafeAreaProvider>
+
+      {/* Render Splash Screen on top of the app as an absolute overlay */}
+      {isSplashVisible && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
+          <SplashScreen onFinish={() => setIsSplashVisible(false)} />
+        </View>
+      )}
     </GestureHandlerRootView>
   );
 }

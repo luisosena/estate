@@ -126,6 +126,16 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 - **`Models`**
   - `User.php`: main auth user model (Fortify enabled).
   - `Tenant.php`: domain model for tenants.
+  - `UtilityType.php`: utility category catalog (water, electricity, security, etc.).
+  - `TenancyUtility.php`: links tenancies to utility types with billing amounts.
+  - `UtilityBill.php`: monthly charge records for utilities.
+  - `Payment.php`: tracks all payments including utility payments.
+
+- **`Services`**
+  - `UtilityService.php`: service for managing utility connections (legacy system).
+
+- **`Rules`**
+  - `UtilityBillBelongsToTenancy.php`: validation rule ensuring utility bills belong to the correct tenancy.
 
 - **`Providers`**
   - `AppServiceProvider.php`: app bootstrapping and bindings.
@@ -150,8 +160,13 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - `0001_01_01_000002_create_jobs_table.php`: queue jobs.
   - `2025_08_26_100418_add_two_factor_columns_to_users_table.php`: 2FA columns on `users`.
   - `2026_01_21_102634_create_tenants_table.php`: tenants schema.
+  - `2026_03_20_000001_create_utility_types_table.php`: utility types catalog.
+  - `2026_03_20_000002_create_tenancy_utilities_table.php`: tenancy utility assignments.
+  - `2026_03_20_000003_create_utility_bills_table.php`: monthly utility bills.
+  - `2026_03_20_000004_add_utility_bill_id_to_payments_table.php`: links payments to utility bills.
 - **`factories/UserFactory.php`**: user factory.
 - **`seeders/DatabaseSeeder.php`**: database seeding entrypoint.
+- **`seeders/UtilityTypeSeeder.php`**: seeds default utility types (Water, Electricity, Gas, Internet, Security, Janitor, Garbage, Parking).
 
 #### `resources/`
 
@@ -272,7 +287,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 ### 5. Current Functional State
 
 - **Authentication & user management**
-  - Fortify-based auth including registration, login, password reset, email verification, and 2FA.
+  - Fortify-based auth including registration, username-based login (for mobile), password reset, email verification, and 2FA.
   - Profile editing and deletion, with dedicated form request validation.
   - Password update flow with throttling and validation.
 
@@ -291,7 +306,23 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - App shell with sidebar/header/navigation, responsive behavior, and dark/light theming.
   - Reusable components for tables, charts, cards, navigation, forms, and notifications.
 
+- **Mobile App (React Native/Expo)**
+  - Cross-platform mobile application for iOS and Android.
+  - Role-based screens for both landlords and tenants.
+  - **Premium Onboarding**: Minimalistic custom splash screen with background loading to ensure a "zero-flicker" transition to the main app.
+  - **Rent Billing System**: Complete mobile integration with rent bill viewing, payment linking, and status tracking.
+    - Tenant: View rent bills, current month bill, make payments linked to specific bills.
+    - Landlord: Manage rent bills, view overdue/pending bills, waive bills.
+  - Dashboard enhancements showing rent bill statistics.
+  - Token-based authentication with API client.
+
 - **Quality & tooling**
   - Linting and formatting set up for both PHP and JS/TS.
   - Testing powered by Pest with coverage for auth, dashboard, and settings behaviors.
+
+- **Landlord Workflow Refinements (Q2 2026)**
+  - **Add Tenant Flow**: Completely restructured mobile form with full-width vertical stacking for premium UX.
+  - **Unit Selection**: Real-time "available" unit filtering with card-based dropdown menus.
+  - **Tenant Details**: High-fidelity dashboard view with nested data structures showing active tenancy, units, and billing history.
+  - **Crash Resilience**: Implementation of nested data handling for Tenant Dashboard API responses, eliminating client-side TypeErrors.
 

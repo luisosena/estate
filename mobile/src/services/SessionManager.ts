@@ -1,10 +1,11 @@
-import * as SecureStore from 'expo-secure-store';
-import * as Device from 'expo-device';
 import * as Crypto from 'expo-crypto';
+import * as Device from 'expo-device';
+import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
-import { getItem, setItem, deleteItem } from '../utils/storage';
+
 import api from '../api/client';
+import { getItem, setItem, deleteItem } from '../utils/storage';
 
 // ──────────────────────────────────────────
 // Types
@@ -230,7 +231,7 @@ class SessionManager {
       };
       await setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
 
-      console.log('[SessionManager] Session created successfully');
+      // Log removed
       return session;
     } catch (error) {
       console.error('[SessionManager] Failed to create session:', error);
@@ -324,7 +325,7 @@ class SessionManager {
       // ]);
 
       this.deviceInfo = null;
-      console.log('[SessionManager] Session cleared successfully');
+      // Log removed
     } catch (error) {
       console.error('[SessionManager] Failed to clear session:', error);
       throw error;
@@ -366,14 +367,14 @@ class SessionManager {
 
       // Check if token is expired
       if (now >= session.expiresAt) {
-        console.log('[SessionManager] Session invalid: Token expired');
+        // Log removed
         return false;
       }
 
       // Check sliding window expiration
       const lastActivity = session.lastActivityAt;
       if (now - lastActivity > this.config.sessionExpiryMs) {
-        console.log('[SessionManager] Session invalid: Sliding window expired');
+        // Log removed
         return false;
       }
 
@@ -412,23 +413,23 @@ class SessionManager {
       // First check if session is valid at all
       const isValid = await this.isSessionValid();
       if (!isValid) {
-        console.log('[SessionManager] Session not valid, cannot refresh');
+        // Log removed
         return false;
       }
 
       // Check if token is expiring soon
       const shouldRefresh = await this.isTokenExpiringSoon();
       if (!shouldRefresh) {
-        console.log('[SessionManager] Token not expiring soon, no refresh needed');
+        // Log removed
         return true;
       }
 
-      console.log('[SessionManager] Token expiring soon, refreshing...');
+      // Log removed
 
       // Get refresh token
       const refreshToken = await SecureStore.getItemAsync('refresh_token');
       if (!refreshToken) {
-        console.log('[SessionManager] No refresh token available');
+        // Log removed
         return false;
       }
 
@@ -453,7 +454,7 @@ class SessionManager {
       // Update activity timestamp
       await this.updateActivity();
 
-      console.log('[SessionManager] Token refreshed successfully');
+      // Log removed
       return true;
     } catch (error) {
       console.error('[SessionManager] Failed to refresh session:', error);
@@ -462,7 +463,7 @@ class SessionManager {
       const axiosError = error as { response?: { status?: number } };
       if (axiosError.response?.status === 401) {
         // Refresh token is invalid, clear session
-        console.log('[SessionManager] Refresh token invalid, clearing session');
+        // Log removed
         await this.clearSession();
       }
       

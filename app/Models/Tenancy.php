@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tenancy extends Model
 {
@@ -15,9 +16,9 @@ class Tenancy extends Model
         'security_deposit',
         'tenancy_agreement_path',
         'status',
-        'end_reason',
         'deposit_return_status',
         'final_meter_readings',
+        'rent_due_day',
     ];
 
     protected $appends = ['tenant_code'];
@@ -42,8 +43,25 @@ class Tenancy extends Model
         return $this->hasMany(Payment::class);
     }
 
-    public function utilities()
+    /**
+     * New utility relationships for the refactored utility system.
+     * These link to tenancy_utilities (which utilities apply to this tenancy).
+     */
+    public function tenancyUtilities(): HasMany
     {
-        return $this->hasMany(Utility::class);
+        return $this->hasMany(TenancyUtility::class);
+    }
+
+    public function activeUtilities(): HasMany
+    {
+        return $this->hasMany(TenancyUtility::class)->where('status', 'active');
+    }
+
+    /**
+     * Rent bills for this tenancy.
+     */
+    public function rentBills(): HasMany
+    {
+        return $this->hasMany(RentBill::class);
     }
 }
