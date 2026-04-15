@@ -16,7 +16,6 @@ import {
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 
@@ -125,23 +124,29 @@ export default function LandlordUtilityBillsIndex({
   summary,
 }: Props) {
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar properties={[]} />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-200">
-              Utility Bills
-            </h1>
-            <p className="text-sm text-gray-400">
-              View and manage all utility bills
-            </p>
-          </div>
-        </div>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                  Invoicing
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Utility Bills
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                View and manage all utility bills
+              </p>
+            </div>
+          </header>
 
-        {/* Summary Cards */}
+          <div className="flex flex-1 flex-col gap-6">
         <div className="mb-6 grid gap-4 md:grid-cols-3">
           <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
             <CardHeader className="pb-2">
@@ -344,6 +349,8 @@ export default function LandlordUtilityBillsIndex({
             )}
           </CardContent>
         </Card>
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

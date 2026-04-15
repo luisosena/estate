@@ -5,6 +5,7 @@ import { toast, Toaster } from 'sonner';
 import { route } from 'ziggy-js';
 
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,7 +20,6 @@ import {
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 interface UtilityType {
@@ -123,29 +123,39 @@ export default function CreateLandlordUtility({
   };
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar properties={[]} />
       <Toaster />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <Link
-              href={route('landlord.utilities.index')}
-              className="mb-4 inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-200"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Utilities
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-200">
-              Add Utility
-            </h1>
-            <p className="text-sm text-gray-400">
-              Assign utility to {tenancy.tenant.full_name} - {tenancy.unit.unit_name}
-            </p>
-          </div>
-        </div>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                  Infrastructure Setup
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Add Utility
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Assign utility to {tenancy.tenant.full_name} ({tenancy.unit.unit_name})
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href={route('landlord.utilities.index')}>
+                <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Utilities
+                </Button>
+              </Link>
+            </div>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-6">
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6 lg:grid-cols-2">
@@ -324,6 +334,8 @@ export default function CreateLandlordUtility({
             </Button>
           </div>
         </form>
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

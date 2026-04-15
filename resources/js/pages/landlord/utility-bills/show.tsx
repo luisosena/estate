@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 interface UtilityType {
@@ -130,29 +129,38 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
   const outstandingAmount = bill.amount_due - bill.amount_paid;
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar properties={[]} />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <Link
-              href={route('landlord.utility-bills.index')}
-              className="mb-4 inline-flex items-center gap-1 text-sm text-gray-400 hover:text-gray-200"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Utility Bills
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-200">
-              Utility Bill Details
-            </h1>
-            <p className="text-sm text-gray-400">
-              {bill.tenancy_utility?.utility_type?.name} -{' '}
-              {formatDate(bill.billing_month)}
-            </p>
-          </div>
-        </div>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                  Bill Details
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                {bill.tenancy_utility?.utility_type?.name} Bill
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Billing Month: {formatDate(bill.billing_month)}
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href={route('landlord.utility-bills.index')}>
+                <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Bills
+                </Button>
+              </Link>
+            </div>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-6">
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Bill Details */}
@@ -303,6 +311,8 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
             )}
           </CardContent>
         </Card>
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

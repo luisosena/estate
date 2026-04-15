@@ -17,7 +17,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 interface Tenant {
@@ -103,21 +102,29 @@ const getStatusVariant = (
 
 export default function LandlordUtilitiesIndex({ tenancies }: Props) {
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar properties={[]} />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-200">Utilities</h1>
-            <p className="text-sm text-gray-400">
-              Manage utilities for all tenancies
-            </p>
-          </div>
-        </div>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                  Infrastructure
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Utilities
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage utilities setup for all tenancies
+              </p>
+            </div>
+          </header>
 
-        {/* Summary Cards */}
+          <div className="flex flex-1 flex-col gap-6">
         <div className="mb-6 grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
@@ -233,6 +240,8 @@ export default function LandlordUtilitiesIndex({ tenancies }: Props) {
             ))
           )}
         </div>
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
