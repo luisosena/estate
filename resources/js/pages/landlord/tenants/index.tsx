@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {
   Table,
@@ -134,36 +133,43 @@ export default function LandlordTenantsIndex({
   const currentMetrics = propertyMetrics || metrics;
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar properties={properties} />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">All Tenants</h1>
-            <p className="text-sm text-muted-foreground">
-              {currentProperty === 'all' 
-                ? 'Showing all tenants across every property you own.'
-                : `Showing tenants for ${properties.find(p => p.id.toString() === currentProperty)?.name}`
-              }
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <Users className="w-3 h-3" />
+                  Tenants Record
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                All Tenants
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {currentProperty === 'all' 
+                  ? 'Showing all tenants across every property you own.'
+                  : `Showing tenants for ${properties.find(p => p.id.toString() === currentProperty)?.name}`
+                }
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
               <Link href="/landlord/tenants/create">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Tenant
+                <Button className="shadow-sm">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add Tenant
+                </Button>
               </Link>
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              Logout
-            </Button>
-          </div>
-        </div>
+            </div>
+          </header>
 
-        {/* Metrics Cards */}
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="flex flex-1 flex-col gap-6">
+            {/* Metrics Cards */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -474,6 +480,8 @@ export default function LandlordTenantsIndex({
             )}
           </CardContent>
         </Card>
+      </div>
+      </main>
       </SidebarInset>
     </SidebarProvider>
   );

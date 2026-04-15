@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 
@@ -179,44 +178,45 @@ export default function Show({ rentBill }: Props) {
   const canWaive = rentBill.status !== 'waived' && rentBill.status !== 'paid';
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Mobile sidebar trigger */}
-        <div className="mb-4 flex items-center gap-2 md:hidden">
-          <SidebarTrigger className="-ml-2" />
-        </div>
-
-        {/* Back Button */}
-        <div className="mb-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={route('landlord.rent-bills.index')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Rent Bills
-            </Link>
-          </Button>
-        </div>
-
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-                Rent Bill Details
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <Receipt className="w-3 h-3" />
+                  Bill Details
+                </Badge>
+                {getStatusBadge(rentBill.status)}
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                #{rentBill.id} - {formatDate(rentBill.billing_month)}
               </h1>
-              {getStatusBadge(rentBill.status)}
+              <p className="text-sm text-muted-foreground mt-1">
+                Amount Due: {formatCurrency(rentBill.amount_due)}
+              </p>
             </div>
-            <p className="mt-1 text-muted-foreground">
-              Billing Month: {formatDate(rentBill.billing_month)}
-            </p>
-          </div>
-          {canWaive && (
-            <Button variant="outline" onClick={() => setShowWaiveModal(true)}>
-              <XCircle className="mr-2 h-4 w-4" />
-              Waive Bill
-            </Button>
-          )}
-        </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {canWaive && (
+                <Button variant="outline" onClick={() => setShowWaiveModal(true)} className="bg-card border-border/50 shadow-sm">
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Waive Bill
+                </Button>
+              )}
+              <Link href={route('landlord.rent-bills.index')}>
+                <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Button>
+              </Link>
+            </div>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-6">
 
         {/* Success/Error Messages */}
         {successMessage && (
@@ -443,6 +443,8 @@ export default function Show({ rentBill }: Props) {
             </div>
           </div>
         )}
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -17,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 
@@ -100,36 +99,40 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
   );
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar />
-      <SidebarInset>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
         <Head title="Units" />
         
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              <span className="text-sm font-medium">Units</span>
-            </div>
-          </div>
-        </header>
-
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold">Units</h1>
-              <p className="text-muted-foreground">
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <Home className="w-3 h-3" />
+                  Portfolio Asset
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Units
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
                 Manage all your property units
               </p>
             </div>
-            <Link href="/landlord/units/create">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Unit
-              </Button>
-            </Link>
-          </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href="/landlord/units/create">
+                <Button className="shadow-sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Unit
+                </Button>
+              </Link>
+            </div>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-6">
 
           {/* Metrics Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -334,7 +337,8 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
               </CardContent>
             </Card>
           )}
-        </div>
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -9,7 +9,10 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { ModeToggle } from '@/components/mode-toggle';
+import { TenantNotificationBell } from '@/components/tenant-notification-bell';
 
 const navItems = [
     {
@@ -62,8 +65,15 @@ export function TenantSidebar() {
     };
 
     return (
-        <Sidebar collapsible="icon" variant="floating" className="mt-25 mr-6 ml-4 max-h-3/5">
-            <SidebarContent className="inline-block h-full min-h-screen">
+        <Sidebar collapsible="icon" variant="floating" className="mt-[6.25rem] mr-6 ml-4 h-[calc(100svh-8rem)]">
+            <SidebarContent>
+                {/* Top header area for triggers and toggles */}
+                <div className="p-2 flex items-center justify-between">
+                    <SidebarTrigger className="-ml-1 text-muted-foreground hover:bg-muted" />
+                    <div className="flex items-center gap-1.5">
+                        <ModeToggle />
+                    </div>
+                </div>
                 <SidebarGroup>
                     <SidebarMenu>
                         {navItems.map(({ label, icon: Icon, href, routeName }) => (

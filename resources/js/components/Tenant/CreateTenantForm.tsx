@@ -73,15 +73,6 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
     return (
         <div className="w-">
             <div className="mb-6">
-                <Button
-                    variant="ghost"
-                    onClick={handleBack}
-                    className="mb-4"
-                >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Dashboard
-                </Button>
-                
                 <Card className="w-full mx-auto">
                     <CardHeader>
                         <CardTitle>Add New Tenant</CardTitle>

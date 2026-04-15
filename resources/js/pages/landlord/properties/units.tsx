@@ -15,7 +15,6 @@ import {
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 interface Unit {
@@ -55,42 +54,46 @@ export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
   const occupiedUnits = units.filter(unit => unit.status === 'occupied').length;
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar />
-      <SidebarInset>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
         <Head title={`${property.name} - Units`} />
         
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              <span className="text-sm font-medium">Property Units</span>
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <Building2 className="w-3 h-3" />
+                  Portfolio Asset
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                {property.name} Units
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {property.address}
+              </p>
             </div>
-          </div>
-        </header>
-
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            
+            <div className="flex items-center gap-2 shrink-0">
               <Link href={route('landlord.dashboard')}>
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
+                <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Dashboard
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold">{property.name}</h1>
-                <p className="text-muted-foreground">{property.address}</p>
-              </div>
+              <Link href={route('landlord.units.create')}>
+                <Button className="shadow-sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Unit
+                </Button>
+              </Link>
             </div>
-            <Link href={route('landlord.units.create')}>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Unit
-              </Button>
-            </Link>
-          </div>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-6">
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
@@ -184,6 +187,7 @@ export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
             </CardContent>
           </Card>
         </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

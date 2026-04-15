@@ -1,350 +1,392 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
-  ArrowRight,
-  Building2,
-  Clock,
-  DollarSign,
-  Home,
-  Plus,
-  Receipt,
-  Users,
-  AlertCircle,
+    AlertCircle,
+    ArrowRight,
+    Building2,
+    CalendarDays,
+    ChevronRight,
+    Clock,
+    CreditCard,
+    DollarSign,
+    Home,
+    Plus,
+    Receipt,
+    Users,
+    Zap,
 } from 'lucide-react';
 import { route } from 'ziggy-js';
 
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
+    SidebarInset,
+    SidebarProvider,
 } from '@/components/ui/sidebar';
+import { type SharedData } from '@/types';
+
+/* ─── Interfaces ─────────────────────────────────────────────────── */
 
 interface Property {
-  id: number;
-  name: string;
-  address: string;
-  units_count: number;
-  active_tenants_count: number;
+    id: number;
+    name: string;
+    address: string;
+    units_count: number;
+    active_tenants_count: number;
 }
 
 interface Stats {
-  total_tenants: number;
-  total_properties: number;
-  total_units: number;
-  monthly_revenue: number;
-  pending_rent_bills: number;
-  overdue_rent_bills: number;
-  total_rent_outstanding: number;
+    total_tenants: number;
+    total_properties: number;
+    total_units: number;
+    monthly_revenue: number;
+    pending_rent_bills: number;
+    overdue_rent_bills: number;
+    total_rent_outstanding: number;
 }
 
 interface LandlordDashboardProps {
-  properties: Property[];
-  stats: Stats;
-  unreadNotificationsCount?: number;
+    properties: Property[];
+    stats: Stats;
+    unreadNotificationsCount?: number;
 }
 
+/* ─── Formatting Helpers ─────────────────────────────────────────── */
+
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'TZS',
-    minimumFractionDigits: 0,
-  }).format(amount);
+    new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'TZS',
+        minimumFractionDigits: 0,
+    }).format(amount);
+
+const getFormattedDate = () => {
+    return new Date().toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+};
+
+/* ─── Subcomponents ──────────────────────────────────────────────── */
+
+function MetricCard({
+    title,
+    value,
+    icon: Icon,
+    description,
+    alert = false,
+}: {
+    title: string;
+    value: string | number;
+    icon: React.ElementType;
+    description: string;
+    alert?: boolean;
+}) {
+    return (
+        <Card className="shadow-none border-border/50 group hover:border-primary/20 transition-colors">
+            <CardContent className="p-5 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <Icon className={`h-4 w-4 ${alert ? 'text-red-500' : 'text-primary/70'}`} />
+                        {title}
+                    </span>
+                    <Badge variant="secondary" className="bg-muted/50 font-normal shadow-none text-xs hidden sm:inline-flex">
+                        Today
+                    </Badge>
+                </div>
+                <div>
+                    <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
+                        {value}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 font-medium">
+                        {description}
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function QuickAction({
+    label,
+    icon: Icon,
+    href,
+}: {
+    label: string;
+    icon: React.ElementType;
+    href: string;
+}) {
+    return (
+        <Button
+            asChild
+            variant="outline"
+            className="h-auto py-3 px-4 justify-start bg-card hover:bg-muted/50 border-border/50 shadow-none hover:text-primary transition-all rounded-xl"
+        >
+            <Link href={href} className="flex flex-col items-start gap-2">
+                <div className="p-2 rounded-md bg-muted/50 text-muted-foreground group-hover:text-primary">
+                    <Icon className="w-4 h-4" />
+                </div>
+                <span className="font-semibold text-sm">{label}</span>
+            </Link>
+        </Button>
+    );
+}
+
+/* ─── Main Component ─────────────────────────────────────────────── */
 
 export default function Dashboard({
-  properties,
-  stats,
-  unreadNotificationsCount = 0,
+    properties,
+    stats,
+    unreadNotificationsCount = 0,
 }: LandlordDashboardProps) {
-  const handleLogout = () => {
-    router.post('/logout');
-  };
+    const { auth } = usePage<SharedData>().props;
+    const firstName = auth?.user?.name?.split(' ')[0] ?? 'User';
 
-  const handleAddTenant = () => {
-    router.visit('/landlord/tenants/create');
-  };
+    const handleLogout = () => router.post('/logout');
+    const handleAddTenant = () => router.visit('/landlord/tenants/create');
 
-  return (
-    <SidebarProvider defaultOpen={false}>
-      <LandlordSidebar properties={properties} unreadNotificationsCount={unreadNotificationsCount} />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Mobile sidebar trigger */}
-        <div className="mb-4 flex items-center gap-2 md:hidden">
-          <SidebarTrigger className="-ml-2" />
-          <h1 className="text-lg font-semibold">Dashboard</h1>
-        </div>
+    const occupancyRate =
+        stats.total_units > 0
+            ? Math.round((stats.total_tenants / stats.total_units) * 100)
+            : 0;
 
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-              Landlord Dashboard
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Welcome back! Manage your properties and tenants.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link href={route('landlord.tenants.index')}>
-                <Users className="mr-2 h-4 w-4" />
-                View All Tenants
-              </Link>
-            </Button>
-            <Button onClick={handleAddTenant}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Tenant
-            </Button>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Tenants
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total_tenants}</div>
-              <p className="text-xs text-muted-foreground">
-                Active tenants across all properties
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Properties</CardTitle>
-              <Home className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total_properties}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.total_units} total units
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Monthly Revenue
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(stats.monthly_revenue)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Expected monthly income
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Occupancy Rate
-              </CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.total_units > 0
-                  ? Math.round((stats.total_tenants / stats.total_units) * 100)
-                  : 0}
-                %
-              </div>
-              <p className="text-xs text-muted-foreground">Units occupied</p>
-            </CardContent>
-          </Card>
-
-          <Card className={stats.pending_rent_bills > 0 ? 'border-amber-500 dark:border-amber-500' : ''}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Pending Rent Bills
-              </CardTitle>
-              <Clock className="h-4 w-4 text-amber-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600 dark:text-amber-500">
-                {stats.pending_rent_bills}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Awaiting payment
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className={stats.overdue_rent_bills > 0 ? 'border-red-500 dark:border-red-500' : ''}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Overdue Rent Bills
-              </CardTitle>
-              {stats.overdue_rent_bills > 0 ? (
-                <AlertCircle className="h-4 w-4 text-red-500" />
-              ) : (
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              )}
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600 dark:text-red-500">
-                {stats.overdue_rent_bills}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Past due date
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Outstanding
-              </CardTitle>
-              <Receipt className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(stats.total_rent_outstanding)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Unpaid rent amount
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Properties Overview */}
-        <div className="mb-8 grid gap-6 lg:grid-cols-2">
-          <Card className="lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Properties Overview</CardTitle>
-                <CardDescription>
-                  Your properties and their current occupancy
-                </CardDescription>
-              </div>
-              <Button asChild variant="outline" size="sm">
-                <Link href={route('landlord.tenants.index')}>
-                  View All Tenants
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {properties.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  <Home className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                  <p>
-                    No properties found. Add your first property to get started.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {properties.map((property) => (
-                    <div
-                      key={property.id}
-                      className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
-                    >
-                      <div className="flex-1">
-                        <h3 className="font-medium">{property.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {property.address}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="text-center">
-                          <p className="font-medium">{property.units_count}</p>
-                          <p className="text-muted-foreground">Units</p>
+    return (
+        <SidebarProvider defaultOpen={true}>
+            <LandlordSidebar
+                properties={properties}
+                unreadNotificationsCount={unreadNotificationsCount}
+            />
+            
+            <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+                <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+                    
+                    {/* Header Section */}
+                    <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                        <div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                                    <CalendarDays className="w-3 h-3" />
+                                    {getFormattedDate()}
+                                </Badge>
+                            </div>
+                            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                                Welcome back, {firstName}
+                            </h1>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Here is what's happening across your portfolio today.
+                            </p>
                         </div>
-                        <div className="text-center">
-                          <p className="font-medium">
-                            {property.active_tenants_count}
-                          </p>
-                          <p className="text-muted-foreground">Tenants</p>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Button asChild variant="outline" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                                <Link href={route('landlord.tenants.index')}>
+                                    <Users className="w-4 h-4 mr-2 text-muted-foreground" />
+                                    Tenants
+                                </Link>
+                            </Button>
+                            <Button onClick={handleAddTenant} className="shadow-sm">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add Tenant
+                            </Button>
                         </div>
-                        <Button asChild variant="outline" size="sm">
-                          <Link
-                            href={route(
-                              'landlord.properties.units',
-                              property.id,
+                    </header>
+
+                    {/* KPI Summary Row */}
+                    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <MetricCard
+                            title="Total Tenants"
+                            value={stats.total_tenants}
+                            icon={Users}
+                            description={`Across ${stats.total_properties} properties`}
+                        />
+                        <MetricCard
+                            title="Properties & Units"
+                            value={stats.total_properties}
+                            icon={Building2}
+                            description={`${stats.total_units} total listed units`}
+                        />
+                        <MetricCard
+                            title="Monthly Revenue"
+                            value={formatCurrency(stats.monthly_revenue)}
+                            icon={DollarSign}
+                            description="Estimated this cycle"
+                        />
+                        <MetricCard
+                            title="Occupancy Rate"
+                            value={`${occupancyRate}%`}
+                            icon={Home}
+                            description={`${stats.total_tenants} of ${stats.total_units} units filled`}
+                        />
+                    </section>
+
+                    {/* Main Split Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        
+                        {/* LEFT PANEL: Properties List */}
+                        <section className="lg:col-span-2 flex flex-col gap-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-lg font-semibold tracking-tight">Property Portfolio</h2>
+                                <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                                    <Link href={route('landlord.properties.index')}>
+                                        View all
+                                        <ArrowRight className="w-4 h-4 ml-1" />
+                                    </Link>
+                                </Button>
+                            </div>
+
+                            <Card className="bg-card shadow-sm border-border/50">
+                                {properties.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                                            <Home className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-foreground mb-1">No properties yet</h3>
+                                        <p className="text-sm text-muted-foreground mb-6 max-w-[250px]">
+                                            You haven't added any properties to your portfolio. Let's get started.
+                                        </p>
+                                        <Button asChild>
+                                            <Link href={route('landlord.properties.index')}>Add Property</Link>
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col">
+                                        {properties.map((property, idx) => (
+                                            <div key={property.id} className="group">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:px-6 gap-4 hover:bg-muted/30 transition-colors">
+                                                    <div className="flex items-start gap-4">
+                                                        <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10 shrink-0 mt-0.5">
+                                                            <Building2 className="w-5 h-5 text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <Link 
+                                                                href={route('landlord.properties.units', property.id)} 
+                                                                className="font-medium text-foreground hover:text-primary transition-colors text-base"
+                                                            >
+                                                                {property.name}
+                                                            </Link>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {property.address || 'No address provided'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-6 sm:gap-8 ml-14 sm:ml-0">
+                                                        {/* Visual Occupancy Pill */}
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <div className="flex items-center justify-between text-xs">
+                                                                <span className="text-muted-foreground">Occupancy</span>
+                                                                <span className="font-medium text-foreground">
+                                                                    {property.active_tenants_count} / {property.units_count}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <Button asChild variant="ghost" size="icon" className="shrink-0 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity hidden sm:flex">
+                                                            <Link href={route('landlord.properties.units', property.id)}>
+                                                                <ChevronRight className="w-4 h-4" />
+                                                            </Link>
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                {idx < properties.length - 1 && <Separator className="bg-border/50" />}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </Card>
+                        </section>
+
+                        {/* RIGHT PANEL: Financial Health */}
+                        <section className="flex flex-col gap-4">
+                            <h2 className="text-lg font-semibold tracking-tight">Financial Health</h2>
+                            
+                            <Card className="bg-card shadow-sm border-border/50">
+                                <CardHeader className="pb-3 px-5 pt-5">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                                        <Receipt className="w-4 h-4 text-primary/70" />
+                                        Billing Status
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="px-5 pb-5 flex flex-col gap-3">
+                                    
+                                    {/* Actionable Bill Blocks */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Link 
+                                            href={route('landlord.rent-bills.index')} 
+                                            className="flex flex-col p-4 rounded-xl border border-border/60 bg-card hover:bg-muted/50 transition-colors"
+                                        >
+                                            <span className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
+                                                <Clock className="w-3.5 h-3.5 text-amber-500" />
+                                                Pending
+                                            </span>
+                                            <span className="text-2xl font-semibold">{stats.pending_rent_bills}</span>
+                                        </Link>
+                                        
+                                        <Link 
+                                            href={route('landlord.rent-bills.index')} 
+                                            className={`flex flex-col p-4 rounded-xl border transition-colors ${stats.overdue_rent_bills > 0 ? 'bg-red-50 hover:bg-red-100 border-red-200 dark:bg-red-950/20 dark:border-red-900/30' : 'bg-card hover:bg-muted/50 border-border/60'}`}
+                                        >
+                                            <span className={`text-xs font-semibold mb-2 flex items-center gap-1.5 ${stats.overdue_rent_bills > 0 ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground'}`}>
+                                                {stats.overdue_rent_bills > 0 ? <AlertCircle className="w-3.5 h-3.5 shadow-sm rounded-full" /> : <Clock className="w-3.5 h-3.5" />}
+                                                Overdue
+                                            </span>
+                                            <span className={`text-2xl font-semibold ${stats.overdue_rent_bills > 0 ? 'text-red-700 dark:text-red-400' : 'text-foreground'}`}>
+                                                {stats.overdue_rent_bills}
+                                            </span>
+                                        </Link>
+                                    </div>
+
+                                    <div className="mt-4 pt-4 border-t border-border/50 flex flex-col gap-1">
+                                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Outstanding Balance</span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-3xl font-bold tracking-tight text-foreground">{formatCurrency(stats.total_rent_outstanding)}</span>
+                                        </div>
+                                    </div>
+
+                                </CardContent>
+                            </Card>
+
+                            {stats.overdue_rent_bills > 0 && (
+                                <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 p-3 rounded-xl flex items-start gap-2">
+                                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                                    <p>You have overdue rent bills. Please review them in the billing section.</p>
+                                </div>
                             )}
-                          >
-                            View Units
-                          </Link>
-                        </Button>
-                      </div>
+                        </section>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks and shortcuts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Button
-                onClick={handleAddTenant}
-                className="justify-start"
-                variant="outline"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add New Tenant
-              </Button>
-              <Button asChild variant="outline" className="justify-start">
-                <Link href={route('landlord.tenants.index')}>
-                  <Users className="mr-2 h-4 w-4" />
-                  View All Tenants
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="justify-start">
-                <Link href={route('landlord.units.create')}>
-                  <Home className="mr-2 h-4 w-4" />
-                  Add Unit
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="justify-start">
-                <Link href={route('landlord.payments.index')}>
-                  <DollarSign className="mr-2 h-4 w-4" />
-                  View Payments
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="justify-start">
-                <Link href={route('landlord.rent-bills.index')}>
-                  <Receipt className="mr-2 h-4 w-4" />
-                  View Rent Bills
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                    {/* Quick Access Row */}
+                    <section className="flex flex-col gap-4 mt-4">
+                        <h2 className="text-lg font-semibold tracking-tight">Quick Access</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                            <QuickAction label="New Tenant" icon={Plus} href={route('landlord.tenants.create')} />
+                            <QuickAction label="Add Unit" icon={Building2} href={route('landlord.units.create')} />
+                            <QuickAction label="Payments" icon={CreditCard} href={route('landlord.payments.index')} />
+                            <QuickAction label="Rent Bills" icon={Receipt} href={route('landlord.rent-bills.index')} />
+                            <QuickAction label="Utilities" icon={Zap} href={route('landlord.utilities.index')} />
+                            <QuickAction label="All Tenants" icon={Users} href={route('landlord.tenants.index')} />
+                        </div>
+                    </section>
 
-        {/* Logout */}
-        <div className="mt-8 flex justify-center">
-          <Button variant="outline" onClick={handleLogout}>
-            Log out
-          </Button>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+                    {/* Footer / Logout */}
+                    <div className="mt-auto pt-8 flex justify-center">
+                        <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
+                            Sign out of dashboard
+                        </Button>
+                    </div>
+
+                </main>
+            </SidebarInset>
+        </SidebarProvider>
+    );
 }

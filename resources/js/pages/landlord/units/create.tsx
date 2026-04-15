@@ -3,6 +3,7 @@ import { Building2, Home, Plus } from 'lucide-react';
 import { route } from 'ziggy-js';
 
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -23,7 +24,6 @@ import {
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 interface Property {
@@ -51,36 +51,40 @@ export default function CreateUnit({ properties }: CreateUnitProps) {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar />
-      <SidebarInset>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
         <Head title="Create Unit" />
         
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              <span className="text-sm font-medium">Create Unit</span>
-            </div>
-          </div>
-        </header>
-
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold">Create New Unit</h1>
-              <p className="text-muted-foreground">
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <Home className="w-3 h-3" />
+                  Portfolio Asset
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Create New Unit
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
                 Add a new unit to one of your properties
               </p>
             </div>
-            <Link href={route('landlord.units.index')}>
-              <Button variant="outline">
-                <Building2 className="mr-2 h-4 w-4" />
-                View All Units
-              </Button>
-            </Link>
-          </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href={route('landlord.units.index')}>
+                <Button variant="outline" className="bg-card border-border/50 shadow-sm">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  View All Units
+                </Button>
+              </Link>
+            </div>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-6">
 
           <Card className="max-w-2xl">
             <CardHeader>
@@ -157,7 +161,8 @@ export default function CreateUnit({ properties }: CreateUnitProps) {
               </form>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

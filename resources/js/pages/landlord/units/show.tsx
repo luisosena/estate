@@ -76,38 +76,41 @@ export default function UnitShow({ unit }: UnitShowProps) {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar />
-      <SidebarInset>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
         <Head title={`Unit - ${unit.unit_name}`} />
         
-        <header className="flex flex-col h-fit shrink-0 gap-2 border-b pt-4">
-          <div className="flex items-center gap-2 px-4">
-            <div className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              <span className="text-2xl font-medium">Unit Details</span>
-            </div>
-          </div>
-          <Link href={route('landlord.properties.units', unit.property.id)}>
-            <Button variant="outline" size="sm" className="ml-4 mb-4 mt-2">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Property Units
-            </Button>
-          </Link>
-        </header>
-
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-2xl font-bold">{unit.unit_name}</h1>
-                <p className="text-muted-foreground">
-                  Unit Code: {unit.unit_code}
-                </p>
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <Home className="w-3 h-3" />
+                  Unit Details
+                </Badge>
+                {getStatusBadge(unit.status)}
               </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                {unit.unit_name}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Unit Code: {unit.unit_code}
+              </p>
             </div>
-            {getStatusBadge(unit.status)}
-          </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href={route('landlord.properties.units', unit.property.id)}>
+                <Button variant="outline" className="bg-card border-border/50 shadow-sm">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Property
+                </Button>
+              </Link>
+            </div>
+          </header>
+
+          <div className="flex flex-1 flex-col gap-6">
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
@@ -252,7 +255,8 @@ export default function UnitShow({ unit }: UnitShowProps) {
               )}
             </div>
           </div>
-        </div>
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { MoreHorizontal, Eye, ArrowLeft, CheckCircle2, Clock } from 'lucide-react';
+import { MoreHorizontal, Eye, ArrowLeft, CheckCircle2, Clock, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 
 import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
@@ -15,7 +15,6 @@ import {
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 
@@ -151,37 +150,31 @@ export default function PaymentsIndex({ payments, stats }: Props) {
   };
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Mobile sidebar trigger */}
-        <div className="mb-4 flex items-center gap-2 md:hidden">
-          <SidebarTrigger className="-ml-2" />
-          <h1 className="text-lg font-semibold">Payments</h1>
-        </div>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Financial Records
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Payments
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                View and manage all tenant payments
+              </p>
+            </div>
+          </header>
 
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-              Payments
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              View and manage all tenant payments
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/landlord/dashboard">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="mb-8 grid gap-4 md:grid-cols-3">
+          <div className="flex flex-1 flex-col gap-6">
+            {/* Stats Cards */}
+            <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
@@ -364,6 +357,8 @@ export default function PaymentsIndex({ payments, stats }: Props) {
             )}
           </CardContent>
         </Card>
+        </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

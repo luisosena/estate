@@ -16,7 +16,6 @@ import {
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 
@@ -144,28 +143,29 @@ export default function Index({ rentBills, stats }: Props) {
   };
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Mobile sidebar trigger */}
-        <div className="mb-4 flex items-center gap-2 md:hidden">
-          <SidebarTrigger className="-ml-2" />
-          <h1 className="text-lg font-semibold">Rent Bills</h1>
-        </div>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  Invoicing
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Rent Bills
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage and view all rent bills across your properties
+              </p>
+            </div>
+          </header>
 
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-              Rent Bills
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Manage and view all rent bills across your properties
-            </p>
-          </div>
-        </div>
-
-        {/* Summary Cards */}
+          <div className="flex flex-1 flex-col gap-6">
         <div className="mb-8 grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -353,6 +353,8 @@ export default function Index({ rentBills, stats }: Props) {
             )}
           </CardContent>
         </Card>
+          </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     SidebarInset,
     SidebarProvider,
-    SidebarTrigger,
 } from '@/components/ui/sidebar';
 import {
     Table,
@@ -89,46 +88,46 @@ export default function LandlordTenantsByProperty({
     );
 
     return (
-        <SidebarProvider defaultOpen={false}>
+        <SidebarProvider defaultOpen={true}>
             <LandlordSidebar properties={properties} />
-            <SidebarInset className="px-6 pt-4 pb-8">
-                {/* Header */}
-                <div className="mb-8 flex items-center gap-3">
-                    <SidebarTrigger />
-                    <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                            <Link
-                                href={route('landlord.tenants.index')}
-                                className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm transition-colors"
-                            >
-                                <ArrowLeft className="h-3.5 w-3.5" />
-                                All Tenants
+            <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+                <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+                    
+                    {/* Header */}
+                    <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                        <div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                                    <Building2 className="w-3 h-3" />
+                                    Property Tenants
+                                </Badge>
+                            </div>
+                            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                                {property.name}
+                            </h1>
+                            {property.address && (
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    {property.address}
+                                </p>
+                            )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Link href={route('landlord.tenants.index')}>
+                                <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    All Tenants
+                                </Button>
+                            </Link>
+                            <Link href={route('landlord.tenants.create')}>
+                                <Button className="shadow-sm">
+                                    Add Tenant
+                                </Button>
                             </Link>
                         </div>
-                        <h1 className="mt-1 text-2xl font-bold">
-                            {property.name}
-                        </h1>
-                        {property.address && (
-                            <p className="text-sm text-muted-foreground">
-                                {property.address}
-                            </p>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href={route('landlord.tenants.create')}>
-                                Add Tenant
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleLogout}
-                        >
-                            Logout
-                        </Button>
-                    </div>
-                </div>
+                    </header>
+
+                    <div className="flex flex-1 flex-col gap-6">
 
                 {/* Summary stats */}
                 <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -327,6 +326,8 @@ export default function LandlordTenantsByProperty({
                         </div>
                     </div>
                 )}
+                </div>
+                </main>
             </SidebarInset>
         </SidebarProvider>
     );

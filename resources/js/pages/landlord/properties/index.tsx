@@ -23,7 +23,6 @@ import {
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 interface Property {
@@ -65,19 +64,30 @@ const getOccupancyColor = (rate: number) => {
 
 export default function LandlordProperties({ properties, stats }: LandlordPropertiesProps) {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-          <SidebarTrigger className="-ml-1" />
-          <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6" />
-            <h1 className="text-lg font-semibold">Properties</h1>
-          </div>
-        </header>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <Building2 className="w-3 h-3" />
+                  Portfolio Overview
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Properties
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage and track the performance of all your buildings
+              </p>
+            </div>
+          </header>
 
-        <div className="flex flex-1 flex-col gap-6 p-6">
-          {/* Stats Cards */}
+          <div className="flex flex-1 flex-col gap-6">
+            {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -225,6 +235,7 @@ export default function LandlordProperties({ properties, stats }: LandlordProper
             )}
           </div>
         </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
