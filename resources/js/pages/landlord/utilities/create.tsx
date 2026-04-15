@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { toast, Toaster } from 'sonner';
 import { route } from 'ziggy-js';
 
-import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import React from 'react';
+import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,11 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  SidebarInset,
-  SidebarProvider,
-} from '@/components/ui/sidebar';
-
 interface UtilityType {
   id: number;
   name: string;
@@ -123,11 +119,9 @@ export default function CreateLandlordUtility({
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <LandlordSidebar properties={[]} />
+    <>
       <Toaster />
-      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
-        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+      <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
           
           <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
@@ -336,7 +330,8 @@ export default function CreateLandlordUtility({
         </form>
           </div>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 }
+
+CreateLandlordUtility.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;

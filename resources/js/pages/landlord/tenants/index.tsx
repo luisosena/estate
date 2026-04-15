@@ -1,16 +1,14 @@
+import React from 'react';
 import { Link, router } from '@inertiajs/react';
 import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 
-import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  SidebarInset,
-  SidebarProvider,
-} from '@/components/ui/sidebar';
+
 import {
   Table,
   TableBody,
@@ -133,10 +131,7 @@ export default function LandlordTenantsIndex({
   const currentMetrics = propertyMetrics || metrics;
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <LandlordSidebar properties={properties} />
-      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
-        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+    <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
           
           <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
@@ -481,8 +476,8 @@ export default function LandlordTenantsIndex({
           </CardContent>
         </Card>
       </div>
-      </main>
-      </SidebarInset>
-    </SidebarProvider>
+    </main>
   );
 }
+
+TenantsIndex.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;

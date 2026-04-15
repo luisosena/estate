@@ -1,9 +1,10 @@
+import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Building2, Home, Plus, Eye, Filter, BedDouble, Users, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 
-import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,10 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  SidebarInset,
-  SidebarProvider,
-} from '@/components/ui/sidebar';
+
 
 
 interface Unit {
@@ -99,12 +97,9 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
   );
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <LandlordSidebar />
-      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
-        <Head title="Units" />
-        
-        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+    <>
+      <Head title="Units" />
+      <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
           
           <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
@@ -339,7 +334,8 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
           )}
           </div>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 }
+
+UnitsIndex.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;

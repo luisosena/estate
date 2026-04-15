@@ -1,15 +1,13 @@
+import React from 'react';
 import { Link, router } from '@inertiajs/react';
 import { ArrowLeft, Building2, Mail, Phone, Users } from 'lucide-react';
 import { route } from 'ziggy-js';
 
-import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    SidebarInset,
-    SidebarProvider,
-} from '@/components/ui/sidebar';
+
 import {
     Table,
     TableBody,
@@ -88,10 +86,7 @@ export default function LandlordTenantsByProperty({
     );
 
     return (
-        <SidebarProvider defaultOpen={true}>
-            <LandlordSidebar properties={properties} />
-            <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
-                <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
                     
                     {/* Header */}
                     <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -327,8 +322,8 @@ export default function LandlordTenantsByProperty({
                     </div>
                 )}
                 </div>
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
+        </main>
     );
 }
+
+TenantsByProperty.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;

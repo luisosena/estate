@@ -1,19 +1,17 @@
+import React from 'react';
 import { Link, router } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, Edit, Home } from 'lucide-react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 
-import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import LandlordLayout from '@/components/layout/LandlordLayout';
 import TenantEditModal from '@/components/tenant-edit-modal';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import {
-  SidebarInset,
-  SidebarProvider,
-} from '@/components/ui/sidebar';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -147,10 +145,8 @@ export default function TenantShow({
     tenant.emergency_contact_name || tenant.emergency_contact_phone;
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <LandlordSidebar properties={properties} />
-      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
-        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+    <>
+      <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
           
           <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
@@ -583,8 +579,7 @@ export default function TenantShow({
           </Card>
         )}
           </div>
-        </main>
-      </SidebarInset>
+      </main>
 
       {/* Edit Modal */}
       <TenantEditModal
@@ -741,6 +736,8 @@ export default function TenantShow({
           }
         }}
       />
-    </SidebarProvider>
+    </>
   );
 }
+
+TenantShow.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;

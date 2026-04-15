@@ -3,7 +3,8 @@ import { MoreHorizontal, Eye, AlertCircle, CheckCircle2, Clock, XCircle } from '
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 
-import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import React from 'react';
+import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,12 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  SidebarInset,
-  SidebarProvider,
-} from '@/components/ui/sidebar';
-
-
 interface Property {
   id: number;
   name: string;
@@ -143,9 +138,6 @@ export default function Index({ rentBills, stats }: Props) {
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <LandlordSidebar />
-      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
         <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
           
           <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -355,7 +347,7 @@ export default function Index({ rentBills, stats }: Props) {
         </Card>
           </div>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
   );
 }
+
+Index.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;

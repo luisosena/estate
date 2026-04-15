@@ -1,14 +1,12 @@
+import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Users } from 'lucide-react';
 
-import { LandlordSidebar } from '@/components/layout/landlord-sidebar';
+import LandlordLayout from '@/components/layout/LandlordLayout';
 import CreateTenantForm from '@/components/Tenant/CreateTenantForm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    SidebarInset,
-    SidebarProvider,
-} from '@/components/ui/sidebar';
+
 
 interface AvailableUnit {
     id: number;
@@ -29,10 +27,7 @@ interface CreateTenantProps {
 
 export default function CreateTenant({ availableUnits, errors, success }: CreateTenantProps) {
     return (
-        <SidebarProvider defaultOpen={true}>
-            <LandlordSidebar />
-            <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
-                <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
                     
                     <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                         <div>
@@ -63,8 +58,8 @@ export default function CreateTenant({ availableUnits, errors, success }: Create
                     <div className="flex flex-1 flex-col gap-6">
                         <CreateTenantForm availableUnits={availableUnits} errors={errors} success={success} />
                     </div>
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
+        </main>
     );
 }
+
+CreateTenant.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
