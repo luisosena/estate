@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 
 interface Notification {
@@ -155,41 +155,39 @@ export default function Notifications({ notifications, unreadCount, filters }: N
     }
   };
 
-  const handleLogout = () => {
-    router.post('/logout');
-  };
-
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <LandlordSidebar unreadNotificationsCount={unreadCount} />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Mobile sidebar trigger */}
-        <div className="mb-4 flex items-center gap-2 md:hidden">
-          <SidebarTrigger className="-ml-2" />
-          <h1 className="text-lg font-semibold">Notifications</h1>
-        </div>
+      <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen overflow-y-auto">
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                  <Bell className="w-3 h-3" />
+                  System Center
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                Activity Hub
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage your system alerts, updates, and messages
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              {unreadCount > 0 && (
+                <Button onClick={markAllAsRead} variant="outline" className="bg-card border-border/50 shadow-sm">
+                  <CheckCheck className="mr-2 h-4 w-4" />
+                  Mark All Read
+                </Button>
+              )}
+            </div>
+          </header>
 
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-              Notifications
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Manage your notifications and stay updated
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {unreadCount > 0 && (
-              <Button onClick={markAllAsRead} variant="outline" size="sm">
-                <CheckCheck className="mr-2 h-4 w-4" />
-                Mark All Read
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Stats Cards */}
+          <div className="flex flex-1 flex-col gap-6">
         <div className="mb-8 grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -387,13 +385,10 @@ export default function Notifications({ notifications, unreadCount, filters }: N
               </div>
             )}
           </CardContent>
-        </Card>
+          </Card>
+          </div>
+        </main>
       </SidebarInset>
-      <div className="mt-8 flex justify-center">
-        <Button variant="outline" onClick={handleLogout}>
-          Log out
-        </Button>
-      </div>
     </SidebarProvider>
   );
 }
