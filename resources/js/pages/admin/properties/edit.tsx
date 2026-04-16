@@ -1,442 +1,414 @@
 import { Link, router, useForm } from '@inertiajs/react';
-import { Building, Home, Plus, Settings, Users, ArrowLeft, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import {
+    ArrowLeft,
+    Building,
+    Building2,
+    Eye,
+    Home,
+    Plus,
+    Settings,
+    Users,
+    X,
+} from 'lucide-react';
+import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
+import AdminLayout from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 
+/* ─── Interfaces ─────────────────────────────────────────────────── */
 
 interface Landlord {
-  id: number;
-  name: string;
-  tenant?: {
     id: number;
-    full_name: string;
-  };
+    name: string;
 }
 
 interface Property {
-  id: number;
-  owner_id: number;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-  property_type: string;
-  total_units: number;
-  status: string;
-  description: string;
-  amenities: string[];
-  policies: string[];
+    id: number;
+    owner_id: number;
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
+    property_type: string;
+    total_units: number;
+    status: string;
+    description: string;
+    amenities: string[];
+    policies: string[];
 }
 
 interface AdminPropertyEditProps {
-  property: Property;
-  landlords: Landlord[];
+    property: Property;
+    landlords: Landlord[];
 }
 
 const propertyTypes = [
-  { value: 'apartment', label: 'Apartment', icon: Building },
-  { value: 'house', label: 'House', icon: Home },
-  { value: 'commercial', label: 'Commercial', icon: Settings },
-  { value: 'mixed', label: 'Mixed Use', icon: Users },
+    { value: 'apartment', label: 'Apartment', icon: Building },
+    { value: 'house', label: 'House', icon: Home },
+    { value: 'commercial', label: 'Commercial', icon: Settings },
+    { value: 'mixed', label: 'Mixed Use', icon: Users },
 ];
 
 const statuses = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-  { value: 'maintenance', label: 'Under Maintenance' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+    { value: 'maintenance', label: 'Under Maintenance' },
 ];
 
+/* ─── Main Component ─────────────────────────────────────────────── */
+
 export default function AdminPropertyEdit({ property, landlords }: AdminPropertyEditProps) {
-  const { data, setData, put, processing, errors } = useForm({
-    owner_id: property.owner_id.toString(),
-    name: property.name,
-    address: property.address,
-    city: property.city,
-    state: property.state,
-    postal_code: property.postal_code,
-    country: property.country,
-    property_type: property.property_type,
-    total_units: property.total_units.toString(),
-    status: property.status,
-    description: property.description || '',
-    amenities: property.amenities.length > 0 ? property.amenities : [''],
-    policies: property.policies.length > 0 ? property.policies : [''],
-  });
+    const { data, setData, put, processing, errors } = useForm({
+        owner_id: property.owner_id.toString(),
+        name: property.name,
+        address: property.address,
+        city: property.city,
+        state: property.state,
+        postal_code: property.postal_code,
+        country: property.country,
+        property_type: property.property_type,
+        total_units: property.total_units.toString(),
+        status: property.status,
+        description: property.description || '',
+        amenities: property.amenities.length > 0 ? property.amenities : [''],
+        policies: property.policies.length > 0 ? property.policies : [''],
+    });
 
-  const [amenities, setAmenities] = useState(
-    property.amenities.length > 0 ? property.amenities : ['']
-  );
-  const [policies, setPolicies] = useState(
-    property.policies.length > 0 ? property.policies : ['']
-  );
+    const [amenities, setAmenities] = useState(data.amenities);
+    const [policies, setPolicies] = useState(data.policies);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Filter out empty amenities and policies
-    const filteredAmenities = amenities.filter(a => a.trim() !== '');
-    const filteredPolicies = policies.filter(p => p.trim() !== '');
-    
-    const formData = {
-      ...data,
-      amenities: filteredAmenities,
-      policies: filteredPolicies,
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const filteredAmenities = amenities.filter((a) => a.trim() !== '');
+        const filteredPolicies = policies.filter((p) => p.trim() !== '');
+
+        const formData = {
+            ...data,
+            amenities: filteredAmenities,
+            policies: filteredPolicies,
+        };
+
+        router.put(route('admin.properties.update', property.id), formData);
     };
-    
-    router.put(`/admin/properties/${property.id}`, formData);
-  };
 
-  const addAmenity = () => {
-    setAmenities([...amenities, '']);
-  };
+    const addAmenity = () => setAmenities([...amenities, '']);
+    const removeAmenity = (index: number) => setAmenities(amenities.filter((_, i) => i !== index));
+    const updateAmenity = (index: number, value: string) => {
+        const newAmenities = [...amenities];
+        newAmenities[index] = value;
+        setAmenities(newAmenities);
+    };
 
-  const removeAmenity = (index: number) => {
-    const newAmenities = amenities.filter((_, i) => i !== index);
-    setAmenities(newAmenities);
-  };
+    const addPolicy = () => setPolicies([...policies, '']);
+    const removePolicy = (index: number) => setPolicies(policies.filter((_, i) => i !== index));
+    const updatePolicy = (index: number, value: string) => {
+        const newPolicies = [...policies];
+        newPolicies[index] = value;
+        setPolicies(newPolicies);
+    };
 
-  const updateAmenity = (index: number, value: string) => {
-    const newAmenities = [...amenities];
-    newAmenities[index] = value;
-    setAmenities(newAmenities);
-  };
-
-  const addPolicy = () => {
-    setPolicies([...policies, '']);
-  };
-
-  const removePolicy = (index: number) => {
-    const newPolicies = policies.filter((_, i) => i !== index);
-    setPolicies(newPolicies);
-  };
-
-  const updatePolicy = (index: number, value: string) => {
-    const newPolicies = [...policies];
-    newPolicies[index] = value;
-    setPolicies(newPolicies);
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link
-                href={route('admin.properties.index')}
-                className="text-muted-foreground hover:text-foreground mr-4"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <h1 className="text-xl font-semibold text-foreground">Edit Property</h1>
-            </div>
-            <Link href={route('admin.properties.show', property.id)}>
-              <Button variant="outline">
-                View Property
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Update the basic details about the property</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="owner_id">Landlord *</Label>
-                  <Select value={data.owner_id} onValueChange={(value) => setData('owner_id', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a landlord" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {landlords.map((landlord) => (
-                        <SelectItem key={landlord.id} value={landlord.id.toString()}>
-                          {landlord.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.owner_id && (
-                    <p className="text-sm text-red-600 mt-1">{errors.owner_id}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="name">Property Name *</Label>
-                  <Input
-                    id="name"
-                    value={data.name}
-                    onChange={(e) => setData('name', e.target.value)}
-                    placeholder="e.g., Sunset Apartments"
-                    required
-                  />
-                  {errors.name && (
-                    <p className="text-sm text-red-600 mt-1">{errors.name}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="property_type">Property Type *</Label>
-                  <Select value={data.property_type} onValueChange={(value) => setData('property_type', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select property type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {propertyTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          <div className="flex items-center gap-2">
-                            <type.icon className="h-4 w-4" />
-                            {type.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.property_type && (
-                    <p className="text-sm text-red-600 mt-1">{errors.property_type}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="total_units">Total Units *</Label>
-                  <Input
-                    id="total_units"
-                    type="number"
-                    min="1"
-                    value={data.total_units}
-                    onChange={(e) => setData('total_units', e.target.value)}
-                    placeholder="e.g., 12"
-                    required
-                  />
-                  {errors.total_units && (
-                    <p className="text-sm text-red-600 mt-1">{errors.total_units}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={data.description}
-                  onChange={(e) => setData('description', e.target.value)}
-                  placeholder="Describe the property..."
-                  rows={3}
-                />
-                {errors.description && (
-                  <p className="text-sm text-red-600 mt-1">{errors.description}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Address Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Address Information</CardTitle>
-              <CardDescription>Update the property's location details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="address">Street Address *</Label>
-                <Input
-                  id="address"
-                  value={data.address}
-                  onChange={(e) => setData('address', e.target.value)}
-                  placeholder="e.g., 123 Main Street"
-                  required
-                />
-                {errors.address && (
-                  <p className="text-sm text-red-600 mt-1">{errors.address}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
-                    value={data.city}
-                    onChange={(e) => setData('city', e.target.value)}
-                    placeholder="e.g., New York"
-                    required
-                  />
-                  {errors.city && (
-                    <p className="text-sm text-red-600 mt-1">{errors.city}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="state">State *</Label>
-                  <Input
-                    id="state"
-                    value={data.state}
-                    onChange={(e) => setData('state', e.target.value)}
-                    placeholder="e.g., NY"
-                    required
-                  />
-                  {errors.state && (
-                    <p className="text-sm text-red-600 mt-1">{errors.state}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="postal_code">Postal Code *</Label>
-                  <Input
-                    id="postal_code"
-                    value={data.postal_code}
-                    onChange={(e) => setData('postal_code', e.target.value)}
-                    placeholder="e.g., 10001"
-                    required
-                  />
-                  {errors.postal_code && (
-                    <p className="text-sm text-red-600 mt-1">{errors.postal_code}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="country">Country *</Label>
-                <Input
-                  id="country"
-                  value={data.country}
-                  onChange={(e) => setData('country', e.target.value)}
-                  placeholder="e.g., United States"
-                  required
-                />
-                {errors.country && (
-                  <p className="text-sm text-red-600 mt-1">{errors.country}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Property Status</CardTitle>
-              <CardDescription>Update the current status of the property</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div>
-                <Label htmlFor="status">Status *</Label>
-                <Select value={data.status} onValueChange={(value) => setData('status', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.status && (
-                  <p className="text-sm text-red-600 mt-1">{errors.status}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Amenities */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Amenities</CardTitle>
-              <CardDescription>Update the amenities available at this property</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {amenities.map((amenity, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={amenity}
-                    onChange={(e) => updateAmenity(index, e.target.value)}
-                    placeholder="e.g., Swimming Pool, Parking, Gym"
-                  />
-                  {amenities.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeAmenity(index)}
+    return (
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6 pb-12">
+            
+            {/* Header */}
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <Link
+                        href={route('admin.properties.index')}
+                        className="h-9 w-9 flex items-center justify-center rounded-full border border-border/50 bg-background hover:bg-muted text-muted-foreground transition-colors"
                     >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+                        <ArrowLeft className="h-4 w-4" />
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            Edit Property
+                        </h1>
+                        <p className="text-sm text-muted-foreground mt-0.5 truncate max-w-[400px]">
+                            Modifying <span className="text-foreground font-semibold">{property.name}</span> profile.
+                        </p>
+                    </div>
                 </div>
-              ))}
-              <Button type="button" variant="outline" onClick={addAmenity}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Amenity
-              </Button>
-            </CardContent>
-          </Card>
 
-          {/* Policies */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Policies</CardTitle>
-              <CardDescription>Update property policies and rules</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {policies.map((policy, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={policy}
-                    onChange={(e) => updatePolicy(index, e.target.value)}
-                    placeholder="e.g., No pets allowed, Quiet hours 10 PM - 6 AM"
-                  />
-                  {policies.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removePolicy(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+                <Button asChild variant="outline" size="sm" className="h-9 font-bold text-xs gap-2">
+                    <Link href={route('admin.properties.show', property.id)}>
+                        <Eye className="h-3.5 w-3.5" />
+                        View Live Details
+                    </Link>
+                </Button>
+            </header>
+
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                
+                {/* Left Column: Primary Details */}
+                <div className="xl:col-span-2 flex flex-col gap-6">
+                    <Card className="shadow-none border-border/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Structural Content</CardTitle>
+                            <CardDescription>Update building identification and housing metrics.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Assigned Manager *</Label>
+                                    <Select value={data.owner_id} onValueChange={(value) => setData('owner_id', value)}>
+                                        <SelectTrigger className="bg-muted/30 border-none shadow-none text-xs font-semibold">
+                                            <SelectValue placeholder="Select a landlord" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {landlords.map((landlord) => (
+                                                <SelectItem key={landlord.id} value={landlord.id.toString()} className="text-xs">
+                                                    {landlord.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.owner_id && (
+                                        <p className="text-[10px] text-destructive mt-1 font-bold">{errors.owner_id}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Property Name *</Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        placeholder="e.g., Sunset Apartments"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                    {errors.name && (
+                                        <p className="text-[10px] text-destructive mt-1 font-bold">{errors.name}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Architecture Type *</Label>
+                                    <Select value={data.property_type} onValueChange={(value) => setData('property_type', value)}>
+                                        <SelectTrigger className="bg-muted/30 border-none shadow-none text-xs font-semibold">
+                                            <SelectValue placeholder="Select type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {propertyTypes.map((type) => (
+                                                <SelectItem key={type.value} value={type.value} className="text-xs">
+                                                    <div className="flex items-center gap-2">
+                                                        <type.icon className="h-3 w-3" />
+                                                        {type.label}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="total_units" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Capacity (Units) *</Label>
+                                    <Input
+                                        id="total_units"
+                                        type="number"
+                                        min="1"
+                                        value={data.total_units}
+                                        onChange={(e) => setData('total_units', e.target.value)}
+                                        placeholder="Total units"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5 pt-2">
+                                <Label htmlFor="description" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Global Overview Override</Label>
+                                <Textarea
+                                    id="description"
+                                    value={data.description}
+                                    onChange={(e) => setData('description', e.target.value)}
+                                    placeholder="Brief summary update..."
+                                    rows={4}
+                                    className="bg-muted/30 border-none shadow-none text-xs font-medium focus-visible:ring-1 resize-none"
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="shadow-none border-border/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Location Mapping</CardTitle>
+                            <CardDescription>Update geographic anchors and mailing headers.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="address" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Primary Address *</Label>
+                                <Input
+                                    id="address"
+                                    value={data.address}
+                                    onChange={(e) => setData('address', e.target.value)}
+                                    placeholder="Street Address"
+                                    required
+                                    className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="city" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">City *</Label>
+                                    <Input
+                                        id="city"
+                                        value={data.city}
+                                        onChange={(e) => setData('city', e.target.value)}
+                                        placeholder="City"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="state" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">State/Region *</Label>
+                                    <Input
+                                        id="state"
+                                        value={data.state}
+                                        onChange={(e) => setData('state', e.target.value)}
+                                        placeholder="State"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="postal_code" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Zip Code *</Label>
+                                    <Input
+                                        id="postal_code"
+                                        value={data.postal_code}
+                                        onChange={(e) => setData('postal_code', e.target.value)}
+                                        placeholder="Postal Code"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
-              ))}
-              <Button type="button" variant="outline" onClick={addPolicy}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Policy
-              </Button>
-            </CardContent>
-          </Card>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-4">
-            <Link href={route('admin.properties.show', property.id)}>
-              <Button variant="outline" type="button">
-                Cancel
-              </Button>
-            </Link>
-            <Button type="submit" disabled={processing}>
-              {processing ? 'Updating...' : 'Update Property'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+                {/* Right Column: Settings & Lists */}
+                <div className="flex flex-col gap-6">
+                    <Card className="shadow-none border-border/50 bg-secondary/10">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Lifecycle Review</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Operational Status</Label>
+                                <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                                    <SelectTrigger className="bg-background border-border/50 shadow-none text-xs font-bold">
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {statuses.map((status) => (
+                                            <SelectItem key={status.value} value={status.value} className="text-xs font-medium">
+                                                {status.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="shadow-none border-border/50">
+                        <CardHeader className="pb-2">
+                             <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Features List</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {amenities.map((amenity, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <Input
+                                        value={amenity}
+                                        onChange={(e) => updateAmenity(index, e.target.value)}
+                                        placeholder="e.g., Security"
+                                        className="h-8 text-[11px] font-medium bg-muted/30 border-none focus-visible:ring-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                        onClick={() => removeAmenity(index)}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="ghost" size="sm" onClick={addAmenity} className="w-full h-8 text-[10px] font-bold uppercase tracking-tighter gap-1.5 hover:bg-primary/5 hover:text-primary">
+                                <Plus className="h-3 w-3" /> Add Feature
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="shadow-none border-border/50">
+                        <CardHeader className="pb-2">
+                             <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Operational Policies</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {policies.map((policy, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <Input
+                                        value={policy}
+                                        onChange={(e) => updatePolicy(index, e.target.value)}
+                                        placeholder="e.g., Waste Management"
+                                        className="h-8 text-[11px] font-medium bg-muted/30 border-none focus-visible:ring-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                        onClick={() => removePolicy(index)}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="ghost" size="sm" onClick={addPolicy} className="w-full h-8 text-[10px] font-bold uppercase tracking-tighter gap-1.5 hover:bg-primary/5 hover:text-primary">
+                                <Plus className="h-3 w-3" /> Add Clause
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <div className="flex flex-col gap-3 pt-4">
+                        <Button type="submit" disabled={processing} className="w-full h-11 font-bold text-xs uppercase tracking-widest shadow-md">
+                            {processing ? 'Saving Changes...' : 'Synchronize Property'}
+                        </Button>
+                        <Button variant="ghost" type="button" asChild className="w-full text-xs font-bold text-muted-foreground">
+                            <Link href={route('admin.properties.show', property.id)}>Cancel Updates</Link>
+                        </Button>
+                    </div>
+                </div>
+
+            </form>
+        </main>
+    );
 }
+
+AdminPropertyEdit.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;

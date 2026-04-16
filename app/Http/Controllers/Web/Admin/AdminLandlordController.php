@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use App\Models\User;
 
-class AdminUserController extends Controller
+class AdminLandlordController extends Controller
 {
     /**
      * Display a listing of landlords.
@@ -23,7 +23,7 @@ class AdminUserController extends Controller
                 return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
             }
         } catch (\Exception $e) {
-            \Log::error('Admin users index error: ' . $e->getMessage());
+            \Log::error('Admin landlords index error: ' . $e->getMessage());
             return redirect()->route('login')->with('error', 'Access denied.');
         }
 
@@ -57,7 +57,7 @@ class AdminUserController extends Controller
             'total_properties' => User::where('role', 'landlord')->withCount('properties')->get()->sum('properties_count'),
         ];
 
-        return Inertia::render('admin/users/index', [
+        return Inertia::render('admin/landlords/index', [
             'landlords' => $landlords,
             'stats' => $stats,
             'filters' => [
@@ -79,11 +79,11 @@ class AdminUserController extends Controller
                 return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
             }
         } catch (\Exception $e) {
-            \Log::error('Admin users create error: ' . $e->getMessage());
+            \Log::error('Admin landlords create error: ' . $e->getMessage());
             return redirect()->route('login')->with('error', 'Access denied.');
         }
 
-        return Inertia::render('admin/users/create');
+        return Inertia::render('admin/landlords/create');
     }
 
     /**
@@ -115,7 +115,7 @@ class AdminUserController extends Controller
         }
 
         return redirect()
-            ->route('admin.users.index')
+            ->route('admin.landlords.index')
             ->with('success', 'Landlord created successfully.');
     }
 
@@ -125,7 +125,7 @@ class AdminUserController extends Controller
     public function show(User $landlord)
     {
         if ($landlord->role !== 'landlord') {
-            return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
+            return redirect()->route('admin.landlords.index')->with('error', 'User is not a landlord.');
         }
 
         $landlord->load(['properties', 'properties.units']);
@@ -143,7 +143,7 @@ class AdminUserController extends Controller
                 ->where('tenancies.status', 'active')->count(),
         ];
 
-        return Inertia::render('admin/users/show', [
+        return Inertia::render('admin/landlords/show', [
             'landlord' => $landlord,
             'stats' => $stats,
         ]);
@@ -155,10 +155,10 @@ class AdminUserController extends Controller
     public function edit(User $landlord)
     {
         if ($landlord->role !== 'landlord') {
-            return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
+            return redirect()->route('admin.landlords.index')->with('error', 'User is not a landlord.');
         }
 
-        return Inertia::render('admin/users/edit', [
+        return Inertia::render('admin/landlords/edit', [
             'landlord' => $landlord,
         ]);
     }
@@ -169,7 +169,7 @@ class AdminUserController extends Controller
     public function update(Request $request, User $landlord)
     {
         if ($landlord->role !== 'landlord') {
-            return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
+            return redirect()->route('admin.landlords.index')->with('error', 'User is not a landlord.');
         }
 
         $validated = $request->validate([
@@ -193,7 +193,7 @@ class AdminUserController extends Controller
         }
 
         return redirect()
-            ->route('admin.users.index')
+            ->route('admin.landlords.index')
             ->with('success', 'Landlord updated successfully.');
     }
 
@@ -203,20 +203,20 @@ class AdminUserController extends Controller
     public function destroy(User $landlord)
     {
         if ($landlord->role !== 'landlord') {
-            return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
+            return redirect()->route('admin.landlords.index')->with('error', 'User is not a landlord.');
         }
 
         // Check if landlord has properties
         if ($landlord->properties()->exists()) {
             return redirect()
-                ->route('admin.users.index')
+                ->route('admin.landlords.index')
                 ->with('error', 'Cannot delete landlord with existing properties.');
         }
 
         $landlord->delete();
 
         return redirect()
-            ->route('admin.users.index')
+            ->route('admin.landlords.index')
             ->with('success', 'Landlord deleted successfully.');
     }
 
@@ -226,7 +226,7 @@ class AdminUserController extends Controller
     public function toggleStatus(User $landlord)
     {
         if ($landlord->role !== 'landlord') {
-            return redirect()->route('admin.users.index')->with('error', 'User is not a landlord.');
+            return redirect()->route('admin.landlords.index')->with('error', 'User is not a landlord.');
         }
 
         if ($landlord->email_verified_at) {
@@ -240,7 +240,7 @@ class AdminUserController extends Controller
         $landlord->save();
 
         return redirect()
-            ->route('admin.users.index')
+            ->route('admin.landlords.index')
             ->with('success', $message);
     }
 }

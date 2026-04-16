@@ -1,424 +1,389 @@
 import { Link, router, useForm } from '@inertiajs/react';
-import { Building, Home, Plus, Settings, Users, ArrowLeft, X } from 'lucide-react';
-import { useState } from 'react';
+import {
+    ArrowLeft,
+    Building,
+    Building2,
+    Home,
+    Plus,
+    Settings,
+    Users,
+    X,
+} from 'lucide-react';
+import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
+import AdminLayout from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 
+/* ─── Interfaces ─────────────────────────────────────────────────── */
 
 interface Landlord {
-  id: number;
-  name: string;
-  tenant?: {
     id: number;
-    full_name: string;
-  };
+    name: string;
 }
 
 interface AdminPropertyCreateProps {
-  landlords: Landlord[];
+    landlords: Landlord[];
 }
 
 const propertyTypes = [
-  { value: 'apartment', label: 'Apartment', icon: Building },
-  { value: 'house', label: 'House', icon: Home },
-  { value: 'commercial', label: 'Commercial', icon: Settings },
-  { value: 'mixed', label: 'Mixed Use', icon: Users },
+    { value: 'apartment', label: 'Apartment', icon: Building },
+    { value: 'house', label: 'House', icon: Home },
+    { value: 'commercial', label: 'Commercial', icon: Settings },
+    { value: 'mixed', label: 'Mixed Use', icon: Users },
 ];
 
 const statuses = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-  { value: 'maintenance', label: 'Under Maintenance' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+    { value: 'maintenance', label: 'Under Maintenance' },
 ];
 
-export default function AdminPropertyCreate({ landlords }: AdminPropertyCreateProps) {
-  const { data, setData, post, processing, errors, reset } = useForm({
-    owner_id: '',
-    name: '',
-    address: '',
-    city: '',
-    state: '',
-    postal_code: '',
-    country: '',
-    property_type: '',
-    total_units: '',
-    status: 'active',
-    description: '',
-    amenities: [''],
-    policies: [''],
-  });
+/* ─── Main Component ─────────────────────────────────────────────── */
 
-  const [amenities, setAmenities] = useState(['']);
-  const [policies, setPolicies] = useState(['']);
+export default function AdminPropertyCreate({ landfills, landlords = [] }: any) {
+    // Note: The prop might be named landlords based on my controller fix
+    const availableLandlords = landlords || [];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Filter out empty amenities and policies
-    const filteredAmenities = amenities.filter(a => a.trim() !== '');
-    const filteredPolicies = policies.filter(p => p.trim() !== '');
-    
-    const formData = {
-      ...data,
-      amenities: filteredAmenities,
-      policies: filteredPolicies,
-    };
-    
-    router.post('/admin/properties', formData, {
-      onSuccess: () => {
-        reset();
-      },
+    const { data, setData, post, processing, errors, reset } = useForm({
+        owner_id: '',
+        name: '',
+        address: '',
+        city: '',
+        state: '',
+        postal_code: '',
+        country: '',
+        property_type: '',
+        total_units: '',
+        status: 'active',
+        description: '',
+        amenities: [''],
+        policies: [''],
     });
-  };
 
-  const addAmenity = () => {
-    setAmenities([...amenities, '']);
-  };
+    const [amenities, setAmenities] = useState(['']);
+    const [policies, setPolicies] = useState(['']);
 
-  const removeAmenity = (index: number) => {
-    const newAmenities = amenities.filter((_, i) => i !== index);
-    setAmenities(newAmenities);
-  };
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
 
-  const updateAmenity = (index: number, value: string) => {
-    const newAmenities = [...amenities];
-    newAmenities[index] = value;
-    setAmenities(newAmenities);
-  };
+        const filteredAmenities = amenities.filter((a) => a.trim() !== '');
+        const filteredPolicies = policies.filter((p) => p.trim() !== '');
 
-  const addPolicy = () => {
-    setPolicies([...policies, '']);
-  };
+        const formData = {
+            ...data,
+            amenities: filteredAmenities,
+            policies: filteredPolicies,
+        };
 
-  const removePolicy = (index: number) => {
-    const newPolicies = policies.filter((_, i) => i !== index);
-    setPolicies(newPolicies);
-  };
+        router.post(route('admin.properties.store'), formData, {
+            onSuccess: () => {
+                reset();
+            },
+        });
+    };
 
-  const updatePolicy = (index: number, value: string) => {
-    const newPolicies = [...policies];
-    newPolicies[index] = value;
-    setPolicies(newPolicies);
-  };
+    const addAmenity = () => setAmenities([...amenities, '']);
+    const removeAmenity = (index: number) => setAmenities(amenities.filter((_, i) => i !== index));
+    const updateAmenity = (index: number, value: string) => {
+        const newAmenities = [...amenities];
+        newAmenities[index] = value;
+        setAmenities(newAmenities);
+    };
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link
-                href={route('admin.properties.index')}
-                className="text-muted-foreground hover:text-foreground mr-4"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <h1 className="text-xl font-semibold text-foreground">Add New Property</h1>
-            </div>
-            <Link href={route('admin.properties.index')}>
-              <Button variant="outline">
-                Cancel
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
+    const addPolicy = () => setPolicies([...policies, '']);
+    const removePolicy = (index: number) => setPolicies(policies.filter((_, i) => i !== index));
+    const updatePolicy = (index: number, value: string) => {
+        const newPolicies = [...policies];
+        newPolicies[index] = value;
+        setPolicies(newPolicies);
+    };
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Enter the basic details about the property</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    return (
+        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6 pb-12">
+            
+            {/* Header */}
+            <header className="flex items-center gap-4">
+                <Link
+                    href={route('admin.properties.index')}
+                    className="h-9 w-9 flex items-center justify-center rounded-full border border-border/50 bg-background hover:bg-muted text-muted-foreground transition-colors"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                </Link>
                 <div>
-                  <Label htmlFor="owner_id">Landlord *</Label>
-                  <Select value={data.owner_id} onValueChange={(value) => setData('owner_id', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a landlord" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {landlords.map((landlord) => (
-                        <SelectItem key={landlord.id} value={landlord.id.toString()}>
-                          {landlord.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.owner_id && (
-                    <p className="text-sm text-red-600 mt-1">{errors.owner_id}</p>
-                  )}
+                    <h1 className="text-2xl font-bold tracking-tight">Register Property</h1>
+                    <p className="text-sm text-muted-foreground mt-0.5">Integrate a new building or complex into the system.</p>
+                </div>
+            </header>
+
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                
+                {/* Left Column: Primary Details */}
+                <div className="xl:col-span-2 flex flex-col gap-6">
+                    <Card className="shadow-none border-border/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Structural Details</CardTitle>
+                            <CardDescription>Enter identification and capacity information.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Assigned Manager *</Label>
+                                    <Select value={data.owner_id} onValueChange={(value) => setData('owner_id', value)}>
+                                        <SelectTrigger className="bg-muted/30 border-none shadow-none text-xs font-semibold">
+                                            <SelectValue placeholder="Select a landlord" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableLandlords.map((landlord: any) => (
+                                                <SelectItem key={landlord.id} value={landlord.id.toString()} className="text-xs">
+                                                    {landlord.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.owner_id && (
+                                        <p className="text-[10px] text-destructive mt-1 font-bold">{errors.owner_id}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Property Name *</Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        placeholder="e.g., Sunset Apartments"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                    {errors.name && (
+                                        <p className="text-[10px] text-destructive mt-1 font-bold">{errors.name}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Architecture Type *</Label>
+                                    <Select value={data.property_type} onValueChange={(value) => setData('property_type', value)}>
+                                        <SelectTrigger className="bg-muted/30 border-none shadow-none text-xs font-semibold">
+                                            <SelectValue placeholder="Select type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {propertyTypes.map((type) => (
+                                                <SelectItem key={type.value} value={type.value} className="text-xs">
+                                                    <div className="flex items-center gap-2">
+                                                        <type.icon className="h-3 w-3" />
+                                                        {type.label}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="total_units" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Capacity (Units) *</Label>
+                                    <Input
+                                        id="total_units"
+                                        type="number"
+                                        min="1"
+                                        value={data.total_units}
+                                        onChange={(e) => setData('total_units', e.target.value)}
+                                        placeholder="Total number of units"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5 pt-2">
+                                <Label htmlFor="description" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Global Overview</Label>
+                                <Textarea
+                                    id="description"
+                                    value={data.description}
+                                    onChange={(e) => setData('description', e.target.value)}
+                                    placeholder="Brief summary of property features and amenities..."
+                                    rows={4}
+                                    className="bg-muted/30 border-none shadow-none text-xs font-medium focus-visible:ring-1 resize-none"
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="shadow-none border-border/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Location Assets</CardTitle>
+                            <CardDescription>Geographic descriptors and mailing data.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="address" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Primary Address *</Label>
+                                <Input
+                                    id="address"
+                                    value={data.address}
+                                    onChange={(e) => setData('address', e.target.value)}
+                                    placeholder="e.g., 123 Main Street"
+                                    required
+                                    className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="city" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">City *</Label>
+                                    <Input
+                                        id="city"
+                                        value={data.city}
+                                        onChange={(e) => setData('city', e.target.value)}
+                                        placeholder="e.g., New York"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="state" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">State/Region *</Label>
+                                    <Input
+                                        id="state"
+                                        value={data.state}
+                                        onChange={(e) => setData('state', e.target.value)}
+                                        placeholder="e.g., NY"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="postal_code" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Zip Code *</Label>
+                                    <Input
+                                        id="postal_code"
+                                        value={data.postal_code}
+                                        onChange={(e) => setData('postal_code', e.target.value)}
+                                        placeholder="10001"
+                                        required
+                                        className="bg-muted/30 border-none shadow-none text-xs font-semibold focus-visible:ring-1"
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
-                <div>
-                  <Label htmlFor="name">Property Name *</Label>
-                  <Input
-                    id="name"
-                    value={data.name}
-                    onChange={(e) => setData('name', e.target.value)}
-                    placeholder="e.g., Sunset Apartments"
-                    required
-                  />
-                  {errors.name && (
-                    <p className="text-sm text-red-600 mt-1">{errors.name}</p>
-                  )}
-                </div>
-              </div>
+                {/* Right Column: Settings & Lists */}
+                <div className="flex flex-col gap-6">
+                    <Card className="shadow-none border-border/50 bg-secondary/10">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Property Lifecycle</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Administrative Status</Label>
+                                <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                                    <SelectTrigger className="bg-background border-border/50 shadow-none text-xs font-bold">
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {statuses.map((status) => (
+                                            <SelectItem key={status.value} value={status.value} className="text-xs font-medium">
+                                                {status.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="property_type">Property Type *</Label>
-                  <Select value={data.property_type} onValueChange={(value) => setData('property_type', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select property type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {propertyTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          <div className="flex items-center gap-2">
-                            <type.icon className="h-4 w-4" />
-                            {type.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.property_type && (
-                    <p className="text-sm text-red-600 mt-1">{errors.property_type}</p>
-                  )}
-                </div>
+                    <Card className="shadow-none border-border/50">
+                        <CardHeader className="pb-2">
+                             <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Amenities</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {amenities.map((amenity, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <Input
+                                        value={amenity}
+                                        onChange={(e) => updateAmenity(index, e.target.value)}
+                                        placeholder="e.g., Parking"
+                                        className="h-8 text-[11px] font-medium bg-muted/30 border-none focus-visible:ring-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                        onClick={() => removeAmenity(index)}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="ghost" size="sm" onClick={addAmenity} className="w-full h-8 text-[10px] font-bold uppercase tracking-tighter gap-1.5 hover:bg-primary/5 hover:text-primary">
+                                <Plus className="h-3 w-3" /> Add Feature
+                            </Button>
+                        </CardContent>
+                    </Card>
 
-                <div>
-                  <Label htmlFor="total_units">Total Units *</Label>
-                  <Input
-                    id="total_units"
-                    type="number"
-                    min="1"
-                    value={data.total_units}
-                    onChange={(e) => setData('total_units', e.target.value)}
-                    placeholder="e.g., 12"
-                    required
-                  />
-                  {errors.total_units && (
-                    <p className="text-sm text-red-600 mt-1">{errors.total_units}</p>
-                  )}
-                </div>
-              </div>
+                    <Card className="shadow-none border-border/50">
+                        <CardHeader className="pb-2">
+                             <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Management Policies</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {policies.map((policy, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <Input
+                                        value={policy}
+                                        onChange={(e) => updatePolicy(index, e.target.value)}
+                                        placeholder="e.g., No Pets"
+                                        className="h-8 text-[11px] font-medium bg-muted/30 border-none focus-visible:ring-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                        onClick={() => removePolicy(index)}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="ghost" size="sm" onClick={addPolicy} className="w-full h-8 text-[10px] font-bold uppercase tracking-tighter gap-1.5 hover:bg-primary/5 hover:text-primary">
+                                <Plus className="h-3 w-3" /> Add Policy
+                            </Button>
+                        </CardContent>
+                    </Card>
 
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={data.description}
-                  onChange={(e) => setData('description', e.target.value)}
-                  placeholder="Describe the property..."
-                  rows={3}
-                />
-                {errors.description && (
-                  <p className="text-sm text-red-600 mt-1">{errors.description}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Address Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Address Information</CardTitle>
-              <CardDescription>Enter the property's location details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="address">Street Address *</Label>
-                <Input
-                  id="address"
-                  value={data.address}
-                  onChange={(e) => setData('address', e.target.value)}
-                  placeholder="e.g., 123 Main Street"
-                  required
-                />
-                {errors.address && (
-                  <p className="text-sm text-red-600 mt-1">{errors.address}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
-                    value={data.city}
-                    onChange={(e) => setData('city', e.target.value)}
-                    placeholder="e.g., New York"
-                    required
-                  />
-                  {errors.city && (
-                    <p className="text-sm text-red-600 mt-1">{errors.city}</p>
-                  )}
+                    <div className="flex flex-col gap-3 pt-4">
+                        <Button type="submit" disabled={processing} className="w-full h-11 font-bold text-xs uppercase tracking-widest shadow-md">
+                            {processing ? 'Processing...' : 'Integrate Property'}
+                        </Button>
+                        <Button variant="ghost" type="button" asChild className="w-full text-xs font-bold text-muted-foreground">
+                            <Link href={route('admin.properties.index')}>Discard Registration</Link>
+                        </Button>
+                    </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="state">State *</Label>
-                  <Input
-                    id="state"
-                    value={data.state}
-                    onChange={(e) => setData('state', e.target.value)}
-                    placeholder="e.g., NY"
-                    required
-                  />
-                  {errors.state && (
-                    <p className="text-sm text-red-600 mt-1">{errors.state}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="postal_code">Postal Code *</Label>
-                  <Input
-                    id="postal_code"
-                    value={data.postal_code}
-                    onChange={(e) => setData('postal_code', e.target.value)}
-                    placeholder="e.g., 10001"
-                    required
-                  />
-                  {errors.postal_code && (
-                    <p className="text-sm text-red-600 mt-1">{errors.postal_code}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="country">Country *</Label>
-                <Input
-                  id="country"
-                  value={data.country}
-                  onChange={(e) => setData('country', e.target.value)}
-                  placeholder="e.g., United States"
-                  required
-                />
-                {errors.country && (
-                  <p className="text-sm text-red-600 mt-1">{errors.country}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Property Status</CardTitle>
-              <CardDescription>Set the current status of the property</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div>
-                <Label htmlFor="status">Status *</Label>
-                <Select value={data.status} onValueChange={(value) => setData('status', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.status && (
-                  <p className="text-sm text-red-600 mt-1">{errors.status}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Amenities */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Amenities</CardTitle>
-              <CardDescription>List the amenities available at this property</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {amenities.map((amenity, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={amenity}
-                    onChange={(e) => updateAmenity(index, e.target.value)}
-                    placeholder="e.g., Swimming Pool, Parking, Gym"
-                  />
-                  {amenities.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeAmenity(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button type="button" variant="outline" onClick={addAmenity}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Amenity
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Policies */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Policies</CardTitle>
-              <CardDescription>Define property policies and rules</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {policies.map((policy, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={policy}
-                    onChange={(e) => updatePolicy(index, e.target.value)}
-                    placeholder="e.g., No pets allowed, Quiet hours 10 PM - 6 AM"
-                  />
-                  {policies.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removePolicy(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button type="button" variant="outline" onClick={addPolicy}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Policy
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-4">
-            <Link href={route('admin.properties.index')}>
-              <Button variant="outline" type="button">
-                Cancel
-              </Button>
-            </Link>
-            <Button type="submit" disabled={processing}>
-              {processing ? 'Creating...' : 'Create Property'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+            </form>
+        </main>
+    );
 }
+
+AdminPropertyCreate.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
