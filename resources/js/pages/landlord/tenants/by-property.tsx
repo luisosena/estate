@@ -326,4 +326,4 @@ export default function LandlordTenantsByProperty({
     );
 }
 
-TenantsByProperty.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+LandlordTenantsByProperty.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
