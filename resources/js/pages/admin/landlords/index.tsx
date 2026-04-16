@@ -102,40 +102,37 @@ export default function AdminLandlords({ landlords, stats, filters }: AdminLandl
         
         router.get(route('admin.landlords.index'), newFilters, {
             preserveState: true,
-            preserveScroll: true,
+            replace: true
         });
     };
 
-    const toggleStatus = (landlordId: number) => {
-        router.post(route('admin.landlords.toggle-status', landlordId), {}, {
-            preserveScroll: true
-        });
+    const toggleStatus = (id: number) => {
+        router.post(route('admin.landlords.toggle-status', id));
     };
 
     return (
         <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
             
-            {/* Header Section */}
+            {/* Header */}
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                        Landlords
+                        Landlord Accounts
                     </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Manage property managers and verify system accounts.
-                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">Management and moderation of property owner profiles.</p>
                 </div>
-                <Button asChild size="lg" className="shadow-md">
+
+                <Button asChild className="font-bold text-xs uppercase tracking-widest gap-2 h-11 px-6 shadow-md shadow-primary/10 transition-all hover:translate-y-[-1px]">
                     <Link href={route('admin.landlords.create')}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add New Landlord
+                        <Plus className="h-4 w-4" />
+                        Provision Account
                     </Link>
                 </Button>
             </header>
 
             <Separator className="opacity-50" />
 
-            {/* Metrics Overview */}
+            {/* Metrics */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <MetricCard 
                     title="Total Managers"
@@ -195,7 +192,7 @@ export default function AdminLandlords({ landlords, stats, filters }: AdminLandl
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg font-bold">Account Directory</CardTitle>
                         <CardDescription>
-                            Showing {safeLandlords.data.length} managers of {meta.total} total
+                            Showing {safeLandlords.data.length} managers of {safeLandlords.total} total
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -269,10 +266,10 @@ export default function AdminLandlords({ landlords, stats, filters }: AdminLandl
                         )}
 
                         {/* Pagination */}
-                        {meta.last_page > 1 && (
+                        {safeLandlords.last_page > 1 && (
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-4 border-t border-border/50">
                                 <span className="text-xs font-medium text-muted-foreground">
-                                    Displaying {((meta.current_page - 1) * meta.per_page) + 1} - {Math.min(meta.current_page * meta.per_page, meta.total)} of {meta.total} results
+                                    Displaying {((safeLandlords.current_page - 1) * safeLandlords.per_page) + 1} - {Math.min(safeLandlords.current_page * safeLandlords.per_page, safeLandlords.total)} of {safeLandlords.total} results
                                 </span>
                                 <div className="flex items-center gap-1.5">
                                     {links.map((link: any, index: number) => (

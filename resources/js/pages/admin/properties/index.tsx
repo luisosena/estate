@@ -59,12 +59,10 @@ interface AdminPropertiesProps {
     properties: {
         data: Property[];
         links: any[];
-        meta: {
-            current_page: number;
-            last_page: number;
-            per_page: number;
-            total: number;
-        };
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
     };
     landlords: Landlord[];
     filters: {
@@ -105,7 +103,10 @@ export default function AdminProperties({
     const safeProperties = properties || {
         data: [],
         links: [],
-        meta: { current_page: 1, last_page: 1, per_page: 10, total: 0 },
+        current_page: 1,
+        last_page: 1,
+        per_page: 10,
+        total: 0,
     };
 
     const handleFilterChange = (key: string, value: string) => {
@@ -114,34 +115,12 @@ export default function AdminProperties({
 
         router.get(route('admin.properties.index'), newFilters, {
             preserveState: true,
-            preserveScroll: true,
+            replace: true,
         });
     };
 
-    const handleSearch = (value: string) => {
-        setLocalFilters({ ...localFilters, search: value });
-
-        // Debounce search
-        const timeoutId = setTimeout(() => {
-            router.get(
-                route('admin.properties.index'),
-                { ...localFilters, search: value },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                },
-            );
-        }, 300);
-
-        return () => clearTimeout(timeoutId);
-    };
-
     const deleteProperty = (id: number) => {
-        if (
-            confirm(
-                'Are you sure you want to delete this property? This action cannot be undone.',
-            )
-        ) {
+        if (confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
             router.delete(route('admin.properties.destroy', id));
         }
     };
@@ -149,164 +128,165 @@ export default function AdminProperties({
     return (
         <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
             
-            {/* Header Section */}
+            {/* Header */}
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                        Global Properties
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground text-balance">
+                        Global Property Portfolio
                     </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Monitor and manage all buildings registered in the system.
-                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">Operational oversight of all registered buildings and units.</p>
                 </div>
-                <Button asChild size="lg" className="shadow-md">
+
+                <Button asChild className="font-bold text-xs uppercase tracking-widest gap-2 h-11 px-6 shadow-md shadow-primary/10 transition-all hover:translate-y-[-1px]">
                     <Link href={route('admin.properties.create')}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Register Property
+                        <Plus className="h-4 w-4" />
+                        Register New Asset
                     </Link>
                 </Button>
             </header>
 
             <Separator className="opacity-50" />
 
-            {/* Metrics Grid (Simple view for index) */}
+            {/* Metrics */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <MetricCard 
                     title="Managed Buildings"
-                    value={safeProperties.meta.total}
+                    value={safeProperties.total}
                     icon={Building2}
                     description="Total registered properties"
                 />
                 <MetricCard 
-                    title="Active"
-                    value={safeProperties.data.filter(p => p.status === 'active').length}
-                    icon={Building}
-                    description="Buildings currently in service"
-                />
-                <MetricCard 
-                    title="Total Units"
+                    title="Portfolio Units"
                     value={safeProperties.data.reduce((acc, p) => acc + p.total_units, 0)}
                     icon={Home}
-                    description="Units across listed properties"
+                    description="Total housing capacity"
                 />
                 <MetricCard 
-                    title="Total Landlords"
+                    title="Active Landlords"
                     value={landlords.length}
                     icon={Users}
-                    description="Contributing owners"
+                    description="Verified asset managers"
+                />
+                <MetricCard 
+                    title="Pending Reviews"
+                    value={safeProperties.data.filter(p => p.status === 'maintenance').length}
+                    icon={Building}
+                    description="Assets requiring attention"
                 />
             </section>
 
-            {/* Filter & List Section */}
+            {/* Filter Bar */}
             <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-sm">
-                    <div className="relative flex-1 min-w-[300px]">
+                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4 bg-card p-4 rounded-xl border border-border/50">
+                    <div className="relative col-span-1 md:col-span-2">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search properties by name or address..."
+                            placeholder="Search properties by name or location..."
                             value={localFilters.search}
-                            onChange={(e) => handleSearch(e.target.value)}
+                            onChange={(e) => handleFilterChange('search', e.target.value)}
                             className="pl-9 bg-muted/30 border-none shadow-none focus-visible:ring-1"
                         />
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Select value={localFilters.status} onValueChange={(value) => handleFilterChange('status', value)}>
-                            <SelectTrigger className="w-[140px] bg-muted/30 border-none shadow-none text-xs font-semibold">
-                                <SelectValue placeholder="All Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all text-xs">All Status</SelectItem>
-                                <SelectItem value="active text-xs">Active</SelectItem>
-                                <SelectItem value="inactive text-xs">Inactive</SelectItem>
-                                <SelectItem value="maintenance text-xs">Maintenance</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    
+                    <Select value={localFilters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+                        <SelectTrigger className="bg-muted/30 border-none shadow-none text-xs font-semibold">
+                            <SelectValue placeholder="Status: All" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Statuses</SelectItem>
+                            <SelectItem value="active">Active Only</SelectItem>
+                            <SelectItem value="inactive">Inactive Only</SelectItem>
+                            <SelectItem value="maintenance">Maintenance Only</SelectItem>
+                        </SelectContent>
+                    </Select>
 
-                        <Select value={localFilters.owner_id} onValueChange={(value) => handleFilterChange('owner_id', value)}>
-                            <SelectTrigger className="w-[180px] bg-muted/30 border-none shadow-none text-xs font-semibold">
-                                <SelectValue placeholder="All Landlords" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all text-xs">All Landlords</SelectItem>
-                                {landlords.map((landlord) => (
-                                    <SelectItem key={landlord.id} value={landlord.id.toString()} className="text-xs">
-                                        {landlord.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <Select value={localFilters.owner_id} onValueChange={(value) => handleFilterChange('owner_id', value)}>
+                        <SelectTrigger className="bg-muted/30 border-none shadow-none text-xs font-semibold">
+                            <SelectValue placeholder="Manager: All" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Managers</SelectItem>
+                            {landlords.map((landlord) => (
+                                <SelectItem key={landlord.id} value={landlord.id.toString()}>
+                                    {landlord.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
 
-                <Card className="shadow-none border-border/50">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-lg font-bold">Property Directory</CardTitle>
-                        <CardDescription>
-                            Management list for all buildings and rental complexes
-                        </CardDescription>
+                {/* Properties List */}
+                <Card className="shadow-none border-border/50 overflow-hidden">
+                    <CardHeader className="pb-4 border-b border-border/50">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-lg font-bold">Property Inventory</CardTitle>
+                                <CardDescription>Efficiently manage your global housing assets.</CardDescription>
+                            </div>
+                            <div className="px-3 py-1 bg-muted/50 rounded-full text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                {safeProperties.total} Records Found
+                            </div>
+                        </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0">
                         {safeProperties.data.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-xl border-muted/50">
-                                <Building2 className="h-10 w-10 text-muted/40 mb-3" />
-                                <p className="text-sm text-muted-foreground font-medium">No properties found</p>
-                                <p className="text-xs text-muted-foreground/60 mt-1 uppercase tracking-wider font-bold">Try adjusting your filters</p>
+                            <div className="flex flex-col items-center justify-center py-24 text-center">
+                                <Building2 className="h-12 w-12 text-muted/40 mb-4" />
+                                <h3 className="text-sm font-bold text-foreground mb-1">No Properties Found</h3>
+                                <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-4">Try adjusting your filters or search terms to find what you're looking for.</p>
+                                <Button variant="outline" size="sm" onClick={() => setLocalFilters({ search: '', status: 'all', owner_id: 'all' })} className="text-[10px] font-bold uppercase tracking-widest border-border/50 hover:bg-muted transition-colors">
+                                    Reset Filters
+                                </Button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="divide-y divide-border/50">
                                 {safeProperties.data.map((property) => (
-                                    <div
-                                        key={property.id}
-                                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-border/40 hover:border-primary/20 hover:bg-muted/30 transition-all group"
-                                    >
-                                        <div className="flex items-center gap-4 mb-4 sm:mb-0">
-                                            <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary shrink-0 group-hover:bg-primary/10 transition-colors shadow-sm">
-                                                <Building2 className="h-6 w-6" />
+                                    <div key={property.id} className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-5 hover:bg-muted/30 transition-all group">
+                                        <div className="flex items-start gap-4 flex-1">
+                                            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform border border-primary/10">
+                                                <Home className="h-6 w-6" />
                                             </div>
                                             <div className="min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-foreground truncate">{property.name}</h3>
-                                                    <Badge variant="outline" className={getStatusColor(property.status) + " text-[10px] uppercase font-bold px-1.5 h-4 border-none shadow-none"}>
+                                                <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                    <h3 className="font-bold text-foreground text-sm group-hover:text-primary transition-colors">
+                                                        {property.name}
+                                                    </h3>
+                                                    <Badge variant="outline" className={getStatusColor(property.status) + " text-[10px] border-none uppercase font-bold px-1.5 h-4"}>
                                                         {property.status}
                                                     </Badge>
                                                 </div>
-                                                <p className="text-xs text-muted-foreground truncate leading-normal">
-                                                    {property.address}, {property.city}
+                                                <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                                                    <Building className="h-3 w-3 opacity-60" /> {property.address}, {property.city}
                                                 </p>
-                                                <div className="flex items-center gap-3 mt-1 underline-offset-4 decoration-muted/30">
-                                                    <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
-                                                        <Home className="h-2.5 w-2.5" />
-                                                        {property.total_units} units
-                                                    </span>
-                                                    <Separator orientation="vertical" className="h-2 bg-muted-foreground/30" />
-                                                    <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 uppercase tracking-tighter">
-                                                        <Users className="h-2.5 w-2.5" />
-                                                        {property.landlord?.name}
-                                                    </span>
+                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5">
+                                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded-md">
+                                                        <Users className="h-3 w-3" /> Managed by {property.landlord.name}
+                                                    </div>
+                                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded-md">
+                                                        <Home className="h-3 w-3" /> {property.total_units} Units
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        
-                                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                                            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-semibold border-border/50 bg-background hover:bg-muted flex-1 sm:flex-none">
+
+                                        <div className="flex items-center gap-2 xl:self-center">
+                                            <Button asChild variant="outline" size="sm" className="h-9 px-4 text-xs font-bold border-border/50 bg-background hover:bg-muted flex-1 xl:flex-none gap-2">
                                                 <Link href={route('admin.properties.show', property.id)}>
-                                                    <Eye className="h-3.5 w-3.5 mr-1" /> View
+                                                    <Eye className="h-3.5 w-3.5" /> Details
                                                 </Link>
                                             </Button>
-                                            
-                                            <Button asChild variant="outline" size="sm" className="h-8 text-xs font-semibold border-border/50 bg-background hover:bg-muted flex-1 sm:flex-none">
+                                            <Button asChild variant="outline" size="sm" className="h-9 px-4 text-xs font-bold border-border/50 bg-background hover:bg-muted flex-1 xl:flex-none gap-2">
                                                 <Link href={route('admin.properties.edit', property.id)}>
-                                                    <Edit className="h-3.5 w-3.5 mr-1" /> Edit
+                                                    <Edit className="h-3.5 w-3.5" /> Edit
                                                 </Link>
                                             </Button>
-                                            
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-8 text-xs font-semibold border-border/50 text-destructive hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive flex-1 sm:flex-none"
                                                 onClick={() => deleteProperty(property.id)}
+                                                className="h-9 w-9 p-0 text-destructive hover:bg-destructive/10 border-border/50 transition-colors"
                                             >
-                                                <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                                                <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>
@@ -315,10 +295,10 @@ export default function AdminProperties({
                         )}
 
                         {/* Pagination */}
-                        {safeProperties.meta.last_page > 1 && (
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-4 border-t border-border/50">
-                                <span className="text-xs font-medium text-muted-foreground">
-                                    Displaying {((safeProperties.meta.current_page - 1) * safeProperties.meta.per_page) + 1} - {Math.min(safeProperties.meta.current_page * safeProperties.meta.per_page, safeProperties.meta.total)} of {safeProperties.meta.total} properties
+                        {safeProperties.last_page > 1 && (
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 border-t border-border/50 bg-secondary/10">
+                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest hidden sm:inline">
+                                    Page {safeProperties.current_page} of {safeProperties.last_page}
                                 </span>
                                 <div className="flex items-center gap-1.5">
                                     {safeProperties.links.map((link: any, index: number) => (
@@ -329,7 +309,7 @@ export default function AdminProperties({
                                                 link.active
                                                     ? 'bg-primary text-primary-foreground shadow-sm'
                                                     : link.url
-                                                    ? 'bg-background border border-border/50 hover:bg-muted text-muted-foreground'
+                                                    ? 'bg-background border border-border/50 hover:bg-muted text-foreground'
                                                     : 'opacity-50 pointer-events-none text-muted-foreground/50'
                                             }`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
