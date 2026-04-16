@@ -12,6 +12,7 @@ import {
 import React from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,15 +44,26 @@ interface Stats {
 }
 
 interface LandlordPropertiesProps {
-  properties: Property[];
+  properties: {
+    data: Property[];
+    links: any[];
+    meta: {
+      current_page: number;
+      from: number;
+      last_page: number;
+      path: string;
+      per_page: number;
+      to: number;
+      total: number;
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+    };
+  };
   stats: Stats;
 }
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'TZS',
-  }).format(amount);
 
 const getOccupancyColor = (rate: number) => {
   if (rate >= 90) return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400';
@@ -60,6 +72,9 @@ const getOccupancyColor = (rate: number) => {
 };
 
 export default function LandlordProperties({ properties, stats }: LandlordPropertiesProps) {
+  const { data: propertyList, meta } = properties;
+  const links = meta.links;
+
   return (
     <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
           
@@ -138,7 +153,7 @@ export default function LandlordProperties({ properties, stats }: LandlordProper
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Your Properties</h2>
             
-            {properties.length === 0 ? (
+            {propertyList.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
@@ -153,78 +168,87 @@ export default function LandlordProperties({ properties, stats }: LandlordProper
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4">
-                {properties.map((property) => (
-                  <Card key={property.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-xl">{property.name}</CardTitle>
-                          <CardDescription className="flex items-center gap-1 mt-1">
-                            <MapPin className="h-4 w-4" />
-                            {property.address}
-                          </CardDescription>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-4">
+                  {propertyList.map((property) => (
+                    <Card key={property.id} className="hover:shadow-md transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-xl">{property.name}</CardTitle>
+                            <CardDescription className="flex items-center gap-1 mt-1">
+                              <MapPin className="h-4 w-4" />
+                              {property.address}
+                            </CardDescription>
+                          </div>
+                          <Badge className={getOccupancyColor(property.occupancy_rate)}>
+                            {property.occupancy_rate}% Occupied
+                          </Badge>
                         </div>
-                        <Badge className={getOccupancyColor(property.occupancy_rate)}>
-                          {property.occupancy_rate}% Occupied
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">{property.units_count}</div>
-                          <div className="text-sm text-muted-foreground">Total Units</div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-blue-600">{property.units_count}</div>
+                            <div className="text-sm text-muted-foreground">Total Units</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-600">{property.occupied_units}</div>
+                            <div className="text-sm text-muted-foreground">Occupied</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-orange-600">{property.available_units}</div>
+                            <div className="text-sm text-muted-foreground">Available</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-purple-600">{property.active_tenants_count}</div>
+                            <div className="text-sm text-muted-foreground">Active Tenants</div>
+                          </div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">{property.occupied_units}</div>
-                          <div className="text-sm text-muted-foreground">Occupied</div>
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <Link href={`/landlord/properties/${property.id}/tenants`}>
+                              <Users className="h-4 w-4 mr-2" />
+                              View Tenants
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <Link href={`/landlord/properties/${property.id}/units`}>
+                              <Home className="h-4 w-4 mr-2" />
+                              View Units
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <Link href={`/landlord/properties/${property.id}`}>
+                              <ArrowRight className="h-4 w-4 mr-2" />
+                              Details
+                            </Link>
+                          </Button>
                         </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-orange-600">{property.available_units}</div>
-                          <div className="text-sm text-muted-foreground">Available</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">{property.active_tenants_count}</div>
-                          <div className="text-sm text-muted-foreground">Active Tenants</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                        >
-                          <Link href={`/landlord/properties/${property.id}/tenants`}>
-                            <Users className="h-4 w-4 mr-2" />
-                            View Tenants
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                        >
-                          <Link href={`/landlord/properties/${property.id}/units`}>
-                            <Home className="h-4 w-4 mr-2" />
-                            View Units
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                        >
-                          <Link href={`/landlord/properties/${property.id}`}>
-                            <ArrowRight className="h-4 w-4 mr-2" />
-                            Details
-                          </Link>
-                        </Button>
-                      </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                {/* Pagination */}
+                <Card>
+                    <CardContent className="py-4">
+                        <Pagination links={links} />
                     </CardContent>
-                  </Card>
-                ))}
+                </Card>
               </div>
             )}
           </div>

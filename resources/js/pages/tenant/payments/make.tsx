@@ -89,12 +89,12 @@ interface ExistingPayment {
 }
 
 interface Props {
-  tenant: Tenant;
-  tenancy?: Tenancy | null;
-  existingPayment?: ExistingPayment | null;
+  tenant: { data: Tenant };
+  tenancy?: { data: Tenancy } | null;
+  existingPayment?: { data: ExistingPayment } | null;
   pendingAmount?: number;
   paymentMethods?: PaymentMethod[];
-  pendingUtilityBills?: UtilityBill[];
+  pendingUtilityBills?: { data: UtilityBill[] };
 }
 
 interface PaymentFormData {
@@ -132,13 +132,18 @@ const paymentSchema = z.object({
 
 export default function MakePayment({
   tenant,
-  tenancy,
-  existingPayment,
+  tenancy: tenancyWrapper,
+  existingPayment: existingPaymentWrapper,
   pendingAmount = 0,
   paymentMethods = [],
-  pendingUtilityBills = [],
+  pendingUtilityBills: pendingUtilityBillsWrapper = { data: [] },
 }: Props) {
   const { auth } = usePage<SharedData>().props;
+  
+  const tenantData = tenant.data;
+  const tenancy = tenancyWrapper?.data;
+  const existingPayment = existingPaymentWrapper?.data;
+  const utilityBills = pendingUtilityBillsWrapper.data;
   
   // Form state
   const [formData, setFormData] = useState<PaymentFormData>({
@@ -161,14 +166,14 @@ export default function MakePayment({
     if (formData.payment_type === 'rent') {
       return amount > (Number(pendingAmount) || 0);
     } else if (formData.payment_type === 'utility' && formData.utility_bill_id) {
-      const bill = pendingUtilityBills.find(b => b.id === Number(formData.utility_bill_id));
+      const bill = utilityBills.find(b => b.id === Number(formData.utility_bill_id));
       if (bill) {
         const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
         return amount > outstanding;
       }
     }
     return false;
-  }, [formData.amount, formData.payment_type, formData.utility_bill_id, pendingAmount, pendingUtilityBills]);
+  }, [formData.amount, formData.payment_type, formData.utility_bill_id, pendingAmount, utilityBills]);
 
   // Handle input change
   const handleChange = (
@@ -404,13 +409,13 @@ export default function MakePayment({
                         </button>
                     </div>
 
-                    {formData.payment_type === 'utility' && pendingUtilityBills && pendingUtilityBills.length > 0 && (
+                    {formData.payment_type === 'utility' && utilityBills && utilityBills.length > 0 && (
                         <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                             <Label htmlFor="utility_bill_id" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">Connect to Bill</Label>
                             <Select
                                 value={formData.utility_bill_id?.toString() || ''}
                                 onValueChange={(value) => {
-                                    const bill = pendingUtilityBills.find(b => b.id.toString() === value);
+                                    const bill = utilityBills.find(b => b.id.toString() === value);
                                     if (bill) {
                                         const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
                                         setFormData((prev: any) => ({ 
@@ -425,7 +430,7 @@ export default function MakePayment({
                                     <SelectValue placeholder="Select a pending service bill" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl">
-                                    {pendingUtilityBills.map((bill) => (
+                                    {utilityBills.map((bill) => (
                                         <SelectItem key={bill.id} value={bill.id.toString()}>
                                             <span className="font-medium">{bill.tenancy_utility.utility_type.name}</span>
                                             <span className="mx-2 text-muted-foreground">/</span>

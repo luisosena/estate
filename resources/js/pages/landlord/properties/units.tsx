@@ -31,10 +31,14 @@ interface Property {
 
 interface PropertyUnitsProps {
   property: Property;
-  units: Unit[];
+  units: {
+    data: Unit[];
+  };
 }
 
 export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
+  const unitsList = units?.data || [];
+
   const getStatusBadge = (status: string) => {
     return status === 'available' ? (
       <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -47,8 +51,8 @@ export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
     );
   };
 
-  const availableUnits = units.filter(unit => unit.status === 'available').length;
-  const occupiedUnits = units.filter(unit => unit.status === 'occupied').length;
+  const availableUnits = unitsList.filter(unit => unit.status === 'available').length;
+  const occupiedUnits = unitsList.filter(unit => unit.status === 'occupied').length;
 
   return (
     <>
@@ -129,7 +133,7 @@ export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {units.length === 0 ? (
+              {unitsList.length === 0 ? (
                 <div className="text-center py-12">
                   <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No units yet</h3>
@@ -145,7 +149,7 @@ export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {units.map((unit) => (
+                  {unitsList.map((unit) => (
                     <div
                       key={unit.id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"

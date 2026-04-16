@@ -1,42 +1,13 @@
-import { Link, router, usePage } from '@inertiajs/react';
-import { 
-  MoreHorizontal, 
-  Eye, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  Receipt,
-  CalendarDays,
-  ArrowRight,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { FileText, CreditCard, Clock, CheckCircle2, AlertCircle, Calendar, ArrowRight, Wallet, Info } from 'lucide-react';
 import React from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
-import { MetricCard } from '@/components/shared/DashboardComponents';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { cn } from '@/lib/utils';
-import { formatCurrency, formatDate, getFormattedDate } from '@/lib/formatters';
-import { type SharedData } from '@/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface RentBill {
   id: number;
@@ -46,298 +17,311 @@ interface RentBill {
   due_date: string;
   status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
   outstanding_amount: number;
+  tenancy?: {
+    unit?: {
+      unit_name: string;
+      property?: {
+        name: string;
+      };
+    };
+  };
 }
 
-interface Stats {
-  total: number;
-  pending: number;
-  paid: number;
-}
-
-interface Props {
+interface IndexProps {
   rentBills: {
     data: RentBill[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
     links: Array<{
       url: string | null;
       label: string;
       active: boolean;
     }>;
-  };
+    meta: {
+      current_page: number;
+      total: number;
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+    };
+  } | null;
   currentMonthBill: RentBill | null;
-  stats: Stats;
+  stats: {
+    total: number;
+    pending: number;
+    paid: number;
+  };
 }
 
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return '—';
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+const formatFullDate = (dateString: string | null) => {
+  if (!dateString) return '—';
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'TZS',
+    minimumFractionDigits: 0,
+  }).format(amount);
 
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'paid':
       return (
-        <Badge variant="default" className="bg-green-500 hover:bg-green-600 shadow-none capitalize">
+        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
           <CheckCircle2 className="mr-1 h-3 w-3" />
-          Paid
+          Settled
         </Badge>
       );
     case 'pending':
       return (
-        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600 text-white shadow-none capitalize">
+        <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
           <Clock className="mr-1 h-3 w-3" />
-          Pending
+          Outstanding
         </Badge>
       );
     case 'partial':
       return (
-        <Badge variant="outline" className="border-blue-500 text-blue-500 shadow-none capitalize">
-          <Clock className="mr-1 h-3 w-3" />
+        <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 border-blue-500/20">
+          <Info className="mr-1 h-3 w-3" />
           Partial
         </Badge>
       );
     case 'overdue':
       return (
-        <Badge variant="destructive" className="shadow-none capitalize">
+        <Badge variant="destructive">
           <AlertCircle className="mr-1 h-3 w-3" />
-          Overdue
+          Past Due
         </Badge>
       );
     case 'waived':
-      return (
-        <Badge variant="outline" className="text-muted-foreground shadow-none capitalize">
-          Waived
-        </Badge>
-      );
+        return (
+          <Badge variant="outline" className="text-gray-500">
+            Waived
+          </Badge>
+        );
     default:
-      return <Badge variant="outline" className="shadow-none capitalize">{status}</Badge>;
+      return <Badge variant="outline">{status}</Badge>;
   }
 };
 
-export default function RentBillsIndex({ rentBills, currentMonthBill, stats }: Props) {
-  const { auth } = usePage<SharedData>().props;
+export default function RentBillsIndex({ rentBills, currentMonthBill, stats }: IndexProps) {
+  const billList = rentBills?.data || [];
+  const meta = rentBills?.meta || { total: 0, links: [] as any[] };
+  const links = meta.links || [];
 
   return (
-    <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
-        
-        {/* Header Section */}
-        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <main className="max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+          {/* Header */}
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-                <div className="flex items-center gap-2 mb-1">
-                    <SidebarTrigger className="-ml-2 md:hidden" />
-                    <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
-                        <CalendarDays className="w-3 h-3" />
-                        {getFormattedDate()}
-                    </Badge>
-                </div>
-                <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-                    Rent Invoices
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Manage your rental obligations and view historical billing data.
-                </p>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-[10px] bg-card font-bold text-muted-foreground border-border/50 flex gap-1.5 items-center uppercase tracking-widest">
+                  <FileText className="w-3 h-3" />
+                  Obligations
+                </Badge>
+              </div>
+              <h1 className="text-3xl font-black tracking-tight text-foreground">
+                Rent Invoices
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Track your rent periods and payment statuses
+              </p>
             </div>
+          </header>
 
-            <div className="flex items-center gap-2 shrink-0">
-                <Button asChild variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
-                    <Link href={route('tenant.payments')}>
-                        <TrendingDown className="w-4 h-4 mr-2 text-muted-foreground" />
-                        Payment Records
-                    </Link>
-                </Button>
-                <Button asChild className="shadow-sm">
-                    <Link href={route('tenant.payments.make')}>
-                        <Clock className="w-4 h-4 mr-2" />
-                        Quick Pay
-                    </Link>
-                </Button>
-            </div>
-        </header>
-
-        {/* Status Highlights */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <MetricCard
-                title="Total Generated"
-                value={stats.total}
-                icon={Receipt}
-                description="Total rent bills issued to date"
-            />
-            <MetricCard
-                title="Pending Bills"
-                value={stats.pending}
-                icon={Clock}
-                description="Awaiting full payment"
-                alert={stats.pending > 0}
-            />
-            <MetricCard
-                title="Settled Bills"
-                value={stats.paid}
-                icon={CheckCircle2}
-                trend={{ label: "Good standing", value: "" }}
-                description="Successfully paid in full"
-            />
-        </div>
-
-        {/* Current Month Bill Spotlight */}
-        {currentMonthBill && (
-          <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold tracking-tight">Active Invoice</h2>
-            <Card className={cn(
-                "shadow-sm transition-all border-l-4",
-                currentMonthBill.status === 'overdue' ? 'border-l-destructive' : 'border-l-primary'
-            )}>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl">Current Billing Period</CardTitle>
-                  <CardDescription>{formatDate(currentMonthBill.billing_month)} cycle</CardDescription>
+          <div className="flex flex-1 flex-col gap-8">
+            {/* Current Month & Stats */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              <Card className="lg:col-span-2 border-primary/20 bg-primary/[0.02] shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
+                    <Calendar className="h-32 w-32" />
                 </div>
-                {getStatusBadge(currentMonthBill.status)}
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-6 sm:grid-cols-3 mb-6">
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground font-medium uppercase tracking-tight">Invoice Amount</div>
-                    <div className="text-2xl font-bold">{formatCurrency(currentMonthBill.amount_due)}</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground font-medium uppercase tracking-tight">Already Paid</div>
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-500">{formatCurrency(currentMonthBill.amount_paid)}</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground font-medium uppercase tracking-tight">Payable By</div>
-                    <div className="text-2xl font-bold">{formatDate(currentMonthBill.due_date)}</div>
-                  </div>
-                </div>
-
-                {currentMonthBill.outstanding_amount > 0 ? (
-                  <div className="flex flex-col sm:flex-row items-center justify-between rounded-2xl bg-muted/30 p-5 border border-border/50 gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                            <TrendingUp className="w-5 h-5 text-amber-600" />
+                <CardHeader>
+                  <CardTitle className="text-sm font-black uppercase tracking-widest text-primary">Active Billing Period</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {currentMonthBill ? (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                      <div>
+                        <div className="text-4xl font-black text-foreground mb-1">
+                          {formatDate(currentMonthBill.billing_month)}
                         </div>
-                        <div>
-                            <div className="text-sm text-muted-foreground">Remaining Balance</div>
-                            <div className="text-2xl font-bold text-amber-600 dark:text-amber-500">
-                                {formatCurrency(currentMonthBill.outstanding_amount)}
-                            </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                                Due {formatFullDate(currentMonthBill.due_date)}
+                            </span>
+                            {getStatusBadge(currentMonthBill.status)}
                         </div>
+                      </div>
+                      <div className="flex flex-col items-start sm:items-end">
+                        <div className="text-2xl font-black text-foreground">
+                          {formatCurrency(currentMonthBill.outstanding_amount)}
+                        </div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Remaining Balance</p>
+                        <Button asChild className="mt-4 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
+                            <Link href={route('tenant.payments.make', { paymentId: currentMonthBill.id })}>
+                                Pay Now
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                      </div>
                     </div>
-                    <Button asChild size="lg" className="w-full sm:w-auto shadow-md">
-                      <Link href={route('tenant.payments.make')}>
-                        Complete Payment
-                      </Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 rounded-2xl bg-green-50 dark:bg-green-950/20 p-5 border border-green-100 dark:border-green-900/30 text-green-700 dark:text-green-400">
-                    <CheckCircle2 className="h-6 w-6" />
-                    <span className="font-semibold text-lg">Invoice fully settled for this period. Thank you!</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </section>
-        )}
+                  ) : (
+                    <div className="py-6 flex flex-col items-center justify-center text-center">
+                        <Wallet className="h-10 w-10 text-muted-foreground/30 mb-3" />
+                        <h3 className="text-sm font-bold text-foreground">No active bill for this period</h3>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">You are all caught up!</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-        {/* Ledger Table */}
-        <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold tracking-tight">Invoicing History</h2>
-            <Card className="shadow-none border-border/50 overflow-hidden">
-                <Table>
-                    <TableHeader className="bg-muted/30">
-                        <TableRow>
-                            <TableHead className="font-semibold">Period</TableHead>
-                            <TableHead className="font-semibold text-center">Amount Due</TableHead>
-                            <TableHead className="font-semibold text-center">Paid</TableHead>
-                            <TableHead className="font-semibold text-center">Balance</TableHead>
-                            <TableHead className="font-semibold">Due Date</TableHead>
-                            <TableHead className="font-semibold">Status</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {rentBills.data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-40 text-center">
-                                    <div className="flex flex-col items-center justify-center text-muted-foreground py-10">
-                                        <Receipt className="mb-4 h-12 w-12 opacity-20" />
-                                        <p className="text-lg font-medium">No billing history found</p>
-                                        <p className="text-sm">Invoices will appear here once generated by your landlord.</p>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
+              <div className="grid gap-4">
+                  <Card className="border-border/50 shadow-none bg-muted/20">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total Invoiced</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-black">{stats.total}</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border-border/50 shadow-none bg-rose-500/5 border-rose-500/10">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                       <CardTitle className="text-[10px] font-black uppercase tracking-widest text-rose-600">Action Required</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-black text-rose-600">{stats.pending}</div>
+                    </CardContent>
+                  </Card>
+              </div>
+            </div>
+
+            {/* Invoices List */}
+            <Card className="border-none shadow-none bg-transparent">
+              <CardHeader className="px-0 pt-0 pb-4">
+                <CardTitle className="text-xl font-black">Billing Ledger</CardTitle>
+                <CardDescription className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Historical breakdown of your rent obligations</CardDescription>
+              </CardHeader>
+              <CardContent className="px-0">
+                <div className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-sm">
+                  <div className="relative w-full overflow-auto">
+                    <table className="w-full caption-bottom text-sm">
+                      <thead>
+                        <tr className="border-b bg-muted/30 transition-colors">
+                          <th className="h-12 px-6 text-left align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
+                            Billing Period
+                          </th>
+                          <th className="h-12 px-6 text-left align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
+                            Invoice Amount
+                          </th>
+                          <th className="h-12 px-6 text-left align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
+                            Settled
+                          </th>
+                          <th className="h-12 px-6 text-left align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
+                            Balance
+                          </th>
+                          <th className="h-12 px-6 text-left align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
+                            Deadline
+                          </th>
+                          <th className="h-12 px-6 text-left align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
+                            Status
+                          </th>
+                          <th className="h-12 px-6 text-right align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/30">
+                        {billList.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="p-16 text-center">
+                                <div className="flex flex-col items-center gap-2">
+                                    <FileText className="h-10 w-10 text-muted-foreground/30 mb-2" />
+                                    <span className="text-sm font-bold text-muted-foreground">No invoices found.</span>
+                                </div>
+                            </td>
+                          </tr>
                         ) : (
-                            rentBills.data.map((bill) => (
-                                <TableRow key={bill.id} className="group hover:bg-muted/20 transition-colors">
-                                    <TableCell className="font-medium">
-                                        {formatDate(bill.billing_month)}
-                                    </TableCell>
-                                    <TableCell className="text-center font-medium">
-                                        {formatCurrency(bill.amount_due)}
-                                    </TableCell>
-                                    <TableCell className="text-center text-green-600 dark:text-green-500">
-                                        {formatCurrency(bill.amount_paid)}
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <span className={cn(
-                                            "font-bold",
-                                            bill.outstanding_amount > 0 ? "text-amber-600" : "text-green-600 dark:text-green-500"
-                                        )}>
-                                            {formatCurrency(bill.outstanding_amount)}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground">
-                                        {formatDate(bill.due_date)}
-                                    </TableCell>
-                                    <TableCell>
-                                        {getStatusBadge(bill.status)}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button asChild variant="ghost" size="icon" className="group-hover:text-primary group-hover:bg-primary/5 transition-all">
-                                            <Link href={route('tenant.rent-bills.show', bill.id)}>
-                                                <Eye className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                          billList.map((bill) => (
+                            <tr
+                              key={bill.id}
+                              className="group transition-colors hover:bg-muted/30"
+                            >
+                              <td className="p-6 align-middle">
+                                <div className="font-black text-sm text-foreground uppercase">
+                                  {formatDate(bill.billing_month)}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">
+                                    Rent Period
+                                </div>
+                              </td>
+                              <td className="p-6 align-middle">
+                                <div className="font-bold text-sm text-foreground">
+                                  {formatCurrency(bill.amount_due)}
+                                </div>
+                              </td>
+                              <td className="p-6 align-middle">
+                                <div className="font-medium text-sm text-emerald-600">
+                                  {formatCurrency(bill.amount_paid)}
+                                </div>
+                              </td>
+                              <td className="p-6 align-middle">
+                                <div className={`font-black text-sm ${bill.outstanding_amount > 0 ? 'text-rose-600' : 'text-foreground'}`}>
+                                  {formatCurrency(bill.outstanding_amount)}
+                                </div>
+                              </td>
+                              <td className="p-6 align-middle">
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-foreground">
+                                        {formatFullDate(bill.due_date)}
+                                    </span>
+                                </div>
+                              </td>
+                              <td className="p-6 align-middle">
+                                {getStatusBadge(bill.status)}
+                              </td>
+                              <td className="p-6 align-middle text-right">
+                                <Button asChild variant="ghost" size="sm" className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-primary hover:bg-primary/5">
+                                  <Link href={route('tenant.rent-bills.show', bill.id)}>
+                                    Details
+                                  </Link>
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
                         )}
-                    </TableBody>
-                </Table>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
                 {/* Pagination */}
-                {rentBills.last_page > 1 && (
-                    <div className="p-4 border-t border-border/40 flex items-center justify-between bg-muted/10">
-                        <div className="text-xs text-muted-foreground font-medium uppercase">
-                            Page {rentBills.current_page} of {rentBills.last_page}
-                        </div>
-                        <div className="flex gap-1.5">
-                            {rentBills.links.map((link, idx) => (
-                                <Button
-                                    key={idx}
-                                    variant={link.active ? "default" : "outline"}
-                                    size="sm"
-                                    className="h-8 min-w-[2rem] px-2 shadow-sm"
-                                    asChild={!!link.url}
-                                    disabled={!link.url}
-                                >
-                                    {link.url ? (
-                                        <Link href={link.url}>
-                                            {link.label.replace('&laquo;', '').replace('&raquo;', '').trim() || (idx === 0 ? 'Prev' : 'Next')}
-                                        </Link>
-                                    ) : (
-                                        <span>{link.label.replace('&laquo;', '').replace('&raquo;', '').trim() || (idx === 0 ? 'Prev' : 'Next')}</span>
-                                    )}
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        Consolidated History: {meta.total} Invoices
+                    </p>
+                    <Pagination links={links} />
+                </div>
+              </CardContent>
             </Card>
-        </section>
-
-    </main>
+          </div>
+        </main>
   );
 }
-
 
 RentBillsIndex.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

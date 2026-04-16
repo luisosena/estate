@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
 use App\Models\UtilityType;
+use App\Http\Resources\TenancyResource;
+use App\Http\Resources\UtilityTypeResource;
+use App\Http\Resources\TenancyUtilityResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -26,10 +29,10 @@ class LandlordUtilityController extends Controller
             ->where('status', 'active')
             ->with(['unit.property', 'tenant', 'tenancyUtilities.utilityType'])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(15);
 
         return Inertia::render('landlord/utilities/index', [
-            'tenancies' => $tenancies,
+            'tenancies' => TenancyResource::collection($tenancies),
         ]);
     }
 
@@ -40,7 +43,7 @@ class LandlordUtilityController extends Controller
     {
         $landlord = $request->user();
 
-        // Verify landlord owns this tenancy - with null safety checks
+        // Verify landlord owns this tenancy
         $property = $tenancy->unit?->property;
         if (!$property || $property->owner_id !== $landlord->id) {
             abort(403);
@@ -59,9 +62,9 @@ class LandlordUtilityController extends Controller
         });
 
         return Inertia::render('landlord/utilities/create', [
-            'tenancy' => $tenancy->load(['unit.property', 'tenant']),
-            'utilityTypes' => $availableTypes->values(),
-            'existingUtilities' => $tenancy->tenancyUtilities()->with('utilityType')->get(),
+            'tenancy' => new TenancyResource($tenancy->load(['unit.property', 'tenant'])),
+            'utilityTypes' => UtilityTypeResource::collection($availableTypes->values()),
+            'existingUtilities' => TenancyUtilityResource::collection($tenancy->tenancyUtilities()->with('utilityType')->get()),
         ]);
     }
 
@@ -72,7 +75,7 @@ class LandlordUtilityController extends Controller
     {
         $landlord = $request->user();
 
-        // Verify landlord owns this tenancy - with null safety checks
+        // Verify ownership
         $property = $tenancy->unit?->property;
         if (!$property || $property->owner_id !== $landlord->id) {
             abort(403);
@@ -106,25 +109,15 @@ class LandlordUtilityController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
-            Log::info('Utility assigned to tenancy via web', [
-                'tenancy_id' => $tenancy->id,
-                'utility_type_id' => $validated['utility_type_id'],
-                'landlord_id' => $landlord->id,
-            ]);
-
             return redirect()
                 ->route('landlord.utilities.index')
                 ->with('success', 'Utility assigned successfully.');
         } catch (\Exception $e) {
-            Log::error('Failed to assign utility', [
-                'tenancy_id' => $tenancy->id,
-                'error' => $e->getMessage(),
-            ]);
-
+            Log::error('Failed to assign utility: ' . $e->getMessage());
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Failed to assign utility. Please try again.');
+                ->with('error', 'Failed to assign utility.');
         }
     }
 
@@ -135,7 +128,7 @@ class LandlordUtilityController extends Controller
     {
         $landlord = $request->user();
 
-        // Verify landlord owns this tenancy - with null safety checks
+        // Verify ownership
         $property = $tenancy->unit?->property;
         if (!$property || $property->owner_id !== $landlord->id) {
             abort(403);
@@ -144,7 +137,7 @@ class LandlordUtilityController extends Controller
         $tenancy->load(['unit.property', 'tenant', 'tenancyUtilities.utilityType', 'tenancyUtilities.bills']);
 
         return Inertia::render('landlord/utilities/show', [
-            'tenancy' => $tenancy,
+            'tenancy' => new TenancyResource($tenancy),
         ]);
     }
 
@@ -155,18 +148,16 @@ class LandlordUtilityController extends Controller
     {
         $landlord = $request->user();
 
-        // Verify landlord owns this tenancy utility - with null safety checks
+        // Verify ownership
         $property = $tenancyUtility->tenancy?->unit?->property;
         if (!$property || $property->owner_id !== $landlord->id) {
             abort(403);
         }
 
-        $utilityTypes = UtilityType::active()->orderBy('name')->get();
-
         return Inertia::render('landlord/utilities/edit', [
-            'tenancyUtility' => $tenancyUtility->load('utilityType'),
-            'tenancy' => $tenancyUtility->tenancy->load('unit.property', 'tenant'),
-            'utilityTypes' => $utilityTypes,
+            'tenancyUtility' => new TenancyUtilityResource($tenancyUtility->load('utilityType')),
+            'tenancy' => new TenancyResource($tenancyUtility->tenancy->load('unit.property', 'tenant')),
+            'utilityTypes' => UtilityTypeResource::collection(UtilityType::active()->orderBy('name')->get()),
         ]);
     }
 
@@ -177,7 +168,7 @@ class LandlordUtilityController extends Controller
     {
         $landlord = $request->user();
 
-        // Verify landlord owns this tenancy utility - with null safety checks
+        // Verify ownership
         $property = $tenancyUtility->tenancy?->unit?->property;
         if (!$property || $property->owner_id !== $landlord->id) {
             abort(403);
@@ -195,25 +186,12 @@ class LandlordUtilityController extends Controller
 
         try {
             $tenancyUtility->update($validated);
-
-            Log::info('Tenancy utility updated via web', [
-                'tenancy_utility_id' => $tenancyUtility->id,
-                'landlord_id' => $landlord->id,
-            ]);
-
             return redirect()
                 ->route('landlord.utilities.show', ['tenancy' => $tenancyUtility->tenancy_id])
                 ->with('success', 'Utility updated successfully.');
         } catch (\Exception $e) {
-            Log::error('Failed to update utility', [
-                'tenancy_utility_id' => $tenancyUtility->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Failed to update utility. Please try again.');
+            Log::error('Failed to update utility: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Failed to update utility.');
         }
     }
 
@@ -224,14 +202,13 @@ class LandlordUtilityController extends Controller
     {
         $landlord = $request->user();
 
-        // Verify landlord owns this tenancy utility - with null safety checks
+        // Verify ownership
         $property = $tenancyUtility->tenancy?->unit?->property;
         if (!$property || $property->owner_id !== $landlord->id) {
             abort(403);
         }
 
         try {
-            // Check for unpaid bills
             $unpaidBills = $tenancyUtility->bills()
                 ->whereIn('status', ['pending', 'partial', 'overdue'])
                 ->exists();
@@ -239,28 +216,16 @@ class LandlordUtilityController extends Controller
             if ($unpaidBills) {
                 return redirect()
                     ->back()
-                    ->with('error', 'Cannot remove utility with unpaid bills. Please resolve outstanding bills first.');
+                    ->with('error', 'Cannot remove utility with unpaid bills.');
             }
 
             $tenancyUtility->delete();
-
-            Log::info('Tenancy utility removed via web', [
-                'tenancy_utility_id' => $tenancyUtility->id,
-                'landlord_id' => $landlord->id,
-            ]);
-
             return redirect()
                 ->route('landlord.utilities.index')
                 ->with('success', 'Utility removed successfully.');
         } catch (\Exception $e) {
-            Log::error('Failed to remove utility', [
-                'tenancy_utility_id' => $tenancyUtility->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return redirect()
-                ->back()
-                ->with('error', 'Failed to remove utility. Please try again.');
+            Log::error('Failed to remove utility: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to remove utility.');
         }
     }
 }

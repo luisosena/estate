@@ -1,28 +1,27 @@
 import { Link, router } from '@inertiajs/react';
 import { MoreHorizontal, Eye, AlertCircle, CheckCircle2, Clock, XCircle } from 'lucide-react';
-import { useState } from 'react';
 import React from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-interface Property {
-  id: number;
-  name: string;
-}
 
 interface Unit {
   id: number;
   unit_name: string;
   unit_code: string;
+  property?: {
+    name: string;
+  };
 }
 
 interface Tenant {
@@ -57,17 +56,28 @@ interface Stats {
 interface Props {
   rentBills: {
     data: RentBill[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
     links: Array<{
       url: string | null;
       label: string;
       active: boolean;
     }>;
+    meta: {
+      current_page: number;
+      last_page: number;
+      total: number;
+      per_page: number;
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+    };
   };
   stats: Stats;
+  filters: {
+    status: string;
+    search: string;
+  };
 }
 
 const formatDate = (dateString: string | null) => {
@@ -90,14 +100,14 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case 'paid':
       return (
-        <Badge variant="default" className="bg-green-500">
+        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           Paid
         </Badge>
       );
     case 'pending':
       return (
-        <Badge variant="secondary" className="bg-amber-500">
+        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600">
           <Clock className="mr-1 h-3 w-3" />
           Pending
         </Badge>
@@ -128,20 +138,12 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-export default function LandlordRentBillsIndex({ 
-  rentBills = { data: [], current_page: 1, last_page: 1, per_page: 15, total: 0, links: [] }, 
-  stats = { total: 0, pending: 0, overdue: 0, paid: 0 } 
-}: Props) {
-  const [currentPage, setCurrentPage] = useState(rentBills.current_page);
-
-  const handlePageChange = (pageUrl: string | null) => {
-    if (pageUrl) {
-      router.visit(pageUrl);
-    }
-  };
+export default function LandlordRentBillsIndex({ rentBills, stats }: Props) {
+  const { data: billList, meta } = rentBills;
+  const links = meta.links;
 
   return (
-        <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+    <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
           
           <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
@@ -161,193 +163,181 @@ export default function LandlordRentBillsIndex({
           </header>
 
           <div className="flex flex-1 flex-col gap-6">
-        <div className="mb-8 grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bills</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card className="border-border/50 shadow-none bg-muted/20">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Total Issued</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black">{stats.total}</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600">
-                {stats.pending}
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="border-border/50 shadow-none bg-amber-500/5 border-amber-500/10">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-amber-600">Pending</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-amber-600">
+                    {stats.pending}
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Overdue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {stats.overdue}
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="border-border/50 shadow-none bg-red-500/5 border-red-500/10">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-red-600">Overdue</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-red-600">
+                    {stats.overdue}
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Paid</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {stats.paid}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Bills Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Rent Bills</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative w-full overflow-auto">
-              <table className="w-full caption-bottom text-sm">
-                <thead className="[&_tr]:border-b">
-                  <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Tenant
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Unit / Property
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Billing Month
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Amount Due
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Paid
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Outstanding
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Due Date
-                    </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Status
-                    </th>
-                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="[&_tr:last-child]:border-0">
-                  {rentBills.data.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="p-8 text-center text-muted-foreground">
-                        No rent bills found
-                      </td>
-                    </tr>
-                  ) : (
-                    rentBills.data.map((bill) => (
-                      <tr
-                        key={bill.id}
-                        className="border-b transition-colors hover:bg-muted/50"
-                      >
-                        <td className="p-4 align-middle">
-                          <div className="font-medium">{bill.tenancy?.tenant?.full_name || 'N/A'}</div>
-                        </td>
-                        <td className="p-4 align-middle">
-                          <div className="text-sm">
-                            <div>{bill.tenancy?.unit?.unit_name || 'N/A'}</div>
-                            <div className="text-muted-foreground text-xs">
-                              {bill.tenancy?.unit?.unit_code || ''}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4 align-middle">
-                          {formatDate(bill.billing_month)}
-                        </td>
-                        <td className="p-4 align-middle">
-                          {formatCurrency(bill.amount_due)}
-                        </td>
-                        <td className="p-4 align-middle">
-                          {formatCurrency(bill.amount_paid)}
-                        </td>
-                        <td className="p-4 align-middle">
-                          <span
-                            className={
-                              bill.outstanding_amount > 0
-                                ? 'font-medium text-amber-600'
-                                : 'text-green-600'
-                            }
-                          >
-                            {formatCurrency(bill.outstanding_amount)}
-                          </span>
-                        </td>
-                        <td className="p-4 align-middle">
-                          {formatDate(bill.due_date)}
-                        </td>
-                        <td className="p-4 align-middle">
-                          {getStatusBadge(bill.status)}
-                        </td>
-                        <td className="p-4 align-middle text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Open menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link
-                                  href={route('landlord.rent-bills.show', bill.id)}
-                                  className="flex items-center"
-                                >
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Details
-                                </Link>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+              <Card className="border-border/50 shadow-none bg-emerald-500/5 border-emerald-500/10">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-emerald-600">Settled</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-emerald-600">
+                    {stats.paid}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Pagination */}
-            {rentBills.last_page > 1 && (
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Showing {(rentBills.current_page - 1) * rentBills.per_page + 1} to{' '}
-                  {Math.min(rentBills.current_page * rentBills.per_page, rentBills.total)} of{' '}
-                  {rentBills.total} results
+            {/* Bills Table */}
+            <Card className="border-border/50 shadow-sm overflow-hidden">
+              <CardHeader className="border-b bg-muted/20">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle>Billing Ledger</CardTitle>
+                        <CardDescription>Detailed record of rent obligations and status</CardDescription>
+                    </div>
+                    <div className="px-3 py-1 bg-background rounded-full text-[10px] font-bold text-muted-foreground uppercase tracking-widest border border-border/50">
+                        {meta.total} Bills
+                    </div>
                 </div>
-                <div className="flex gap-1">
-                  {rentBills.links.map((link, index) => (
-                    <Button
-                      key={index}
-                      variant={link.active ? 'default' : 'outline'}
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      onClick={() => handlePageChange(link.url)}
-                      disabled={!link.url}
-                    >
-                      {link.label.replace('&laquo;', '«').replace('&raquo;', '»')}
-                    </Button>
-                  ))}
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="relative w-full overflow-auto">
+                  <table className="w-full caption-bottom text-sm">
+                    <thead className="bg-muted/30">
+                      <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                        <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Tenant
+                        </th>
+                        <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Unit / Property
+                        </th>
+                        <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Applied Period
+                        </th>
+                        <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Amount Due
+                        </th>
+                        <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Settled
+                        </th>
+                        <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Balance
+                        </th>
+                        <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Deadline
+                        </th>
+                        <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="h-10 px-4 text-right align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="[&_tr:last-child]:border-0 text-xs">
+                      {billList.length === 0 ? (
+                        <tr>
+                          <td colSpan={9} className="p-12 text-center text-muted-foreground">
+                            No rent bills found in the current selection.
+                          </td>
+                        </tr>
+                      ) : (
+                        billList.map((bill) => (
+                          <tr
+                            key={bill.id}
+                            className="border-b transition-colors hover:bg-muted/20"
+                          >
+                            <td className="p-4 align-middle">
+                              <div className="font-bold">{bill.tenancy?.tenant?.full_name || 'N/A'}</div>
+                            </td>
+                            <td className="p-4 align-middle">
+                              <div className="font-medium">{bill.tenancy?.unit?.unit_name || 'N/A'}</div>
+                              {bill.tenancy?.unit?.property?.name && (
+                                <div className="text-[10px] text-muted-foreground">
+                                  {bill.tenancy.unit.property.name}
+                                </div>
+                              )}
+                            </td>
+                            <td className="p-4 align-middle font-medium">
+                              {formatDate(bill.billing_month)}
+                            </td>
+                            <td className="p-4 align-middle font-bold">
+                              {formatCurrency(bill.amount_due)}
+                            </td>
+                            <td className="p-4 align-middle">
+                              {formatCurrency(bill.amount_paid)}
+                            </td>
+                            <td className="p-4 align-middle">
+                              <span
+                                className={
+                                  bill.outstanding_amount > 0
+                                    ? 'font-black text-amber-600'
+                                    : 'font-black text-emerald-600'
+                                }
+                              >
+                                {formatCurrency(bill.outstanding_amount)}
+                              </span>
+                            </td>
+                            <td className="p-4 align-middle whitespace-nowrap">
+                              {formatDate(bill.due_date)}
+                            </td>
+                            <td className="p-4 align-middle">
+                              {getStatusBadge(bill.status)}
+                            </td>
+                            <td className="p-4 align-middle text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/5">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Open menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                  <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link
+                                      href={route('landlord.rent-bills.show', bill.id)}
+                                      className="flex items-center"
+                                    >
+                                      <Eye className="mr-2 h-4 w-4" />
+                                      Bill Details
+                                    </Link>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+
+                {/* Pagination */}
+                <div className="p-4 border-t bg-muted/20">
+                    <Pagination links={links} />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </main>
   );

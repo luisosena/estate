@@ -30,6 +30,7 @@ const formatCurrency = (amount: number) =>
 const statusVariant = (
     status: string,
 ): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    if (!status) return 'outline';
     switch (status.toLowerCase()) {
         case 'paid':
             return 'default';

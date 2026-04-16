@@ -78,7 +78,9 @@ interface UtilityBill {
   status: string;
   notes: string | null;
   tenancy_utility: TenancyUtility;
-  payments: Payment[];
+  payments: {
+    data: Payment[];
+  };
 }
 
 interface Props {
@@ -254,13 +256,13 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
             <CardTitle>Payment History</CardTitle>
           </CardHeader>
           <CardContent>
-            {bill.payments?.length === 0 ? (
+            {(bill.payments?.data || []).length === 0 ? (
               <div className="py-8 text-center border overflow-hidden rounded-md border-dashed border-border/60 bg-card">
                 <p className="text-muted-foreground">No payments recorded for this bill.</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {bill.payments?.map((payment) => (
+                {bill.payments.data.map((payment) => (
                   <div
                     key={payment.id}
                     className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/30 p-4 hover:bg-muted/50 transition-colors"

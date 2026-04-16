@@ -1,25 +1,18 @@
 import { Link, router } from '@inertiajs/react';
-import { MoreHorizontal, Eye, ArrowLeft, CheckCircle2, Clock, CreditCard } from 'lucide-react';
+import { MoreHorizontal, Eye, CheckCircle2, Clock } from 'lucide-react';
 import React from 'react';
-import { useState } from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-
-
-interface Property {
-  id: number;
-  name: string;
-}
 
 interface Unit {
   id: number;
@@ -68,17 +61,27 @@ interface Stats {
 interface Props {
   payments: {
     data: Payment[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
     links: Array<{
       url: string | null;
       label: string;
       active: boolean;
     }>;
+    meta: {
+      current_page: number;
+      last_page: number;
+      total: number;
+      per_page: number;
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+    };
   };
   stats: Stats;
+  filters: {
+    search: string;
+  };
 }
 
 const formatDate = (dateString: string | null) => {
@@ -101,14 +104,14 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case 'paid':
       return (
-        <Badge variant="default" className="bg-green-500">
+        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           Paid
         </Badge>
       );
     case 'pending':
       return (
-        <Badge variant="secondary" className="bg-amber-500">
+        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600">
           <Clock className="mr-1 h-3 w-3" />
           Pending
         </Badge>
@@ -139,13 +142,8 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function PaymentsIndex({ payments, stats }: Props) {
-  const [currentPage, setCurrentPage] = useState(payments.current_page);
-
-  const handlePageChange = (pageUrl: string | null) => {
-    if (pageUrl) {
-      router.visit(pageUrl);
-    }
-  };
+  const { data: paymentList, meta } = payments;
+  const links = meta.links;
 
   return (
     <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
@@ -162,7 +160,7 @@ export default function PaymentsIndex({ payments, stats }: Props) {
                 Payments
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                View and manage all tenant payments
+                View and manage all tenant payments across your portfolio
               </p>
             </div>
           </header>
@@ -177,21 +175,21 @@ export default function PaymentsIndex({ payments, stats }: Props) {
             <CardContent>
               <div className="text-2xl font-bold">{stats.total_payments}</div>
               <p className="text-xs text-muted-foreground">
-                All time
+                All time collection count
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 {formatCurrency(stats.total_amount)}
               </div>
               <p className="text-xs text-muted-foreground">
-                All time
+                Gross received life-to-date
               </p>
             </CardContent>
           </Card>
@@ -212,87 +210,97 @@ export default function PaymentsIndex({ payments, stats }: Props) {
         </div>
 
         {/* Payments Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Payments</CardTitle>
+        <Card className="border-border/50 shadow-sm overflow-hidden">
+          <CardHeader className="border-b bg-muted/20">
+            <div className="flex items-center justify-between">
+                <div>
+                    <CardTitle>Transaction History</CardTitle>
+                    <CardDescription>Comprehensive list of all rent and utility payments</CardDescription>
+                </div>
+                <div className="px-3 py-1 bg-background rounded-full text-[10px] font-bold text-muted-foreground uppercase tracking-widest border border-border/50">
+                    {meta.total} Transactions
+                </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <div className="relative w-full overflow-auto">
               <table className="w-full caption-bottom text-sm">
-                <thead className="[&_tr]:border-b">
+                <thead className="bg-muted/30">
                   <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       Tenant
                     </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Unit
+                    <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                      Unit/Property
                     </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                      Type
+                    <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                      Payment Details
                     </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       Amount
                     </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       Method
                     </th>
-                    <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
+                    <th className="h-10 px-4 text-right align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="[&_tr:last-child]:border-0">
-                  {payments.data.length === 0 ? (
+                  {paymentList.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="p-8 text-center text-muted-foreground">
-                        No payments found
+                      <td colSpan={8} className="p-12 text-center text-muted-foreground">
+                        No payment records found matching your filters.
                       </td>
                     </tr>
                   ) : (
-                    payments.data.map((payment) => (
+                    paymentList.map((payment) => (
                       <tr
                         key={payment.id}
-                        className="border-b transition-colors hover:bg-muted/50"
+                        className="border-b transition-colors hover:bg-muted/20"
                       >
-                        <td className="p-4 align-middle">
+                        <td className="p-4 align-middle whitespace-nowrap">
                           {formatDate(payment.paid_at)}
                         </td>
                         <td className="p-4 align-middle">
-                          <div className="font-medium">
+                          <div className="font-bold">
                             {payment.tenancy?.tenant?.full_name || 'N/A'}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {payment.tenancy?.tenant?.tenant_code || ''}
                           </div>
                         </td>
                         <td className="p-4 align-middle">
                           <div className="text-sm">
-                            <div>{payment.tenancy?.unit?.unit_name || 'N/A'}</div>
-                            <div className="text-muted-foreground text-xs">
-                              {payment.tenancy?.unit?.unit_code || ''}
-                            </div>
+                            <div className="font-medium">{payment.tenancy?.unit?.unit_name || 'N/A'}</div>
                             {payment.tenancy?.unit?.property?.name && (
-                              <div className="text-muted-foreground text-xs">
+                              <div className="text-muted-foreground text-[10px] font-medium flex items-center gap-1">
                                 {payment.tenancy.unit.property.name}
                               </div>
                             )}
                           </div>
                         </td>
                         <td className="p-4 align-middle">
-                          <span className="capitalize">{payment.payment_type}</span>
+                          <Badge variant="outline" className="text-[10px] uppercase font-bold py-0 h-4 border-muted-foreground/20">
+                            {payment.payment_type}
+                          </Badge>
                           {payment.rent_bill && (
-                            <div className="text-xs text-muted-foreground">
-                              Bill: {payment.rent_bill.billing_month}
+                            <div className="text-[10px] mt-1 text-muted-foreground font-medium">
+                              Period: {payment.rent_bill.billing_month}
                             </div>
                           )}
                         </td>
-                        <td className="p-4 align-middle">
+                        <td className="p-4 align-middle font-black text-foreground">
                           {formatCurrency(payment.amount)}
                         </td>
-                        <td className="p-4 align-middle capitalize">
+                        <td className="p-4 align-middle capitalize text-xs font-semibold">
                           {payment.payment_method}
                         </td>
                         <td className="p-4 align-middle">
@@ -301,19 +309,19 @@ export default function PaymentsIndex({ payments, stats }: Props) {
                         <td className="p-4 align-middle text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/5">
                                 <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">Open menu</span>
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem asChild className="cursor-pointer">
                                 <Link
                                   href={`/landlord/tenants/${payment.tenancy?.tenant?.tenant_code}`}
                                   className="flex items-center"
                                 >
                                   <Eye className="mr-2 h-4 w-4" />
-                                  View Tenant
+                                  View Profile
                                 </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -327,29 +335,9 @@ export default function PaymentsIndex({ payments, stats }: Props) {
             </div>
 
             {/* Pagination */}
-            {payments.last_page > 1 && (
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Showing {(payments.current_page - 1) * payments.per_page + 1} to{' '}
-                  {Math.min(payments.current_page * payments.per_page, payments.total)} of{' '}
-                  {payments.total} results
-                </div>
-                <div className="flex gap-1">
-                  {payments.links.map((link, index) => (
-                    <Button
-                      key={index}
-                      variant={link.active ? 'default' : 'outline'}
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      onClick={() => handlePageChange(link.url)}
-                      disabled={!link.url}
-                    >
-                      {link.label.replace('&laquo;', '«').replace('&raquo;', '»')}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="p-4 border-t bg-muted/20">
+                <Pagination links={links} />
+            </div>
           </CardContent>
         </Card>
         </div>

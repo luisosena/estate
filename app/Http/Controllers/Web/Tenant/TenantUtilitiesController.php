@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Web\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\UtilityBill;
+use App\Http\Resources\UtilityBillResource;
+use App\Http\Resources\TenancyUtilityResource;
+use App\Http\Resources\TenancyResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -73,7 +76,7 @@ class TenantUtilitiesController extends Controller
                 'property' => $activeTenancy->unit->property->name,
                 'monthly_rent' => $activeTenancy->monthly_rent,
             ],
-            'utilities' => $utilities,
+            'utilities' => TenancyUtilityResource::collection($utilities),
             'summary' => [
                 'monthly_total' => $totalMonthly,
                 'active_count' => $utilities->where('status', 'active')->count(),
@@ -106,7 +109,7 @@ class TenantUtilitiesController extends Controller
                     'id' => $tenant->id,
                     'full_name' => $tenant->full_name,
                 ],
-                'bills' => [],
+                'bills' => null,
                 'summary' => [
                     'total_outstanding' => 0,
                     'bill_count' => 0,
@@ -127,9 +130,9 @@ class TenantUtilitiesController extends Controller
 
         $bills = $query->orderBy('due_date', 'asc')
             ->orderBy('billing_month', 'desc')
-            ->paginate(10);
+            ->paginate(15);
 
-        // Calculate summary using a single query with conditional aggregation
+        // Calculate summary
         $summaryResult = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
                 $q->where('tenancy_id', $activeTenancy->id);
             })
@@ -142,14 +145,6 @@ class TenantUtilitiesController extends Controller
             )
             ->first();
 
-        $summary = [
-            'total_outstanding' => $summaryResult->total_outstanding ?? 0,
-            'total_pending' => $summaryResult->total_pending ?? 0,
-            'total_overdue' => $summaryResult->total_overdue ?? 0,
-            'total_partial' => $summaryResult->total_partial ?? 0,
-            'bill_count' => (int) ($summaryResult->bill_count ?? 0),
-        ];
-
         return Inertia::render('tenant/utilities/bills', [
             'tenant' => [
                 'id' => $tenant->id,
@@ -158,8 +153,14 @@ class TenantUtilitiesController extends Controller
             'tenancy' => [
                 'id' => $activeTenancy->id,
             ],
-            'bills' => $bills,
-            'summary' => $summary,
+            'bills' => UtilityBillResource::collection($bills),
+            'summary' => [
+                'total_outstanding' => $summaryResult->total_outstanding ?? 0,
+                'total_pending' => $summaryResult->total_pending ?? 0,
+                'total_overdue' => $summaryResult->total_overdue ?? 0,
+                'total_partial' => $summaryResult->total_partial ?? 0,
+                'bill_count' => (int) ($summaryResult->bill_count ?? 0),
+            ],
             'filters' => [
                 'status' => $request->status ?? '',
             ],

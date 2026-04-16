@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUnitRequest;
 use App\Models\Property;
 use App\Models\Unit;
+use App\Http\Resources\UnitResource;
+use App\Http\Resources\PropertyResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -21,7 +23,7 @@ class LandlordUnitController extends Controller
             ->get();
 
         return Inertia::render('landlord/units/create', [
-            'properties' => $properties,
+            'properties' => PropertyResource::collection($properties),
         ]);
     }
 
@@ -64,8 +66,7 @@ class LandlordUnitController extends Controller
         $query = Unit::whereHas('property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
-        ->with('property:id,name')
-        ->select('id', 'unit_code', 'unit_name', 'status', 'property_id', 'created_at');
+        ->with('property:id,name');
         
         // Apply property filter if selected
         if ($selectedPropertyId && $selectedPropertyId !== 'all') {
@@ -74,57 +75,37 @@ class LandlordUnitController extends Controller
         
         $units = $query->orderBy('property_id')
             ->orderBy('unit_code')
-            ->get()
-            ->map(function ($unit) {
-                return [
-                    'id' => $unit->id,
-                    'unit_code' => $unit->unit_code,
-                    'unit_name' => $unit->unit_name,
-                    'status' => $unit->status,
-                    'property' => [
-                        'id' => $unit->property->id,
-                        'name' => $unit->property->name,
-                    ],
-                    'created_at' => $unit->created_at->format('Y-m-d H:i'),
-                ];
-            });
+            ->paginate(15);
 
-        // Calculate breakdown metrics
-        $totalUnits = $units->count();
-        $availableUnits = $units->filter(function ($unit) {
-            return $unit['status'] === 'available';
-        })->count();
-        $occupiedUnits = $units->filter(function ($unit) {
-            return $unit['status'] === 'occupied';
-        })->count();
+        // Calculate breakdown metrics (Global for the landlord)
+        $metricsQuery = Unit::whereHas('property', function ($query) use ($landlord) {
+            $query->where('owner_id', $landlord->id);
+        });
+
+        $totalUnits = (clone $metricsQuery)->count();
+        $availableUnits = (clone $metricsQuery)->where('status', 'available')->count();
+        $occupiedUnits = (clone $metricsQuery)->where('status', 'occupied')->count();
         $occupancyRate = $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0;
 
         // If a specific property is selected, calculate property-specific metrics
         $propertyMetrics = null;
         if ($selectedPropertyId && $selectedPropertyId !== 'all') {
-            $propertyUnits = $units->filter(function ($unit) use ($selectedPropertyId) {
-                return $unit['property']['id'] == $selectedPropertyId;
-            });
-            $propertyAvailableUnits = $propertyUnits->filter(function ($unit) {
-                return $unit['status'] === 'available';
-            })->count();
-            $propertyOccupiedUnits = $propertyUnits->filter(function ($unit) {
-                return $unit['status'] === 'occupied';
-            })->count();
+            $propMetricsQuery = Unit::where('property_id', $selectedPropertyId);
+            $propTotal = (clone $propMetricsQuery)->count();
+            $propOccupied = (clone $propMetricsQuery)->where('status', 'occupied')->count();
             
             $propertyMetrics = [
-                'total_units' => $propertyUnits->count(),
-                'available_units' => $propertyAvailableUnits,
-                'occupied_units' => $propertyOccupiedUnits,
-                'occupancy_rate' => $propertyUnits->count() > 0 
-                    ? round(($propertyOccupiedUnits / $propertyUnits->count()) * 100, 1) 
-                    : 0,
+                'total_units' => $propTotal,
+                'available_units' => (clone $propMetricsQuery)->where('status', 'available')->count(),
+                'occupied_units' => $propOccupied,
+                'occupancy_rate' => $propTotal > 0 ? round(($propOccupied / $propTotal) * 100, 1) : 0,
+                'total_properties' => 1,
             ];
         }
 
         return Inertia::render('landlord/units/index', [
-            'units' => $units,
-            'properties' => $properties,
+            'units' => UnitResource::collection($units),
+            'properties' => PropertyResource::collection($properties),
             'selectedProperty' => $selectedPropertyId ?: 'all',
             'metrics' => [
                 'total_units' => $totalUnits,
@@ -134,6 +115,9 @@ class LandlordUnitController extends Controller
                 'total_properties' => $properties->count(),
             ],
             'propertyMetrics' => $propertyMetrics,
+            'filters' => [
+                'property' => $selectedPropertyId,
+            ],
         ]);
     }
 
@@ -143,29 +127,13 @@ class LandlordUnitController extends Controller
         
         $property = Property::where('owner_id', $landlord->id)
             ->with(['units' => function ($query) {
-                $query->select('id', 'property_id', 'unit_code', 'unit_name', 'status', 'created_at')
-                      ->orderBy('unit_code');
+                $query->orderBy('unit_code');
             }])
             ->findOrFail($propertyId);
 
-        $units = $property->units->map(function ($unit) {
-            return [
-                'id' => $unit->id,
-                'unit_code' => $unit->unit_code,
-                'unit_name' => $unit->unit_name,
-                'status' => $unit->status,
-                'created_at' => $unit->created_at->format('Y-m-d H:i'),
-            ];
-        });
-
         return Inertia::render('landlord/properties/units', [
-            'property' => [
-                'id' => $property->id,
-                'name' => $property->name,
-                'address' => $property->address,
-                'total_units' => $property->total_units,
-            ],
-            'units' => $units,
+            'property' => new PropertyResource($property),
+            'units' => UnitResource::collection($property->units),
         ]);
     }
 
@@ -176,30 +144,11 @@ class LandlordUnitController extends Controller
         $unit = Unit::whereHas('property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
-        ->with(['property:id,name,address', 'tenancies' => function ($query) {
-            $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date')
-                  ->with('tenant:id,full_name,email');
-        }])
+        ->with(['property', 'tenancies.tenant'])
         ->findOrFail($unitId);
 
         return Inertia::render('landlord/units/show', [
-            'unit' => [
-                'id' => $unit->id,
-                'unit_code' => $unit->unit_code,
-                'unit_name' => $unit->unit_name,
-                'status' => $unit->status,
-                'created_at' => $unit->created_at->format('Y-m-d H:i'),
-                'property' => $unit->property,
-                'tenancies' => $unit->tenancies->map(function ($tenancy) {
-                    return [
-                        'id' => $tenancy->id,
-                        'status' => $tenancy->status,
-                        'start_date' => $tenancy->move_in_date,
-                        'end_date' => $tenancy->move_out_date,
-                        'tenant' => $tenancy->tenant,
-                    ];
-                }),
-            ],
+            'unit' => new UnitResource($unit),
         ]);
     }
 }

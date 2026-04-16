@@ -6,18 +6,19 @@ import {
   Filter, 
   Trash2, 
   X, 
-  Home, 
   CreditCard, 
   Zap,
   CalendarDays,
   Info,
   Archive,
   Search,
+  AlertCircle
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
+import Pagination from '@/components/shared/Pagination';
 import { MetricCard } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,27 +26,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { formatDate, getFormattedDate, getStatusVariant } from '@/lib/formatters';
+import { formatDate } from '@/lib/formatters';
 import { type SharedData } from '@/types';
+
+interface NotificationData {
+  title?: string;
+  message?: string;
+  priority?: 'high' | 'medium' | 'low';
+  payment_id?: number;
+  utility_id?: number;
+  [key: string]: any;
+}
 
 interface Notification {
   id: string;
   type: string;
+  title: string;
+  message: string;
+  priority: 'high' | 'medium' | 'low';
   created_at: string;
   read_at: string | null;
-  data: {
-    title?: string;
-    message?: string;
-    priority?: 'high' | 'medium' | 'low';
-    [key: string]: any;
-  };
+  data: NotificationData;
 }
 
 interface TenantNotificationsProps {
   notifications: {
     data: Notification[];
-    links: any;
-    meta: any;
+    meta: {
+      current_page: number;
+      total: number;
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+    };
   };
   unreadCount: number;
   filters: {
@@ -54,18 +69,16 @@ interface TenantNotificationsProps {
   };
 }
 
-
-
-const getPriorityVariant = (priority: string): "destructive" | "default" | "secondary" | "outline" => {
+const getPriorityColor = (priority: string) => {
   switch (priority) {
     case 'high':
-      return 'destructive';
+      return 'bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 border-red-200 dark:border-red-500/30';
     case 'medium':
-      return 'default';
+      return 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-500/30';
     case 'low':
-      return 'secondary';
+      return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30';
     default:
-      return 'outline';
+      return 'bg-muted text-muted-foreground border-border/50';
   }
 };
 
@@ -87,20 +100,9 @@ export default function TenantNotifications({ notifications, unreadCount, filter
   const { auth } = usePage<SharedData>().props;
   const [localFilters, setLocalFilters] = useState(filters);
 
-  // Transform notification data on the frontend
-  const transformedNotifications = (notifications?.data || []).map((notification: any) => {
-    const data = notification.data || {};
-    return {
-      id: notification.id,
-      type: notification.type,
-      title: data.title || 'Notification',
-      message: data.message || '',
-      priority: data.priority || 'medium',
-      created_at: notification.created_at,
-      read_at: notification.read_at,
-      data: data,
-    };
-  });
+  const notificationList = notifications?.data || [];
+  const meta = notifications?.meta || { total: 0, links: [] as any[] };
+  const links = meta.links || [];
 
   const handleFilterChange = (filterType: string, value: string) => {
     const newFilters = { ...localFilters, [filterType]: value };
@@ -138,29 +140,29 @@ export default function TenantNotifications({ notifications, unreadCount, filter
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <SidebarTrigger className="-ml-2 md:hidden" />
-                        <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                        <Badge variant="outline" className="text-[10px] bg-card font-black text-muted-foreground border-border/50 flex gap-1.5 items-center uppercase tracking-widest leading-none">
                             <Bell className="w-3 h-3" />
                             Security & Alerts
                         </Badge>
                     </div>
                     <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-                            Inbox
+                        <h1 className="text-3xl font-black tracking-tight text-foreground">
+                            Activity Hub
                         </h1>
                         {unreadCount > 0 && (
-                            <Badge variant="destructive" className="rounded-full px-2 py-0 h-5 text-[10px] font-bold">
+                            <Badge variant="destructive" className="rounded-full px-2 py-0 h-5 text-[10px] font-black uppercase tracking-widest border-none shadow-lg shadow-destructive/20">
                                 {unreadCount} NEW
                             </Badge>
                         )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Keep track of your lease milestones, payment status, and utility alerts.
+                        Review your lease milestones, payment status, and system updates.
                     </p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                    <Button variant="outline" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0} className="bg-card border-border/50 shadow-sm">
-                        <CheckCheck className="mr-2 h-4 w-4" />
+                    <Button variant="outline" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0} className="bg-card border-border/50 shadow-sm font-bold text-xs uppercase tracking-widest gap-2">
+                        <CheckCheck className="h-4 w-4" />
                         Clear All
                     </Button>
                 </div>
@@ -168,224 +170,207 @@ export default function TenantNotifications({ notifications, unreadCount, filter
         </header>
 
         {/* Stats Grid */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <MetricCard
                 title="Total Alerts"
-                value={notifications?.meta?.total || 0}
+                value={meta.total}
                 icon={Bell}
-                description="Cumulative notifications"
+                description="Cumulative history"
             />
             <MetricCard
-                title="Unread Attention"
+                title="Pending Review"
                 value={unreadCount}
-                icon={Info}
-                description="Requiring your review"
+                icon={AlertCircle}
+                description="Requiring your attention"
                 alert={unreadCount > 0}
             />
             <MetricCard
-                title="Read History"
-                value={(notifications?.meta?.total || 0) - unreadCount}
+                title="Archived"
+                value={meta.total - unreadCount}
                 icon={Check}
                 description="Status processed"
             />
         </section>
 
-        {/* Filters & Actions Area */}
-        <section className="flex flex-col gap-4">
-            <Card className="shadow-none border-border/50 bg-muted/20">
-                <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex flex-wrap gap-4 items-center">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">Status</span>
-                            <Select value={localFilters.filter} onValueChange={(v) => handleFilterChange('filter', v)}>
-                                <SelectTrigger className="w-32 h-9 bg-card">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Items</SelectItem>
-                                    <SelectItem value="unread">Unread</SelectItem>
-                                    <SelectItem value="read">Archived</SelectItem>
-                                </SelectContent>
-                            </Select>
+        {/* Filters Area */}
+        <section className="flex flex-col gap-6">
+            <Card className="border-border/50 shadow-sm overflow-hidden border-none rounded-none bg-transparent">
+                <CardContent className="p-0 flex flex-wrap gap-4 items-center">
+                    <div className="flex items-center gap-4 bg-muted/20 p-2 rounded-xl border border-border/50">
+                        <div className="flex items-center gap-2 pl-2">
+                            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest whitespace-nowrap">Status</span>
                         </div>
-                        <div className="flex items-center gap-2 border-l pl-4 border-border/50">
-                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">Filter By Type</span>
-                            <Select value={localFilters.type} onValueChange={(v) => handleFilterChange('type', v)}>
-                                <SelectTrigger className="w-48 h-9 bg-card">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Any Notification</SelectItem>
-                                    <SelectItem value="App\Notifications\TenancyExpiringNotification">Lease Expiry</SelectItem>
-                                    <SelectItem value="App\Notifications\TenancyEndedNotification">Property Vacancy</SelectItem>
-                                    <SelectItem value="App\Notifications\PaymentDueNotification">Finance Alerts</SelectItem>
-                                    <SelectItem value="App\Notifications\UtilityNotification">Utility Usage</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <Select value={localFilters.filter} onValueChange={(v) => handleFilterChange('filter', v)}>
+                            <SelectTrigger className="w-32 h-8 bg-card border-none shadow-none text-xs font-bold ring-0 focus:ring-0">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="border-border/50 shadow-xl">
+                                <SelectItem value="all">All Items</SelectItem>
+                                <SelectItem value="unread">Unread Only</SelectItem>
+                                <SelectItem value="read">Processed</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center gap-4 bg-muted/20 p-2 rounded-xl border border-border/50">
+                        <div className="flex items-center gap-2 pl-2">
+                            <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest whitespace-nowrap">Category</span>
                         </div>
+                        <Select value={localFilters.type} onValueChange={(v) => handleFilterChange('type', v)}>
+                            <SelectTrigger className="w-48 h-8 bg-card border-none shadow-none text-xs font-bold ring-0 focus:ring-0">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="border-border/50 shadow-xl">
+                                <SelectItem value="all">Any Record</SelectItem>
+                                <SelectItem value="App\Notifications\TenancyExpiringNotification">Lease Expiry</SelectItem>
+                                <SelectItem value="App\Notifications\TenancyEndedNotification">Vacancy Status</SelectItem>
+                                <SelectItem value="App\Notifications\PaymentDueNotification">Financial Alerts</SelectItem>
+                                <SelectItem value="App\Notifications\UtilityNotification">Service Alerts</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Notifications List Card */}
-            <Card className="shadow-none border-border/50 overflow-hidden">
-                <CardHeader className="border-b bg-muted/5">
+            <Card className="shadow-none border-border/50 overflow-hidden border-none rounded-none bg-transparent">
+                <CardHeader className="px-0 pt-0 pb-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle className="text-lg">Recent Alerts</CardTitle>
-                            <CardDescription>
-                                {transformedNotifications.length === 0 
-                                    ? 'No matching notifications found.' 
-                                    : `Viewing ${transformedNotifications.length} communications.`}
+                            <CardTitle className="text-xl font-black">Record Stream</CardTitle>
+                            <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                                {notificationList.length === 0 
+                                    ? 'No operational records identified.' 
+                                    : `Reviewing ${notificationList.length} recent system updates.`}
                             </CardDescription>
                         </div>
-                        <Search className="w-5 h-5 text-muted-foreground opacity-30" />
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    {transformedNotifications.length === 0 ? (
-                        <div className="py-24 text-center flex flex-col items-center gap-4">
-                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                                <Bell className="w-8 h-8 text-muted-foreground opacity-20" />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-semibold">Tidy Inbox!</h3>
-                                <p className="text-sm text-muted-foreground max-w-xs mx-auto mt-1">
-                                    You don't have any priority notifications at the moment. Check back later for updates.
-                                </p>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-border/50">
-                            {transformedNotifications.map((notification) => (
-                                <div
-                                    key={notification.id}
-                                    className={cn(
-                                        "group flex items-start gap-4 p-5 transition-all",
-                                        notification.read_at 
-                                            ? "bg-muted/10 opacity-75" 
-                                            : "bg-card border-l-[3px] border-l-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)]"
-                                    )}
-                                >
-                                    <div className={cn(
-                                        "mt-1 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
-                                        notification.read_at ? "bg-muted border-border" : "bg-primary/5 border-primary/10 shadow-sm"
-                                    )}>
-                                        {getTypeIcon(notification.type)}
-                                    </div>
-                                    
-                                    <div className="flex-1 min-w-0 flex flex-col gap-1">
-                                        <div className="flex items-center gap-2">
-                                            <h4 className={cn(
-                                                "font-bold truncate group-hover:text-primary transition-colors",
-                                                notification.read_at ? "text-muted-foreground" : "text-foreground"
-                                            )}>
-                                                {notification.title}
-                                            </h4>
-                                            {!notification.read_at && (
-                                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
-                                            )}
-                                        </div>
-                                        <p className={cn(
-                                            "text-sm leading-relaxed",
-                                            notification.read_at ? "text-muted-foreground/70" : "text-muted-foreground font-medium"
-                                        )}>
-                                            {notification.message}
-                                        </p>
-                                        
-                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-xs">
-                                            <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-                                                <CalendarDays className="w-3.5 h-3.5" />
-                                                {formatDate(notification.created_at)}
-                                            </div>
-                                            
-                                            <Badge variant={getPriorityVariant(notification.priority)} className="rounded-full text-[9px] px-2 py-0 border-none shadow-none font-black uppercase tracking-tighter">
-                                                {notification.priority} priority
-                                            </Badge>
-
-                                            {notification.data.payment_id && (
-                                                <Button variant="link" size="sm" asChild className="h-auto p-0 text-primary font-bold hover:no-underline">
-                                                    <Link href={route('tenant.payments')}>Log Payment Record &rarr;</Link>
-                                                </Button>
-                                            )}
-                                            {notification.data.utility_id && (
-                                                <Button variant="link" size="sm" asChild className="h-auto p-0 text-primary font-bold hover:no-underline">
-                                                    <Link href={route('tenant.utilities')}>Check Service Usage &rarr;</Link>
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {!notification.read_at ? (
-                                            <Button
-                                                onClick={() => markAsRead(notification.id)}
-                                                variant="outline"
-                                                size="icon"
-                                                className="h-8 w-8 rounded-full border-border/50 text-foreground"
-                                                title="Archive"
-                                            >
-                                                <Check className="h-4 w-4" />
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                onClick={() => markAsUnread(notification.id)}
-                                                variant="outline"
-                                                size="icon"
-                                                className="h-8 w-8 rounded-full border-border/50 text-muted-foreground"
-                                                title="Mark as unread"
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                        <Button
-                                            onClick={() => deleteNotification(notification.id)}
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10"
-                                            title="Permanently remove"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
+                    <div className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-sm">
+                        {notificationList.length === 0 ? (
+                            <div className="py-24 text-center flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center border border-border/50">
+                                    <Bell className="w-8 h-8 text-muted-foreground/20" />
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                                <div className="max-w-xs mx-auto">
+                                    <h3 className="text-sm font-black uppercase tracking-widest">Inbox Synchronized</h3>
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter mt-1 opacity-70">
+                                        All historical operational records have been processed or none matching your criteria exist.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-border/30">
+                                {notificationList.map((notification) => (
+                                    <div
+                                        key={notification.id}
+                                        className={cn(
+                                            "group flex items-start gap-4 p-6 transition-all",
+                                            notification.read_at 
+                                                ? "bg-muted/5 opacity-70" 
+                                                : "bg-primary/[0.01] border-l-[3px] border-l-primary"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "mt-1 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all",
+                                            notification.read_at ? "bg-muted/50 border-border/50 text-muted-foreground" : "bg-primary/5 border-primary/20 text-primary shadow-sm"
+                                        )}>
+                                            {getTypeIcon(notification.type)}
+                                        </div>
+                                        
+                                        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <h4 className={cn(
+                                                    "text-sm font-black truncate group-hover:text-primary transition-colors uppercase tracking-tight",
+                                                    notification.read_at ? "text-muted-foreground" : "text-foreground"
+                                                )}>
+                                                    {notification.title}
+                                                </h4>
+                                                {!notification.read_at && (
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                                                )}
+                                            </div>
+                                            <p className={cn(
+                                                "text-xs leading-relaxed",
+                                                notification.read_at ? "text-muted-foreground/60" : "text-muted-foreground font-bold"
+                                            )}>
+                                                {notification.message}
+                                            </p>
+                                            
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                                    <CalendarDays className="w-3.5 h-3.5 opacity-50" />
+                                                    {formatDate(notification.created_at)}
+                                                </div>
+                                                
+                                                <Badge className={cn("rounded-full text-[9px] px-2 py-0 border-none shadow-none font-black uppercase tracking-widest h-4", getPriorityColor(notification.priority))}>
+                                                    {notification.priority}
+                                                </Badge>
+
+                                                {(notification.data.payment_id || notification.data.utility_id) && (
+                                                    <Button variant="link" size="sm" asChild className="h-auto p-0 text-[10px] font-black uppercase tracking-widest text-primary hover:no-underline">
+                                                        <Link href={notification.data.payment_id ? route('tenant.payments') : route('tenant.utilities')}>
+                                                            Explore Record &rarr;
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
+                                            {!notification.read_at ? (
+                                                <Button
+                                                    onClick={() => markAsRead(notification.id)}
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                                    title="Process"
+                                                >
+                                                    <Check className="h-4 w-4" />
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    onClick={() => markAsUnread(notification.id)}
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                                                    title="Re-open"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            <Button
+                                                onClick={() => deleteNotification(notification.id)}
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-9 w-9 rounded-full text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                                title="Delete Record"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </CardContent>
                 
-                {/* Pagination Footer */}
-                {notifications.links && notifications.links.length > 3 && (
-                    <CardFooter className="p-4 border-t bg-muted/5 flex items-center justify-between">
-                        <div className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                            Page {notifications.meta?.current_page} of {notifications.meta?.last_page}
-                        </div>
-                        <div className="flex gap-1.5">
-                            {notifications.links.map((link: any, idx: number) => (
-                                <Button
-                                    key={idx}
-                                    variant={link.active ? "default" : "outline"}
-                                    size="sm"
-                                    className="h-8 min-w-[2rem] px-2 shadow-sm rounded-lg"
-                                    asChild={!!link.url}
-                                    disabled={!link.url}
-                                >
-                                    {link.url ? (
-                                        <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label.replace('&laquo;', '').replace('&raquo;', '').trim() || (idx === 0 ? 'Prev' : 'Next') }} />
-                                    ) : (
-                                        <span dangerouslySetInnerHTML={{ __html: link.label.replace('&laquo;', '').replace('&raquo;', '').trim() || (idx === 0 ? 'Prev' : 'Next') }} />
-                                    )}
-                                </Button>
-                            ))}
-                        </div>
-                    </CardFooter>
-                )}
+                 {/* Pagination Footer */}
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        Activity Stream: {meta.total} records discovered
+                    </p>
+                    <Pagination links={links} />
+                </div>
             </Card>
         </section>
 
     </main>
   );
 }
-
 
 TenantNotifications.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

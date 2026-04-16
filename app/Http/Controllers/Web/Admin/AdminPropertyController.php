@@ -8,6 +8,8 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use App\Models\Property;
 use App\Models\User;
+use App\Http\Resources\PropertyResource;
+use App\Http\Resources\LandlordResource;
 
 class AdminPropertyController extends Controller
 {
@@ -40,7 +42,7 @@ class AdminPropertyController extends Controller
 
         // Filter by status
         if ($request->status && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $query->where('properties.status', $request->status);
         }
 
         // Filter by landlord
@@ -48,12 +50,15 @@ class AdminPropertyController extends Controller
             $query->where('owner_id', $request->owner_id);
         }
 
-        $properties = $query->orderBy('created_at', 'desc')->paginate(10);
-        $landlords = User::where('role', 'landlord')->with('tenant')->get();
+        $properties = $query->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        // Get landlords for the filter
+        $landlords = User::where('role', 'landlord')->orderBy('name')->get();
 
         return Inertia::render('admin/properties/index', [
-            'properties' => $properties,
-            'landlords' => $landlords,
+            'properties' => PropertyResource::collection($properties),
+            'landlords' => LandlordResource::collection($landlords),
             'filters' => [
                 'search' => $request->search,
                 'status' => $request->status,
@@ -78,10 +83,10 @@ class AdminPropertyController extends Controller
             return redirect()->route('login')->with('error', 'Access denied.');
         }
 
-        $landlords = User::where('role', 'landlord')->with('tenant')->get();
+        $landlords = User::where('role', 'landlord')->orderBy('name')->get();
 
         return Inertia::render('admin/properties/create', [
-            'landlords' => $landlords,
+            'landlords' => LandlordResource::collection($landlords),
         ]);
     }
 
@@ -120,10 +125,10 @@ class AdminPropertyController extends Controller
      */
     public function show(Property $property)
     {
-        $property->load(['landlord.tenant', 'units', 'units.tenant']);
+        $property->load(['landlord', 'units', 'units.tenancies.tenant']);
 
         return Inertia::render('admin/properties/show', [
-            'property' => $property,
+            'property' => new PropertyResource($property),
         ]);
     }
 
@@ -132,12 +137,12 @@ class AdminPropertyController extends Controller
      */
     public function edit(Property $property)
     {
-        $property->load(['landlord.tenant']);
-        $landlords = User::where('role', 'landlord')->with('tenant')->get();
+        $property->load(['landlord']);
+        $landlords = User::where('role', 'landlord')->orderBy('name')->get();
 
         return Inertia::render('admin/properties/edit', [
-            'property' => $property,
-            'landlords' => $landlords,
+            'property' => new PropertyResource($property),
+            'landlords' => LandlordResource::collection($landlords),
         ]);
     }
 
@@ -197,9 +202,9 @@ class AdminPropertyController extends Controller
     {
         $stats = [
             'total_properties' => Property::count(),
-            'active_properties' => Property::where('status', 'active')->count(),
-            'inactive_properties' => Property::where('status', 'inactive')->count(),
-            'maintenance_properties' => Property::where('status', 'maintenance')->count(),
+            'active_properties' => Property::where('properties.status', 'active')->count(),
+            'inactive_properties' => Property::where('properties.status', 'inactive')->count(),
+            'maintenance_properties' => Property::where('properties.status', 'maintenance')->count(),
             'total_units' => Property::sum('total_units'),
             'properties_by_type' => Property::selectRaw('property_type, count(*) as count')
                 ->groupBy('property_type')

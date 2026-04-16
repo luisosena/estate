@@ -31,7 +31,9 @@ interface Property {
 }
 
 interface LandlordTenantsByPropertyProps {
-    tenants: TenantRow[];
+    tenants: {
+        data: TenantRow[];
+    };
     property: PropertyInfo;
     properties: Property[];
 }
@@ -59,10 +61,11 @@ const tenancyStatusVariant = (
 };
 
 export default function LandlordTenantsByProperty({
-    tenants = [],
+    tenants,
     property,
     properties = [],
 }: LandlordTenantsByPropertyProps) {
+    const tenantsList = tenants?.data || [];
     const handleLogout = () => {
         router.post('/logout');
     };
@@ -74,7 +77,7 @@ export default function LandlordTenantsByProperty({
     };
 
     // Group tenants by unit for a cleaner breakdown
-    const unitGroups = tenants.reduce<Record<string, TenantRow[]>>(
+    const unitGroups = tenantsList.reduce<Record<string, TenantRow[]>>(
         (acc, tenant) => {
             const key = tenant.unit_code;
             if (!acc[key]) acc[key] = [];
@@ -134,7 +137,7 @@ export default function LandlordTenantsByProperty({
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {tenants.length}
+                                {tenantsList.length}
                             </div>
                             <p className="text-xs text-muted-foreground">
                                 In {Object.keys(unitGroups).length} occupied
@@ -172,7 +175,7 @@ export default function LandlordTenantsByProperty({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                        {tenants.length === 0 ? (
+                        {tenantsList.length === 0 ? (
                             <div className="py-12 text-center text-sm text-muted-foreground">
                                 No active tenants found in this property.
                             </div>
@@ -189,7 +192,7 @@ export default function LandlordTenantsByProperty({
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {tenants.map((tenant) => (
+                                        {tenantsList.map((tenant) => (
                                             <TableRow key={tenant.tenant_code}>
                                                 <TableCell>
                                                     <div>

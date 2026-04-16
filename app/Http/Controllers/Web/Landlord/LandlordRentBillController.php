@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Web\Landlord;
 
 use App\Http\Controllers\Controller;
 use App\Models\RentBill;
+use App\Http\Resources\RentBillResource;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class LandlordRentBillController extends Controller
 {
     /**
      * List all rent bills for the landlord.
-     * GET /landlord/rent-bills
      */
     public function index(Request $request)
     {
@@ -19,46 +20,49 @@ class LandlordRentBillController extends Controller
         $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
                 $query->where('owner_id', $landlord->id);
             })
-            ->with(['tenancy.tenant', 'tenancy.unit', 'tenancy.unit.property'])
+            ->with(['tenancy.tenant', 'tenancy.unit.property'])
             ->orderBy('billing_month', 'desc');
 
         $status = $request->get('status');
-        if ($status) {
-            $query->where('status', $status);
+        if ($status && $status !== 'all') {
+            $query->where('rent_bills.status', $status);
         }
 
         $rentBills = $query->paginate(15);
 
-        // Get overall stats (not filtered by status)
+        // Get overall stats (Global)
         $statsQuery = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         });
 
         $totalCount = (clone $statsQuery)->count();
-        $pendingCount = (clone $statsQuery)->where('status', 'pending')->count();
+        $pendingCount = (clone $statsQuery)->where('rent_bills.status', 'pending')->count();
         $overdueCount = (clone $statsQuery)->where(function ($q) {
-            $q->where('status', 'overdue')
+            $q->where('rent_bills.status', 'overdue')
               ->orWhere(function ($q2) {
-                  $q2->whereIn('status', ['pending', 'partial'])
-                     ->where('due_date', '<', now()->toDateString());
+                  $q2->whereIn('rent_bills.status', ['pending', 'partial'])
+                     ->where('rent_bills.due_date', '<', now()->toDateString());
               });
         })->count();
-        $paidCount = (clone $statsQuery)->where('status', 'paid')->count();
+        $paidCount = (clone $statsQuery)->where('rent_bills.status', 'paid')->count();
 
-        return inertia('landlord/rent-bills/index', [
-            'rentBills' => $rentBills,
+        return Inertia::render('landlord/rent-bills/index', [
+            'rentBills' => RentBillResource::collection($rentBills),
             'stats' => [
                 'total' => $totalCount,
                 'pending' => $pendingCount,
                 'overdue' => $overdueCount,
                 'paid' => $paidCount,
             ],
+            'filters' => [
+                'status' => $status,
+                'search' => $request->get('search'),
+            ],
         ]);
     }
 
     /**
      * Show a single rent bill.
-     * GET /landlord/rent-bills/{id}
      */
     public function show(Request $request, int $id)
     {
@@ -69,20 +73,18 @@ class LandlordRentBillController extends Controller
             })
             ->with([
                 'tenancy.tenant',
-                'tenancy.unit',
                 'tenancy.unit.property',
                 'payments',
             ])
             ->findOrFail($id);
 
-        return inertia('landlord/rent-bills/show', [
-            'rentBill' => $rentBill,
+        return Inertia::render('landlord/rent-bills/show', [
+            'rentBill' => new RentBillResource($rentBill),
         ]);
     }
 
     /**
      * Waive a rent bill.
-     * POST /landlord/rent-bills/{id}/waive
      */
     public function waive(Request $request, int $id)
     {
@@ -93,7 +95,6 @@ class LandlordRentBillController extends Controller
             })
             ->findOrFail($id);
 
-        // Check if already waived or paid
         if (in_array($rentBill->status, ['waived', 'paid'])) {
             return redirect()
                 ->back()

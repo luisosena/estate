@@ -14,6 +14,7 @@ import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
+import Pagination from '@/components/shared/Pagination';
 import { MetricCard } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,12 +60,19 @@ interface AdminPropertiesProps {
     properties: {
         data: Property[];
         links: any[];
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
+        meta: {
+            current_page: number;
+            total: number;
+            links: Array<{
+                url: string | null;
+                label: string;
+                active: boolean;
+            }>;
+        };
     };
-    landlords: Landlord[];
+    landlords: {
+        data: Landlord[];
+    };
     filters: {
         search: string;
         status: string;
@@ -100,14 +108,9 @@ export default function AdminProperties({
         owner_id: filters?.owner_id || 'all',
     });
 
-    const safeProperties = properties || {
-        data: [],
-        links: [],
-        current_page: 1,
-        last_page: 1,
-        per_page: 10,
-        total: 0,
-    };
+    const { data: propertyList, meta } = properties;
+    const links = meta.links;
+    const landlordList = landlords.data || [];
 
     const handleFilterChange = (key: string, value: string) => {
         const newFilters = { ...localFilters, [key]: value };
@@ -151,27 +154,27 @@ export default function AdminProperties({
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <MetricCard 
                     title="Managed Buildings"
-                    value={safeProperties.total}
+                    value={meta.total}
                     icon={Building2}
                     description="Total registered properties"
                 />
                 <MetricCard 
                     title="Portfolio Units"
-                    value={safeProperties.data.reduce((acc, p) => acc + p.total_units, 0)}
+                    value={propertyList.reduce((acc, p) => acc + (p.total_units || 0), 0)}
                     icon={Home}
-                    description="Total housing capacity"
+                    description="Capacity in current view"
                 />
                 <MetricCard 
                     title="Active Landlords"
-                    value={landlords.length}
+                    value={landlordList.length}
                     icon={Users}
                     description="Verified asset managers"
                 />
                 <MetricCard 
                     title="Pending Reviews"
-                    value={safeProperties.data.filter(p => p.status === 'maintenance').length}
+                    value={propertyList.filter(p => p.status === 'maintenance').length}
                     icon={Building}
-                    description="Assets requiring attention"
+                    description="Attention required (view)"
                 />
             </section>
 
@@ -206,7 +209,7 @@ export default function AdminProperties({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Managers</SelectItem>
-                            {landlords.map((landlord) => (
+                            {landlordList.map((landlord) => (
                                 <SelectItem key={landlord.id} value={landlord.id.toString()}>
                                     {landlord.name}
                                 </SelectItem>
@@ -224,12 +227,12 @@ export default function AdminProperties({
                                 <CardDescription>Efficiently manage your global housing assets.</CardDescription>
                             </div>
                             <div className="px-3 py-1 bg-muted/50 rounded-full text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                {safeProperties.total} Records Found
+                                {meta.total} Records Found
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="p-0">
-                        {safeProperties.data.length === 0 ? (
+                        {propertyList.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-24 text-center">
                                 <Building2 className="h-12 w-12 text-muted/40 mb-4" />
                                 <h3 className="text-sm font-bold text-foreground mb-1">No Properties Found</h3>
@@ -240,7 +243,7 @@ export default function AdminProperties({
                             </div>
                         ) : (
                             <div className="divide-y divide-border/50">
-                                {safeProperties.data.map((property) => (
+                                {propertyList.map((property) => (
                                     <div key={property.id} className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-5 hover:bg-muted/30 transition-all group">
                                         <div className="flex items-start gap-4 flex-1">
                                             <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform border border-primary/10">
@@ -259,9 +262,11 @@ export default function AdminProperties({
                                                     <Building className="h-3 w-3 opacity-60" /> {property.address}, {property.city}
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5">
-                                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded-md">
-                                                        <Users className="h-3 w-3" /> Managed by {property.landlord.name}
-                                                    </div>
+                                                    {property.landlord && (
+                                                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded-md">
+                                                            <Users className="h-3 w-3" /> Managed by {property.landlord.name}
+                                                        </div>
+                                                    )}
                                                     <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded-md">
                                                         <Home className="h-3 w-3" /> {property.total_units} Units
                                                     </div>
@@ -295,29 +300,9 @@ export default function AdminProperties({
                         )}
 
                         {/* Pagination */}
-                        {safeProperties.last_page > 1 && (
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 border-t border-border/50 bg-secondary/10">
-                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest hidden sm:inline">
-                                    Page {safeProperties.current_page} of {safeProperties.last_page}
-                                </span>
-                                <div className="flex items-center gap-1.5">
-                                    {safeProperties.links.map((link: any, index: number) => (
-                                        <Link
-                                            key={index}
-                                            href={link.url || '#'}
-                                            className={`px-3 h-8 flex items-center justify-center text-xs font-bold rounded-md transition-all ${
-                                                link.active
-                                                    ? 'bg-primary text-primary-foreground shadow-sm'
-                                                    : link.url
-                                                    ? 'bg-background border border-border/50 hover:bg-muted text-foreground'
-                                                    : 'opacity-50 pointer-events-none text-muted-foreground/50'
-                                            }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        <div className="p-5 border-t border-border/50 bg-secondary/10">
+                            <Pagination links={links} />
+                        </div>
                     </CardContent>
                 </Card>
             </div>

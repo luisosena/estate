@@ -1,22 +1,19 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     Activity,
     Building2,
-    ChevronRight,
     Edit,
     Eye,
     Plus,
     Search,
     ShieldCheck,
-    ToggleLeft,
-    ToggleRight,
     Users,
+    ToggleLeft,
+    ToggleRight
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { route } from 'ziggy-js';
-
 import AppLayout from '@/components/layout/AppLayout';
-import { MetricCard } from '@/components/shared/DashboardComponents';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,46 +32,71 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { type SharedData } from '@/types';
 
-/* ─── Interfaces ─────────────────────────────────────────────────── */
+declare function route(name: string, params?: any): string;
+
+/* ─── Interfaces ────────────────────────────────────────────────── */
 
 interface Landlord {
     id: number;
     name: string;
     username: string;
     email: string;
-    role: string;
     email_verified_at: string | null;
+    properties_count: number;
     created_at: string;
-    properties_count?: number;
+}
+
+interface Stats {
+    total_landlords: number;
+    active_landlords: number;
+    inactive_landlords: number;
+    total_properties: number;
 }
 
 interface AdminLandlordsIndexProps {
     landlords: {
         data: Landlord[];
         links: any[];
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
+        meta: {
+            current_page: number;
+            total: number;
+            per_page: number;
+            links: Array<{
+                url: string | null;
+                label: string;
+                active: boolean;
+            }>;
+        };
     };
-    stats: {
-        total_landlords: number;
-        active_landlords: number;
-        inactive_landlords: number;
-        total_properties: number;
-    };
+    stats: Stats;
     filters: {
         search: string;
         status: string;
     };
 }
 
-/* ─── Helpers ────────────────────────────────────────────────────── */
+/* ─── Helper Components ─────────────────────────────────────────── */
 
-const getStatusVariant = (isVerified: boolean) => {
-    return isVerified ? 'default' : 'secondary';
+const MetricCard = ({ title, value, icon: Icon, description, alert = false }: any) => (
+    <Card className={`overflow-hidden transition-all border-border/50 ${alert ? 'border-amber-200/50 dark:border-amber-500/20' : ''}`}>
+        <CardContent className="p-6">
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
+                    <h3 className="text-3xl font-black tracking-tight">{value}</h3>
+                    <p className="text-[10px] text-muted-foreground font-medium">{description}</p>
+                </div>
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${alert ? 'bg-amber-500/10 text-amber-500' : 'bg-primary/10 text-primary animate-pulse-subtle'}`}>
+                    <Icon className="h-6 w-6" />
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+);
+
+const getStatusVariant = (verified: boolean): "default" | "secondary" | "destructive" | "outline" | null => {
+    return verified ? 'default' : 'secondary';
 };
 
 /* ─── Main Component ─────────────────────────────────────────────── */
@@ -85,16 +107,8 @@ export default function AdminLandlords({ landlords, stats, filters }: AdminLandl
         status: filters?.status || 'all'
     });
     
-    const safeLandlords = landlords || {
-        data: [],
-        links: [],
-        current_page: 1,
-        last_page: 1,
-        per_page: 10,
-        total: 0
-    };
-
-    const links = safeLandlords.links;
+    const { data: landlordList, meta } = landlords;
+    const links = meta.links;
 
     const handleFilterChange = (key: string, value: string) => {
         const newFilters = { ...localFilters, [key]: value };
@@ -191,12 +205,13 @@ export default function AdminLandlords({ landlords, stats, filters }: AdminLandl
                 <Card className="shadow-none border-border/50">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg font-bold">Account Directory</CardTitle>
-                        <CardDescription>
-                            Showing {safeLandlords.data.length} managers of {safeLandlords.total} total
+                        <CardDescription className="flex items-center justify-between">
+                            <span>Manage user roles and verification status</span>
+                            <span className="text-xs font-medium">Viewing {landlordList.length} of {meta.total} records</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {safeLandlords.data.length === 0 ? (
+                        {landlordList.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-xl border-muted/50">
                                 <Users className="h-10 w-10 text-muted/40 mb-3" />
                                 <p className="text-sm text-muted-foreground font-medium">No landlords matching your filters</p>
@@ -206,7 +221,7 @@ export default function AdminLandlords({ landlords, stats, filters }: AdminLandl
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 gap-3">
-                                {safeLandlords.data.map((landlord) => (
+                                {landlordList.map((landlord) => (
                                     <div
                                         key={landlord.id}
                                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-border/40 hover:border-primary/20 hover:bg-muted/30 transition-all group"
@@ -266,29 +281,9 @@ export default function AdminLandlords({ landlords, stats, filters }: AdminLandl
                         )}
 
                         {/* Pagination */}
-                        {safeLandlords.last_page > 1 && (
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-4 border-t border-border/50">
-                                <span className="text-xs font-medium text-muted-foreground">
-                                    Displaying {((safeLandlords.current_page - 1) * safeLandlords.per_page) + 1} - {Math.min(safeLandlords.current_page * safeLandlords.per_page, safeLandlords.total)} of {safeLandlords.total} results
-                                </span>
-                                <div className="flex items-center gap-1.5">
-                                    {links.map((link: any, index: number) => (
-                                        <Link
-                                            key={index}
-                                            href={link.url || '#'}
-                                            className={`px-3 h-8 flex items-center justify-center text-xs font-bold rounded-md transition-all ${
-                                                link.active
-                                                    ? 'bg-primary text-primary-foreground shadow-sm'
-                                                    : link.url
-                                                    ? 'bg-background border border-border/50 hover:bg-muted text-muted-foreground'
-                                                    : 'opacity-50 pointer-events-none text-muted-foreground/50'
-                                            }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        <div className="mt-8 pt-4 border-t border-border/50">
+                            <Pagination links={links} />
+                        </div>
                     </CardContent>
                 </Card>
             </div>

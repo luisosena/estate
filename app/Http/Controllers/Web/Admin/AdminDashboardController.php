@@ -9,6 +9,8 @@ use App\Models\Property;
 use App\Models\Unit;
 use App\Models\Tenancy;
 use App\Models\User;
+use App\Http\Resources\LandlordResource;
+use App\Http\Resources\PropertyResource;
 
 class AdminDashboardController extends Controller
 {
@@ -29,10 +31,10 @@ class AdminDashboardController extends Controller
         $stats = [
             'total_properties' => Property::count(),
             'total_units' => Unit::count(),
-            'active_tenancies' => Tenancy::where('status', 'active')->count(),
+            'active_tenancies' => Tenancy::where('tenancies.status', 'active')->count(),
             'total_landlords' => User::where('role', 'landlord')->count(),
-            'pending_landlords' => User::where('role', 'landlord')->whereNull('email_verified_at')->count(),
-            'maintenance_properties' => Property::where('status', 'maintenance')->count(),
+            'pending_landlords' => User::where('role', 'landlord')->whereNull('users.email_verified_at')->count(),
+            'maintenance_properties' => Property::where('properties.status', 'maintenance')->count(),
         ];
 
         // Recent Activity Synthesis
@@ -41,6 +43,7 @@ class AdminDashboardController extends Controller
             ->limit(5)
             ->get()
             ->map(function ($landlord) {
+                $resource = new LandlordResource($landlord);
                 return [
                     'id' => $landlord->id,
                     'type' => 'landlord_registration',
@@ -48,6 +51,7 @@ class AdminDashboardController extends Controller
                     'description' => $landlord->name . " joined the platform.",
                     'time' => $landlord->created_at->diffForHumans(),
                     'icon' => 'users',
+                    'payload' => $resource->resolve(),
                 ];
             });
 
@@ -56,6 +60,7 @@ class AdminDashboardController extends Controller
             ->limit(5)
             ->get()
             ->map(function ($property) {
+                $resource = new PropertyResource($property);
                 return [
                     'id' => $property->id,
                     'type' => 'property_registration',
@@ -63,6 +68,7 @@ class AdminDashboardController extends Controller
                     'description' => $property->name . " was registered by " . ($property->landlord->name ?? 'Unknown') . ".",
                     'time' => $property->created_at->diffForHumans(),
                     'icon' => 'building',
+                    'payload' => $resource->resolve(),
                 ];
             });
 

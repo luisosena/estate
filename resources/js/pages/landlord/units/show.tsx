@@ -40,7 +40,9 @@ interface Unit {
     name: string;
     address: string;
   };
-  tenancies: Tenancy[];
+  tenancies: {
+    data: Tenancy[];
+  };
 }
 
 interface UnitShowProps {
@@ -157,7 +159,7 @@ export default function UnitShow({ unit }: UnitShowProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {unit.tenancies.length === 0 ? (
+                  {(unit.tenancies?.data || []).length === 0 ? (
                     <div className="text-center py-8">
                       <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <h3 className="text-lg font-semibold mb-2">No tenancies yet</h3>
@@ -167,7 +169,7 @@ export default function UnitShow({ unit }: UnitShowProps) {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {unit.tenancies.map((tenancy) => (
+                      {unit.tenancies.data.map((tenancy) => (
                         <div
                           key={tenancy.id}
                           className="flex items-center justify-between p-4 border rounded-lg"

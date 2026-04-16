@@ -60,9 +60,12 @@ interface Tenancy {
 interface Notification {
   id: string;
   type: string;
-  data: any;
+  title: string;
+  message: string;
+  priority: 'high' | 'medium' | 'low';
   read_at: string | null;
   created_at: string;
+  data: any;
 }
 
 interface RentBill {
@@ -76,50 +79,59 @@ interface RentBill {
 }
 
 interface TenantDashboardProps {
-  tenant: Tenant;
-  payments?: Payment[];
+  tenant: { data: Tenant };
+  payments?: { data: Payment[] };
   unit?: Unit | null;
   tenancy?: Tenancy | null;
-  utilities?: Utility[];
-  notifications?: Notification[];
-  rent_bills?: RentBill[];
-  current_month_bill?: RentBill | null;
+  utilities?: { data: Utility[] };
+  notifications?: { data: Notification[] };
+  rent_bills?: { data: RentBill[] };
+  current_month_bill?: { data: RentBill | null };
 }
 
 
 /* ─── Main Component ─────────────────────────────────────────────── */
 
 export default function TenantDashboard({
-  payments = [],
-  tenant = { id: 0, full_name: '' },
+  payments = { data: [] },
+  tenant = { data: { id: 0, full_name: '' } },
   unit = null,
   tenancy = null,
-  utilities = [],
-  notifications = [],
-  rent_bills = [],
-  current_month_bill = null,
+  utilities = { data: [] },
+  notifications = { data: [] },
+  rent_bills = { data: [] },
+  current_month_bill = { data: null },
 }: TenantDashboardProps) {
   const { auth } = usePage<SharedData>().props;
-  const firstName = tenant.full_name.split(' ')[0] ?? 'User';
+  const tenantData = tenant.data;
+  const paymentList = payments.data;
+  const utilityList = utilities.data;
+  const notificationList = notifications.data;
+  const currentBill = current_month_bill?.data;
+
+  const firstName = tenantData.full_name.split(' ')[0] ?? 'User';
 
   const totalUtilityBalance = useMemo(() => 
-    utilities.reduce((sum, u) => {
-      if (u.status.toLowerCase() !== 'paid') return sum + u.amount;
+    utilityList.reduce((sum, u) => {
+      // Use the calculated balance if available, otherwise fallback to amount
+      const balance = (u as any).pending_balance ?? u.amount;
+      const status = (u as any).calculated_status ?? u.status ?? 'pending';
+      if (status.toLowerCase() !== 'paid') return sum + balance;
       return sum;
     }, 0),
-    [utilities]
+    [utilityList]
   );
 
   const pendingUtilities = useMemo(() => 
-    utilities.filter(
-      (u) => u.status.toLowerCase() !== 'paid',
+    utilityList.filter(
+      (u) => (((u as any).calculated_status ?? u.status) ?? 'pending').toLowerCase() !== 'paid',
     ).length,
-    [utilities]
+    [utilityList]
   );
 
   const unreadNotificationsCount = useMemo(() => 
-    notifications.filter((n) => !n.read_at).length,
-    [notifications]
+    notificationList.filter((n) => !n.read_at).length,
+    [notificationList]
   );
 
   return (
@@ -172,10 +184,10 @@ export default function TenantDashboard({
             />
             <MetricCard
                 title="Rent Balance"
-                value={formatCurrency(current_month_bill?.outstanding_amount ?? 0)}
+                value={formatCurrency(currentBill?.outstanding_amount ?? 0)}
                 icon={Receipt}
-                description={current_month_bill ? `Due: ${formatDate(current_month_bill.due_date)}` : 'No bills found'}
-                alert={current_month_bill?.status === 'overdue'}
+                description={currentBill ? `Due: ${formatDate(currentBill.due_date)}` : 'No bills found'}
+                alert={currentBill?.status === 'overdue'}
             />
             <MetricCard
                 title="Utility Balance"
@@ -209,7 +221,7 @@ export default function TenantDashboard({
                 </div>
 
                 <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-                    <LastPaymentsTable payments={payments} />
+                    <LastPaymentsTable payments={paymentList} />
                 </div>
 
                 {/* Second Row: Utilities */}
@@ -224,7 +236,7 @@ export default function TenantDashboard({
                         </Button>
                     </div>
                     <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-                        <UtilitiesTable utilities={utilities} />
+                        <UtilitiesTable utilities={utilityList} />
                     </div>
                 </div>
             </section>
@@ -250,26 +262,26 @@ export default function TenantDashboard({
                                     href={route('tenant.rent-bills.index')} 
                                     className={cn(
                                         "flex flex-col p-4 rounded-xl border transition-colors",
-                                        current_month_bill?.status === 'overdue' 
+                                        currentBill?.status === 'overdue' 
                                             ? 'bg-red-50 hover:bg-red-100 border-red-200 dark:bg-red-950/20 dark:border-red-900/30' 
                                             : 'bg-card hover:bg-muted/50 border-border/60'
                                     )}
                                 >
                                     <span className={cn(
                                         "text-xs font-semibold mb-2 flex items-center gap-1.5",
-                                        current_month_bill?.status === 'overdue' ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground'
+                                        currentBill?.status === 'overdue' ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground'
                                     )}>
-                                        {current_month_bill?.status === 'overdue' ? <AlertCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5 text-amber-500" />}
-                                        Rent: {current_month_bill?.status ?? 'No Bill'}
+                                        {currentBill?.status === 'overdue' ? <AlertCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5 text-amber-500" />}
+                                        Rent: {currentBill?.status ?? 'No Bill'}
                                     </span>
                                     <div className="flex justify-between items-end">
                                         <span className={cn(
                                             "text-2xl font-bold",
-                                            current_month_bill?.status === 'overdue' ? 'text-red-700 dark:text-red-400' : 'text-foreground'
+                                            currentBill?.status === 'overdue' ? 'text-red-700 dark:text-red-400' : 'text-foreground'
                                         )}>
-                                            {formatCurrency(current_month_bill?.outstanding_amount ?? 0)}
+                                            {formatCurrency(currentBill?.outstanding_amount ?? 0)}
                                         </span>
-                                        <span className="text-xs text-muted-foreground">Due {formatDate(current_month_bill?.due_date)}</span>
+                                        <span className="text-xs text-muted-foreground">Due {formatDate(currentBill?.due_date)}</span>
                                     </div>
                                 </Link>
                                 
@@ -304,7 +316,7 @@ export default function TenantDashboard({
                                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Outstanding</span>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl font-bold tracking-tight text-foreground">
-                                        {formatCurrency((current_month_bill?.outstanding_amount ?? 0) + totalUtilityBalance)}
+                                        {formatCurrency((currentBill?.outstanding_amount ?? 0) + totalUtilityBalance)}
                                     </span>
                                 </div>
                             </div>
@@ -324,7 +336,7 @@ export default function TenantDashboard({
                 </div>
 
                 {/* Notifications Hint if active alerts */}
-                {(current_month_bill?.status === 'overdue' || pendingUtilities > 0) && (
+                {(currentBill?.status === 'overdue' || pendingUtilities > 0) && (
                     <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 p-4 rounded-xl flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                         <div>

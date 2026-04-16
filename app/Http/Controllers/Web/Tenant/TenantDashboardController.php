@@ -7,6 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\Property;
 use App\Models\RentBill;
+use App\Http\Resources\RentBillResource;
+use App\Http\Resources\PaymentResource;
+use App\Http\Resources\TenancyUtilityResource;
+use App\Http\Resources\NotificationResource;
+use App\Http\Resources\TenantResource;
 use Inertia\Inertia;
 
 class TenantDashboardController extends Controller
@@ -18,8 +23,8 @@ class TenantDashboardController extends Controller
             
             if (!$user) {
                 return Inertia::render('tenant/dashboard', [
-                    'tenant' => ['id' => 0, 'full_name' => 'Guest'],
-                    'payments' => [],
+                    'tenant' => ['data' => ['id' => 0, 'full_name' => 'Guest']],
+                    'payments' => ['data' => []],
                 ]);
             }
 
@@ -27,8 +32,8 @@ class TenantDashboardController extends Controller
 
             if (!$tenant) {
                 return Inertia::render('tenant/dashboard', [
-                    'tenant' => ['id' => 0, 'full_name' => 'No Tenant Found'],
-                    'payments' => [],
+                    'tenant' => ['data' => ['id' => 0, 'full_name' => 'No Tenant Found']],
+                    'payments' => ['data' => []],
                 ]);
             }
 
@@ -49,44 +54,20 @@ class TenantDashboardController extends Controller
                     ->limit(5)
                     ->get();
 
-                // Map recent bills for display
-                $rentBills = $recentBills->map(function ($bill) {
-                    return [
-                        'id' => $bill->id,
-                        'billing_month' => $bill->billing_month,
-                        'amount_due' => (float) $bill->amount_due,
-                        'amount_paid' => (float) $bill->amount_paid,
-                        'due_date' => $bill->due_date,
-                        'status' => $bill->status,
-                        'outstanding_amount' => (float) $bill->outstanding_amount,
-                    ];
-                });
+                $rentBills = RentBillResource::collection($recentBills);
 
-                // Get current month's bill with a separate efficient query
+                // Get current month's bill
                 $currentMonthBillData = RentBill::where('tenancy_id', $activeTenancy->id)
                     ->where('billing_month', now()->startOfMonth())
                     ->first();
 
                 if ($currentMonthBillData) {
-                    $currentMonthBill = [
-                        'id' => $currentMonthBillData->id,
-                        'billing_month' => $currentMonthBillData->billing_month,
-                        'amount_due' => (float) $currentMonthBillData->amount_due,
-                        'amount_paid' => (float) $currentMonthBillData->amount_paid,
-                        'due_date' => $currentMonthBillData->due_date,
-                        'status' => $currentMonthBillData->status,
-                        'outstanding_amount' => (float) $currentMonthBillData->outstanding_amount,
-                    ];
+                    $currentMonthBill = new RentBillResource($currentMonthBillData);
                 }
             }
 
             return Inertia::render('tenant/dashboard', [
-                'tenant' => [
-                    'id' => $tenant->id,
-                    'full_name' => $tenant->full_name,
-                    'phone' => $tenant->phone,
-                    'email' => $tenant->email,
-                ],
+                'tenant' => new TenantResource($tenant),
 
                 'unit' => $activeTenancy?->unit,
 
@@ -95,42 +76,29 @@ class TenantDashboardController extends Controller
                     'status' => $activeTenancy->status,
                 ] : null,
 
-                'payments' => $activeTenancy?->payments
+                'payments' => PaymentResource::collection($activeTenancy?->payments
                     ->sortByDesc(function ($payment) {
                         return $payment->paid_at ?? $payment->created_at;
                     })
                     ->take(5)
-                    ->values() ?? [],
+                    ->values() ?? collect([])),
 
-                'utilities' => $activeTenancy?->tenancyUtilities
-                    ?->map(function ($u) {
-                        $pendingBills = $u->bills
-                            ?->filter(fn($b) => in_array($b->status, ['pending', 'partial', 'overdue'])) ?? collect();
-                        return [
-                            'id' => $u->id,
-                            'amount' => $u->amount,
-                            'billing_cycle' => $u->billing_cycle,
-                            'status' => $pendingBills->isEmpty() ? 'paid' : $pendingBills->first()->status,
-                            'utility_type' => $u->utilityType?->name,
-                            'pending_balance' => $pendingBills->sum(fn($b) => $b->amount_due - $b->amount_paid),
-                        ];
-                    })
-                    ?->values() ?? [],
+                'utilities' => TenancyUtilityResource::collection($activeTenancy?->tenancyUtilities ?? collect([])),
 
-                'notifications' => $tenant->user->notifications()
+                'notifications' => NotificationResource::collection($tenant->user->notifications()
                     ->latest()
                     ->take(5)
-                    ->get(),
+                    ->get()),
 
                 'rent_bills' => $rentBills,
-                'current_month_bill' => $currentMonthBill,
+                'current_month_bill' => $currentMonthBill ?? ['data' => null],
             ]);
         } catch (\Exception $e) {
             \Log::error('TenantDashboardController error: ' . $e->getMessage());
             
             return Inertia::render('tenant/dashboard', [
-                'tenant' => ['id' => 0, 'full_name' => 'Error'],
-                'payments' => [],
+                'tenant' => ['data' => ['id' => 0, 'full_name' => 'Error']],
+                'payments' => ['data' => []],
             ]);
         }
     }

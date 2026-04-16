@@ -69,7 +69,9 @@ interface Property {
     amenities: string[];
     policies: string[];
     landlord: Landlord;
-    units: Unit[];
+    units: {
+        data: Unit[];
+    };
     created_at: string;
 }
 
@@ -179,13 +181,13 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                 />
                 <MetricCard 
                     title="Occupancy Level"
-                    value={property.units.filter(u => u.status === 'occupied').length}
+                    value={property.units.data.filter(u => u.status === 'occupied').length}
                     icon={ShieldCheck}
                     description="Units currently active"
                 />
                 <MetricCard 
                     title="Real-time Availability"
-                    value={property.units.filter(u => u.status === 'available').length}
+                    value={property.units.data.filter(u => u.status === 'available').length}
                     icon={Activity}
                     description="Ready for acquisition"
                 />
@@ -210,7 +212,7 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
-                            {property.units.length === 0 ? (
+                            {property.units.data.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-20 text-center">
                                     <Building2 className="h-10 w-10 text-muted/40 mb-3" />
                                     <p className="text-sm text-muted-foreground font-medium">No units registered for this complex</p>
@@ -218,7 +220,7 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                                 </div>
                             ) : (
                                 <div className="divide-y divide-border/50">
-                                    {property.units.map((unit) => (
+                                    {property.units.data.map((unit) => (
                                         <div key={unit.id} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors group">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">

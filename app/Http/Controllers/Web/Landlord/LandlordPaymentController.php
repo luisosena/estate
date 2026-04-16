@@ -14,6 +14,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use App\Services\UtilityService;
 use App\Models\UtilityBill;
+use App\Http\Resources\PaymentResource;
 
 class LandlordPaymentController extends Controller
 {
@@ -37,7 +38,7 @@ class LandlordPaymentController extends Controller
         $landlord = $request->user();
         
         // Base query for filtering payments belonging to landlord's properties
-        $baseQuery = \App\Models\Payment::whereHas('tenant.tenancies.unit.property', function ($query) use ($landlord) {
+        $baseQuery = Payment::whereHas('tenant.tenancies.unit.property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         });
 
@@ -45,9 +46,9 @@ class LandlordPaymentController extends Controller
         $payments = (clone $baseQuery)
             ->with(['tenant', 'tenancy.unit.property', 'rentBill'])
             ->orderBy('paid_at', 'desc')
-            ->paginate(20);
+            ->paginate(15);
 
-        // Calculate stats using cloned base queries (avoids N+1 problem)
+        // Calculate stats using cloned base queries
         $thisMonth = now()->startOfMonth();
         $stats = [
             'total_payments' => (clone $baseQuery)->count(),
@@ -56,8 +57,11 @@ class LandlordPaymentController extends Controller
         ];
 
         return Inertia::render('landlord/payments/index', [
-            'payments' => $payments,
+            'payments' => PaymentResource::collection($payments),
             'stats' => $stats,
+            'filters' => [
+                'search' => $request->get('search'),
+            ],
         ]);
     }
 

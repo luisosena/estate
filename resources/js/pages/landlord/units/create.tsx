@@ -31,7 +31,9 @@ interface Property {
 }
 
 interface CreateUnitProps {
-  properties: Property[];
+  properties: {
+    data: Property[];
+  };
 }
 
 export default function CreateUnit({ properties }: CreateUnitProps) {
@@ -97,7 +99,7 @@ export default function CreateUnit({ properties }: CreateUnitProps) {
                       <SelectValue placeholder="Select a property" />
                     </SelectTrigger>
                     <SelectContent>
-                      {properties.map((property) => (
+                      {(properties.data || []).map((property) => (
                         <SelectItem key={property.id} value={property.id.toString()}>
                           <div>
                             <div className="font-medium">{property.name}</div>

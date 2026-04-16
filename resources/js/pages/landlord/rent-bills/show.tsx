@@ -53,7 +53,9 @@ interface RentBill {
   outstanding_amount: number;
   notes: string | null;
   tenancy: Tenancy;
-  payments: Payment[];
+  payments: {
+    data: Payment[];
+  };
   created_at: string;
   updated_at: string;
 }
@@ -276,9 +278,9 @@ export default function LandlordRentBillShow({ rentBill }: Props) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {rentBill.payments && rentBill.payments.length > 0 ? (
+                {rentBill.payments?.data && rentBill.payments.data.length > 0 ? (
                   <div className="space-y-4">
-                    {rentBill.payments.map((payment) => (
+                    {rentBill.payments.data.map((payment) => (
                       <div
                         key={payment.id}
                         className="flex items-center justify-between rounded-lg border p-4"

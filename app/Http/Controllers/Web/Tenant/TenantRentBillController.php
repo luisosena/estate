@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Web\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\RentBill;
+use App\Http\Resources\RentBillResource;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TenantRentBillController extends Controller
 {
@@ -23,8 +25,8 @@ class TenantRentBillController extends Controller
             ->first();
 
         if (!$activeTenancy) {
-            return inertia('Tenant/RentBills/Index', [
-                'rentBills' => [],
+            return Inertia::render('tenant/rent-bills/index', [
+                'rentBills' => null,
                 'currentMonthBill' => null,
                 'stats' => [
                     'total' => 0,
@@ -35,6 +37,7 @@ class TenantRentBillController extends Controller
         }
 
         $rentBills = RentBill::where('tenancy_id', $activeTenancy->id)
+            ->with(['tenancy.unit.property'])
             ->orderBy('billing_month', 'desc')
             ->paginate(15);
 
@@ -44,17 +47,14 @@ class TenantRentBillController extends Controller
 
         // Get stats
         $baseQuery = RentBill::where('tenancy_id', $activeTenancy->id);
-        $totalCount = (clone $baseQuery)->count();
-        $pendingCount = (clone $baseQuery)->whereIn('status', ['pending', 'overdue', 'partial'])->count();
-        $paidCount = (clone $baseQuery)->where('status', 'paid')->count();
-
-        return inertia('Tenant/RentBills/Index', [
-            'rentBills' => $rentBills,
-            'currentMonthBill' => $currentMonthBill,
+        
+        return Inertia::render('tenant/rent-bills/index', [
+            'rentBills' => RentBillResource::collection($rentBills),
+            'currentMonthBill' => $currentMonthBill ? new RentBillResource($currentMonthBill) : null,
             'stats' => [
-                'total' => $totalCount,
-                'pending' => $pendingCount,
-                'paid' => $paidCount,
+                'total' => (clone $baseQuery)->count(),
+                'pending' => (clone $baseQuery)->whereIn('status', ['pending', 'overdue', 'partial'])->count(),
+                'paid' => (clone $baseQuery)->where('status', 'paid')->count(),
             ],
         ]);
     }
@@ -79,11 +79,11 @@ class TenantRentBillController extends Controller
 
         $rentBill = RentBill::where('id', $id)
             ->where('tenancy_id', $activeTenancy->id)
-            ->with(['payments', 'tenancy.unit', 'tenancy.unit.property'])
+            ->with(['payments', 'tenancy.unit.property'])
             ->firstOrFail();
 
-        return inertia('Tenant/RentBills/Show', [
-            'rentBill' => $rentBill,
+        return Inertia::render('tenant/rent-bills/show', [
+            'rentBill' => new RentBillResource($rentBill),
         ]);
     }
 }

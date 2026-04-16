@@ -74,7 +74,9 @@ interface Props {
   tenancy?: Tenancy;
   unit?: Unit;
   property?: Property;
-  payments: Payment[];
+  payments: {
+    data: Payment[];
+  };
   tenancy_history: TenancyHistory[];
   properties: any[];
   availableUnits: any[];
@@ -373,7 +375,7 @@ export default function TenantShow({
         )}
 
         {/* Recent Payments */}
-        {payments.length > 0 && (
+        {(payments.data || []).length > 0 && (
           <Card className="mb-6">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <CardTitle className="text-lg font-medium">Recent Payments</CardTitle>
@@ -401,7 +403,7 @@ export default function TenantShow({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payments.map((payment) => (
+                  {(payments.data || []).map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell className="font-medium">
                         {formatDate(payment.paid_at || payment.created_at)}
@@ -431,7 +433,7 @@ export default function TenantShow({
         )}
 
         {/* Empty Payments State */}
-        {payments.length === 0 && (
+        {(payments.data || []).length === 0 && (
           <Card className="mb-6">
             <CardContent className="px-6 py-12 text-center">
               <Home className="mx-auto h-12 w-12 text-gray-400" />

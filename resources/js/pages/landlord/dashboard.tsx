@@ -51,7 +51,9 @@ interface Stats {
 }
 
 interface LandlordDashboardProps {
-    properties: Property[];
+    properties: {
+        data: Property[];
+    };
     stats: Stats;
     unreadNotificationsCount?: number;
 }
@@ -81,6 +83,7 @@ export default function Dashboard({
     stats,
     unreadNotificationsCount = 0,
 }: LandlordDashboardProps) {
+    const propertiesList = properties.data || [];
     const { auth } = usePage<SharedData>().props;
     const firstName = auth?.user?.name?.split(' ')[0] ?? 'User';
 
@@ -170,7 +173,7 @@ export default function Dashboard({
                             </div>
 
                             <Card className="bg-card shadow-sm border-border/50">
-                                {properties.length === 0 ? (
+                                {propertiesList.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                                             <Home className="h-5 w-5 text-primary" />
@@ -185,7 +188,7 @@ export default function Dashboard({
                                     </div>
                                 ) : (
                                     <div className="flex flex-col">
-                                        {properties.map((property, idx) => (
+                                        {propertiesList.map((property, idx) => (
                                             <div key={property.id} className="group">
                                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:px-6 gap-4 hover:bg-muted/30 transition-colors">
                                                     <div className="flex items-start gap-4">
@@ -223,7 +226,7 @@ export default function Dashboard({
                                                         </Button>
                                                     </div>
                                                 </div>
-                                                {idx < properties.length - 1 && <Separator className="bg-border/50" />}
+                                                {idx < propertiesList.length - 1 && <Separator className="bg-border/50" />}
                                             </div>
                                         ))}
                                     </div>

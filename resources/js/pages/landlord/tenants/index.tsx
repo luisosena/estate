@@ -3,6 +3,7 @@ import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus } fro
 import React, { useState, useMemo } from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -37,30 +38,35 @@ interface Property {
   address?: string | null;
 }
 
-interface Metrics {
+interface Stats {
   total_tenants: number;
   total_properties: number;
   total_units: number;
   occupied_units: number;
-  occupancy_rate: number;
 }
 
 interface LandlordTenantsIndexProps {
-  tenants: TenantRow[];
+  tenants: {
+    data: TenantRow[];
+    links: any[];
+    meta: {
+      current_page: number;
+      last_page: number;
+      total: number;
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+    };
+  };
   properties: Property[];
-  selectedProperty: string;
-  metrics: Metrics;
-  propertyMetrics: Metrics | null;
+  stats: Stats;
+  filters: {
+    property: string;
+    search: string;
+  };
 }
-
-const formatDate = (dateString?: string | null) => {
-  if (!dateString) return '—';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
 
 const tenancyStatusVariant = (
   status: string,
@@ -76,13 +82,14 @@ const tenancyStatusVariant = (
 };
 
 export default function LandlordTenantsIndex({
-  tenants = [],
+  tenants,
   properties = [],
-  selectedProperty,
-  metrics,
-  propertyMetrics,
+  stats,
+  filters,
 }: LandlordTenantsIndexProps) {
-  const [currentProperty, setCurrentProperty] = useState(selectedProperty);
+  const [currentProperty, setCurrentProperty] = useState(filters?.property || 'all');
+  const { data: tenantList, meta } = tenants;
+  const links = meta.links;
 
   const handlePropertyChange = (value: string) => {
     setCurrentProperty(value);
@@ -90,10 +97,6 @@ export default function LandlordTenantsIndex({
       preserveState: true,
       preserveScroll: true,
     });
-  };
-
-  const handleLogout = () => {
-    router.post('/logout');
   };
 
   const handleRemoveTenant = (tenancyId: number) => {
@@ -109,7 +112,7 @@ export default function LandlordTenantsIndex({
   // Group tenants by property when "all" is selected
   const groupedTenants = useMemo(() => {
     return currentProperty === 'all' 
-      ? tenants.reduce((groups, tenant) => {
+      ? tenantList.reduce((groups, tenant) => {
         const propertyName = tenant.property_name;
         if (!groups[propertyName]) {
           groups[propertyName] = [];
@@ -118,7 +121,7 @@ export default function LandlordTenantsIndex({
         return groups;
       }, {} as Record<string, TenantRow[]>)
       : null;
-  }, [currentProperty, tenants]);
+  }, [currentProperty, tenantList]);
 
   const PropertySeparator = () => (
     <div className="flex items-center justify-center py-4">
@@ -128,7 +131,9 @@ export default function LandlordTenantsIndex({
     </div>
   );
 
-  const currentMetrics = propertyMetrics || metrics;
+  const occupancyRate = stats.total_units > 0 
+    ? Math.round((stats.occupied_units / stats.total_units) * 100) 
+    : 0;
 
   return (
     <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
@@ -146,7 +151,7 @@ export default function LandlordTenantsIndex({
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {currentProperty === 'all' 
-                  ? 'Showing all tenants across every property you own.'
+                  ? 'Showing all active tenants across every property you own.'
                   : `Showing tenants for ${properties.find(p => p.id.toString() === currentProperty)?.name}`
                 }
               </p>
@@ -173,9 +178,9 @@ export default function LandlordTenantsIndex({
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currentMetrics.total_tenants}</div>
+              <div className="text-2xl font-bold">{stats.total_tenants}</div>
               <p className="text-xs text-muted-foreground">
-                Active tenants
+                Active tenancies
               </p>
             </CardContent>
           </Card>
@@ -186,8 +191,8 @@ export default function LandlordTenantsIndex({
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currentMetrics.total_properties}</div>
-              <p className="text-xs text-muted-foreground">Owned properties</p>
+              <div className="text-2xl font-bold">{stats.total_properties}</div>
+              <p className="text-xs text-muted-foreground">Owned buildings</p>
             </CardContent>
           </Card>
 
@@ -197,8 +202,8 @@ export default function LandlordTenantsIndex({
               <Home className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currentMetrics.total_units}</div>
-              <p className="text-xs text-muted-foreground">Across properties</p>
+              <div className="text-2xl font-bold">{stats.total_units}</div>
+              <p className="text-xs text-muted-foreground">Portfolio capacity</p>
             </CardContent>
           </Card>
 
@@ -208,8 +213,8 @@ export default function LandlordTenantsIndex({
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currentMetrics.occupied_units}</div>
-              <p className="text-xs text-muted-foreground">Currently occupied</p>
+              <div className="text-2xl font-bold">{stats.occupied_units}</div>
+              <p className="text-xs text-muted-foreground">Currently filled</p>
             </CardContent>
           </Card>
 
@@ -219,8 +224,8 @@ export default function LandlordTenantsIndex({
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currentMetrics.occupancy_rate}%</div>
-              <p className="text-xs text-muted-foreground">Of total units</p>
+              <div className="text-2xl font-bold">{occupancyRate}%</div>
+              <p className="text-xs text-muted-foreground">Of capacity</p>
             </CardContent>
           </Card>
         </div>
@@ -252,19 +257,24 @@ export default function LandlordTenantsIndex({
 
         {/* Tenants table */}
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 border-b">
             <CardTitle className="text-base font-semibold">
               {currentProperty === 'all' ? 'All Tenants' : `Tenants - ${properties.find(p => p.id.toString() === currentProperty)?.name}`}
             </CardTitle>
-            <CardDescription>
-              {currentProperty === 'all' 
-                ? 'All tenants across your properties, grouped by property'
-                : `Tenants for the selected property`
-              }
+            <CardDescription className="flex items-center justify-between">
+              <span>
+                {currentProperty === 'all' 
+                  ? 'All tenants across your properties, grouped by property'
+                  : `Tenants for the selected property`
+                }
+              </span>
+              <span className="text-xs font-medium">
+                Showing {tenantList.length} of {tenants.meta.total} records
+              </span>
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            {tenants.length === 0 ? (
+            {tenantList.length === 0 ? (
               <div className="py-12 text-center text-sm text-muted-foreground">
                 {currentProperty === 'all' 
                   ? 'No active tenants found across your properties.'
@@ -272,19 +282,16 @@ export default function LandlordTenantsIndex({
                 }
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto flex flex-col">
                 {currentProperty === 'all' && groupedTenants ? (
-                  <div className="space-y-6">
+                  <div className="space-y-6 pt-6">
                     {Object.entries(groupedTenants).map(([propertyName, propertyTenants], index) => (
                       <div key={propertyName}>
-                        <div className="mb-4 px-6">
+                        <div className="mb-4 px-6 underline underline-offset-4 decoration-primary/20">
                           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <Building2 className="h-5 w-5" />
+                            <Building2 className="h-5 w-5 text-primary" />
                             {propertyName}
                           </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {propertyTenants.length} tenant{propertyTenants.length !== 1 ? 's' : ''}
-                          </p>
                         </div>
                         
                         <Table>
@@ -347,11 +354,11 @@ export default function LandlordTenantsIndex({
                                       variant="outline"
                                       size="sm"
                                       className="text-xs"
-                                      onClick={() =>
-                                        router.visit(`/landlord/tenants/${tenant.tenant_code}`)
-                                      }
+                                      asChild
                                     >
-                                      View
+                                        <Link href={`/landlord/tenants/${tenant.tenant_code}`}>
+                                            View
+                                        </Link>
                                     </Button>
                                     <Button
                                       variant="destructive"
@@ -387,7 +394,7 @@ export default function LandlordTenantsIndex({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {tenants.map((tenant) => (
+                      {tenantList.map((tenant) => (
                         <TableRow key={tenant.tenant_code}>
                           <TableCell>
                             <div>
@@ -444,16 +451,16 @@ export default function LandlordTenantsIndex({
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                                onClick={() =>
-                                  router.visit(`/landlord/tenants/${tenant.tenant_code}`)
-                                }
-                              >
-                                View
-                              </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs"
+                                    asChild
+                                >
+                                    <Link href={`/landlord/tenants/${tenant.tenant_code}`}>
+                                        View
+                                    </Link>
+                                </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
@@ -471,6 +478,11 @@ export default function LandlordTenantsIndex({
                     </TableBody>
                   </Table>
                 )}
+                
+                {/* Pagination */}
+                <div className="p-4 border-t bg-muted/30">
+                    <Pagination links={links} />
+                </div>
               </div>
             )}
           </CardContent>

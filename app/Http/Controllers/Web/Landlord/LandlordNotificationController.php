@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Web\Landlord;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\DatabaseNotification;
+use App\Http\Resources\NotificationResource;
+use Inertia\Inertia;
 
 class LandlordNotificationController extends Controller
 {
@@ -35,11 +36,11 @@ class LandlordNotificationController extends Controller
             $query->where('type', 'like', $request->type . '%');
         }
 
-        $notifications = $query->paginate(20);
+        $notifications = $query->paginate(15);
         $unreadCount = $landlord->unreadNotifications()->count();
 
-        return inertia('landlord/notifications/index', [
-            'notifications' => $notifications,
+        return Inertia::render('landlord/notifications/index', [
+            'notifications' => NotificationResource::collection($notifications),
             'unreadCount' => $unreadCount,
             'filters' => [
                 'filter' => $request->filter ?? 'all',
@@ -134,24 +135,10 @@ class LandlordNotificationController extends Controller
         $notifications = $landlord->notifications()
             ->orderBy('created_at', 'desc')
             ->take(5)
-            ->get()
-            ->map(function ($notification) {
-                $data = $notification->data;
-                
-                return [
-                    'id' => $notification->id,
-                    'type' => $notification->type,
-                    'title' => $data['title'] ?? 'Notification',
-                    'message' => $data['message'] ?? '',
-                    'priority' => $data['priority'] ?? 'medium',
-                    'created_at' => $notification->created_at,
-                    'read_at' => $notification->read_at,
-                    'data' => $data,
-                ];
-            });
+            ->get();
 
         return response()->json([
-            'notifications' => $notifications,
+            'notifications' => NotificationResource::collection($notifications),
             'unreadCount' => $landlord->unreadNotifications()->count(),
         ]);
     }
