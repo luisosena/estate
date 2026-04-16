@@ -14,6 +14,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { router } from '@inertiajs/react';
 interface Property {
   id: number;
   name: string;
@@ -64,6 +73,7 @@ interface Props {
     last_page: number;
     per_page: number;
     total: number;
+    links?: { url: string | null; label: string; active: boolean }[];
   };
   properties: Property[];
   filters: {
@@ -140,38 +150,38 @@ export default function LandlordUtilityBillsIndex({
 
           <div className="flex flex-1 flex-col gap-6">
         <div className="mb-6 grid gap-4 md:grid-cols-3">
-          <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+          <Card className="border-border bg-card shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Pending Amount
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
+              <div className="text-2xl font-bold text-amber-600">
                 {formatCurrency(summary.total_pending)}
               </div>
             </CardContent>
           </Card>
-          <Card className="border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+          <Card className="border-border bg-card shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-red-700 dark:text-red-400">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Overdue Amount
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-700 dark:text-red-400">
+              <div className="text-2xl font-bold text-red-600">
                 {formatCurrency(summary.total_overdue)}
               </div>
             </CardContent>
           </Card>
-          <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+          <Card className="border-border bg-card shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-400">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Partial Payment
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+              <div className="text-2xl font-bold text-blue-600">
                 {formatCurrency(summary.total_partial)}
               </div>
             </CardContent>
@@ -185,157 +195,129 @@ export default function LandlordUtilityBillsIndex({
           </CardHeader>
           <CardContent>
             {bills.data.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-gray-400">No utility bills found.</p>
+              <div className="py-8 text-center border overflow-hidden rounded-md border-border/50 bg-muted/10">
+                <p className="text-muted-foreground">No utility bills found.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-700">
-                      <th className="pb-3 text-left text-sm font-medium text-gray-400">
-                        Tenant
-                      </th>
-                      <th className="pb-3 text-left text-sm font-medium text-gray-400">
-                        Property/Unit
-                      </th>
-                      <th className="pb-3 text-left text-sm font-medium text-gray-400">
-                        Utility Type
-                      </th>
-                      <th className="pb-3 text-left text-sm font-medium text-gray-400">
-                        Billing Month
-                      </th>
-                      <th className="pb-3 text-right text-sm font-medium text-gray-400">
-                        Amount Due
-                      </th>
-                      <th className="pb-3 text-right text-sm font-medium text-gray-400">
-                        Paid
-                      </th>
-                      <th className="pb-3 text-left text-sm font-medium text-gray-400">
-                        Due Date
-                      </th>
-                      <th className="pb-3 text-left text-sm font-medium text-gray-400">
-                        Status
-                      </th>
-                      <th className="pb-3 text-right text-sm font-medium text-gray-400">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              <div className="relative w-full overflow-auto rounded-md border border-border/50 bg-card">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50 transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                      <TableHead>Tenant</TableHead>
+                      <TableHead>Property/Unit</TableHead>
+                      <TableHead>Utility Type</TableHead>
+                      <TableHead>Billing Month</TableHead>
+                      <TableHead className="text-right">Amount Due</TableHead>
+                      <TableHead className="text-right">Paid</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {bills.data.map((bill) => (
-                      <tr
-                        key={bill.id}
-                        className="border-b border-gray-800 last:border-0"
-                      >
-                        <td className="py-4">
-                          <p className="font-medium text-gray-200">
+                      <TableRow key={bill.id}>
+                        <TableCell>
+                          <p className="font-medium text-foreground">
                             {bill.tenancy_utility?.tenancy?.tenant?.full_name || 'N/A'}
                           </p>
-                        </td>
-                        <td className="py-4">
-                          <p className="text-gray-300">
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-foreground">
                             {bill.tenancy_utility?.tenancy?.unit?.unit_name || 'N/A'}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {bill.tenancy_utility?.tenancy?.unit?.property?.name || 'N/A'}
                           </p>
-                        </td>
-                        <td className="py-4">
-                          <p className="text-gray-300">
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-foreground">
                             {bill.tenancy_utility?.utility_type?.name || 'N/A'}
                           </p>
-                        </td>
-                        <td className="py-4">
-                          <p className="text-gray-300">
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-foreground">
                             {formatDate(bill.billing_month)}
                           </p>
-                        </td>
-                        <td className="py-4 text-right">
-                          <p className="font-medium text-gray-200">
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <p className="font-medium text-foreground">
                             {formatCurrency(bill.amount_due)}
                           </p>
-                        </td>
-                        <td className="py-4 text-right">
-                          <p className="text-gray-300">
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <p className="text-muted-foreground">
                             {formatCurrency(bill.amount_paid)}
                           </p>
-                        </td>
-                        <td className="py-4">
+                        </TableCell>
+                        <TableCell>
                           <p
                             className={`text-sm ${
                               bill.status === 'overdue'
-                                ? 'text-red-400'
-                                : 'text-gray-300'
+                                ? 'text-red-500 font-medium'
+                                : 'text-muted-foreground'
                             }`}
                           >
                             {formatDate(bill.due_date)}
                           </p>
-                        </td>
-                        <td className="py-4">
+                        </TableCell>
+                        <TableCell>
                           <Badge variant={getStatusVariant(bill.status)}>
                             {bill.status}
                           </Badge>
-                        </td>
-                        <td className="py-4 text-right">
+                        </TableCell>
+                        <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <Link
-                                href={route('landlord.utility-bills.show', {
-                                  utilityBill: bill.id,
-                                })}
-                              >
-                                <DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={route('landlord.utility-bills.show', {
+                                    utilityBill: bill.id,
+                                  })}
+                                  className="flex items-center cursor-pointer"
+                                >
                                   <Eye className="mr-2 h-4 w-4" />
                                   View Details
-                                </DropdownMenuItem>
-                              </Link>
+                                </Link>
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             )}
 
             {/* Pagination */}
-            {bills.last_page > 1 && (
+            {bills.last_page > 1 && bills.links && (
               <div className="mt-4 flex items-center justify-between">
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   Showing {(bills.current_page - 1) * bills.per_page + 1} to{' '}
                   {Math.min(bills.current_page * bills.per_page, bills.total)} of{' '}
                   {bills.total} results
                 </p>
-                <div className="flex gap-2">
-                  {bills.current_page > 1 && (
-                    <Link
-                      href={route('landlord.utility-bills.index', {
-                        page: bills.current_page - 1,
-                      })}
+                <div className="flex gap-1">
+                  {bills.links.map((link, index) => (
+                    <Button
+                      key={index}
+                      variant={link.active ? 'default' : 'outline'}
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        if (link.url) router.visit(link.url);
+                      }}
+                      disabled={!link.url}
                     >
-                      <Button variant="outline" size="sm">
-                        Previous
-                      </Button>
-                    </Link>
-                  )}
-                  {bills.current_page < bills.last_page && (
-                    <Link
-                      href={route('landlord.utility-bills.index', {
-                        page: bills.current_page + 1,
-                      })}
-                    >
-                      <Button variant="outline" size="sm">
-                        Next
-                      </Button>
-                    </Link>
-                  )}
+                      <span dangerouslySetInnerHTML={{ __html: link.label.replace('&laquo;', '«').replace('&raquo;', '»') }} />
+                    </Button>
+                  ))}
                 </div>
               </div>
             )}

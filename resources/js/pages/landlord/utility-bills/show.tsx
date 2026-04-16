@@ -162,35 +162,35 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
               <CardTitle>Bill Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between items-center py-2 border-b border-gray-700">
-                <span className="text-gray-400">Status</span>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Status</span>
                 <Badge variant={getStatusVariant(bill.status)}>{bill.status}</Badge>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-700">
-                <span className="text-gray-400">Billing Month</span>
-                <span className="text-gray-200">{formatDate(bill.billing_month)}</span>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Billing Month</span>
+                <span className="text-foreground">{formatDate(bill.billing_month)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-700">
-                <span className="text-gray-400">Due Date</span>
-                <span className="text-gray-200">{formatDate(bill.due_date)}</span>
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Due Date</span>
+                <span className="text-foreground">{formatDate(bill.due_date)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-700">
-                <span className="text-gray-400">Amount Due</span>
-                <span className="text-lg font-bold text-gray-200">
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Amount Due</span>
+                <span className="text-lg font-bold text-foreground">
                   {formatCurrency(bill.amount_due)}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-700">
-                <span className="text-gray-400">Amount Paid</span>
-                <span className="text-lg font-bold text-green-400">
+              <div className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-muted-foreground">Amount Paid</span>
+                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(bill.amount_paid)}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-gray-400">Outstanding</span>
+                <span className="text-muted-foreground">Outstanding</span>
                 <span
                   className={`text-lg font-bold ${
-                    outstandingAmount > 0 ? 'text-red-400' : 'text-green-400'
+                    outstandingAmount > 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'
                   }`}
                 >
                   {formatCurrency(outstandingAmount)}
@@ -199,7 +199,7 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
 
               {/* Actions */}
               {bill.status !== 'paid' && bill.status !== 'waived' && (
-                <div className="mt-4 pt-4 border-t border-gray-700">
+                <div className="mt-4 pt-4 border-t border-border/50">
                   <Link
                     href={route('landlord.utility-bills.waive', { utilityBill: bill.id })}
                     method="post"
@@ -220,27 +220,27 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
               <CardTitle>Tenant & Property</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="py-2 border-b border-gray-700">
-                <p className="text-sm text-gray-400">Tenant</p>
-                <p className="text-lg font-medium text-gray-200">
+              <div className="py-2 border-b border-border/50">
+                <p className="text-sm text-muted-foreground">Tenant</p>
+                <p className="text-lg font-medium text-foreground">
                   {bill.tenancy_utility?.tenancy?.tenant?.full_name || 'N/A'}
                 </p>
               </div>
-              <div className="py-2 border-b border-gray-700">
-                <p className="text-sm text-gray-400">Property</p>
-                <p className="text-gray-200">
+              <div className="py-2 border-b border-border/50">
+                <p className="text-sm text-muted-foreground">Property</p>
+                <p className="text-foreground">
                   {bill.tenancy_utility?.tenancy?.unit?.property?.name || 'N/A'}
                 </p>
               </div>
-              <div className="py-2 border-b border-gray-700">
-                <p className="text-sm text-gray-400">Unit</p>
-                <p className="text-gray-200">
+              <div className="py-2 border-b border-border/50">
+                <p className="text-sm text-muted-foreground">Unit</p>
+                <p className="text-foreground">
                   {bill.tenancy_utility?.tenancy?.unit?.unit_name || 'N/A'}
                 </p>
               </div>
               <div className="py-2">
-                <p className="text-sm text-gray-400">Utility Type</p>
-                <p className="text-gray-200">
+                <p className="text-sm text-muted-foreground">Utility Type</p>
+                <p className="text-foreground">
                   {bill.tenancy_utility?.utility_type?.name || 'N/A'}
                 </p>
               </div>
@@ -255,41 +255,37 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
           </CardHeader>
           <CardContent>
             {bill.payments?.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-gray-400">No payments recorded for this bill.</p>
+              <div className="py-8 text-center border overflow-hidden rounded-md border-dashed border-border/60 bg-card">
+                <p className="text-muted-foreground">No payments recorded for this bill.</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {bill.payments?.map((payment) => (
                   <div
                     key={payment.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-800/50 p-4"
+                    className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/30 p-4 hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div
                         className={`flex h-10 w-10 items-center justify-center rounded-full ${
                           payment.status === 'completed'
-                            ? 'bg-green-500/20'
-                            : 'bg-gray-500/20'
+                            ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-muted text-muted-foreground border border-border/50'
                         }`}
                       >
                         <CheckCircle
-                          className={`h-5 w-5 ${
-                            payment.status === 'completed'
-                              ? 'text-green-400'
-                              : 'text-gray-400'
-                          }`}
+                          className={`h-5 w-5`}
                         />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-200">
+                        <p className="font-medium text-foreground">
                           {formatCurrency(payment.amount)}
                         </p>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                           {payment.payment_method} • {formatDate(payment.paid_at)}
                         </p>
                         {payment.reference_number && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             Ref: {payment.reference_number}
                           </p>
                         )}

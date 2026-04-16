@@ -48,13 +48,13 @@ const formatDate = (dateString: string) => {
 const getPriorityColor = (priority: string) => {
   switch (priority) {
     case 'high':
-      return 'bg-red-100 text-red-800 border-red-200';
+      return 'bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 border-red-200 dark:border-red-500/30';
     case 'medium':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      return 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-500/30';
     case 'low':
-      return 'bg-green-100 text-green-800 border-green-200';
+      return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30';
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return 'bg-muted text-muted-foreground border-border/50';
   }
 };
 
@@ -190,7 +190,7 @@ export default function Notifications({ notifications, unreadCount, filters }: N
               <Bell className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {notifications?.meta?.total || 0}
               </div>
               <p className="text-xs text-muted-foreground">All notifications</p>
@@ -202,7 +202,7 @@ export default function Notifications({ notifications, unreadCount, filters }: N
               <div className="h-2 w-2 rounded-full bg-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{unreadCount}</div>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{unreadCount}</div>
               <p className="text-xs text-muted-foreground">Pending your attention</p>
             </CardContent>
           </Card>
@@ -213,7 +213,7 @@ export default function Notifications({ notifications, unreadCount, filters }: N
               <Check className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                 {(notifications?.meta?.total || 0) - unreadCount}
               </div>
               <p className="text-xs text-muted-foreground">Already viewed</p>
@@ -286,7 +286,7 @@ export default function Notifications({ notifications, unreadCount, filters }: N
                   <div
                     key={notification.id}
                     className={`flex items-start justify-between rounded-lg border p-4 transition-colors ${
-                      notification.read_at ? 'bg-muted/30' : 'bg-blue-50/50 border-blue-200'
+                      notification.read_at ? 'bg-muted/30' : 'bg-blue-50/50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-900/30'
                     }`}
                   >
                     <div className="flex items-start gap-3 flex-1">
