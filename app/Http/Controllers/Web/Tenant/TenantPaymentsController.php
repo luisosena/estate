@@ -57,7 +57,7 @@ class TenantPaymentsController extends Controller
             $pendingAmount = max(0, $monthlyRent - $totalPaid);
         }
 
-        return Inertia::render('tenant/payments/index', [
+        return Inertia::render('tenant/payments', [
             'tenant' => new TenantResource($tenant),
             'tenancy' => $activeTenancy ? new TenancyResource($activeTenancy) : null,
             'payments' => $activeTenancy ? PaymentResource::collection($payments) : null,
