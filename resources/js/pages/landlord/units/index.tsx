@@ -1,7 +1,6 @@
-import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Building2, Home, Plus, Eye, Filter, BedDouble, Users, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { route } from 'ziggy-js';
 
 import LandlordLayout from '@/components/layout/LandlordLayout';
@@ -66,33 +65,35 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
 
   const getStatusBadge = (status: string) => {
     return status === 'available' ? (
-      <Badge variant="secondary" className="bg-green-100 text-green-800">
+      <Badge variant="secondary" className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400">
         Available
       </Badge>
     ) : (
-      <Badge variant="secondary" className="bg-red-100 text-red-800">
+      <Badge variant="secondary" className="bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400">
         Occupied
       </Badge>
     );
   };
 
   // Group units by property when "all" is selected
-  const groupedUnits = currentProperty === 'all' 
-    ? units.reduce((groups, unit) => {
-      const propertyName = unit.property.name;
-      if (!groups[propertyName]) {
-        groups[propertyName] = [];
-      }
-      groups[propertyName].push(unit);
-      return groups;
-    }, {} as Record<string, Unit[]>)
-    : null;
+  const groupedUnits = useMemo(() => {
+    return currentProperty === 'all' 
+      ? units.reduce((groups, unit) => {
+        const propertyName = unit.property.name;
+        if (!groups[propertyName]) {
+          groups[propertyName] = [];
+        }
+        groups[propertyName].push(unit);
+        return groups;
+      }, {} as Record<string, Unit[]>)
+      : null;
+  }, [currentProperty, units]);
 
   const PropertySeparator = () => (
     <div className="flex items-center justify-center py-4">
-      <div className="border-t border-gray-200 flex-1"></div>
-      <div className="px-4 text-sm text-gray-500">•</div>
-      <div className="border-t border-gray-200 flex-1"></div>
+      <div className="border-t border-border/50 flex-1"></div>
+      <div className="px-4 text-sm text-muted-foreground">•</div>
+      <div className="border-t border-border/50 flex-1"></div>
     </div>
   );
 

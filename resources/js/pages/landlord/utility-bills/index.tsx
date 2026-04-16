@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
-import { MoreHorizontal, Eye, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { router } from '@inertiajs/react';
+import { MoreHorizontal, Eye } from 'lucide-react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
-import React from 'react';
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { router } from '@inertiajs/react';
 interface Property {
   id: number;
   name: string;
@@ -75,11 +74,7 @@ interface Props {
     total: number;
     links?: { url: string | null; label: string; active: boolean }[];
   };
-  properties: Property[];
-  filters: {
-    status: string;
-    property_id: string;
-  };
+
   summary: {
     total_pending: number;
     total_overdue: number;
@@ -124,8 +119,6 @@ const getStatusVariant = (
 
 export default function LandlordUtilityBillsIndex({
   bills,
-  properties,
-  filters,
   summary,
 }: Props) {
   return (

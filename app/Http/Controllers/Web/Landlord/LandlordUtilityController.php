@@ -60,7 +60,7 @@ class LandlordUtilityController extends Controller
 
         return Inertia::render('landlord/utilities/create', [
             'tenancy' => $tenancy->load(['unit.property', 'tenant']),
-            'utilityTypes' => $availableTypes,
+            'utilityTypes' => $availableTypes->values(),
             'existingUtilities' => $tenancy->tenancyUtilities()->with('utilityType')->get(),
         ]);
     }

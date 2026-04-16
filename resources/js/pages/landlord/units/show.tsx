@@ -1,6 +1,6 @@
-import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Building2, Home, Users, Calendar, ArrowLeft } from 'lucide-react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
 import LandlordLayout from '@/components/layout/LandlordLayout';

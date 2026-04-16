@@ -1,14 +1,12 @@
-import React from 'react';
 import { Link, router } from '@inertiajs/react';
 import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
 import {
   Table,
   TableBody,
@@ -109,22 +107,24 @@ export default function LandlordTenantsIndex({
   };
 
   // Group tenants by property when "all" is selected
-  const groupedTenants = currentProperty === 'all' 
-    ? tenants.reduce((groups, tenant) => {
-      const propertyName = tenant.property_name;
-      if (!groups[propertyName]) {
-        groups[propertyName] = [];
-      }
-      groups[propertyName].push(tenant);
-      return groups;
-    }, {} as Record<string, TenantRow[]>)
-    : null;
+  const groupedTenants = useMemo(() => {
+    return currentProperty === 'all' 
+      ? tenants.reduce((groups, tenant) => {
+        const propertyName = tenant.property_name;
+        if (!groups[propertyName]) {
+          groups[propertyName] = [];
+        }
+        groups[propertyName].push(tenant);
+        return groups;
+      }, {} as Record<string, TenantRow[]>)
+      : null;
+  }, [currentProperty, tenants]);
 
   const PropertySeparator = () => (
     <div className="flex items-center justify-center py-4">
-      <div className="border-t border-gray-200 flex-1"></div>
-      <div className="px-4 text-sm text-gray-500">•</div>
-      <div className="border-t border-gray-200 flex-1"></div>
+      <div className="border-t border-border/50 flex-1"></div>
+      <div className="px-4 text-sm text-muted-foreground">•</div>
+      <div className="border-t border-border/50 flex-1"></div>
     </div>
   );
 

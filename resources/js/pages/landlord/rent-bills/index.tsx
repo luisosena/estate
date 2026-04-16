@@ -1,9 +1,9 @@
 import { Link, router } from '@inertiajs/react';
 import { MoreHorizontal, Eye, AlertCircle, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { useState } from 'react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
-import React from 'react';
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

@@ -1,13 +1,12 @@
-import React from 'react';
 import { Link, router } from '@inertiajs/react';
 import { ArrowLeft, Building2, Mail, Phone, Users } from 'lucide-react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
 import {
     Table,
     TableBody,

@@ -1,8 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
-import React from 'react';
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

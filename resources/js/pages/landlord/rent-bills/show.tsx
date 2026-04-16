@@ -1,9 +1,9 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, AlertCircle, CheckCircle2, Clock, XCircle, Receipt, Building, User, Home, DollarSign } from 'lucide-react';
 import { useState } from 'react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
-import React from 'react';
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

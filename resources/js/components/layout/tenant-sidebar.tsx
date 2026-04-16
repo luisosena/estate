@@ -12,7 +12,7 @@ import {
     SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { ModeToggle } from '@/components/mode-toggle';
-import { TenantNotificationBell } from '@/components/tenant-notification-bell';
+import TenantNotificationBell from '@/components/tenant-notification-bell';
 
 const navItems = [
     {

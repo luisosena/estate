@@ -1,6 +1,6 @@
-import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Users } from 'lucide-react';
+import React from 'react';
 
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import CreateTenantForm from '@/components/Tenant/CreateTenantForm';

@@ -1,10 +1,10 @@
 import { Link, router } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useState } from 'react';
+import React from 'react';
 import { toast, Toaster } from 'sonner';
 import { route } from 'ziggy-js';
 
-import React from 'react';
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -180,7 +180,7 @@ export default function CreateLandlordUtility({
                       <SelectValue placeholder="Select utility type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {utilityTypes.map((type) => (
+                      {((Array.isArray(utilityTypes) ? utilityTypes : Object.values(utilityTypes)) as UtilityType[]).map((type) => (
                         <SelectItem key={type.id} value={type.id.toString()}>
                           {type.name}
                           {type.unit && ` (${type.unit})`}

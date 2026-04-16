@@ -1,9 +1,9 @@
 import { Link, router } from '@inertiajs/react';
 import { Bell, Check, CheckCheck, Filter, Trash2, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
-import React from 'react';
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -72,20 +72,22 @@ export default function Notifications({ notifications, unreadCount, filters }: N
   const [isLoading, setIsLoading] = useState(false);
 
   // Transform notification data on the frontend
-  const transformedNotifications = notifications.data.map((notification: any) => {
-    const data = notification.data || {};
-    
-    return {
-      id: notification.id,
-      type: notification.type,
-      title: data.title || 'Notification',
-      message: data.message || '',
-      priority: data.priority || 'medium',
-      created_at: notification.created_at,
-      read_at: notification.read_at,
-      data: data,
-    };
-  });
+  const transformedNotifications = useMemo(() => {
+    return notifications.data.map((notification: any) => {
+      const data = notification.data || {};
+      
+      return {
+        id: notification.id,
+        type: notification.type,
+        title: data.title || 'Notification',
+        message: data.message || '',
+        priority: data.priority || 'medium',
+        created_at: notification.created_at,
+        read_at: notification.read_at,
+        data: data,
+      };
+    });
+  }, [notifications.data]);
 
   const handleFilterChange = (filterType: string, value: string) => {
     const newFilters = { ...localFilters, [filterType]: value };

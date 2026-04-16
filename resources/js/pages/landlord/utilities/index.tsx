@@ -1,17 +1,15 @@
 import { Link } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import {
   Plus,
   Zap,
   Droplets,
   Wifi,
   Shield,
-  Trash2,
-  MoreHorizontal,
 } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { route } from 'ziggy-js';
 
-import React from 'react';
-import { router } from '@inertiajs/react';
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,7 +51,7 @@ interface Tenancy {
   status: string;
   unit: Unit;
   tenant: Tenant;
-  tenancyUtilities: TenancyUtility[];
+  tenancy_utilities: TenancyUtility[];
 }
 
 interface Props {
@@ -99,6 +97,12 @@ const getStatusVariant = (
 };
 
 export default function LandlordUtilitiesIndex({ tenancies }: Props) {
+  const stats = useMemo(() => ({
+    activeTenancies: tenancies.data.filter((t) => t.status === 'active').length,
+    tenanciesWithUtilities: tenancies.data.filter((t) => t.tenancy_utilities?.length > 0).length,
+    totalUtilitiesAssigned: tenancies.data.reduce((acc, t) => acc + (t.tenancy_utilities?.length || 0), 0)
+  }), [tenancies.data]);
+
   const handlePageChange = (pageUrl: string | null) => {
     if (pageUrl) {
       router.visit(pageUrl);
@@ -135,7 +139,7 @@ export default function LandlordUtilitiesIndex({ tenancies }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                {tenancies.data.filter((t) => t.status === 'active').length}
+                {stats.activeTenancies}
               </div>
             </CardContent>
           </Card>
@@ -147,7 +151,7 @@ export default function LandlordUtilitiesIndex({ tenancies }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                {tenancies.data.filter((t) => t.tenancyUtilities?.length > 0).length}
+                {stats.tenanciesWithUtilities}
               </div>
             </CardContent>
           </Card>
@@ -159,10 +163,7 @@ export default function LandlordUtilitiesIndex({ tenancies }: Props) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                {tenancies.data.reduce(
-                  (acc, t) => acc + (t.tenancyUtilities?.length || 0),
-                  0,
-                )}
+                {stats.totalUtilitiesAssigned}
               </div>
             </CardContent>
           </Card>
@@ -202,13 +203,13 @@ export default function LandlordUtilitiesIndex({ tenancies }: Props) {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {tenancy.tenancyUtilities?.length === 0 ? (
+                  {tenancy.tenancy_utilities?.length === 0 ? (
                     <p className="text-sm text-muted-foreground py-4 text-center border border-dashed border-border/60 rounded-lg">
                       No utilities assigned to this tenancy yet.
                     </p>
                   ) : (
                     <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                      {tenancy.tenancyUtilities.map((utility) => {
+                      {tenancy.tenancy_utilities?.map((utility) => {
                         const Icon = getUtilityIcon(utility.utility_type.name);
                         return (
                           <div

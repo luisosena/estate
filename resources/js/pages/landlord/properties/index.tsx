@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, router } from '@inertiajs/react';
 import {
   ArrowRight,
@@ -10,6 +9,7 @@ import {
   BedDouble,
   Plus
 } from 'lucide-react';
+import React from 'react';
 
 import LandlordLayout from '@/components/layout/LandlordLayout';
 import { Badge } from '@/components/ui/badge';
@@ -54,9 +54,9 @@ const formatCurrency = (amount: number) =>
   }).format(amount);
 
 const getOccupancyColor = (rate: number) => {
-  if (rate >= 90) return 'bg-green-100 text-green-800';
-  if (rate >= 70) return 'bg-yellow-100 text-yellow-800';
-  return 'bg-red-100 text-red-800';
+  if (rate >= 90) return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400';
+  if (rate >= 70) return 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400';
+  return 'bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400';
 };
 
 export default function LandlordProperties({ properties, stats }: LandlordPropertiesProps) {
