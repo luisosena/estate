@@ -1,22 +1,34 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
   CreditCard,
   AlertCircle,
   CheckCircle,
+  Receipt,
+  ChevronLeft,
+  CalendarDays,
+  TrendingDown,
+  Info,
 } from 'lucide-react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
-import { TenantSidebar } from '@/components/layout/tenant-sidebar';
-import TenantNotificationBell from '@/components/tenant-notification-bell';
+import TenantLayout from '@/components/layout/TenantLayout';
+import { MetricCard } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
-
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import { formatCurrency, formatDate, getFormattedDate, getStatusVariant } from '@/lib/formatters';
+import { type SharedData } from '@/types';
 
 interface Tenant {
   id: number;
@@ -60,6 +72,11 @@ interface Props {
     last_page: number;
     per_page: number;
     total: number;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
   };
   summary: {
     total_outstanding: number;
@@ -73,40 +90,6 @@ interface Props {
   };
 }
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'TZS',
-    minimumFractionDigits: 0,
-  }).format(amount);
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
-
-const getStatusVariant = (
-  status?: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  switch (status?.toLowerCase()) {
-    case 'paid':
-      return 'default';
-    case 'pending':
-      return 'secondary';
-    case 'overdue':
-      return 'destructive';
-    case 'partial':
-      return 'outline';
-    case 'waived':
-      return 'outline';
-    default:
-      return 'outline';
-  }
-};
 
 export default function TenantUtilityBills({
   tenant,
@@ -115,228 +98,222 @@ export default function TenantUtilityBills({
   summary,
   filters,
 }: Props) {
+  const { auth } = usePage<SharedData>().props;
+
   return (
-    <SidebarProvider defaultOpen={false}>
-      <TenantSidebar />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <Link
-              href={route('tenant.utilities')}
-              className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-            >
-              ← Back to Utilities
-            </Link>
-            <h1 className="text-2xl font-bold">Utility Bills</h1>
-            <p className="text-sm text-muted-foreground">
-              View and pay your utility bills
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <TenantNotificationBell initialUnreadCount={0} />
-          </div>
-        </div>
-
-        {/* No Tenancy */}
-        {!tenancy && (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">
-                No active tenancy found. Please contact your landlord.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Summary Cards */}
-        {tenancy && (
-          <>
-            <div className="mb-6 grid gap-4 md:grid-cols-4">
-              <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                    Total Outstanding
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
-                    {formatCurrency(summary.total_outstanding)}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
-                    Pending
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">
-                    {formatCurrency(summary.total_pending)}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-red-700 dark:text-red-400">
-                    Overdue
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-red-700 dark:text-red-400">
-                    {formatCurrency(summary.total_overdue)}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                    Partial
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
-                    {formatCurrency(summary.total_partial)}
-                  </div>
-                </CardContent>
-              </Card>
+    <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+        
+        {/* Header Section */}
+        <header className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild className="-ml-2 h-8 text-muted-foreground hover:text-foreground">
+                    <Link href={route('tenant.utilities')}>
+                        <ChevronLeft className="w-4 h-4 mr-2" />
+                        Back to Utilities
+                    </Link>
+                </Button>
             </div>
 
-            {/* Bills Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle>All Bills</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {bills.data.length === 0 ? (
-                  <div className="py-8 text-center">
-                    <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
-                    <p className="mt-4 text-lg font-medium">All Clear!</p>
-                    <p className="text-muted-foreground">
-                      You have no pending utility bills.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
-                            Period
-                          </th>
-                          <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
-                            Utility
-                          </th>
-                          <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
-                            Amount Due
-                          </th>
-                          <th className="pb-3 text-right text-sm font-medium text-muted-foreground">
-                            Paid
-                          </th>
-                          <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
-                            Due Date
-                          </th>
-                          <th className="pb-3 text-left text-sm font-medium text-muted-foreground">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {bills.data.map((bill) => {
-                          const outstanding = bill.amount_due - bill.amount_paid;
-                          const isOverdue =
-                            bill.status === 'overdue' ||
-                            (bill.status === 'pending' &&
-                              new Date(bill.due_date) < new Date());
-
-                          return (
-                            <tr key={bill.id} className="border-b last:border-0">
-                              <td className="py-4">
-                                <p className="font-medium">
-                                  {formatDate(bill.billing_month)}
-                                </p>
-                              </td>
-                              <td className="py-4">
-                                <p className="text-muted-foreground">
-                                  {bill.tenancy_utility?.utility_type?.name || 'N/A'}
-                                </p>
-                              </td>
-                              <td className="py-4 text-right">
-                                <p className="font-medium">
-                                  {formatCurrency(bill.amount_due)}
-                                </p>
-                              </td>
-                              <td className="py-4 text-right">
-                                <p className="text-muted-foreground">
-                                  {formatCurrency(bill.amount_paid)}
-                                </p>
-                              </td>
-                              <td className="py-4">
-                                <p
-                                  className={`text-sm ${
-                                    isOverdue ? 'text-red-500' : ''
-                                  }`}
-                                >
-                                  {formatDate(bill.due_date)}
-                                  {isOverdue && (
-                                    <AlertCircle className="ml-1 inline h-3 w-3" />
-                                  )}
-                                </p>
-                              </td>
-                              <td className="py-4">
-                                <Badge variant={getStatusVariant(bill.status)}>
-                                  {bill.status}
-                                </Badge>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* Pagination */}
-                {bills.last_page > 1 && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {(bills.current_page - 1) * bills.per_page + 1} to{' '}
-                      {Math.min(bills.current_page * bills.per_page, bills.total)} of{' '}
-                      {bills.total} results
-                    </p>
-                    <div className="flex gap-2">
-                      {bills.current_page > 1 && (
-                        <Link
-                          href={route('tenant.utilities.bills', {
-                            page: bills.current_page - 1,
-                          })}
-                        >
-                          <Button variant="outline" size="sm">
-                            Previous
-                          </Button>
-                        </Link>
-                      )}
-                      {bills.current_page < bills.last_page && (
-                        <Link
-                          href={route('tenant.utilities.bills', {
-                            page: bills.current_page + 1,
-                          })}
-                        >
-                          <Button variant="outline" size="sm">
-                            Next
-                          </Button>
-                        </Link>
-                      )}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <SidebarTrigger className="-ml-2 md:hidden" />
+                        <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                            <CalendarDays className="w-3 h-3" />
+                            {getFormattedDate()}
+                        </Badge>
                     </div>
-                  </div>
-                )}
-              </CardContent>
+                    <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                        Utility Invoices
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Comprehensive ledger of all provisioned service billings and payments.
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                    <Button asChild variant="outline" className="bg-card border-border/50 shadow-sm">
+                        <Link href={route('tenant.payments')}>
+                            <TrendingDown className="w-4 h-4 mr-2 text-muted-foreground" />
+                            Global Ledger
+                        </Link>
+                    </Button>
+                    <Button asChild className="shadow-sm">
+                        <Link href={route('tenant.payments.make')}>
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Settle Balances
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+        </header>
+
+        {/* No Tenancy State */}
+        {!tenancy ? (
+            <Card className="shadow-none border-dashed border-2">
+                <CardContent className="py-20 text-center flex flex-col items-center gap-4">
+                    <Receipt className="h-12 w-12 text-muted-foreground opacity-20" />
+                    <div>
+                        <h3 className="text-xl font-semibold">No active tenancy</h3>
+                        <p className="text-muted-foreground max-w-sm mx-auto mt-1">
+                            Utility billing is only active for verified tenants with signed leases.
+                        </p>
+                    </div>
+                </CardContent>
             </Card>
+        ) : (
+          <>
+            {/* KPI Highlights */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard
+                    title="Total Outstanding"
+                    value={formatCurrency(summary.total_outstanding)}
+                    icon={Receipt}
+                    description="Aggregate payable amount"
+                    alert={summary.total_outstanding > 0}
+                />
+                <MetricCard
+                    title="Pending Cycle"
+                    value={formatCurrency(summary.total_pending)}
+                    icon={CalendarDays}
+                    description="Current month obligations"
+                />
+                <MetricCard
+                    title="Overdue Items"
+                    value={formatCurrency(summary.total_overdue)}
+                    icon={AlertCircle}
+                    description="Bills past due date"
+                    alert={summary.total_overdue > 0}
+                />
+                <MetricCard
+                    title="Settlement Ratio"
+                    value={summary.bill_count > 0 ? `${Math.round(((summary.bill_count - (summary.total_pending > 0 ? 1 : 0)) / summary.bill_count) * 100)}%` : '100%'}
+                    icon={CheckCircle}
+                    description="Historical on-time pay"
+                />
+            </section>
+
+            {/* Ledger Table Section */}
+            <section className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold tracking-tight">Billing Ledger</h2>
+                    <Badge variant="outline" className="font-normal text-muted-foreground">
+                        {summary.bill_count} records total
+                    </Badge>
+                </div>
+
+                <Card className="shadow-none border-border/50 overflow-hidden">
+                    <Table>
+                        <TableHeader className="bg-muted/30">
+                            <TableRow>
+                                <TableHead className="font-semibold px-6">Period</TableHead>
+                                <TableHead className="font-semibold">Utility Type</TableHead>
+                                <TableHead className="font-semibold text-right">Invoiced</TableHead>
+                                <TableHead className="font-semibold text-right">Total Paid</TableHead>
+                                <TableHead className="font-semibold">Due Date</TableHead>
+                                <TableHead className="font-semibold">Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {bills.data.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-40 text-center">
+                                        <div className="flex flex-col items-center justify-center text-muted-foreground py-10">
+                                            <CheckCircle className="mb-4 h-12 w-12 opacity-20 text-green-500" />
+                                            <p className="text-lg font-medium">All systems green</p>
+                                            <p className="text-sm">No utility billings found in your ledger yet.</p>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                bills.data.map((bill) => {
+                                    const isOverdue = bill.status === 'overdue' || (bill.status === 'pending' && new Date(bill.due_date) < new Date());
+                                    return (
+                                        <TableRow key={bill.id} className="group hover:bg-muted/20 transition-colors">
+                                            <TableCell className="px-6 font-medium">
+                                                {formatDate(bill.billing_month)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="outline" className="capitalize bg-muted/50 font-medium">
+                                                        {bill.tenancy_utility?.utility_type?.name || 'Service'}
+                                                    </Badge>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right font-bold text-foreground">
+                                                {formatCurrency(bill.amount_due)}
+                                            </TableCell>
+                                            <TableCell className="text-right text-green-600 dark:text-green-500 font-medium">
+                                                {formatCurrency(bill.amount_paid)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={cn(
+                                                        "text-sm",
+                                                        isOverdue ? "text-destructive font-bold" : "text-muted-foreground font-medium"
+                                                    )}>
+                                                        {formatDate(bill.due_date)}
+                                                    </span>
+                                                    {isOverdue && <AlertCircle className="h-3 w-3 text-destructive animate-pulse" />}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={getStatusVariant(bill.status)} className="capitalize px-3 py-0.5 shadow-none rounded-full">
+                                                    {bill.status}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            )}
+                        </TableBody>
+                    </Table>
+
+                    {/* Pagination */}
+                    {bills.last_page > 1 && (
+                        <div className="p-4 border-t border-border/40 flex items-center justify-between bg-muted/10">
+                            <div className="text-xs text-muted-foreground font-medium uppercase">
+                                Page {bills.current_page} of {bills.last_page}
+                            </div>
+                            <div className="flex gap-1.5">
+                                {bills.links.map((link, idx) => (
+                                    <Button
+                                        key={idx}
+                                        variant={link.active ? "default" : "outline"}
+                                        size="sm"
+                                        className="h-8 min-w-[2rem] px-2 shadow-sm"
+                                        asChild={!!link.url}
+                                        disabled={!link.url}
+                                    >
+                                        {link.url ? (
+                                            <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label.replace('&laquo;', '').replace('&raquo;', '').trim() || (idx === 0 ? 'Prev' : 'Next') }} />
+                                        ) : (
+                                            <span dangerouslySetInnerHTML={{ __html: link.label.replace('&laquo;', '').replace('&raquo;', '').trim() || (idx === 0 ? 'Prev' : 'Next') }} />
+                                        )}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </Card>
+            </section>
+
+            {/* Support Hint */}
+            <div className="bg-muted/40 border p-5 rounded-2xl flex gap-4 items-start">
+                <Info className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="flex flex-col gap-1">
+                    <p className="text-sm font-semibold text-foreground">Understanding your utility ledger</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        This ledger tracks billings for services provisioned by the building management. If you notice a discrepancy between your consumption and billable amount, please raise a support ticket under "Utility Dispute" for a detailed meter audit.
+                    </p>
+                </div>
+            </div>
           </>
         )}
-      </SidebarInset>
-    </SidebarProvider>
+
+    </main>
   );
 }
+
+
+TenantUtilityBills.layout = (page: React.ReactNode) => <TenantLayout>{page}</TenantLayout>;

@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
   ArrowLeft,
   CreditCard,
@@ -6,17 +6,24 @@ import {
   Building2,
   AlertCircle,
   CheckCircle2,
+  Receipt,
+  Info,
+  ChevronRight,
+  Wallet,
+  ShieldCheck,
+  CalendarDays,
+  FileText,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { toast, Toaster } from 'sonner';
 import { route } from 'ziggy-js';
 import { z } from 'zod';
 
-import { TenantSidebar } from '@/components/layout/tenant-sidebar';
-import TenantNotificationBell from '@/components/tenant-notification-bell';
+import TenantLayout from '@/components/layout/TenantLayout';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -34,12 +41,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { formatCurrency, getFormattedDate } from '@/lib/formatters';
+import { type SharedData } from '@/types';
 
 // Types
 interface Tenant {
@@ -97,8 +103,7 @@ const paymentSchema = z.object({
     .transform((val) => {
       if (typeof val === 'number') return val;
       if (!val || val.trim() === '') return undefined;
-      // Clean string: remove commas, spaces, currency symbols
-      const cleaned = val.replace(/[^0-9.]/g, '');
+      const cleaned = val.toString().replace(/[^0-9.]/g, '');
       const num = Number(cleaned);
       return isNaN(num) ? undefined : num;
     })
@@ -114,14 +119,6 @@ const paymentSchema = z.object({
   utility_bill_id: z.coerce.number().nullable().optional(),
 });
 
-type PaymentFormData = z.infer<typeof paymentSchema>;
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'TZS',
-    minimumFractionDigits: 0,
-  }).format(amount);
 
 export default function MakePayment({
   tenant,
@@ -131,6 +128,8 @@ export default function MakePayment({
   paymentMethods = [],
   pendingUtilityBills = [],
 }: Props) {
+  const { auth } = usePage<SharedData>().props;
+  
   // Form state
   const [formData, setFormData] = useState<any>({
     amount: Number(existingPayment?.amount || 0) || (existingPayment?.payment_type === 'rent' || !existingPayment ? (Number(pendingAmount) || 0) : 0),
@@ -167,9 +166,12 @@ export default function MakePayment({
   ) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev: any) => ({ ...prev, [name]: '' }));
+      setErrors((prev: any) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
   };
 
@@ -177,7 +179,11 @@ export default function MakePayment({
   const handleMethodSelect = (method: string) => {
     setFormData((prev: any) => ({ ...prev, payment_method: method }));
     if (errors.payment_method) {
-      setErrors((prev: any) => ({ ...prev, payment_method: '' }));
+      setErrors((prev: any) => {
+        const newErrors = { ...prev };
+        delete newErrors.payment_method;
+        return newErrors;
+      });
     }
   };
 
@@ -204,35 +210,28 @@ export default function MakePayment({
   // Handle submit to show confirmation
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) {
-      // Show error alert
-      toast.error('Please fix the errors in the form');
-      return;
+        const firstError = Object.values(errors)[0];
+        toast.error(firstError || 'Validation failed. Check your inputs.');
+        return;
     }
-    
     setShowConfirmation(true);
-  };
-
-  // Handle edit from confirmation
-  const handleEdit = () => {
-    setShowConfirmation(false);
   };
 
   // Handle verify and submit
   const handleVerify = async () => {
     setIsSubmitting(true);
-    
     try {
       router.post(route('tenant.payments.store'), formData, {
         onSuccess: () => {
           setShowConfirmation(false);
           setShowSuccess(true);
+          toast.success('Payment successfully logged');
         },
         onError: (errors) => {
           setErrors(errors as Record<string, string>);
           setShowConfirmation(false);
-          toast.error('Failed to process payment');
+          toast.error('Submission failed. Please check details.');
         },
         onFinish: () => {
           setIsSubmitting(false);
@@ -241,368 +240,431 @@ export default function MakePayment({
     } catch (error) {
       setShowConfirmation(false);
       setIsSubmitting(false);
-      toast.error('An error occurred. Please try again.');
+      toast.error('An unexpected error occurred.');
     }
   };
 
-  // Show success state
+  // Success State (Receipt View)
   if (showSuccess) {
     return (
-      <SidebarProvider defaultOpen={false}>
-        <TenantSidebar />
-        <SidebarInset className="px-6 pt-4 pb-8">
-          <div className="flex items-center gap-3 mb-8">
-            <SidebarTrigger />
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold">Payment Submitted</h1>
-            </div>
-          </div>
+      <main className="min-h-[80vh] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full shadow-2xl border-border/50 overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="bg-primary h-2 w-full" />
+            <CardHeader className="text-center pb-2">
+                <div className="mx-auto w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-green-500" />
+                </div>
+                <CardTitle className="text-2xl font-bold">Payment Logged</CardTitle>
+                <CardDescription>Thank you for your timely settlement.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-4">
+                <div className="bg-muted/30 rounded-2xl p-6 text-center">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">Total Amount Paid</p>
+                    <h2 className="text-4xl font-extrabold text-foreground">{formatCurrency(formData.amount)}</h2>
+                </div>
 
-          <Alert className="bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <AlertTitle className="text-green-700 dark:text-green-400">
-              Payment Received
-            </AlertTitle>
-            <AlertDescription className="text-green-600 dark:text-green-500">
-              Your payment of {formatCurrency(Number(formData.amount.toString().replace(/[^0-9.]/g, '')))} has been successfully submitted.
-              You will be redirected to the payments page shortly.
-            </AlertDescription>
-          </Alert>
+                <div className="space-y-3">
+                    <div className="flex justify-between text-sm py-2 border-b border-dashed">
+                        <span className="text-muted-foreground">Payment Type</span>
+                        <span className="font-bold capitalize">{formData.payment_type}</span>
+                    </div>
+                    {formData.reference_number && (
+                        <div className="flex justify-between text-sm py-2 border-b border-dashed">
+                            <span className="text-muted-foreground">Reference</span>
+                            <span className="font-mono">{formData.reference_number}</span>
+                        </div>
+                    )}
+                    <div className="flex justify-between text-sm py-2 border-b border-dashed">
+                        <span className="text-muted-foreground">Date Logged</span>
+                        <span>{getFormattedDate()}</span>
+                    </div>
+                </div>
 
-          <div className="mt-6 flex justify-center">
-            <Link href={route('tenant.payments')}>
-              <Button>Go to Payments</Button>
-            </Link>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+                <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 flex gap-3 items-center">
+                    <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
+                    <p className="text-xs text-muted-foreground">
+                        Your payment is currently under verification by building management. It will reflect in your ledger shortly.
+                    </p>
+                </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-3 pt-6 pb-8">
+                <Button asChild className="w-full">
+                    <Link href={route('tenant.payments')}>Return to Ledger</Link>
+                </Button>
+                <Button variant="ghost" className="w-full" asChild>
+                    <Link href={route('tenant.dashboard')}>Back to Dashboard</Link>
+                </Button>
+            </CardFooter>
+        </Card>
+      </main>
     );
   }
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <TenantSidebar />
-      <Toaster />
-      <SidebarInset className="px-6 pt-4 pb-8">
+    <main className="max-w-[1200px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-20">
+        <Toaster position="top-center" expand={true} richColors />
+        
         {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <Link
-              href={route('tenant.payments')}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-1"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Payments
-            </Link>
-            <h1 className="text-2xl font-bold">Make Payment</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <TenantNotificationBell initialUnreadCount={0} />
-          </div>
-        </div>
-
-        {/* Error Alert */}
-        {Object.keys(errors).length > 0 && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Validation Error</AlertTitle>
-            <AlertDescription>
-              Please fix the following errors:
-              <ul className="mt-2 list-disc list-inside">
-                {Object.values(errors).map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Payment Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Payment Details
-                </CardTitle>
-                <CardDescription>
-                  Enter the payment amount and type
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Amount */}
-                <div className="space-y-2">
-                  <Label htmlFor="amount">
-                    Amount <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="amount"
-                    name="amount"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="Enter amount"
-                    value={formData.amount}
-                    onChange={handleChange}
-                    className={errors.amount ? 'border-destructive' : ''}
-                  />
-                  {tenancy && (
-                    <p className="text-xs text-muted-foreground">
-                      Monthly rent: {formatCurrency(tenancy.monthly_rent)}
-                      {pendingAmount > 0 && ` • Pending: ${formatCurrency(pendingAmount)}`}
-                    </p>
-                  )}
-                  {errors.amount && (
-                    <p className="text-xs text-destructive">{errors.amount}</p>
-                  )}
-                  
-                  {isOverpayment && !errors.amount && (
-                    <Alert className="mt-2 py-2 px-3 bg-yellow-50 border-yellow-200 dark:bg-yellow-900/10 dark:border-yellow-800">
-                      <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
-                      <AlertDescription className="text-xs text-yellow-700 dark:text-yellow-500">
-                        The entered amount exceeds the outstanding balance. Correct if necessary, or proceed if paying in advance.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-
-                {/* Payment Type */}
-                <div className="space-y-2">
-                  <Label htmlFor="payment_type">
-                    Payment Type <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={formData.payment_type}
-                    onValueChange={(value: 'rent' | 'utility') =>
-                      setFormData((prev: any) => ({ 
-                        ...prev, 
-                        payment_type: value,
-                        utility_bill_id: value === 'rent' ? null : prev.utility_bill_id,
-                        amount: value === 'rent' ? pendingAmount : prev.amount
-                      }))
-                    }
-                  >
-                    <SelectTrigger
-                      className={errors.payment_type ? 'border-destructive' : ''}
-                    >
-                      <SelectValue placeholder="Select payment type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="rent">Rent</SelectItem>
-                      <SelectItem value="utility">Utility</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.payment_type && (
-                    <p className="text-xs text-destructive">{errors.payment_type}</p>
-                  )}
-                </div>
-
-                {/* Utility Bill Selection (Conditional) */}
-                {formData.payment_type === 'utility' && pendingUtilityBills && pendingUtilityBills.length > 0 && (
-                  <div className="space-y-2">
-                    <Label htmlFor="utility_bill_id">
-                      Link to Utility Bill <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={formData.utility_bill_id?.toString() || ''}
-                      onValueChange={(value) => {
-                        const bill = pendingUtilityBills.find(b => b.id.toString() === value);
-                        if (bill) {
-                          const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
-                          setFormData((prev: any) => ({ 
-                            ...prev, 
-                            utility_bill_id: parseInt(value),
-                            amount: outstanding > 0 ? outstanding : 0
-                          }));
-                        } else {
-                          setFormData((prev: any) => ({ 
-                            ...prev, 
-                            utility_bill_id: parseInt(value)
-                          }));
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a bill to pay" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {pendingUtilityBills.map((bill) => (
-                          <SelectItem key={bill.id} value={bill.id.toString()}>
-                            {bill.tenancy_utility.utility_type.name} - {new Date(bill.billing_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} 
-                            ({formatCurrency(bill.amount_due - bill.amount_paid)} due)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.utility_bill_id && (
-                      <p className="text-xs text-destructive">{errors.utility_bill_id}</p>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Payment Method */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Smartphone className="h-5 w-5" />
-                  Payment Method
-                </CardTitle>
-                <CardDescription>
-                  Select how you will make the payment
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Mobile Money */}
-                  <button
-                    type="button"
-                    onClick={() => handleMethodSelect('mobile_money')}
-                    className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 transition-all ${
-                      formData.payment_method === 'mobile_money'
-                        ? 'border-primary bg-primary/10'
-                        : 'border-muted hover:border-muted-foreground'
-                    }`}
-                  >
-                    <Smartphone className="h-8 w-8" />
-                    <span className="font-medium">Mobile Money</span>
-                  </button>
-
-                  {/* Bank Transfer */}
-                  <button
-                    type="button"
-                    onClick={() => handleMethodSelect('bank_transfer')}
-                    className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 transition-all ${
-                      formData.payment_method === 'bank_transfer'
-                        ? 'border-primary bg-primary/10'
-                        : 'border-muted hover:border-muted-foreground'
-                    }`}
-                  >
-                    <Building2 className="h-8 w-8" />
-                    <span className="font-medium">Bank Transfer</span>
-                  </button>
-                </div>
-                {errors.payment_method && (
-                  <p className="text-xs text-destructive">{errors.payment_method}</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Additional Information */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Additional Information</CardTitle>
-                <CardDescription>
-                  Optional details about your payment
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Reference Number */}
-                <div className="space-y-2">
-                  <Label htmlFor="reference_number">Reference Number</Label>
-                  <Input
-                    id="reference_number"
-                    name="reference_number"
-                    placeholder="e.g., MNO-2026-001"
-                    value={formData.reference_number}
-                    onChange={handleChange}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    The transaction reference from your mobile money or bank
-                  </p>
-                </div>
-
-                {/* Notes */}
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    name="notes"
-                    placeholder="Add any additional notes..."
-                    value={formData.notes}
-                    onChange={handleChange}
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Submit Button */}
-          <div className="mt-6 flex justify-end gap-4">
-            <Link href={route('tenant.payments')}>
-              <Button variant="outline" type="button">
-                Cancel
-              </Button>
-            </Link>
-            <Button type="submit">
-              Continue to Confirm
-            </Button>
-          </div>
-        </form>
-
-        {/* Confirmation Dialog */}
-        <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Confirm Payment</DialogTitle>
-              <DialogDescription>
-                Please review your payment details before verifying
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-semibold">{formatCurrency(formData.amount)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-muted-foreground">Payment Type</span>
-                <span className="capitalize">{formData.payment_type}</span>
-              </div>
-              {formData.payment_type === 'utility' && formData.utility_bill_id && (
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-muted-foreground">Linked Bill</span>
-                  <span className="text-right">
-                    {pendingUtilityBills?.find(b => b.id === formData.utility_bill_id)?.tenancy_utility.utility_type.name}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-muted-foreground">Method</span>
-                <span className="capitalize">
-                  {formData.payment_method === 'mobile_money' ? 'Mobile Money' : 'Bank Transfer'}
-                </span>
-              </div>
-              {formData.reference_number && (
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-muted-foreground">Reference</span>
-                  <span className="font-medium">{formData.reference_number}</span>
-                </div>
-              )}
+        <header className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild className="-ml-2 h-8 text-muted-foreground hover:text-foreground">
+                    <Link href={route('tenant.payments')}>
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Ledger
+                    </Link>
+                </Button>
             </div>
 
-            <DialogFooter className="sm:justify-between gap-2">
-              <Button
-                variant="outline"
-                onClick={handleEdit}
-                className="w-full sm:w-auto"
-              >
-                Edit
-              </Button>
-              <Button
-                onClick={handleVerify}
-                disabled={isSubmitting}
-                className="w-full sm:w-auto"
-              >
-                {isSubmitting ? 'Processing...' : 'Verify & Submit'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <SidebarTrigger className="-ml-2 md:hidden" />
+                        <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                            <Wallet className="w-3 h-3" />
+                            Secure Payment Portal
+                        </Badge>
+                    </div>
+                    <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                        Settle Balances
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Select a payment type and method to update your records.
+                    </p>
+                </div>
+            </div>
+        </header>
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            {/* Primary Form Section */}
+            <div className="lg:col-span-7 flex flex-col gap-8">
+                
+                {/* 1. Payment Context */}
+                <div className="flex flex-col gap-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs ring-4 ring-primary/5">1</div>
+                        <h2 className="text-lg font-semibold tracking-tight">Payment Allocation</h2>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            type="button"
+                            onClick={() => setFormData(p => ({ ...p, payment_type: 'rent', amount: pendingAmount || p.amount }))}
+                            className={cn(
+                                "relative flex flex-col items-start gap-4 p-5 rounded-2xl border-2 transition-all text-left",
+                                formData.payment_type === 'rent' 
+                                    ? "border-primary bg-primary/[0.03] ring-4 ring-primary/5" 
+                                    : "border-border/50 bg-card hover:border-border hover:bg-muted/30"
+                            )}
+                        >
+                            <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center border",
+                                formData.payment_type === 'rent' ? "bg-primary border-primary text-white" : "bg-muted border-border text-muted-foreground"
+                            )}>
+                                <Building2 className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-foreground">Rent Payment</h3>
+                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Allocate funds to your monthly property lease.</p>
+                            </div>
+                            {formData.payment_type === 'rent' && <div className="absolute top-4 right-4"><CheckCircle2 className="w-4 h-4 text-primary" /></div>}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setFormData(p => ({ ...p, payment_type: 'utility' }))}
+                            className={cn(
+                                "relative flex flex-col items-start gap-4 p-5 rounded-2xl border-2 transition-all text-left",
+                                formData.payment_type === 'utility' 
+                                    ? "border-primary bg-primary/[0.03] ring-4 ring-primary/5" 
+                                    : "border-border/50 bg-card hover:border-border hover:bg-muted/30"
+                            )}
+                        >
+                            <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center border",
+                                formData.payment_type === 'utility' ? "bg-primary border-primary text-white" : "bg-muted border-border text-muted-foreground"
+                            )}>
+                                <Receipt className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-foreground">Utility Bills</h3>
+                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Settle electricity, water, or other provisioned services.</p>
+                            </div>
+                            {formData.payment_type === 'utility' && <div className="absolute top-4 right-4"><CheckCircle2 className="w-4 h-4 text-primary" /></div>}
+                        </button>
+                    </div>
+
+                    {formData.payment_type === 'utility' && pendingUtilityBills && pendingUtilityBills.length > 0 && (
+                        <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                            <Label htmlFor="utility_bill_id" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">Connect to Bill</Label>
+                            <Select
+                                value={formData.utility_bill_id?.toString() || ''}
+                                onValueChange={(value) => {
+                                    const bill = pendingUtilityBills.find(b => b.id.toString() === value);
+                                    if (bill) {
+                                        const outstanding = Number(bill.amount_due || 0) - Number(bill.amount_paid || 0);
+                                        setFormData((prev: any) => ({ 
+                                            ...prev, 
+                                            utility_bill_id: parseInt(value),
+                                            amount: outstanding > 0 ? outstanding : 0
+                                        }));
+                                    }
+                                }}
+                            >
+                                <SelectTrigger className="h-12 rounded-xl bg-card border-border/50">
+                                    <SelectValue placeholder="Select a pending service bill" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    {pendingUtilityBills.map((bill) => (
+                                        <SelectItem key={bill.id} value={bill.id.toString()}>
+                                            <span className="font-medium">{bill.tenancy_utility.utility_type.name}</span>
+                                            <span className="mx-2 text-muted-foreground">/</span>
+                                            <span className="text-muted-foreground text-xs">{new Date(bill.billing_month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                                            <span className="ml-2 font-bold text-primary">{formatCurrency(bill.amount_due - bill.amount_paid)}</span>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.utility_bill_id && <p className="text-xs text-destructive ml-1">{errors.utility_bill_id}</p>}
+                        </div>
+                    )}
+                </div>
+
+                <hr className="border-border/50" />
+
+                {/* 2. Amount Entry */}
+                <div className="flex flex-col gap-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs ring-4 ring-primary/5">2</div>
+                        <h2 className="text-lg font-semibold tracking-tight">Transaction Value</h2>
+                    </div>
+
+                    <div className="bg-primary/[0.02] border rounded-3xl p-8 flex flex-col items-center gap-4">
+                        <Label htmlFor="amount" className="text-xs font-semibold uppercase tracking-widest text-primary/70">Payment Amount (TZS)</Label>
+                        <div className="relative w-full max-w-sm">
+                            <Input
+                                id="amount"
+                                name="amount"
+                                type="text"
+                                inputMode="decimal"
+                                value={formData.amount}
+                                onChange={handleChange}
+                                placeholder="0.00"
+                                className="h-16 text-3xl font-bold text-center bg-transparent border-none focus-visible:ring-0 shadow-none p-0"
+                            />
+                            <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                        </div>
+                        
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {formData.payment_type === 'rent' && pendingAmount > 0 && (
+                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData(p => ({ ...p, amount: pendingAmount }))} className="h-7 text-[10px] rounded-full bg-white font-bold border-primary/20 hover:bg-primary/5">
+                                    SET OUTSTANDING ({formatCurrency(pendingAmount)})
+                                </Button>
+                            )}
+                            {tenancy && (
+                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData(p => ({ ...p, amount: tenancy.monthly_rent }))} className="h-7 text-[10px] rounded-full bg-white font-bold border-primary/20 hover:bg-primary/5">
+                                    SET MONTHLY RENT ({formatCurrency(tenancy.monthly_rent)})
+                                </Button>
+                            )}
+                        </div>
+
+                        {isOverpayment && (
+                            <div className="mt-2 text-[11px] text-amber-600 bg-amber-500/5 px-4 py-2 rounded-full border border-amber-200/50 flex items-center gap-1.5 font-medium animate-in zoom-in-95">
+                                <Info className="w-3 h-3" />
+                                This exceeds your current balance. Extra will credit your advance account.
+                            </div>
+                        )}
+                        {errors.amount && <p className="text-xs text-destructive font-bold">{errors.amount}</p>}
+                    </div>
+                </div>
+
+                <hr className="border-border/50" />
+
+                {/* 3. Payment Verification Details */}
+                <div className="flex flex-col gap-6 font-semibold">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs ring-4 ring-primary/5">3</div>
+                        <h2 className="text-lg font-semibold tracking-tight">Verification Proof</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="payment_method" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">Channel</Label>
+                            <Select
+                                value={formData.payment_method}
+                                onValueChange={handleMethodSelect}
+                            >
+                                <SelectTrigger className="h-12 rounded-xl bg-card border-border/50">
+                                    <SelectValue placeholder="How did you pay?" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    <SelectItem value="mobile_money" className="py-3">
+                                        <div className="flex items-center gap-2">
+                                            <Smartphone className="w-4 h-4 text-primary" />
+                                            <span>Mobile Money (MPesa, Tigopesa, etc.)</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="bank_transfer" className="py-3">
+                                        <div className="flex items-center gap-2">
+                                            <Building2 className="w-4 h-4 text-primary" />
+                                            <span>Bank Transfer / Deposit</span>
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.payment_method && <p className="text-xs text-destructive ml-1">{errors.payment_method}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="reference_number" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">Reference #</Label>
+                            <div className="relative">
+                                <Input
+                                    id="reference_number"
+                                    name="reference_number"
+                                    value={formData.reference_number}
+                                    onChange={handleChange}
+                                    placeholder="Enter TXID / Ref Number"
+                                    className="h-12 rounded-xl px-10 bg-card border-border/50"
+                                />
+                                <ShieldCheck className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground" />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground ml-1 italic">As shown on your payment confirmation SMS/Slip.</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="notes" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">Optional Memo</Label>
+                        <Textarea
+                            id="notes"
+                            name="notes"
+                            value={formData.notes}
+                            onChange={handleChange}
+                            placeholder="Example: 'Payment for partial rent and parking fee'..."
+                            className="bg-card border-border/50 rounded-xl min-h-[100px] resize-none"
+                        />
+                    </div>
+                </div>
+
+            </div>
+
+            {/* Sidebar Sticky Panel */}
+            <div className="lg:col-span-5">
+                <div className="sticky top-24 flex flex-col gap-6">
+                    <Card className="shadow-2xl border-border/50 overflow-hidden rounded-3xl pointer-events-auto">
+                        <CardHeader className="bg-primary text-white pb-8">
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <CreditCard className="w-5 h-5 text-white/80" />
+                                Invoice Preview
+                            </CardTitle>
+                            <CardDescription className="text-white/70">Review your payment details before submitting</CardDescription>
+                        </CardHeader>
+                        <CardContent className="-mt-4 bg-card pt-6 rounded-t-3xl flex flex-col gap-6">
+                            
+                            <div className="flex flex-col items-center gap-1 py-4 border-b border-dashed">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Payable to Management</span>
+                                <h3 className="text-4xl font-black text-foreground">{formatCurrency(Number(formData.amount) || 0)}</h3>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center px-2">
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                                        <Building2 className="w-4 h-4" />
+                                        Category
+                                    </div>
+                                    <Badge variant="secondary" className="capitalize font-bold px-3 py-1 scale-110 origin-right rounded-full">{formData.payment_type}</Badge>
+                                </div>
+
+                                <div className="flex justify-between items-center px-2">
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                                        <Smartphone className="w-4 h-4" />
+                                        Channel
+                                    </div>
+                                    <span className="font-bold text-foreground">
+                                        {formData.payment_method === 'mobile_money' ? 'Mobile Money' : formData.payment_method === 'bank_transfer' ? 'Bank Wire' : '—'}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between items-center px-2">
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                                        <FileText className="w-4 h-4" />
+                                        Reference
+                                    </div>
+                                    <code className="bg-muted px-2 py-0.5 rounded text-[11px] font-mono text-foreground font-bold">{formData.reference_number || 'REQUIRED'}</code>
+                                </div>
+                            </div>
+
+                            <div className="bg-muted/30 p-4 rounded-2xl flex gap-3 items-start border border-dashed border-border">
+                                <ShieldCheck className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                                <div className="flex flex-col gap-0.5">
+                                    <p className="text-[10px] font-bold text-foreground uppercase tracking-wider">Secure Logging</p>
+                                    <p className="text-[10px] text-muted-foreground leading-relaxed">This record will be cross-referenced with bank/operator logs for verification.</p>
+                                </div>
+                            </div>
+
+                        </CardContent>
+                        <CardFooter className="flex flex-col gap-2 pt-2 pb-8 px-6">
+                            <Button type="submit" className="w-full h-14 text-lg font-bold rounded-2xl shadow-xl shadow-primary/25 group">
+                                Confirm Payment Record
+                                <ChevronRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
+                            </Button>
+                            <p className="text-[10px] text-center text-muted-foreground px-4">
+                                By submitting, you affirm that the payment has been made via the selected channel and the reference provided is accurate.
+                            </p>
+                        </CardFooter>
+                    </Card>
+
+                    {/* Help Card */}
+                    <div className="p-6 bg-muted/40 rounded-3xl border flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-10 h-10 rounded-2xl bg-white dark:bg-card border border-border flex items-center justify-center shrink-0 shadow-sm">
+                            <Info className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-sm font-bold text-foreground">Payment Verification</p>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Our finance department validates all submitted logs within 2-4 business hours. If your balance doesn't update, please reach out via support.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        {/* Confirmation Modal */}
+        <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+            <DialogContent className="sm:max-w-[400px] rounded-3xl p-8 gap-6 border-none overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+                <DialogHeader>
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                        <CreditCard className="w-6 h-6" />
+                    </div>
+                    <DialogTitle className="text-2xl font-black">Verify Log Entry</DialogTitle>
+                    <DialogDescription className="text-muted-foreground leading-relaxed">
+                        Are you sure the reference <span className="font-mono font-bold text-foreground bg-muted px-1.5 rounded">{formData.reference_number}</span> is correct for this <span className="text-foreground font-bold">{formatCurrency(formData.amount)}</span> payment?
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="flex flex-col gap-3 pt-2">
+                    <Button
+                        onClick={handleVerify}
+                        disabled={isSubmitting}
+                        className="h-12 text-md font-bold rounded-xl shadow-lg shadow-primary/20"
+                    >
+                        {isSubmitting ? 'Processing Entry...' : 'Yes, Submit Log'}
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setShowConfirmation(false)}
+                        className="h-12 font-bold rounded-xl"
+                    >
+                        Double Check
+                    </Button>
+                </div>
+            </DialogContent>
         </Dialog>
-      </SidebarInset>
-    </SidebarProvider>
+
+    </main>
   );
 }
+
+
+MakePayment.layout = (page: React.ReactNode) => <TenantLayout>{page}</TenantLayout>;

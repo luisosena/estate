@@ -17,6 +17,7 @@ import {
 import { route } from 'ziggy-js';
 
 import LandlordLayout from '@/components/layout/LandlordLayout';
+import { MetricCard, QuickAction } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -72,71 +73,6 @@ const getFormattedDate = () => {
         year: 'numeric',
     });
 };
-
-/* ─── Subcomponents ──────────────────────────────────────────────── */
-
-function MetricCard({
-    title,
-    value,
-    icon: Icon,
-    description,
-    alert = false,
-}: {
-    title: string;
-    value: string | number;
-    icon: React.ElementType;
-    description: string;
-    alert?: boolean;
-}) {
-    return (
-        <Card className="shadow-none border-border/50 group hover:border-primary/20 transition-colors">
-            <CardContent className="p-5 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <Icon className={`h-4 w-4 ${alert ? 'text-red-500' : 'text-primary/70'}`} />
-                        {title}
-                    </span>
-                    <Badge variant="secondary" className="bg-muted/50 font-normal shadow-none text-xs hidden sm:inline-flex">
-                        Today
-                    </Badge>
-                </div>
-                <div>
-                    <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
-                        {value}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1 font-medium">
-                        {description}
-                    </p>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-function QuickAction({
-    label,
-    icon: Icon,
-    href,
-}: {
-    label: string;
-    icon: React.ElementType;
-    href: string;
-}) {
-    return (
-        <Button
-            asChild
-            variant="outline"
-            className="h-auto py-3 px-4 justify-start bg-card hover:bg-muted/50 border-border/50 shadow-none hover:text-primary transition-all rounded-xl"
-        >
-            <Link href={href} className="flex flex-col items-start gap-2">
-                <div className="p-2 rounded-md bg-muted/50 text-muted-foreground group-hover:text-primary">
-                    <Icon className="w-4 h-4" />
-                </div>
-                <span className="font-semibold text-sm">{label}</span>
-            </Link>
-        </Button>
-    );
-}
 
 /* ─── Main Component ─────────────────────────────────────────────── */
 

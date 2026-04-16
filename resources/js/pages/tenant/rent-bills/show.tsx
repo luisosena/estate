@@ -1,17 +1,30 @@
-import { Link, router } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle2, Clock, AlertCircle, Receipt, Home, DollarSign } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { 
+  ArrowLeft, 
+  CheckCircle2, 
+  Clock, 
+  AlertCircle, 
+  Receipt, 
+  Home, 
+  DollarSign,
+  CalendarDays,
+  Info,
+  CreditCard,
+  Building2,
+  MapPin,
+  History,
+} from 'lucide-react';
+import React from 'react';
 import { route } from 'ziggy-js';
 
-import { TenantSidebar } from '@/components/layout/tenant-sidebar';
-import TenantNotificationBell from '@/components/tenant-notification-bell';
+import TenantLayout from '@/components/layout/TenantLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
+import { formatCurrency, formatDate, getFormattedDate } from '@/lib/formatters';
+import { type SharedData } from '@/types';
 
 interface Property {
   id: number;
@@ -56,24 +69,9 @@ interface Props {
   rentBill: RentBill;
 }
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'TZS',
-    minimumFractionDigits: 0,
-  }).format(amount);
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-};
 
 const formatDateTime = (dateString: string | null) => {
-  if (!dateString) return 'N/A';
+  if (!dateString) return '—';
   return new Date(dateString).toLocaleString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -83,257 +81,284 @@ const formatDateTime = (dateString: string | null) => {
   });
 };
 
+const getPaymentStatusBadge = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'completed':
+    case 'paid':
+      return <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-200 shadow-none capitalize">Completed</Badge>;
+    case 'pending':
+      return <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-200 shadow-none capitalize">Pending</Badge>;
+    case 'failed':
+      return <Badge variant="destructive" className="shadow-none capitalize">Failed</Badge>;
+    default:
+      return <Badge variant="outline" className="shadow-none capitalize">{status}</Badge>;
+  }
+};
+
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'paid':
       return (
-        <Badge variant="default" className="bg-green-500">
+        <Badge variant="default" className="bg-green-500 hover:bg-green-600 shadow-none capitalize">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           Paid
         </Badge>
       );
     case 'pending':
       return (
-        <Badge variant="secondary" className="bg-amber-500">
+        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600 text-white shadow-none capitalize">
           <Clock className="mr-1 h-3 w-3" />
-          Pending
+          Pending balance
         </Badge>
       );
     case 'partial':
       return (
-        <Badge variant="outline" className="border-blue-500 text-blue-500">
+        <Badge variant="outline" className="border-blue-500 text-blue-500 shadow-none capitalize">
           <Clock className="mr-1 h-3 w-3" />
-          Partial
+          Partially Paid
         </Badge>
       );
     case 'overdue':
       return (
-        <Badge variant="destructive">
+        <Badge variant="destructive" className="shadow-none capitalize">
           <AlertCircle className="mr-1 h-3 w-3" />
           Overdue
         </Badge>
       );
     case 'waived':
       return (
-        <Badge variant="outline" className="text-gray-500">
+        <Badge variant="outline" className="text-muted-foreground shadow-none capitalize">
           Waived
         </Badge>
       );
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return <Badge variant="outline" className="shadow-none capitalize">{status}</Badge>;
   }
 };
 
-const getPaymentStatusBadge = (status: string) => {
-  switch (status) {
-    case 'completed':
-      return <Badge variant="default" className="bg-green-500">Completed</Badge>;
-    case 'pending':
-      return <Badge variant="secondary" className="bg-amber-500">Pending</Badge>;
-    case 'failed':
-      return <Badge variant="destructive">Failed</Badge>;
-    case 'cancelled':
-      return <Badge variant="outline">Cancelled</Badge>;
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-};
-
-export default function Show({ rentBill }: Props) {
-  const handleLogout = () => {
-    router.post('/logout');
-  };
-
+export default function RentBillShow({ rentBill }: Props) {
+  const { auth } = usePage<SharedData>().props;
   const canPay = rentBill.status !== 'paid' && rentBill.status !== 'waived';
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <TenantSidebar />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">Rent Bill Details</h1>
-            <p className="text-sm text-muted-foreground">
-              Billing Month: {formatDate(rentBill.billing_month)}
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            Logout
-          </Button>
-        </div>
+    <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+        
+        {/* Header Section */}
+        <header className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild className="-ml-2 h-8 text-muted-foreground hover:text-foreground">
+                    <Link href={route('tenant.rent-bills.index')}>
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Billing
+                    </Link>
+                </Button>
+            </div>
 
-        {/* Back Button */}
-        <div className="mb-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={route('tenant.rent-bills.index')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Rent Bills
-            </Link>
-          </Button>
-        </div>
-
-        {/* Status Banner */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">Rent Bill</h1>
-            {getStatusBadge(rentBill.status)}
-          </div>
-          {canPay && (
-            <Button asChild>
-              <Link href={route('tenant.payments.make')}>
-                <DollarSign className="mr-2 h-4 w-4" />
-                Make Payment
-              </Link>
-            </Button>
-          )}
-        </div>
-
-        {/* Main Content */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Left Column - Bill Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Bill Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5" />
-                  Bill Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <div className="text-sm text-muted-foreground">Amount Due</div>
-                    <div className="text-xl font-bold">{formatCurrency(rentBill.amount_due)}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Amount Paid</div>
-                    <div className="text-xl font-bold text-green-600">
-                      {formatCurrency(rentBill.amount_paid)}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <SidebarTrigger className="-ml-2 md:hidden" />
+                        <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                            <CalendarDays className="w-3 h-3" />
+                            {getFormattedDate()}
+                        </Badge>
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Outstanding</div>
-                    <div className="text-xl font-bold text-amber-600">
-                      {formatCurrency(rentBill.outstanding_amount)}
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                            Invoice #{rentBill.id}
+                        </h1>
+                        {getStatusBadge(rentBill.status)}
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Due Date</div>
-                    <div className="text-xl font-medium">{formatDate(rentBill.due_date)}</div>
-                  </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Detailed breakdown for the {formatDate(rentBill.billing_month)} billing cycle.
+                    </p>
                 </div>
 
-                {rentBill.notes && (
-                  <div className="mt-4 border-t pt-4">
-                    <div className="text-sm text-muted-foreground">Notes</div>
-                    <div className="mt-1">{rentBill.notes}</div>
-                  </div>
+                {canPay && (
+                    <div className="flex items-center gap-2 shrink-0">
+                        <Button asChild className="shadow-lg shadow-primary/20">
+                            <Link href={route('tenant.payments.make')}>
+                                <CreditCard className="w-4 h-4 mr-2" />
+                                Pay Outstanding Balance
+                            </Link>
+                        </Button>
+                    </div>
                 )}
-              </CardContent>
-            </Card>
+            </div>
+        </header>
 
-            {/* Payment History */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Payment History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {rentBill.payments && rentBill.payments.length > 0 ? (
-                  <div className="space-y-4">
-                    {rentBill.payments.map((payment) => (
-                      <div
-                        key={payment.id}
-                        className="flex items-center justify-between rounded-lg border p-4"
-                      >
-                        <div>
-                          <div className="font-medium">{formatCurrency(payment.amount)}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {payment.payment_method} • {formatDateTime(payment.paid_at)}
-                          </div>
-                          {payment.reference_number && (
-                            <div className="text-xs text-muted-foreground">
-                              Ref: {payment.reference_number}
+        {/* Main Dashboard-style Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Left Content Column */}
+            <div className="lg:col-span-2 flex flex-col gap-8">
+                
+                {/* Financial Summary Card */}
+                <Card className="shadow-none border-border/50">
+                    <CardHeader className="bg-muted/10 border-b pb-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="text-lg">Billing Breakdown</CardTitle>
+                                <CardDescription>Financial summary for this period</CardDescription>
                             </div>
-                          )}
+                            <Receipt className="w-5 h-5 text-muted-foreground opacity-50" />
                         </div>
-                        {getPaymentStatusBadge(payment.status)}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    No payments recorded for this bill
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Total Payable</span>
+                                <span className="text-3xl font-bold">{formatCurrency(rentBill.amount_due)}</span>
+                            </div>
+                            <div className="flex flex-col gap-1 border-l sm:pl-8 border-border/50">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Paid Amount</span>
+                                <span className="text-3xl font-bold text-green-600 dark:text-green-500">{formatCurrency(rentBill.amount_paid)}</span>
+                            </div>
+                            <div className="flex flex-col gap-1 border-l sm:pl-8 border-border/50">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Outstanding</span>
+                                <span className={cn(
+                                    "text-3xl font-bold",
+                                    rentBill.outstanding_amount > 0 ? "text-amber-600" : "text-green-600"
+                                )}>
+                                    {formatCurrency(rentBill.outstanding_amount)}
+                                </span>
+                            </div>
+                        </div>
 
-          {/* Right Column - Property Info */}
-          <div className="space-y-6">
-            {/* Property & Unit Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Home className="h-5 w-5" />
-                  Your Property
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-sm text-muted-foreground">Property</div>
-                    <div className="font-medium">
-                      {rentBill.tenancy?.unit?.property?.name || 'N/A'}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Unit</div>
-                    <div className="font-medium">
-                      {rentBill.tenancy?.unit?.unit_name || 'N/A'}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {rentBill.tenancy?.unit?.unit_code || ''}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                        <div className="mt-8 pt-6 border-t border-border/50 flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                                <Clock className="w-4 h-4" />
+                                Due By: <span className="font-semibold text-foreground">{formatDate(rentBill.due_date)}</span>
+                            </div>
+                            {rentBill.notes && (
+                                <div className="text-muted-foreground flex items-center gap-2 italic">
+                                    <Info className="w-4 h-4" />
+                                    {rentBill.notes}
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
 
-            {/* Bill Meta */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5" />
-                  Bill Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-sm text-muted-foreground">Bill ID</div>
-                    <div className="font-medium">#{rentBill.id}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Created</div>
-                    <div>{formatDateTime(rentBill.created_at)}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Last Updated</div>
-                    <div>{formatDateTime(rentBill.updated_at)}</div>
-                  </div>
+                {/* Transaction History */}
+                <Card className="shadow-none border-border/50">
+                    <CardHeader className="bg-muted/10 border-b">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                           <History className="w-5 h-5 text-primary" />
+                           Associated Transactions
+                        </CardTitle>
+                        <CardDescription>Payments recorded against this invoice</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        {rentBill.payments && rentBill.payments.length > 0 ? (
+                            <div className="divide-y divide-border/50">
+                                {rentBill.payments.map((payment) => (
+                                    <div key={payment.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center border border-primary/10">
+                                                <DollarSign className="w-5 h-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-lg">{formatCurrency(payment.amount)}</p>
+                                                <p className="text-xs text-muted-foreground uppercase font-medium tracking-tight">
+                                                    {payment.payment_method.replace('_', ' ')} • {formatDateTime(payment.paid_at)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4 justify-between sm:justify-end">
+                                            {payment.reference_number && (
+                                                <code className="text-[10px] bg-muted px-2 py-0.5 rounded border">
+                                                    Ref: {payment.reference_number}
+                                                </code>
+                                            )}
+                                            {getPaymentStatusBadge(payment.status)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-20 text-center flex flex-col items-center gap-3">
+                                <DollarSign className="w-12 h-12 text-muted-foreground opacity-20" />
+                                <p className="text-muted-foreground">No payments linked to this bill yet.</p>
+                                {canPay && (
+                                    <Button asChild variant="outline" size="sm" className="mt-2">
+                                        <Link href={route('tenant.payments.make')}>Initiate Payment</Link>
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+            </div>
+
+            {/* Right Sidebar Column */}
+            <div className="flex flex-col gap-6">
+                
+                {/* Property Context Card */}
+                <Card className="shadow-none border-border/50 bg-primary/[0.02]">
+                    <CardHeader>
+                        <CardTitle className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Property Context</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-5">
+                        <div className="flex gap-4 items-start">
+                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-card border border-border flex items-center justify-center shrink-0">
+                                <Building2 className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="font-bold text-foreground">{rentBill.tenancy?.unit?.property?.name || 'Assigned Property'}</p>
+                                <p className="text-sm text-muted-foreground">Management Division</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 items-start">
+                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-card border border-border flex items-center justify-center shrink-0">
+                                <MapPin className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <p className="font-bold text-foreground">Unit {rentBill.tenancy?.unit?.unit_name || 'N/A'}</p>
+                                <p className="text-sm text-muted-foreground">Code: {rentBill.tenancy?.unit?.unit_code || '—'}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Metadata Card */}
+                <Card className="shadow-none border-border/50">
+                    <CardHeader>
+                        <CardTitle className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Invoice Metadata</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4 text-sm">
+                        <div className="flex justify-between items-center py-2 border-b border-border/50 border-dashed">
+                            <span className="text-muted-foreground">System ID</span>
+                            <span className="font-mono font-medium">#{rentBill.id}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-border/50 border-dashed">
+                            <span className="text-muted-foreground">Created</span>
+                            <span className="font-medium text-right">{formatDateTime(rentBill.created_at)}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2">
+                            <span className="text-muted-foreground">Last Verified</span>
+                            <span className="font-medium text-right">{formatDateTime(rentBill.updated_at)}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Help Box */}
+                <div className="p-5 bg-muted/40 rounded-2xl border flex gap-3 items-start">
+                    <Info className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        Need assistance with this invoice? Contact your property manager via the <Link href="/tenant/messages" className="text-primary font-medium hover:underline">Message Center</Link> for clarifications on charges or payments.
+                    </p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+            </div>
+
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+
+    </main>
   );
 }
+
+
+RentBillShow.layout = (page: React.ReactNode) => <TenantLayout>{page}</TenantLayout>;

@@ -2,24 +2,22 @@ import { Link, usePage } from '@inertiajs/react';
 import {
   CreditCard,
   Plus,
-  ArrowLeft,
-  Calendar,
+  CalendarDays,
+  History,
+  Info,
 } from 'lucide-react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { toast, Toaster } from 'sonner';
 import { route } from 'ziggy-js';
 
-import { TenantSidebar } from '@/components/layout/tenant-sidebar';
-import TenantNotificationBell from '@/components/tenant-notification-bell';
+import TenantLayout from '@/components/layout/TenantLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
-
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
+import { formatCurrency, formatDate, getFormattedDate, getStatusVariant } from '@/lib/formatters';
+import { type SharedData } from '@/types';
 
 interface Tenant {
   id: number;
@@ -50,36 +48,6 @@ interface Props {
   pendingAmount?: number;
 }
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'TZS',
-    minimumFractionDigits: 0,
-  }).format(amount);
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return '—';
-  const date = new Date(dateString);
-  const day = date.getDate();
-  const month = date.toLocaleDateString('en-US', { month: 'short' });
-  const year = date.getFullYear();
-  return `${day} ${month} ${year}`;
-};
-
-const getStatusVariant = (
-  status?: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  switch (status?.toLowerCase()) {
-    case 'paid':
-      return 'default';
-    case 'partial':
-      return 'secondary';
-    case 'overdue':
-      return 'destructive';
-    default:
-      return 'outline';
-  }
-};
 
 export default function TenantPayments({
   tenant,
@@ -87,152 +55,168 @@ export default function TenantPayments({
   payments = [],
   pendingAmount = 0,
 }: Props) {
-  const { props } = usePage();
-  const success = (props as any).flash?.success;
-  const error = (props as any).flash?.error;
+  const { flash } = usePage<SharedData>().props;
 
-  // Display flash messages as toasts
   useEffect(() => {
-    if (success) {
-      toast.success(success);
+    if (flash?.success) {
+      toast.success(flash.success);
     }
-    if (error) {
-      toast.error(error);
+    if (flash?.error) {
+      toast.error(flash.error);
     }
-  }, [success, error]);
+  }, [flash]);
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <TenantSidebar />
-      <Toaster />
-      <SidebarInset className="px-6 pt-4 pb-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">Payments</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your rent and utility payments
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <TenantNotificationBell initialUnreadCount={0} />
-          </div>
-        </div>
-
-        {/* Pending Payment Card */}
-        {tenancy && pendingAmount > 0 && (
-          <Card className="mb-6 border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-amber-600" />
-                Pending Payment
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold">{formatCurrency(pendingAmount)}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Monthly Rent: {formatCurrency(tenancy.monthly_rent)}
-                  </p>
+    <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+        <Toaster position="top-right" />
+        
+        {/* Header Section */}
+        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+                <div className="flex items-center gap-2 mb-1">
+                    <SidebarTrigger className="-ml-2 md:hidden" />
+                    <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
+                        <CalendarDays className="w-3 h-3" />
+                        {getFormattedDate()}
+                    </Badge>
                 </div>
-                <Link href={route('tenant.payments.make')}>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Make Payment
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                    Payments
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Track your financial history and manage outstanding balances.
+                </p>
+            </div>
 
-        {/* All Settled Card */}
-        {tenancy && pendingAmount === 0 && (
-          <Card className="mb-6 border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
-            <CardContent className="py-6">
-              <div className="flex items-center justify-center gap-3">
-                <CreditCard className="h-6 w-6 text-green-600" />
-                <div className="text-center">
-                  <p className="font-medium text-green-700 dark:text-green-400">
-                    All Payments Settled
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    You have no pending payments
-                  </p>
-                </div>
-                <Link href={route('tenant.payments.make')}>
-                  <Button variant="outline" size="sm">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Payment
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            <div className="flex items-center gap-2 shrink-0">
+                <Button asChild className="shadow-sm">
+                    <Link href={route('tenant.payments.make')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        New Payment
+                    </Link>
+                </Button>
+            </div>
+        </header>
 
-        {/* No Tenancy */}
-        {!tenancy && (
-          <Card className="mb-6">
-            <CardContent className="py-6">
-              <div className="text-center">
-                <p className="text-muted-foreground">
-                  No active tenancy found. Please contact your landlord.
+        {/* Actionable Status Banner */}
+        {tenancy && pendingAmount > 0 ? (
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden relative">
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400 font-semibold mb-2">
+                <Info className="w-4 h-4" />
+                Pending Balance Detected
+              </div>
+              <h3 className="text-3xl font-bold text-foreground mb-1">{formatCurrency(pendingAmount)}</h3>
+              <p className="text-sm text-muted-foreground">
+                Monthly Rent: <span className="font-medium text-foreground">{formatCurrency(tenancy.monthly_rent)}</span>
+              </p>
+            </div>
+            <Button asChild size="lg" className="relative z-10 bg-amber-600 hover:bg-amber-700 text-white border-0 shadow-lg shadow-amber-600/20">
+              <Link href={route('tenant.payments.make')}>
+                Pay Balance Now
+              </Link>
+            </Button>
+            <CreditCard className="absolute -bottom-6 -right-6 w-32 h-32 text-amber-200/50 dark:text-amber-900/10 pointer-events-none" />
+          </div>
+        ) : tenancy && pendingAmount === 0 ? (
+          <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/30 p-6 rounded-2xl flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
+              <History className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-green-800 dark:text-green-400 text-lg">All Payments Settled</p>
+              <p className="text-sm text-muted-foreground italic">You have no outstanding rent or utility balances at this time.</p>
+            </div>
+          </div>
+        ) : !tenancy && (
+          <Card className="shadow-none border-dashed border-2">
+            <CardContent className="py-12 text-center flex flex-col items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                <Info className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">No active tenancy</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  We couldn't find an active tenancy for your account. Please contact your property manager for assistance.
                 </p>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Payment History */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">
-              Payment History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {payments.length === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm">
-                No payment history yet
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {payments.map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="bg-muted rounded-lg px-3 py-2 text-center text-xs">
-                        <div className="font-semibold">{formatDate(payment.paid_at || payment.created_at).split(' ')[0]}</div>
-                        <div className="text-muted-foreground">
-                          {formatDate(payment.paid_at || payment.created_at).split(' ').slice(1).join(' ')}
+        {/* Payment History Section */}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold tracking-tight">Payment Ledger</h2>
+            <Badge variant="outline" className="font-normal text-muted-foreground">
+              {payments.length} transactions recorded
+            </Badge>
+          </div>
+
+          <Card className="shadow-none border-border/50">
+            <CardContent className="p-0">
+              {payments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+                  <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+                    <History className="w-8 h-8 text-muted-foreground opacity-50" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">No payments found</h3>
+                  <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+                    You haven't made any payments yet. Once you do, they will appear here in your ledger.
+                  </p>
+                  <Button asChild variant="outline" className="mt-6">
+                    <Link href={route('tenant.payments.make')}>Make your first payment</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="divide-y divide-border/50">
+                  {payments.map((payment) => (
+                    <div
+                      key={payment.id}
+                      className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:px-6 gap-4 hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 shrink-0 group-hover:bg-primary/10 transition-colors">
+                          <CreditCard className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-lg">
+                            {formatCurrency(payment.amount)}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-2">
+                            <span className="capitalize">{payment.payment_type}</span>
+                            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                            <span>{payment.payment_method.replace('_', ' ')}</span>
+                            <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                            <span>{formatDate(payment.paid_at || payment.created_at)}</span>
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="font-medium">
-                          {formatCurrency(payment.amount)}
-                        </div>
-                        <div className="text-sm text-muted-foreground capitalize">
-                          {payment.payment_type} • {payment.payment_method.replace('_', ' ')}
-                        </div>
+                      
+                      <div className="flex items-center justify-between sm:justify-end gap-4 ml-12 sm:ml-0">
+                        {payment.status && (
+                          <Badge 
+                            variant={getStatusVariant(payment.status)}
+                            className="px-3 py-0.5 font-medium rounded-full shadow-none capitalize"
+                          >
+                            {payment.status}
+                          </Badge>
+                        )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
+                           <Info className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
-                    {payment.status && (
-                      <Badge variant={getStatusVariant(payment.status)}>
-                        {payment.status}
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </SidebarInset>
-    </SidebarProvider>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+    </main>
   );
 }
+
+
+TenantPayments.layout = (page: React.ReactNode) => <TenantLayout>{page}</TenantLayout>;
