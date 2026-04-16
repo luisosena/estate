@@ -3,7 +3,7 @@ import { ArrowLeft, Mail, Phone, MapPin, Building, User, Lock, Eye, EyeOff } fro
 import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
-import AdminLayout from '@/components/layout/AdminLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -206,4 +206,4 @@ export default function AdminLandlordCreate() {
   );
 }
 
-AdminLandlordCreate.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+AdminLandlordCreate.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

@@ -39,6 +39,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
 
+    Route::get('/admin/notifications', [AdminDashboardController::class, 'notifications'])
+        ->name('admin.notifications.index');
+
     // Admin Property Management Routes
     Route::get('/admin/properties', [AdminPropertyController::class, 'index'])
         ->name('admin.properties.index');

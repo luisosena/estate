@@ -13,7 +13,7 @@ import {
 import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
-import AdminLayout from '@/components/layout/AdminLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -411,4 +411,4 @@ export default function AdminPropertyEdit({ property, landlords }: AdminProperty
     );
 }
 
-AdminPropertyEdit.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+AdminPropertyEdit.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Users } from 'lucide-react';
 import React from 'react';
 
-import LandlordLayout from '@/components/layout/LandlordLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import CreateTenantForm from '@/components/Tenant/CreateTenantForm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -62,4 +62,4 @@ export default function CreateTenant({ availableUnits, errors, success }: Create
     );
 }
 
-CreateTenant.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+CreateTenant.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

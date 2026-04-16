@@ -14,7 +14,7 @@ import {
 import React from 'react';
 import { route } from 'ziggy-js';
 
-import AdminLayout from '@/components/layout/AdminLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard, QuickAction } from '@/components/shared/DashboardComponents';
 import { Button } from '@/components/ui/button';
 import {
@@ -229,4 +229,4 @@ export default function Dashboard({ stats, activity = [] }: AdminDashboardProps)
     );
 }
 
-Dashboard.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+Dashboard.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

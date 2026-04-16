@@ -3,7 +3,7 @@ import { MoreHorizontal, Eye, ArrowLeft, CheckCircle2, Clock, CreditCard } from 
 import React from 'react';
 import { useState } from 'react';
 
-import LandlordLayout from '@/components/layout/LandlordLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -357,4 +357,4 @@ export default function PaymentsIndex({ payments, stats }: Props) {
   );
 }
 
-PaymentsIndex.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+PaymentsIndex.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

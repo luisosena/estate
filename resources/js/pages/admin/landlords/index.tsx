@@ -15,7 +15,7 @@ import {
 import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
-import AdminLayout from '@/components/layout/AdminLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -296,4 +296,4 @@ export default function AdminLandlords({ landlords, stats, filters }: AdminLandl
     );
 }
 
-AdminLandlords.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+AdminLandlords.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

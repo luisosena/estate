@@ -58,6 +58,7 @@ interface QuickActionProps {
     onClick?: () => void;
     href?: string;
     className?: string;
+    disabled?: boolean;
 }
 
 import { Link } from '@inertiajs/react';

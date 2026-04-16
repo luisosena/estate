@@ -2,7 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 
-import LandlordLayout from '@/components/layout/LandlordLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -480,4 +480,4 @@ export default function LandlordTenantsIndex({
   );
 }
 
-LandlordTenantsIndex.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+LandlordTenantsIndex.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

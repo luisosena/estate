@@ -3,7 +3,7 @@ import { Building2, Home, Users, Calendar, ArrowLeft } from 'lucide-react';
 import React from 'react';
 import { route } from 'ziggy-js';
 
-import LandlordLayout from '@/components/layout/LandlordLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -256,4 +256,4 @@ export default function UnitShow({ unit }: UnitShowProps) {
   );
 }
 
-UnitShow.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+UnitShow.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

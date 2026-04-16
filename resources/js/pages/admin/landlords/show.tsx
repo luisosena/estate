@@ -18,7 +18,7 @@ import {
 import React from 'react';
 import { route } from 'ziggy-js';
 
-import AdminLayout from '@/components/layout/AdminLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -312,4 +312,4 @@ function AlertTriangleCard({ title, message }: { title: string, message: string 
     );
 }
 
-AdminLandlordShow.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+AdminLandlordShow.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

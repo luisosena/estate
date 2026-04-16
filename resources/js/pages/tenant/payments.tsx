@@ -10,7 +10,7 @@ import React, { useEffect } from 'react';
 import { toast, Toaster } from 'sonner';
 import { route } from 'ziggy-js';
 
-import TenantLayout from '@/components/layout/TenantLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -219,4 +219,4 @@ export default function TenantPayments({
 }
 
 
-TenantPayments.layout = (page: React.ReactNode) => <TenantLayout>{page}</TenantLayout>;
+TenantPayments.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

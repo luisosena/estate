@@ -12,7 +12,7 @@ import {
 import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
-import AdminLayout from '@/components/layout/AdminLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -386,4 +386,4 @@ export default function AdminPropertyCreate({ landfills, landlords = [] }: any) 
     );
 }
 
-AdminPropertyCreate.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+AdminPropertyCreate.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

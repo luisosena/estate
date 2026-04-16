@@ -14,7 +14,7 @@ import {
 import React from 'react';
 import { route } from 'ziggy-js';
 
-import TenantLayout from '@/components/layout/TenantLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -340,4 +340,4 @@ export default function RentBillsIndex({ rentBills, currentMonthBill, stats }: P
 }
 
 
-RentBillsIndex.layout = (page: React.ReactNode) => <TenantLayout>{page}</TenantLayout>;
+RentBillsIndex.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

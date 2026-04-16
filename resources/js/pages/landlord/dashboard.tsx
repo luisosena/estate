@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { route } from 'ziggy-js';
 
-import LandlordLayout from '@/components/layout/LandlordLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard, QuickAction } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -314,4 +314,4 @@ export default function Dashboard({
     );
 }
 
-Dashboard.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+Dashboard.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

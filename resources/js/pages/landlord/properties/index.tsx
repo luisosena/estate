@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import LandlordLayout from '@/components/layout/LandlordLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -233,4 +233,4 @@ export default function LandlordProperties({ properties, stats }: LandlordProper
   );
 }
 
-LandlordProperties.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+LandlordProperties.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

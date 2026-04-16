@@ -76,4 +76,18 @@ class AdminDashboardController extends Controller
             'activity' => $activity
         ]);
     }
+
+    /**
+     * Display the admin's notifications (placeholder).
+     */
+    public function notifications(Request $request)
+    {
+        return Inertia::render('admin/notifications/index', [
+            'notifications' => [
+                'data' => [],
+                'total' => 0
+            ],
+            'unreadCount' => 0
+        ]);
+    }
 }

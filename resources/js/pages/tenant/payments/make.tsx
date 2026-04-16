@@ -19,7 +19,7 @@ import { toast, Toaster } from 'sonner';
 import { route } from 'ziggy-js';
 import { z } from 'zod';
 
-import TenantLayout from '@/components/layout/TenantLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -97,6 +97,16 @@ interface Props {
   pendingUtilityBills?: UtilityBill[];
 }
 
+interface PaymentFormData {
+  [key: string]: any;
+  amount: number | string;
+  payment_type: 'rent' | 'utility';
+  payment_method: string;
+  reference_number: string;
+  notes: string;
+  utility_bill_id: number | null;
+}
+
 // Form validation schema
 const paymentSchema = z.object({
   amount: z.union([z.string(), z.number()])
@@ -131,7 +141,7 @@ export default function MakePayment({
   const { auth } = usePage<SharedData>().props;
   
   // Form state
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<PaymentFormData>({
     amount: Number(existingPayment?.amount || 0) || (existingPayment?.payment_type === 'rent' || !existingPayment ? (Number(pendingAmount) || 0) : 0),
     payment_type: (existingPayment?.payment_type as 'rent' | 'utility') ?? 'rent',
     payment_method: existingPayment?.payment_method ?? '',
@@ -165,9 +175,9 @@ export default function MakePayment({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors((prev: any) => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -222,7 +232,7 @@ export default function MakePayment({
   const handleVerify = async () => {
     setIsSubmitting(true);
     try {
-      router.post(route('tenant.payments.store'), formData, {
+      router.post(route('tenant.payments.store'), formData as any, {
         onSuccess: () => {
           setShowConfirmation(false);
           setShowSuccess(true);
@@ -260,7 +270,7 @@ export default function MakePayment({
             <CardContent className="space-y-6 pt-4">
                 <div className="bg-muted/30 rounded-2xl p-6 text-center">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">Total Amount Paid</p>
-                    <h2 className="text-4xl font-extrabold text-foreground">{formatCurrency(formData.amount)}</h2>
+                    <h2 className="text-4xl font-extrabold text-foreground">{formatCurrency(Number(formData.amount))}</h2>
                 </div>
 
                 <div className="space-y-3">
@@ -349,7 +359,7 @@ export default function MakePayment({
                     <div className="grid grid-cols-2 gap-4">
                         <button
                             type="button"
-                            onClick={() => setFormData(p => ({ ...p, payment_type: 'rent', amount: pendingAmount || p.amount }))}
+                            onClick={() => setFormData((p: PaymentFormData) => ({ ...p, payment_type: 'rent', amount: pendingAmount || p.amount }))}
                             className={cn(
                                 "relative flex flex-col items-start gap-4 p-5 rounded-2xl border-2 transition-all text-left",
                                 formData.payment_type === 'rent' 
@@ -372,7 +382,7 @@ export default function MakePayment({
 
                         <button
                             type="button"
-                            onClick={() => setFormData(p => ({ ...p, payment_type: 'utility' }))}
+                            onClick={() => setFormData((p: PaymentFormData) => ({ ...p, payment_type: 'utility' }))}
                             className={cn(
                                 "relative flex flex-col items-start gap-4 p-5 rounded-2xl border-2 transition-all text-left",
                                 formData.payment_type === 'utility' 
@@ -457,12 +467,12 @@ export default function MakePayment({
                         
                         <div className="flex flex-wrap justify-center gap-2">
                             {formData.payment_type === 'rent' && pendingAmount > 0 && (
-                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData(p => ({ ...p, amount: pendingAmount }))} className="h-7 text-[10px] rounded-full bg-white font-bold border-primary/20 hover:bg-primary/5">
+                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData((p: PaymentFormData) => ({ ...p, amount: pendingAmount }))} className="h-7 text-[10px] rounded-full bg-white font-bold border-primary/20 hover:bg-primary/5">
                                     SET OUTSTANDING ({formatCurrency(pendingAmount)})
                                 </Button>
                             )}
                             {tenancy && (
-                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData(p => ({ ...p, amount: tenancy.monthly_rent }))} className="h-7 text-[10px] rounded-full bg-white font-bold border-primary/20 hover:bg-primary/5">
+                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData((p: PaymentFormData) => ({ ...p, amount: tenancy.monthly_rent }))} className="h-7 text-[10px] rounded-full bg-white font-bold border-primary/20 hover:bg-primary/5">
                                     SET MONTHLY RENT ({formatCurrency(tenancy.monthly_rent)})
                                 </Button>
                             )}
@@ -639,7 +649,7 @@ export default function MakePayment({
                     </div>
                     <DialogTitle className="text-2xl font-black">Verify Log Entry</DialogTitle>
                     <DialogDescription className="text-muted-foreground leading-relaxed">
-                        Are you sure the reference <span className="font-mono font-bold text-foreground bg-muted px-1.5 rounded">{formData.reference_number}</span> is correct for this <span className="text-foreground font-bold">{formatCurrency(formData.amount)}</span> payment?
+                        Are you sure the reference <span className="font-mono font-bold text-foreground bg-muted px-1.5 rounded">{formData.reference_number}</span> is correct for this <span className="text-foreground font-bold">{formatCurrency(Number(formData.amount))}</span> payment?
                     </DialogDescription>
                 </DialogHeader>
 
@@ -667,4 +677,4 @@ export default function MakePayment({
 }
 
 
-MakePayment.layout = (page: React.ReactNode) => <TenantLayout>{page}</TenantLayout>;
+MakePayment.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

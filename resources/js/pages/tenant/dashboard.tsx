@@ -17,7 +17,7 @@ import {
 import React, { useMemo } from 'react';
 import { route } from 'ziggy-js';
 
-import TenantLayout from '@/components/layout/TenantLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard, QuickAction } from '@/components/shared/DashboardComponents';
 import {
   LastPaymentsTable,
@@ -347,4 +347,4 @@ export default function TenantDashboard({
   );
 }
 
-TenantDashboard.layout = (page: React.ReactNode) => <TenantLayout>{page}</TenantLayout>;
+TenantDashboard.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

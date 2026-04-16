@@ -5,7 +5,7 @@ import React from 'react';
 import { toast, Toaster } from 'sonner';
 import { route } from 'ziggy-js';
 
-import LandlordLayout from '@/components/layout/LandlordLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -334,4 +334,4 @@ export default function CreateLandlordUtility({
   );
 }
 
-CreateLandlordUtility.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+CreateLandlordUtility.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

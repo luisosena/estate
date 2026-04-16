@@ -19,7 +19,7 @@ import {
 import React from 'react';
 import { route } from 'ziggy-js';
 
-import AdminLayout from '@/components/layout/AdminLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard } from '@/components/shared/DashboardComponents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -349,4 +349,4 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
     );
 }
 
-AdminPropertyShow.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+AdminPropertyShow.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

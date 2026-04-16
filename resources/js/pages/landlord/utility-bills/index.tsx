@@ -4,7 +4,7 @@ import { MoreHorizontal, Eye } from 'lucide-react';
 import React from 'react';
 import { route } from 'ziggy-js';
 
-import LandlordLayout from '@/components/layout/LandlordLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -321,4 +321,4 @@ export default function LandlordUtilityBillsIndex({
   );
 }
 
-LandlordUtilityBillsIndex.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+LandlordUtilityBillsIndex.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;
