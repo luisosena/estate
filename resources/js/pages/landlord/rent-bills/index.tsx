@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { MoreHorizontal, Eye, AlertCircle, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
@@ -128,12 +128,15 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-export default function Index({ rentBills, stats }: Props) {
+export default function LandlordRentBillsIndex({ 
+  rentBills = { data: [], current_page: 1, last_page: 1, per_page: 15, total: 0, links: [] }, 
+  stats = { total: 0, pending: 0, overdue: 0, paid: 0 } 
+}: Props) {
   const [currentPage, setCurrentPage] = useState(rentBills.current_page);
 
   const handlePageChange = (pageUrl: string | null) => {
     if (pageUrl) {
-      window.location.href = pageUrl;
+      router.visit(pageUrl);
     }
   };
 
@@ -350,4 +353,4 @@ export default function Index({ rentBills, stats }: Props) {
   );
 }
 
-Index.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+LandlordRentBillsIndex.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { MoreHorizontal, Eye, ArrowLeft, CheckCircle2, Clock, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 
@@ -143,7 +143,7 @@ export default function PaymentsIndex({ payments, stats }: Props) {
 
   const handlePageChange = (pageUrl: string | null) => {
     if (pageUrl) {
-      window.location.href = pageUrl;
+      router.visit(pageUrl);
     }
   };
 

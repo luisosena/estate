@@ -656,7 +656,7 @@ export default function TenantShow({
                 onSuccess: () => {
                   console.log('Unit changed successfully');
                   setIsEditModalOpen(false);
-                  window.location.reload(); // Reload to show updated unit info
+                  router.reload(); // Reload to show updated info
                 },
                 onError: (errors) => {
                   console.error('Unit change failed:', errors);
@@ -672,7 +672,7 @@ export default function TenantShow({
                 onSuccess: () => {
                   console.log('Payment updated successfully');
                   setIsEditModalOpen(false);
-                  window.location.reload(); // Reload to show updated payment info
+                  router.reload(); // Reload to show updated info
                 },
                 onError: (errors) => {
                   console.error('Payment update failed:', errors);
@@ -688,7 +688,7 @@ export default function TenantShow({
                 onSuccess: () => {
                   console.log('Payment added successfully');
                   setIsEditModalOpen(false);
-                  window.location.reload(); // Reload to show new payment
+                  router.reload(); // Reload to show updated info
                 },
                 onError: (errors) => {
                   console.error('Payment addition failed:', errors);
@@ -706,7 +706,7 @@ export default function TenantShow({
                 onSuccess: () => {
                   console.log('Tenant moved successfully');
                   setIsEditModalOpen(false);
-                  window.location.reload(); // Reload to show updated unit info
+                  router.reload(); // Reload to show updated info
                 },
                 onError: (errors) => {
                   console.error('Tenant move failed:', errors);
@@ -722,7 +722,7 @@ export default function TenantShow({
                 onSuccess: () => {
                   console.log('Tenancy ended successfully');
                   setIsEditModalOpen(false);
-                  window.location.reload(); // Reload to show updated tenancy status
+                  router.reload(); // Reload to show updated info
                 },
                 onError: (errors) => {
                   console.error('Tenancy ending failed:', errors);

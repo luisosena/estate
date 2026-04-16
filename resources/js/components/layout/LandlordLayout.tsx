@@ -24,8 +24,11 @@ interface LandlordLayoutProps {
  *   MyPage.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
  */
 export default function LandlordLayout({ children }: LandlordLayoutProps) {
-    const page = usePage<SharedData & { unreadNotificationsCount?: number; properties?: { id: number; name: string }[] }>();
-    const { unreadNotificationsCount = 0, properties = [] } = page.props as any;
+    // Pull shared data from Inertia's page props with safety defaults
+    const page = usePage<SharedData>();
+    const { props } = page;
+    const unreadNotificationsCount = (props as any).unreadNotificationsCount ?? 0;
+    const properties = (props as any).properties ?? [];
 
     return (
         <SidebarProvider defaultOpen={true}>

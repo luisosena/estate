@@ -480,4 +480,4 @@ export default function LandlordTenantsIndex({
   );
 }
 
-TenantsIndex.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+LandlordTenantsIndex.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;

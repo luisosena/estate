@@ -45,7 +45,7 @@ class LandlordRentBillController extends Controller
         })->count();
         $paidCount = (clone $statsQuery)->where('status', 'paid')->count();
 
-        return inertia('Landlord/RentBills/Index', [
+        return inertia('landlord/rent-bills/index', [
             'rentBills' => $rentBills,
             'stats' => [
                 'total' => $totalCount,
@@ -75,7 +75,7 @@ class LandlordRentBillController extends Controller
             ])
             ->findOrFail($id);
 
-        return inertia('Landlord/RentBills/Show', [
+        return inertia('landlord/rent-bills/show', [
             'rentBill' => $rentBill,
         ]);
     }

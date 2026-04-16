@@ -146,7 +146,7 @@ const getPaymentStatusBadge = (status: string) => {
   }
 };
 
-export default function Show({ rentBill }: Props) {
+export default function LandlordRentBillShow({ rentBill }: Props) {
   const { props } = usePage();
   const [showWaiveModal, setShowWaiveModal] = useState(false);
   const [waiveNotes, setWaiveNotes] = useState('');
@@ -440,4 +440,4 @@ export default function Show({ rentBill }: Props) {
   );
 }
 
-Show.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
+LandlordRentBillShow.layout = (page: React.ReactNode) => <LandlordLayout>{page}</LandlordLayout>;
