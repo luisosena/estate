@@ -12,17 +12,20 @@ use App\Http\Resources\TenancyResource;
 use App\Http\Resources\TenantResource;
 use App\Http\Resources\UtilityBillResource;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Services\UtilityService;
+use App\Services\PaymentService;
+use App\Http\Requests\Tenant\StorePaymentRequest;
+use Illuminate\Support\Facades\Log;
 
 class TenantPaymentsController extends Controller
 {
     protected $utilityService;
+    protected $paymentService;
 
-    public function __construct(UtilityService $utilityService)
+    public function __construct(UtilityService $utilityService, PaymentService $paymentService)
     {
         $this->utilityService = $utilityService;
+        $this->paymentService = $paymentService;
     }
 
     /**
@@ -85,7 +88,8 @@ class TenantPaymentsController extends Controller
 
         $existingPayment = null;
         if ($paymentId) {
-            $existingPayment = $activeTenancy->payments()->find($paymentId);
+            $existingPayment = $activeTenancy->payments()->findOrFail($paymentId);
+            $this->authorize('view', $existingPayment);
         }
 
         // Calculate pending amount
@@ -121,107 +125,38 @@ class TenantPaymentsController extends Controller
     /**
      * Store a new payment or update existing.
      */
-    public function storePayment(Request $request, ?Payment $payment = null)
+    public function storePayment(StorePaymentRequest $request, ?Payment $payment = null)
     {
         $user = $request->user();
         $tenant = $user->tenant;
-
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:1|max:100000000',
-            'payment_type' => 'required|in:rent,utility',
-            'payment_method' => 'required|in:mobile_money,bank_transfer',
-            'reference_number' => 'nullable|string|max:100',
-            'notes' => 'nullable|string|max:500',
-            'utility_bill_id' => 'nullable|exists:utility_bills,id',
-        ]);
-
+        $validated = $request->validated();
+ 
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
             ->first();
-
+ 
         if (!$activeTenancy) {
             return redirect()
                 ->route('tenant.payments')
                 ->with('error', 'No active tenancy found.');
         }
-
-        // Get the existing payment if updating
-        $existingPayment = $payment;
-
+ 
         // Security check
-        if ($existingPayment && $existingPayment->tenant_id !== $tenant->id) {
-            abort(403, 'Unauthorized access to this payment.');
+        if ($payment) {
+            $this->authorize('update', $payment);
         }
-
+ 
         try {
-            $result = DB::transaction(function () use ($activeTenancy, $validated, $existingPayment, $tenant) {
-                // Duplicate prevention
-                $recentDuplicate = $activeTenancy->payments()
-                    ->where('amount', $validated['amount'])
-                    ->where('payment_method', $validated['payment_method'])
-                    ->where('payment_type', $validated['payment_type'])
-                    ->where('created_at', '>=', now()->subSeconds(30))
-                    ->exists();
-
-                if ($recentDuplicate && !$existingPayment) {
-                    return ['error' => 'A duplicate payment was recently submitted. Please wait a moment.'];
-                }
-
-                $monthlyRent = $activeTenancy->monthly_rent ?? 0;
-                $status = 'partial';
-                $utilityBillId = $validated['utility_bill_id'] ?? null;
-
-                if ($validated['payment_type'] === 'utility' && $utilityBillId) {
-                    $bill = UtilityBill::find($utilityBillId);
-                    if ($bill) {
-                        $this->utilityService->processUtilityPayment($bill, $validated['amount']);
-                        $bill->refresh();
-                        $status = $bill->status;
-                    }
-                } else if ($validated['payment_type'] === 'rent') {
-                    $currentTotalPaid = $activeTenancy->payments()
-                        ->whereIn('status', ['paid', 'partial'])
-                        ->where('payment_type', 'rent')
-                        ->when($existingPayment, fn($q) => $q->where('id', '!=', $existingPayment->id))
-                        ->sum('amount');
-                    
-                    if ($currentTotalPaid + $validated['amount'] >= $monthlyRent) {
-                        $status = 'paid';
-                    }
-                }
-
-                // Create or update payment
-                $paymentData = [
-                    'tenant_id' => $tenant->id,
-                    'tenancy_id' => $activeTenancy->id,
-                    'utility_bill_id' => $utilityBillId,
-                    'amount' => $validated['amount'],
-                    'payment_type' => $validated['payment_type'],
-                    'payment_method' => $validated['payment_method'],
-                    'status' => $status,
-                    'paid_at' => now(),
-                    'reference_number' => $validated['reference_number'] ?? null,
-                    'notes' => $validated['notes'] ?? null,
-                ];
-
-                if ($existingPayment) {
-                    $existingPayment->update($paymentData);
-                    $payment = $existingPayment;
-                } else {
-                    $payment = Payment::create($paymentData);
-                }
-
-                return ['success' => true, 'payment' => $payment];
-            });
-
+            $result = $this->paymentService->processPayment($validated, $activeTenancy, $payment);
+ 
             if (isset($result['error'])) {
                 return redirect()->back()->withInput()->with('error', $result['error']);
             }
-
+ 
             return redirect()
                 ->route('tenant.payments')
                 ->with('success', 'Payment processed successfully!');
-
+ 
         } catch (\Exception $e) {
             Log::error('Payment processing failed: ' . $e->getMessage());
             return redirect()->back()->withInput()->with('error', 'Failed to process payment.');

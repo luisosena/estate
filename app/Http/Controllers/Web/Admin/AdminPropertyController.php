@@ -10,24 +10,21 @@ use App\Models\Property;
 use App\Models\User;
 use App\Http\Resources\PropertyResource;
 use App\Http\Resources\LandlordResource;
+use App\Http\Requests\Admin\PropertyRequest;
 
 class AdminPropertyController extends Controller
 {
     /**
      * Display a listing of properties.
      */
+    public function __construct()
+    {
+        $this->authorizeResource(Property::class, 'property');
+    }
+ 
     public function index(Request $request)
     {
-        try {
-            $user = $request->user();
-
-            if (!$user || $user->role !== 'admin') {
-                return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
-            }
-        } catch (\Exception $e) {
-            \Log::error('Admin properties index error: ' . $e->getMessage());
-            return redirect()->route('login')->with('error', 'Access denied.');
-        }
+        $user = $request->user();
 
         $query = Property::with(['landlord']);
 
@@ -72,16 +69,7 @@ class AdminPropertyController extends Controller
      */
     public function create()
     {
-        try {
-            $user = request()->user();
-
-            if (!$user || $user->role !== 'admin') {
-                return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
-            }
-        } catch (\Exception $e) {
-            \Log::error('Admin properties create error: ' . $e->getMessage());
-            return redirect()->route('login')->with('error', 'Access denied.');
-        }
+        $user = request()->user();
 
         $landlords = User::where('role', 'landlord')->orderBy('name')->get();
 
@@ -93,25 +81,9 @@ class AdminPropertyController extends Controller
     /**
      * Store a newly created property.
      */
-    public function store(Request $request)
+    public function store(PropertyRequest $request)
     {
-        $validated = $request->validate([
-            'owner_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'country' => 'required|string|max:100',
-            'property_type' => 'required|in:apartment,house,commercial,mixed',
-            'total_units' => 'required|integer|min:1',
-            'status' => 'required|in:active,inactive,maintenance',
-            'description' => 'nullable|string',
-            'amenities' => 'nullable|array',
-            'amenities.*' => 'string|max:100',
-            'policies' => 'nullable|array',
-            'policies.*' => 'string|max:255',
-        ]);
+        $validated = $request->validated();
 
         $property = Property::create($validated);
 
@@ -149,25 +121,9 @@ class AdminPropertyController extends Controller
     /**
      * Update the specified property.
      */
-    public function update(Request $request, Property $property)
+    public function update(PropertyRequest $request, Property $property)
     {
-        $validated = $request->validate([
-            'owner_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'country' => 'required|string|max:100',
-            'property_type' => 'required|in:apartment,house,commercial,mixed',
-            'total_units' => 'required|integer|min:1',
-            'status' => 'required|in:active,inactive,maintenance',
-            'description' => 'nullable|string',
-            'amenities' => 'nullable|array',
-            'amenities.*' => 'string|max:100',
-            'policies' => 'nullable|array',
-            'policies.*' => 'string|max:255',
-        ]);
+        $validated = $request->validated();
 
         $property->update($validated);
 

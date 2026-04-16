@@ -9,6 +9,9 @@ use App\Models\Tenancy;
 use App\Http\Resources\TenantResource;
 use App\Services\RentBillService;
 use App\Services\UtilityService;
+use App\Http\Requests\Landlord\StoreTenantRequest;
+use App\Http\Requests\Landlord\UpdateTenantRequest;
+use App\Http\Requests\Landlord\ChangeUnitRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -21,6 +24,7 @@ class LandlordTenantController extends Controller
     {
         $this->rentBillService = $rentBillService;
         $this->utilityService = $utilityService;
+        $this->authorizeResource(Tenant::class, 'tenant');
     }
 
     /**
@@ -130,32 +134,14 @@ class LandlordTenantController extends Controller
     /**
      * Display the specified tenant.
      */
-    public function show(Request $request, $tenantId)
+    public function show(Request $request, Tenant $tenant)
     {
-        $landlord = $request->user();
-
-        // Support both ID and tenant_code for lookup
-        $tenant = Tenant::where('id', $tenantId)
-            ->orWhere('tenant_code', $tenantId)
-            ->firstOrFail();
-
-        // Verify landlord owns at least one tenancy for this tenant
+        // View authorization handled by authorizeResource and TenantPolicy
+ 
         $activeTenancy = $tenant->tenancies()
-            ->whereHas('unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            ->where('status', 'active')
             ->with(['unit.property'])
             ->first();
-
-        if (!$activeTenancy && $tenant->tenancies()->count() > 0) {
-            // Check history if no active tenancy
-            $hasHistory = $tenant->tenancies()
-                ->whereHas('unit.property', function ($query) use ($landlord) {
-                    $query->where('owner_id', $landlord->id);
-                })->exists();
-            
-            if (!$hasHistory) abort(403);
-        }
 
         $payments = $tenant->payments()
             ->orderBy('created_at', 'desc')
@@ -193,20 +179,9 @@ class LandlordTenantController extends Controller
     /**
      * Update tenant information.
      */
-    public function update(Request $request, $tenantId)
+    public function update(UpdateTenantRequest $request, Tenant $tenant)
     {
-        $tenant = Tenant::where('id', $tenantId)
-            ->orWhere('tenant_code', $tenantId)
-            ->firstOrFail();
-
-        $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'required|string|max:20',
-            'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:20',
-            'emergency_contact_relation' => 'nullable|string|max:100',
-        ]);
+        $validated = $request->validated();
 
         $tenant->update($validated);
 
@@ -254,20 +229,11 @@ class LandlordTenantController extends Controller
     /**
      * Store a newly created tenant.
      */
-    public function store(Request $request)
+    public function store(StoreTenantRequest $request)
     {
         $landlord = $request->user();
 
-        $validated = $request->validate([
-            'property_id' => 'required|exists:properties,id',
-            'unit_id' => 'required|exists:units,id',
-            'full_name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'required|string|max:20',
-            'move_in_date' => 'required|date',
-            'monthly_rent' => 'required|numeric|min:0',
-            'security_deposit' => 'nullable|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         return \DB::transaction(function () use ($validated, $landlord) {
             // 1. Create or Find Tenant
@@ -301,16 +267,11 @@ class LandlordTenantController extends Controller
     /**
      * Change a tenant's unit.
      */
-    public function changeUnit(Request $request, Tenancy $tenancy)
+    public function changeUnit(ChangeUnitRequest $request, Tenancy $tenancy)
     {
-        $landlord = $request->user();
-
-        // Verify ownership
-        if ($tenancy->unit->property->owner_id !== $landlord->id) abort(403);
-
-        $validated = $request->validate([
-            'new_unit_id' => 'required|exists:units,id',
-        ]);
+        $this->authorize('update', $tenancy);
+ 
+        $validated = $request->validated();
 
         return \DB::transaction(function () use ($validated, $tenancy) {
             // 1. Mark old unit as available

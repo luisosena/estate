@@ -7,6 +7,8 @@ use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\Tenancy;
 use App\Services\RentBillService;
+use App\Http\Requests\Landlord\PaymentStoreRequest;
+use App\Http\Requests\Landlord\PaymentUpdateRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +27,7 @@ class LandlordPaymentController extends Controller
     {
         $this->rentBillService = $rentBillService;
         $this->utilityService = $utilityService;
+        $this->authorizeResource(Payment::class, 'payment');
     }
 
     /**
@@ -72,30 +75,13 @@ class LandlordPaymentController extends Controller
      * @param Tenant $tenant
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request, Tenant $tenant)
+    public function store(PaymentStoreRequest $request, Tenant $tenant)
     {
+        $this->authorize('update', $tenant);
+ 
         $landlord = $request->user();
-        
-        // Authorization: ensure tenant belongs to landlord's property
-        $hasAccess = $tenant->tenancies()
-            ->whereHas('unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
-            ->exists();
 
-        if (!$hasAccess) {
-            abort(403, 'You do not have access to add payments for this tenant.');
-        }
-
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:0',
-            'payment_type' => ['required', Rule::in(['rent', 'utility'])],
-            'payment_method' => 'required|string|max:255',
-            'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
-            'paid_at' => 'required|date',
-            'rent_bill_id' => 'nullable|exists:rent_bills,id',
-            'utility_bill_id' => 'nullable|exists:utility_bills,id',
-        ]);
+        $validated = $request->validated();
 
         try {
             // Get the active tenancy for this tenant
@@ -191,28 +177,13 @@ class LandlordPaymentController extends Controller
      * @param Payment $payment
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Payment $payment)
+    public function update(PaymentUpdateRequest $request, Payment $payment)
     {
+        // Authorization handled by authorizeResource
+ 
         $landlord = $request->user();
-        
-        // Authorization: ensure payment belongs to landlord's tenant
-        $hasAccess = $payment->tenant()
-            ->whereHas('tenancies.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
-            ->exists();
 
-        if (!$hasAccess) {
-            abort(403, 'You do not have access to edit this payment record.');
-        }
-
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:0',
-            'payment_type' => ['required', Rule::in(['rent', 'utility'])],
-            'payment_method' => 'required|string|max:255',
-            'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
-            'paid_at' => 'required|date',
-        ]);
+        $validated = $request->validated();
 
         try {
             $payment->update($validated);
@@ -251,18 +222,9 @@ class LandlordPaymentController extends Controller
      */
     public function destroy(Request $request, Payment $payment)
     {
+        // Authorization handled by authorizeResource
+ 
         $landlord = $request->user();
-        
-        // Authorization: ensure payment belongs to landlord's tenant
-        $hasAccess = $payment->tenant()
-            ->whereHas('tenancies.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
-            ->exists();
-
-        if (!$hasAccess) {
-            abort(403, 'You do not have access to delete this payment record.');
-        }
 
         try {
             $tenantCode = $payment->tenant->tenant_code;

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web\Landlord;
 use App\Http\Controllers\Controller;
 use App\Models\RentBill;
 use App\Http\Resources\RentBillResource;
+use App\Http\Requests\Landlord\WaiveBillRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -64,19 +65,15 @@ class LandlordRentBillController extends Controller
     /**
      * Show a single rent bill.
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, RentBill $rentBill)
     {
-        $landlord = $request->user();
-
-        $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
-            ->with([
+        $this->authorize('view', $rentBill);
+ 
+        $rentBill->load([
                 'tenancy.tenant',
                 'tenancy.unit.property',
                 'payments',
-            ])
-            ->findOrFail($id);
+            ]);
 
         return Inertia::render('landlord/rent-bills/show', [
             'rentBill' => new RentBillResource($rentBill),
@@ -86,25 +83,18 @@ class LandlordRentBillController extends Controller
     /**
      * Waive a rent bill.
      */
-    public function waive(Request $request, int $id)
+    public function waive(WaiveBillRequest $request, RentBill $rentBill)
     {
-        $landlord = $request->user();
-
-        $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
-            ->findOrFail($id);
-
+        $this->authorize('waive', $rentBill);
+ 
         if (in_array($rentBill->status, ['waived', 'paid'])) {
             return redirect()
                 ->back()
                 ->with('error', "Cannot waive a rent bill that is already {$rentBill->status}.");
         }
-
-        $validated = $request->validate([
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
+ 
+        $validated = $request->validated();
+ 
         app(\App\Services\RentBillService::class)->waiveRentBill($rentBill, $validated['notes'] ?? null);
 
         return redirect()

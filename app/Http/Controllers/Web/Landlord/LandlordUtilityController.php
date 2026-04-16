@@ -9,6 +9,8 @@ use App\Models\UtilityType;
 use App\Http\Resources\TenancyResource;
 use App\Http\Resources\UtilityTypeResource;
 use App\Http\Resources\TenancyUtilityResource;
+use App\Http\Requests\Landlord\StoreUtilityRequest;
+use App\Http\Requests\Landlord\UpdateUtilityRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -19,6 +21,11 @@ class LandlordUtilityController extends Controller
     /**
      * Display a listing of utilities across all tenancies.
      */
+    public function __construct()
+    {
+        $this->authorizeResource(TenancyUtility::class, 'tenancyUtility');
+    }
+ 
     public function index(Request $request)
     {
         $landlord = $request->user();
@@ -41,13 +48,7 @@ class LandlordUtilityController extends Controller
      */
     public function create(Request $request, Tenancy $tenancy)
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this tenancy
-        $property = $tenancy->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
-            abort(403);
-        }
+        $this->authorize('update', $tenancy);
 
         $utilityTypes = UtilityType::active()->orderBy('name')->get();
 
@@ -71,30 +72,11 @@ class LandlordUtilityController extends Controller
     /**
      * Store a newly assigned utility.
      */
-    public function store(Request $request, Tenancy $tenancy)
+    public function store(StoreUtilityRequest $request, Tenancy $tenancy)
     {
-        $landlord = $request->user();
-
-        // Verify ownership
-        $property = $tenancy->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
-            abort(403);
-        }
-
-        $validated = $request->validate([
-            'utility_type_id' => [
-                'required',
-                'exists:utility_types,id',
-                Rule::unique('tenancy_utilities')->where('tenancy_id', $tenancy->id),
-            ],
-            'amount' => 'required|numeric|min:0',
-            'billing_cycle' => ['required', Rule::in(['monthly', 'quarterly', 'annual'])],
-            'provider' => 'nullable|string|max:255',
-            'account_number' => 'nullable|string|max:100',
-            'meter_number' => 'nullable|string|max:100',
-            'status' => ['required', Rule::in(['active', 'suspended', 'disconnected'])],
-            'notes' => 'nullable|string',
-        ]);
+        $this->authorize('update', $tenancy);
+ 
+        $validated = $request->validated();
 
         try {
             TenancyUtility::create([
@@ -126,13 +108,7 @@ class LandlordUtilityController extends Controller
      */
     public function show(Request $request, Tenancy $tenancy)
     {
-        $landlord = $request->user();
-
-        // Verify ownership
-        $property = $tenancy->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
-            abort(403);
-        }
+        $this->authorize('view', $tenancy);
 
         $tenancy->load(['unit.property', 'tenant', 'tenancyUtilities.utilityType', 'tenancyUtilities.bills']);
 
@@ -146,13 +122,7 @@ class LandlordUtilityController extends Controller
      */
     public function edit(Request $request, TenancyUtility $tenancyUtility)
     {
-        $landlord = $request->user();
-
-        // Verify ownership
-        $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
-            abort(403);
-        }
+        // Authorization handled by authorizeResource
 
         return Inertia::render('landlord/utilities/edit', [
             'tenancyUtility' => new TenancyUtilityResource($tenancyUtility->load('utilityType')),
@@ -164,25 +134,11 @@ class LandlordUtilityController extends Controller
     /**
      * Update a tenancy utility.
      */
-    public function update(Request $request, TenancyUtility $tenancyUtility)
+    public function update(UpdateUtilityRequest $request, TenancyUtility $tenancyUtility)
     {
-        $landlord = $request->user();
-
-        // Verify ownership
-        $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
-            abort(403);
-        }
-
-        $validated = $request->validate([
-            'amount' => 'sometimes|numeric|min:0',
-            'billing_cycle' => ['sometimes', Rule::in(['monthly', 'quarterly', 'annual'])],
-            'provider' => 'nullable|string|max:255',
-            'account_number' => 'nullable|string|max:100',
-            'meter_number' => 'nullable|string|max:100',
-            'status' => ['sometimes', Rule::in(['active', 'suspended', 'disconnected'])],
-            'notes' => 'nullable|string',
-        ]);
+        // Authorization handled by authorizeResource
+ 
+        $validated = $request->validated();
 
         try {
             $tenancyUtility->update($validated);
@@ -200,13 +156,7 @@ class LandlordUtilityController extends Controller
      */
     public function destroy(Request $request, TenancyUtility $tenancyUtility)
     {
-        $landlord = $request->user();
-
-        // Verify ownership
-        $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
-            abort(403);
-        }
+        // Authorization handled by authorizeResource
 
         try {
             $unpaidBills = $tenancyUtility->bills()
