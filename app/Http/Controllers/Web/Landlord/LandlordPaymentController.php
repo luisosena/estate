@@ -3,24 +3,25 @@
 namespace App\Http\Controllers\Web\Landlord;
 
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
-use App\Models\Tenant;
-use App\Models\Tenancy;
-use App\Services\RentBillService;
 use App\Http\Requests\Landlord\PaymentStoreRequest;
 use App\Http\Requests\Landlord\PaymentUpdateRequest;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
-use Inertia\Inertia;
-use App\Services\UtilityService;
-use App\Models\UtilityBill;
 use App\Http\Resources\PaymentResource;
+use App\Models\Payment;
+use App\Models\Tenancy;
+use App\Models\Tenant;
+use App\Models\UtilityBill;
+use App\Services\RentBillService;
+use App\Services\UtilityService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class LandlordPaymentController extends Controller
 {
     protected RentBillService $rentBillService;
+
     protected UtilityService $utilityService;
 
     public function __construct(RentBillService $rentBillService, UtilityService $utilityService)
@@ -33,13 +34,12 @@ class LandlordPaymentController extends Controller
     /**
      * Display a listing of payments for the landlord.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Inertia\Response
+     * @return Response
      */
     public function index(Request $request)
     {
         $landlord = $request->user();
-        
+
         // Base query for filtering payments belonging to landlord's properties
         $baseQuery = Payment::whereHas('tenant.tenancies.unit.property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
@@ -71,14 +71,13 @@ class LandlordPaymentController extends Controller
     /**
      * Store a new payment record for a tenant.
      *
-     * @param Request $request
-     * @param Tenant $tenant
-     * @return \Illuminate\Http\RedirectResponse
+     * @param  Request  $request
+     * @return RedirectResponse
      */
     public function store(PaymentStoreRequest $request, Tenant $tenant)
     {
         $this->authorize('update', $tenant);
- 
+
         $landlord = $request->user();
 
         $validated = $request->validated();
@@ -86,8 +85,8 @@ class LandlordPaymentController extends Controller
         try {
             // Get the active tenancy for this tenant
             $activeTenancy = $tenant->tenancies()->where('status', 'active')->first();
-            
-            if (!$activeTenancy) {
+
+            if (! $activeTenancy) {
                 return redirect()
                     ->back()
                     ->with('error', 'This tenant has no active tenancy.');
@@ -98,7 +97,7 @@ class LandlordPaymentController extends Controller
             if ($validated['payment_type'] === 'rent') {
                 $billLinkResult = $this->rentBillService->linkPaymentToBill(
                     $activeTenancy->id,
-                    !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                    ! empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
                     false // Not required - allows payments without bill
                 );
                 $rentBillId = $billLinkResult['rent_bill_id'];
@@ -130,7 +129,7 @@ class LandlordPaymentController extends Controller
                     // Bill already processed, continue with payment but warn
                     $payment = Payment::create($paymentData);
                 }
-            } else if ($validated['payment_type'] === 'utility' && !empty($validated['utility_bill_id'])) {
+            } elseif ($validated['payment_type'] === 'utility' && ! empty($validated['utility_bill_id'])) {
                 // Link utility payment
                 $bill = UtilityBill::find($validated['utility_bill_id']);
                 if ($bill) {
@@ -173,14 +172,13 @@ class LandlordPaymentController extends Controller
     /**
      * Update an existing payment record.
      *
-     * @param Request $request
-     * @param Payment $payment
-     * @return \Illuminate\Http\RedirectResponse
+     * @param  Request  $request
+     * @return RedirectResponse
      */
     public function update(PaymentUpdateRequest $request, Payment $payment)
     {
         // Authorization handled by authorizeResource
- 
+
         $landlord = $request->user();
 
         $validated = $request->validated();
@@ -216,14 +214,12 @@ class LandlordPaymentController extends Controller
     /**
      * Delete a payment record.
      *
-     * @param Request $request
-     * @param Payment $payment
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function destroy(Request $request, Payment $payment)
     {
         // Authorization handled by authorizeResource
- 
+
         $landlord = $request->user();
 
         try {

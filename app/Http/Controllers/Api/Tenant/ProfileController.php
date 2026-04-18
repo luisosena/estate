@@ -14,13 +14,13 @@ class ProfileController extends Controller
     public function show(): JsonResponse
     {
         $user = request()->user();
-        
+
         if ($user->role !== 'tenant') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-        
+
         $user->loadMissing('tenant');
-        
+
         return response()->json([
             'user' => [
                 'id' => $user->id,
@@ -29,23 +29,23 @@ class ProfileController extends Controller
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'tenant' => $user->tenant,
-            ]
+            ],
         ]);
     }
-    
+
     /**
      * PUT /api/tenant/profile - Update tenant profile
      */
     public function update(UserProfileUpdateRequest $request): JsonResponse
     {
         $user = $request->user();
-        
+
         if ($user->role !== 'tenant') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-        
+
         $user->forceFill($request->validated())->save();
-        
+
         if ($user->tenant) {
             $tenantValidated = $request->validate([
                 'full_name' => ['sometimes', 'string', 'max:255'],
@@ -55,11 +55,11 @@ class ProfileController extends Controller
                 'emergency_contact_phone' => ['sometimes', 'string', 'max:20'],
                 'emergency_contact_relation' => ['sometimes', 'string', 'max:100'],
             ]);
-            
+
             $user->tenant->update($tenantValidated);
             $user->load('tenant');
         }
-        
+
         return response()->json([
             'message' => 'Profile updated successfully',
             'user' => [
@@ -69,7 +69,7 @@ class ProfileController extends Controller
                 'role' => $user->role,
                 'phone' => $user->phone,
                 'tenant' => $user->tenant,
-            ]
+            ],
         ]);
     }
 }

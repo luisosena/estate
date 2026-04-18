@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Property;
-use App\Models\Tenancy;
 use App\Models\Payment;
+use App\Models\Property;
 use App\Models\RentBill;
-use Illuminate\Support\Facades\DB;
+use App\Models\Tenancy;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -49,22 +48,22 @@ class DashboardController extends Controller
 
             // Get pending payments count (using 'overdue' as the pending/unpaid status)
             $pendingPayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                    $query->where('owner_id', $landlord->id);
-                })
+                $query->where('owner_id', $landlord->id);
+            })
                 ->where('status', 'pending')
                 ->count();
 
             // Get overdue payments count (separate from pending)
             $overduePayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                    $query->where('owner_id', $landlord->id);
-                })
+                $query->where('owner_id', $landlord->id);
+            })
                 ->where('status', 'overdue')
                 ->count();
 
             // Get recent payments with tenant and unit info
             $recentPayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                    $query->where('owner_id', $landlord->id);
-                })
+                $query->where('owner_id', $landlord->id);
+            })
                 ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id'])
                 ->with('tenancy.unit:id,unit_name,property_id')
                 ->orderBy('paid_at', 'desc')
@@ -94,8 +93,8 @@ class DashboardController extends Controller
             // Get expiring leases (tenancies ending within 30 days)
             $thirtyDaysFromNow = Carbon::now()->addDays(30);
             $expiringLeases = Tenancy::whereHas('unit.property', function ($query) use ($landlord) {
-                    $query->where('owner_id', $landlord->id);
-                })
+                $query->where('owner_id', $landlord->id);
+            })
                 ->where('status', 'active')
                 ->whereNotNull('move_out_date')
                 ->where('move_out_date', '<=', $thirtyDaysFromNow)
@@ -138,8 +137,8 @@ class DashboardController extends Controller
 
             // Get rent bill statistics (optimized single query with conditional aggregation)
             $rentStats = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                    $query->where('owner_id', $landlord->id);
-                })
+                $query->where('owner_id', $landlord->id);
+            })
                 ->selectRaw('
                     SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
                     SUM(CASE WHEN status = "overdue" OR (status IN ("pending", "partial") AND due_date < CURDATE()) THEN 1 ELSE 0 END) as overdue_count,

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\RentBill;
 use App\Models\Tenancy;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 
 class RentBillController extends Controller
 {
@@ -18,13 +17,13 @@ class RentBillController extends Controller
     {
         $user = $request->user();
         $tenant = $user->tenant;
-        
+
         // Get the active tenancy
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return response()->json([
                 'data' => [],
                 'meta' => [
@@ -86,14 +85,14 @@ class RentBillController extends Controller
     {
         $user = $request->user();
         $tenant = $user->tenant;
-        
+
         // Get the active tenancy
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
             ->with(['unit', 'unit.property'])
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return response()->json([
                 'message' => 'No active tenancy found.',
             ], 404);
@@ -104,7 +103,7 @@ class RentBillController extends Controller
             ->with('payments:id,amount,payment_method,paid_at,status')
             ->first();
 
-        if (!$rentBill) {
+        if (! $rentBill) {
             return response()->json([
                 'message' => 'No rent bill found for current month.',
                 'data' => [
@@ -163,13 +162,13 @@ class RentBillController extends Controller
     {
         $user = $request->user();
         $tenant = $user->tenant;
-        
+
         // Get the active tenancy
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return response()->json([
                 'message' => 'No active tenancy found.',
             ], 404);
@@ -180,7 +179,7 @@ class RentBillController extends Controller
             ->with(['payments:id,amount,payment_method,paid_at,status', 'tenancy.unit', 'tenancy.unit.property'])
             ->first();
 
-        if (!$rentBill) {
+        if (! $rentBill) {
             return response()->json([
                 'message' => 'Rent bill not found or does not belong to your active tenancy.',
             ], 404);

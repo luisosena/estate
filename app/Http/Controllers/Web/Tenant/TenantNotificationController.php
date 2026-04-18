@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Web\Tenant;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Resources\NotificationResource;
+use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Inertia\Inertia;
 
 class TenantNotificationController extends Controller
@@ -16,7 +17,7 @@ class TenantNotificationController extends Controller
     {
         $tenant = $request->user()->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return redirect()->route('tenant.dashboard')
                 ->with('error', 'Tenant profile not found.');
         }
@@ -38,7 +39,7 @@ class TenantNotificationController extends Controller
 
         // Filter by type
         if ($request->has('type') && $request->type !== 'all') {
-            $query->where('type', 'like', $request->type . '%');
+            $query->where('type', 'like', $request->type.'%');
         }
 
         $notifications = $query->paginate(15);
@@ -54,39 +55,21 @@ class TenantNotificationController extends Controller
         ]);
     }
 
-    /**
-     * Mark a notification as read.
-     */
-    public function markAsRead(Request $request, $id)
+    public function markAsRead(DatabaseNotification $notification)
     {
-        $tenant = $request->user()->tenant;
+        $this->authorize('update', $notification);
 
-        if (!$tenant) {
-            return redirect()->back()->with('error', 'Tenant profile not found.');
-        }
-
-        $notification = $tenant->user->notifications()->findOrFail($id);
-        
-        if (!$notification->read_at) {
+        if (! $notification->read_at) {
             $notification->markAsRead();
         }
 
         return back()->with('success', 'Notification marked as read.');
     }
 
-    /**
-     * Mark a notification as unread.
-     */
-    public function markAsUnread(Request $request, $id)
+    public function markAsUnread(DatabaseNotification $notification)
     {
-        $tenant = $request->user()->tenant;
+        $this->authorize('update', $notification);
 
-        if (!$tenant) {
-            return redirect()->back()->with('error', 'Tenant profile not found.');
-        }
-
-        $notification = $tenant->user->notifications()->findOrFail($id);
-        
         if ($notification->read_at) {
             $notification->update(['read_at' => null]);
         }
@@ -101,7 +84,7 @@ class TenantNotificationController extends Controller
     {
         $tenant = $request->user()->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return redirect()->back()->with('error', 'Tenant profile not found.');
         }
 
@@ -110,18 +93,10 @@ class TenantNotificationController extends Controller
         return back()->with('success', 'All notifications marked as read.');
     }
 
-    /**
-     * Delete a notification.
-     */
-    public function destroy(Request $request, $id)
+    public function destroy(DatabaseNotification $notification)
     {
-        $tenant = $request->user()->tenant;
+        $this->authorize('delete', $notification);
 
-        if (!$tenant) {
-            return redirect()->back()->with('error', 'Tenant profile not found.');
-        }
-
-        $notification = $tenant->user->notifications()->findOrFail($id);
         $notification->delete();
 
         return back()->with('success', 'Notification deleted.');
@@ -134,12 +109,12 @@ class TenantNotificationController extends Controller
     {
         $tenant = $request->user()->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return response()->json(['count' => 0]);
         }
 
         return response()->json([
-            'count' => $tenant->user->unreadNotifications()->count()
+            'count' => $tenant->user->unreadNotifications()->count(),
         ]);
     }
 
@@ -150,10 +125,10 @@ class TenantNotificationController extends Controller
     {
         $tenant = $request->user()->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return response()->json([
                 'notifications' => [],
-                'unreadCount' => 0
+                'unreadCount' => 0,
             ]);
         }
 
@@ -164,7 +139,7 @@ class TenantNotificationController extends Controller
 
         return response()->json([
             'notifications' => NotificationResource::collection($notifications),
-            'unreadCount' => $tenant->user->unreadNotifications()->count()
+            'unreadCount' => $tenant->user->unreadNotifications()->count(),
         ]);
     }
 }

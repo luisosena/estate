@@ -14,8 +14,10 @@ class TenancyPolicy
 
     public function view(User $user, Tenancy $tenancy): bool
     {
-        if ($user->role === 'admin') return true;
-        
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if ($user->role === 'landlord') {
             return $tenancy->unit->property->owner_id === $user->id;
         }
@@ -34,7 +36,10 @@ class TenancyPolicy
 
     public function update(User $user, Tenancy $tenancy): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $tenancy->unit->property->owner_id === $user->id;
     }
 

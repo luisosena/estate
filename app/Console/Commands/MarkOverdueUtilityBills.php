@@ -40,8 +40,8 @@ class MarkOverdueUtilityBills extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error("Failed to mark overdue bills: " . $e->getMessage());
-            Log::error("MarkOverdueUtilityBills failed: " . $e->getMessage());
+            $this->error('Failed to mark overdue bills: '.$e->getMessage());
+            Log::error('MarkOverdueUtilityBills failed: '.$e->getMessage());
 
             return Command::FAILURE;
         }

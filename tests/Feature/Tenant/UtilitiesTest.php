@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Tenant;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class UtilitiesTest extends TestCase
 {
@@ -14,7 +14,7 @@ class UtilitiesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
         $this->tenant = Tenant::factory()->create(['user_id' => $this->user->id]);
     }

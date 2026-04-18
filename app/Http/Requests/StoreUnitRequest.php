@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Property;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -11,12 +12,12 @@ class StoreUnitRequest extends FormRequest
     {
         $landlord = $this->user();
         $propertyId = $this->input('property_id');
-        
-        if (!$propertyId) {
+
+        if (! $propertyId) {
             return false;
         }
 
-        return \App\Models\Property::where('owner_id', $landlord->id)
+        return Property::where('owner_id', $landlord->id)
             ->where('id', $propertyId)
             ->exists();
     }

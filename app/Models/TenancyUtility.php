@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TenancyUtility extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'tenancy_id',
         'utility_type_id',
@@ -20,9 +24,12 @@ class TenancyUtility extends Model
         'notes',
     ];
 
-    protected $casts = [
-        'amount' => 'decimal:2',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:2',
+        ];
+    }
 
     public function tenancy(): BelongsTo
     {
@@ -39,7 +46,7 @@ class TenancyUtility extends Model
         return $this->hasMany(UtilityBill::class);
     }
 
-    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
+    public function scopeActive($query): Builder
     {
         return $query->where('status', 'active');
     }

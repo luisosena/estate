@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Unit extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'property_id',
         'unit_code',
@@ -26,7 +29,7 @@ class Unit extends Model
         return $this->hasMany(Tenancy::class);
     }
 
-    public function tenant()
+    public function tenant(): HasOneThrough
     {
         return $this->hasOneThrough(Tenant::class, Tenancy::class, 'unit_id', 'id', 'id', 'tenant_id')
             ->where('tenancies.status', 'active');

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('property_type', ['apartment', 'house', 'commercial', 'mixed'])
                 ->nullable()
                 ->after('total_units');
-            
+
             $table->enum('status', ['active', 'inactive', 'maintenance'])
                 ->default('active')
                 ->after('property_type');
@@ -50,7 +50,7 @@ return new class extends Migration
                 'status',
                 'description',
                 'amenities',
-                'policies'
+                'policies',
             ]);
         });
     }

@@ -14,8 +14,10 @@ class PaymentPolicy
 
     public function view(User $user, Payment $payment): bool
     {
-        if ($user->role === 'admin') return true;
-        
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if ($user->role === 'landlord') {
             return $payment->tenancy->unit->property->owner_id === $user->id;
         }
@@ -29,13 +31,19 @@ class PaymentPolicy
 
     public function update(User $user, Payment $payment): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $payment->tenancy->unit->property->owner_id === $user->id;
     }
 
     public function delete(User $user, Payment $payment): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $payment->tenancy->unit->property->owner_id === $user->id;
     }
 }

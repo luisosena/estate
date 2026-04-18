@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Web\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\UtilityBill;
-use App\Http\Resources\UtilityBillResource;
 use App\Http\Resources\TenancyUtilityResource;
-use App\Http\Resources\TenancyResource;
+use App\Http\Resources\UtilityBillResource;
+use App\Models\UtilityBill;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,7 +19,7 @@ class TenantUtilitiesController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return redirect()
                 ->route('dashboard')
                 ->with('error', 'Tenant profile not found.');
@@ -31,7 +30,7 @@ class TenantUtilitiesController extends Controller
             ->with(['unit.property', 'tenancyUtilities.utilityType'])
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return Inertia::render('tenant/utilities', [
                 'tenant' => [
                     'id' => $tenant->id,
@@ -93,7 +92,7 @@ class TenantUtilitiesController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return redirect()
                 ->route('dashboard')
                 ->with('error', 'Tenant profile not found.');
@@ -103,7 +102,7 @@ class TenantUtilitiesController extends Controller
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return Inertia::render('tenant/utilities/bills', [
                 'tenant' => [
                     'id' => $tenant->id,
@@ -119,8 +118,8 @@ class TenantUtilitiesController extends Controller
 
         // Get all bills (not just pending)
         $query = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
-                $q->where('tenancy_id', $activeTenancy->id);
-            })
+            $q->where('tenancy_id', $activeTenancy->id);
+        })
             ->with(['tenancyUtility.utilityType']);
 
         // Filter by status if provided
@@ -134,8 +133,8 @@ class TenantUtilitiesController extends Controller
 
         // Calculate summary
         $summaryResult = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
-                $q->where('tenancy_id', $activeTenancy->id);
-            })
+            $q->where('tenancy_id', $activeTenancy->id);
+        })
             ->selectRaw(
                 "SUM(CASE WHEN status = 'pending' THEN (amount_due - amount_paid) ELSE 0 END) as total_pending,
                  SUM(CASE WHEN status = 'overdue' THEN (amount_due - amount_paid) ELSE 0 END) as total_overdue,

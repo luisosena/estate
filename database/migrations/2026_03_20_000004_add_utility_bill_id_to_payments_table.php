@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::table('payments', function (Blueprint $table) {
             $table->foreignId('utility_bill_id')
-                  ->nullable()
-                  ->after('tenancy_id')
-                  ->constrained('utility_bills')
-                  ->nullOnDelete();
+                ->nullable()
+                ->after('tenancy_id')
+                ->constrained('utility_bills')
+                ->nullOnDelete();
 
             $table->index('utility_bill_id');
         });

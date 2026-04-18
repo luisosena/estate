@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Web\Landlord;
 
 use App\Http\Controllers\Controller;
-use App\Models\RentBill;
-use App\Http\Resources\RentBillResource;
 use App\Http\Requests\Landlord\WaiveBillRequest;
+use App\Http\Resources\RentBillResource;
+use App\Models\RentBill;
+use App\Services\RentBillService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -17,10 +18,10 @@ class LandlordRentBillController extends Controller
     public function index(Request $request)
     {
         $landlord = $request->user();
-        
+
         $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->with(['tenancy.tenant', 'tenancy.unit.property'])
             ->orderBy('billing_month', 'desc');
 
@@ -40,10 +41,10 @@ class LandlordRentBillController extends Controller
         $pendingCount = (clone $statsQuery)->where('rent_bills.status', 'pending')->count();
         $overdueCount = (clone $statsQuery)->where(function ($q) {
             $q->where('rent_bills.status', 'overdue')
-              ->orWhere(function ($q2) {
-                  $q2->whereIn('rent_bills.status', ['pending', 'partial'])
-                     ->where('rent_bills.due_date', '<', now()->toDateString());
-              });
+                ->orWhere(function ($q2) {
+                    $q2->whereIn('rent_bills.status', ['pending', 'partial'])
+                        ->where('rent_bills.due_date', '<', now()->toDateString());
+                });
         })->count();
         $paidCount = (clone $statsQuery)->where('rent_bills.status', 'paid')->count();
 
@@ -68,12 +69,12 @@ class LandlordRentBillController extends Controller
     public function show(Request $request, RentBill $rentBill)
     {
         $this->authorize('view', $rentBill);
- 
+
         $rentBill->load([
-                'tenancy.tenant',
-                'tenancy.unit.property',
-                'payments',
-            ]);
+            'tenancy.tenant',
+            'tenancy.unit.property',
+            'payments',
+        ]);
 
         return Inertia::render('landlord/rent-bills/show', [
             'rentBill' => new RentBillResource($rentBill),
@@ -86,16 +87,16 @@ class LandlordRentBillController extends Controller
     public function waive(WaiveBillRequest $request, RentBill $rentBill)
     {
         $this->authorize('waive', $rentBill);
- 
+
         if (in_array($rentBill->status, ['waived', 'paid'])) {
             return redirect()
                 ->back()
                 ->with('error', "Cannot waive a rent bill that is already {$rentBill->status}.");
         }
- 
+
         $validated = $request->validated();
- 
-        app(\App\Services\RentBillService::class)->waiveRentBill($rentBill, $validated['notes'] ?? null);
+
+        app(RentBillService::class)->waiveRentBill($rentBill, $validated['notes'] ?? null);
 
         return redirect()
             ->route('landlord.rent-bills.show', ['rentBill' => $rentBill->id])

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +18,7 @@ class UserController extends Controller
     public function index(Request $request): JsonResponse
     {
         // Verify user has admin or landlord role
-        if (!in_array($request->user()->role, ['admin', 'landlord'])) {
+        if (! in_array($request->user()->role, ['admin', 'landlord'])) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -29,9 +29,9 @@ class UserController extends Controller
             $landlordId = $request->user()->id;
             $query->where(function ($q) use ($landlordId) {
                 $q->where('id', $landlordId)
-                  ->orWhereHas('tenant.tenancies.unit.property', function ($propertyQuery) use ($landlordId) {
-                      $propertyQuery->where('owner_id', $landlordId);
-                  });
+                    ->orWhereHas('tenant.tenancies.unit.property', function ($propertyQuery) use ($landlordId) {
+                        $propertyQuery->where('owner_id', $landlordId);
+                    });
             });
         }
 
@@ -40,7 +40,7 @@ class UserController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -62,30 +62,30 @@ class UserController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        if (!in_array($request->user()->role, ['admin', 'landlord'])) {
+        if (! in_array($request->user()->role, ['admin', 'landlord'])) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
         $user = User::with('tenant')->find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
         // Landlords can only view their own account or tenants in their properties
         if ($request->user()->role === 'landlord') {
             $isOwner = $request->user()->id === $id;
-            
+
             // Eager load relationships to prevent N+1 query issue
             $user->loadMissing('tenant.tenancies.unit.property');
-            
+
             $isTenantInProperty = $user->tenant && $user->tenant->tenancies->contains(function ($tenancy) use ($request) {
-                return $tenancy->unit && 
-                       $tenancy->unit->property && 
+                return $tenancy->unit &&
+                       $tenancy->unit->property &&
                        $tenancy->unit->property->owner_id === $request->user()->id;
             });
 
-            if (!$isOwner && !$isTenantInProperty) {
+            if (! $isOwner && ! $isTenantInProperty) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
         }
@@ -100,7 +100,7 @@ class UserController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Only admin can create admins; landlords can only create tenants
         if ($user->role === 'landlord') {
             $validated = $request->validate([
@@ -130,7 +130,7 @@ class UserController extends Controller
             'role' => $validated['role'],
         ]);
 
-        if (!empty($validated['phone'])) {
+        if (! empty($validated['phone'])) {
             $user->phone = $validated['phone'];
             $user->save();
         }
@@ -154,13 +154,13 @@ class UserController extends Controller
 
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', 'unique:users,email,' . $id],
+            'email' => ['sometimes', 'email', 'unique:users,email,'.$id],
             'phone' => ['nullable', 'string', 'max:20'],
             'role' => ['sometimes', Rule::in(['tenant', 'landlord', 'admin'])],
         ]);
@@ -190,7 +190,7 @@ class UserController extends Controller
 
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 

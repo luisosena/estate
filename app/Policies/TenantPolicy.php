@@ -20,8 +20,10 @@ class TenantPolicy
      */
     public function view(User $user, Tenant $tenant): bool
     {
-        if ($user->role === 'admin') return true;
-        
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if ($user->role === 'landlord') {
             return $tenant->tenancies()
                 ->whereHas('unit.property', function ($query) use ($user) {
@@ -50,7 +52,9 @@ class TenantPolicy
      */
     public function update(User $user, Tenant $tenant): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
 
         if ($user->role === 'landlord') {
             return $tenant->tenancies()

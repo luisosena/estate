@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Api\Landlord;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenant;
-use App\Models\RentBill;
 use App\Services\RentBillService;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 
 class PaymentController extends Controller
@@ -31,8 +29,8 @@ class PaymentController extends Controller
         $perPage = $request->get('per_page', 15);
 
         $query = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name', 'rentBill:id,billing_month,status'])
             ->orderBy('paid_at', 'desc');
 
@@ -85,8 +83,8 @@ class PaymentController extends Controller
         $landlord = $request->user();
 
         $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->with(['tenant', 'tenancy.unit'])
             ->findOrFail($paymentId);
 
@@ -126,21 +124,21 @@ class PaymentController extends Controller
 
         // Verify tenant belongs to landlord's property
         $tenant = Tenant::findOrFail($validated['tenant_id']);
-        
+
         $hasAccess = $tenant->tenancies()
             ->whereHas('unit.property', function ($query) use ($landlord) {
                 $query->where('owner_id', $landlord->id);
             })
             ->exists();
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         // Get the active tenancy for this tenant
         $activeTenancy = $tenant->tenancies()->where('status', 'active')->first();
-        
-        if (!$activeTenancy) {
+
+        if (! $activeTenancy) {
             return response()->json([
                 'message' => 'This tenant has no active tenancy.',
             ], 422);
@@ -152,12 +150,12 @@ class PaymentController extends Controller
         if ($validated['payment_type'] === 'rent') {
             $billLinkResult = $this->rentBillService->linkPaymentToBill(
                 $activeTenancy->id,
-                !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                ! empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
                 false // Not required - allows payments without bill
             );
             $rentBillId = $billLinkResult['rent_bill_id'];
             if ($billLinkResult['error']) {
-                $rentBillWarning = $billLinkResult['error'] . ' Using current month bill instead.';
+                $rentBillWarning = $billLinkResult['error'].' Using current month bill instead.';
             }
         }
 
@@ -225,8 +223,8 @@ class PaymentController extends Controller
         $landlord = $request->user();
 
         $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->findOrFail($paymentId);
 
         $validated = $request->validate([
@@ -262,8 +260,8 @@ class PaymentController extends Controller
         $landlord = $request->user();
 
         $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->findOrFail($paymentId);
 
         $payment->delete();

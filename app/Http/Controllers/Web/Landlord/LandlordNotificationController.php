@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Web\Landlord;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Resources\NotificationResource;
+use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Inertia\Inertia;
 
 class LandlordNotificationController extends Controller
@@ -15,7 +16,7 @@ class LandlordNotificationController extends Controller
     public function index(Request $request)
     {
         $landlord = $request->user();
-        
+
         $query = $landlord->notifications()
             ->orderBy('created_at', 'desc');
 
@@ -33,7 +34,7 @@ class LandlordNotificationController extends Controller
 
         // Filter by type
         if ($request->has('type') && $request->type !== 'all') {
-            $query->where('type', 'like', $request->type . '%');
+            $query->where('type', 'like', $request->type.'%');
         }
 
         $notifications = $query->paginate(15);
@@ -52,15 +53,11 @@ class LandlordNotificationController extends Controller
     /**
      * Mark a notification as read.
      */
-    public function markAsRead(Request $request, string $id)
+    public function markAsRead(DatabaseNotification $notification)
     {
-        $landlord = $request->user();
-        
-        $notification = $landlord->notifications()
-            ->where('id', $id)
-            ->firstOrFail();
+        $this->authorize('update', $notification);
 
-        if (!$notification->read_at) {
+        if (! $notification->read_at) {
             $notification->markAsRead();
         }
 
@@ -70,13 +67,9 @@ class LandlordNotificationController extends Controller
     /**
      * Mark a notification as unread.
      */
-    public function markAsUnread(Request $request, string $id)
+    public function markAsUnread(DatabaseNotification $notification)
     {
-        $landlord = $request->user();
-        
-        $notification = $landlord->notifications()
-            ->where('id', $id)
-            ->firstOrFail();
+        $this->authorize('update', $notification);
 
         if ($notification->read_at) {
             $notification->update(['read_at' => null]);
@@ -91,7 +84,7 @@ class LandlordNotificationController extends Controller
     public function markAllAsRead(Request $request)
     {
         $landlord = $request->user();
-        
+
         $landlord->unreadNotifications()->update(['read_at' => now()]);
 
         return back()->with('success', 'All notifications marked as read.');
@@ -100,13 +93,9 @@ class LandlordNotificationController extends Controller
     /**
      * Delete a notification.
      */
-    public function destroy(Request $request, string $id)
+    public function destroy(DatabaseNotification $notification)
     {
-        $landlord = $request->user();
-        
-        $notification = $landlord->notifications()
-            ->where('id', $id)
-            ->firstOrFail();
+        $this->authorize('delete', $notification);
 
         $notification->delete();
 
@@ -119,7 +108,7 @@ class LandlordNotificationController extends Controller
     public function unreadCount(Request $request)
     {
         $landlord = $request->user();
-        
+
         return response()->json([
             'count' => $landlord->unreadNotifications()->count(),
         ]);
@@ -131,7 +120,7 @@ class LandlordNotificationController extends Controller
     public function recent(Request $request)
     {
         $landlord = $request->user();
-        
+
         $notifications = $landlord->notifications()
             ->orderBy('created_at', 'desc')
             ->take(5)

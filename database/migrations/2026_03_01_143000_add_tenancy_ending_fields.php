@@ -18,7 +18,7 @@ return new class extends Migration
         });
 
         // Update existing records to set default end_reason for manually ended tenancies
-        \DB::table('tenancies')
+        DB::table('tenancies')
             ->where('status', 'ended')
             ->whereNull('end_reason')
             ->update(['end_reason' => 'manual_ending']);

@@ -18,7 +18,7 @@ class UtilitiesController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return response()->json(['message' => 'Tenant profile not found'], 404);
         }
 
@@ -27,7 +27,7 @@ class UtilitiesController extends Controller
             ->with(['tenancyUtilities.utilityType'])
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return response()->json([
                 'data' => [],
                 'message' => 'No active tenancy found',
@@ -52,7 +52,7 @@ class UtilitiesController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return response()->json(['message' => 'Tenant profile not found'], 404);
         }
 
@@ -60,7 +60,7 @@ class UtilitiesController extends Controller
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return response()->json([
                 'data' => [],
                 'message' => 'No active tenancy found',
@@ -69,8 +69,8 @@ class UtilitiesController extends Controller
 
         // Get pending bills with optional filters
         $query = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
-                $q->where('tenancy_id', $activeTenancy->id);
-            })
+            $q->where('tenancy_id', $activeTenancy->id);
+        })
             ->with(['tenancyUtility.utilityType']);
 
         // Filter by status if provided

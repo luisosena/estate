@@ -20,7 +20,10 @@ class PropertyPolicy
      */
     public function view(User $user, Property $property): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $property->owner_id === $user->id;
     }
 
@@ -37,7 +40,10 @@ class PropertyPolicy
      */
     public function update(User $user, Property $property): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $property->owner_id === $user->id;
     }
 

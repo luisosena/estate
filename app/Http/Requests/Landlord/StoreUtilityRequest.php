@@ -15,7 +15,7 @@ class StoreUtilityRequest extends FormRequest
     public function rules(): array
     {
         $tenancy = $this->route('tenancy');
-        
+
         return [
             'utility_type_id' => [
                 'required',

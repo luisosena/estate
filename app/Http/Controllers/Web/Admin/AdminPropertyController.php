@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Inertia\Inertia;
+use App\Http\Requests\Admin\PropertyRequest;
+use App\Http\Resources\LandlordResource;
+use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Models\User;
-use App\Http\Resources\PropertyResource;
-use App\Http\Resources\LandlordResource;
-use App\Http\Requests\Admin\PropertyRequest;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AdminPropertyController extends Controller
 {
@@ -21,7 +20,7 @@ class AdminPropertyController extends Controller
     {
         $this->authorizeResource(Property::class, 'property');
     }
- 
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -31,9 +30,9 @@ class AdminPropertyController extends Controller
         // Search functionality
         if ($request->search) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('address', 'like', '%' . $request->search . '%')
-                  ->orWhere('city', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('address', 'like', '%'.$request->search.'%')
+                    ->orWhere('city', 'like', '%'.$request->search.'%');
             });
         }
 

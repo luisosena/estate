@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api\Tenant;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\RentBill;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -12,8 +12,8 @@ class DashboardController extends Controller
     {
         try {
             $user = $request->user();
-            
-            if (!$user) {
+
+            if (! $user) {
                 return response()->json([
                     'tenant' => ['id' => 0, 'full_name' => 'Guest'],
                     'payments' => [],
@@ -22,7 +22,7 @@ class DashboardController extends Controller
 
             $tenant = $user->tenant;
 
-            if (!$tenant) {
+            if (! $tenant) {
                 return response()->json([
                     'tenant' => ['id' => 0, 'full_name' => 'No Tenant Found'],
                     'payments' => [],
@@ -37,7 +37,7 @@ class DashboardController extends Controller
             // Get rent bills for the tenant
             $rentBills = [];
             $currentMonthBill = null;
-            
+
             if ($activeTenancy) {
                 $rentBills = RentBill::where('tenancy_id', $activeTenancy->id)
                     ->orderBy('billing_month', 'desc')
@@ -58,7 +58,7 @@ class DashboardController extends Controller
                 $currentMonthBill = RentBill::where('tenancy_id', $activeTenancy->id)
                     ->where('billing_month', now()->startOfMonth())
                     ->first();
-                
+
                 if ($currentMonthBill) {
                     $currentMonthBill = [
                         'id' => $currentMonthBill->id,
@@ -105,8 +105,8 @@ class DashboardController extends Controller
                     ->get(),
             ]);
         } catch (\Exception $e) {
-            \Log::error('Api DashboardController error: ' . $e->getMessage());
-            
+            \Log::error('Api DashboardController error: '.$e->getMessage());
+
             return response()->json([
                 'tenant' => ['id' => 0, 'full_name' => 'Error'],
                 'payments' => [],

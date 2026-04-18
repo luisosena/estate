@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Web\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\RentBill;
 use App\Http\Resources\RentBillResource;
+use App\Models\RentBill;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,13 +18,13 @@ class TenantRentBillController extends Controller
     {
         $user = $request->user();
         $tenant = $user->tenant;
-        
+
         // Get the active tenancy
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return Inertia::render('tenant/rent-bills/index', [
                 'rentBills' => null,
                 'currentMonthBill' => null,
@@ -47,7 +47,7 @@ class TenantRentBillController extends Controller
 
         // Get stats
         $baseQuery = RentBill::where('tenancy_id', $activeTenancy->id);
-        
+
         return Inertia::render('tenant/rent-bills/index', [
             'rentBills' => RentBillResource::collection($rentBills),
             'currentMonthBill' => $currentMonthBill ? new RentBillResource($currentMonthBill) : null,
@@ -63,24 +63,11 @@ class TenantRentBillController extends Controller
      * Show a single rent bill.
      * GET /tenant/rent-bills/{id}
      */
-    public function show(Request $request, int $id)
+    public function show(RentBill $rentBill)
     {
-        $user = $request->user();
-        $tenant = $user->tenant;
-        
-        // Get the active tenancy
-        $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
-            ->first();
+        $this->authorize('view', $rentBill);
 
-        if (!$activeTenancy) {
-            abort(404, 'No active tenancy found.');
-        }
-
-        $rentBill = RentBill::where('id', $id)
-            ->where('tenancy_id', $activeTenancy->id)
-            ->with(['payments', 'tenancy.unit.property'])
-            ->firstOrFail();
+        $rentBill->load(['payments', 'tenancy.unit.property']);
 
         return Inertia::render('tenant/rent-bills/show', [
             'rentBill' => new RentBillResource($rentBill),

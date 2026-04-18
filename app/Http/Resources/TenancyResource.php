@@ -22,7 +22,7 @@ class TenancyResource extends JsonResource
             'move_in_date' => $this->move_in_date,
             'move_out_date' => $this->move_out_date,
             'created_at' => $this->created_at?->toDateTimeString(),
-            
+
             // Relationships
             'unit' => UnitResource::make($this->whenLoaded('unit')),
             'tenant' => TenantResource::make($this->whenLoaded('tenant')),

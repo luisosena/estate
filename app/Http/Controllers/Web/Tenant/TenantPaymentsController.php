@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers\Web\Tenant;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
-use App\Models\Tenancy;
-use App\Models\UtilityBill;
+use App\Http\Requests\Tenant\StorePaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\TenancyResource;
 use App\Http\Resources\TenantResource;
 use App\Http\Resources\UtilityBillResource;
-use Inertia\Inertia;
-use App\Services\UtilityService;
+use App\Models\Payment;
+use App\Models\UtilityBill;
 use App\Services\PaymentService;
-use App\Http\Requests\Tenant\StorePaymentRequest;
+use App\Services\UtilityService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class TenantPaymentsController extends Controller
 {
     protected $utilityService;
+
     protected $paymentService;
 
     public function __construct(UtilityService $utilityService, PaymentService $paymentService)
@@ -80,7 +80,7 @@ class TenantPaymentsController extends Controller
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return redirect()
                 ->route('tenant.payments')
                 ->with('error', 'No active tenancy found.');
@@ -102,8 +102,8 @@ class TenantPaymentsController extends Controller
 
         // Fetch pending utility bills
         $pendingUtilityBills = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
-                $q->where('tenancy_id', $activeTenancy->id);
-            })
+            $q->where('tenancy_id', $activeTenancy->id);
+        })
             ->whereIn('status', ['pending', 'partial', 'overdue'])
             ->with('tenancyUtility.utilityType')
             ->orderBy('due_date', 'asc')
@@ -130,35 +130,36 @@ class TenantPaymentsController extends Controller
         $user = $request->user();
         $tenant = $user->tenant;
         $validated = $request->validated();
- 
+
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
             ->first();
- 
-        if (!$activeTenancy) {
+
+        if (! $activeTenancy) {
             return redirect()
                 ->route('tenant.payments')
                 ->with('error', 'No active tenancy found.');
         }
- 
+
         // Security check
         if ($payment) {
             $this->authorize('update', $payment);
         }
- 
+
         try {
             $result = $this->paymentService->processPayment($validated, $activeTenancy, $payment);
- 
+
             if (isset($result['error'])) {
                 return redirect()->back()->withInput()->with('error', $result['error']);
             }
- 
+
             return redirect()
                 ->route('tenant.payments')
                 ->with('success', 'Payment processed successfully!');
- 
+
         } catch (\Exception $e) {
-            Log::error('Payment processing failed: ' . $e->getMessage());
+            Log::error('Payment processing failed: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Failed to process payment.');
         }
     }

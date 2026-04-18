@@ -14,8 +14,10 @@ class RentBillPolicy
 
     public function view(User $user, RentBill $rentBill): bool
     {
-        if ($user->role === 'admin') return true;
-        
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if ($user->role === 'landlord') {
             return $rentBill->tenancy->unit->property->owner_id === $user->id;
         }
@@ -29,7 +31,10 @@ class RentBillPolicy
 
     public function waive(User $user, RentBill $rentBill): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $rentBill->tenancy->unit->property->owner_id === $user->id;
     }
 }

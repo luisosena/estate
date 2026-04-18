@@ -14,11 +14,11 @@ class ProfileController extends Controller
     public function show(): JsonResponse
     {
         $user = request()->user();
-        
+
         if ($user->role !== 'landlord') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-        
+
         return response()->json([
             'user' => [
                 'id' => $user->id,
@@ -26,23 +26,23 @@ class ProfileController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'role' => $user->role,
-            ]
+            ],
         ]);
     }
-    
+
     /**
      * PUT /api/landlord/profile - Update landlord profile
      */
     public function update(UserProfileUpdateRequest $request): JsonResponse
     {
         $user = $request->user();
-        
+
         if ($user->role !== 'landlord') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-        
+
         $user->forceFill($request->validated())->save();
-        
+
         return response()->json([
             'message' => 'Profile updated successfully',
             'user' => [
@@ -51,7 +51,7 @@ class ProfileController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'role' => $user->role,
-            ]
+            ],
         ]);
     }
 }

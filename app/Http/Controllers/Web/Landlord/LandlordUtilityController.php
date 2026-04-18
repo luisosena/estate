@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Web\Landlord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Landlord\StoreUtilityRequest;
+use App\Http\Requests\Landlord\UpdateUtilityRequest;
+use App\Http\Resources\TenancyResource;
+use App\Http\Resources\TenancyUtilityResource;
+use App\Http\Resources\UtilityTypeResource;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
 use App\Models\UtilityType;
-use App\Http\Resources\TenancyResource;
-use App\Http\Resources\UtilityTypeResource;
-use App\Http\Resources\TenancyUtilityResource;
-use App\Http\Requests\Landlord\StoreUtilityRequest;
-use App\Http\Requests\Landlord\UpdateUtilityRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class LandlordUtilityController extends Controller
@@ -25,14 +24,14 @@ class LandlordUtilityController extends Controller
     {
         $this->authorizeResource(TenancyUtility::class, 'tenancyUtility');
     }
- 
+
     public function index(Request $request)
     {
         $landlord = $request->user();
 
         $tenancies = Tenancy::whereHas('unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->where('status', 'active')
             ->with(['unit.property', 'tenant', 'tenancyUtilities.utilityType'])
             ->orderBy('created_at', 'desc')
@@ -59,7 +58,7 @@ class LandlordUtilityController extends Controller
 
         // Filter out already assigned utility types
         $availableTypes = $utilityTypes->filter(function ($type) use ($existingTypeIds) {
-            return !in_array($type->id, $existingTypeIds);
+            return ! in_array($type->id, $existingTypeIds);
         });
 
         return Inertia::render('landlord/utilities/create', [
@@ -75,7 +74,7 @@ class LandlordUtilityController extends Controller
     public function store(StoreUtilityRequest $request, Tenancy $tenancy)
     {
         $this->authorize('update', $tenancy);
- 
+
         $validated = $request->validated();
 
         try {
@@ -95,7 +94,8 @@ class LandlordUtilityController extends Controller
                 ->route('landlord.utilities.index')
                 ->with('success', 'Utility assigned successfully.');
         } catch (\Exception $e) {
-            Log::error('Failed to assign utility: ' . $e->getMessage());
+            Log::error('Failed to assign utility: '.$e->getMessage());
+
             return redirect()
                 ->back()
                 ->withInput()
@@ -137,16 +137,18 @@ class LandlordUtilityController extends Controller
     public function update(UpdateUtilityRequest $request, TenancyUtility $tenancyUtility)
     {
         // Authorization handled by authorizeResource
- 
+
         $validated = $request->validated();
 
         try {
             $tenancyUtility->update($validated);
+
             return redirect()
                 ->route('landlord.utilities.show', ['tenancy' => $tenancyUtility->tenancy_id])
                 ->with('success', 'Utility updated successfully.');
         } catch (\Exception $e) {
-            Log::error('Failed to update utility: ' . $e->getMessage());
+            Log::error('Failed to update utility: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Failed to update utility.');
         }
     }
@@ -170,11 +172,13 @@ class LandlordUtilityController extends Controller
             }
 
             $tenancyUtility->delete();
+
             return redirect()
                 ->route('landlord.utilities.index')
                 ->with('success', 'Utility removed successfully.');
         } catch (\Exception $e) {
-            Log::error('Failed to remove utility: ' . $e->getMessage());
+            Log::error('Failed to remove utility: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Failed to remove utility.');
         }
     }

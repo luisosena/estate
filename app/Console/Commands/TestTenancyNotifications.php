@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Tenancy;
-use App\Notifications\TenancyExpiringNotification;
 use App\Notifications\TenancyEndedNotification;
+use App\Notifications\TenancyExpiringNotification;
 use Illuminate\Console\Command;
 
 class TestTenancyNotifications extends Command
@@ -33,8 +33,9 @@ class TestTenancyNotifications extends Command
 
         $tenancy = Tenancy::with(['tenant', 'unit.property'])->find($tenancyId);
 
-        if (!$tenancy) {
+        if (! $tenancy) {
             $this->error("Tenancy with ID {$tenancyId} not found.");
+
             return 1;
         }
 
@@ -48,17 +49,19 @@ class TestTenancyNotifications extends Command
             if ($type === 'expiring') {
                 $days = 10; // Test with 10 days
                 $tenancy->tenant->notify(new TenancyExpiringNotification($tenancy, $days));
-                $this->info("✓ Expiring notification sent to tenant");
+                $this->info('✓ Expiring notification sent to tenant');
             } elseif ($type === 'ended') {
                 $tenancy->tenant->notify(new TenancyEndedNotification($tenancy, true));
-                $this->info("✓ Ended notification sent to tenant");
+                $this->info('✓ Ended notification sent to tenant');
             }
         } catch (\Exception $e) {
             $this->error("✗ Failed to send notification: {$e->getMessage()}");
+
             return 1;
         }
 
-        $this->info("Test completed successfully!");
+        $this->info('Test completed successfully!');
+
         return 0;
     }
 }

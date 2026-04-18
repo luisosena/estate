@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Property extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'owner_id',
         'landlord_id',
@@ -26,10 +29,13 @@ class Property extends Model
         'policies',
     ];
 
-    protected $casts = [
-        'amenities' => 'array',
-        'policies' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'amenities' => 'array',
+            'policies' => 'array',
+        ];
+    }
 
     public function owner(): BelongsTo
     {

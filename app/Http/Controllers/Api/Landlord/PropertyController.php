@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Landlord;
 use App\Http\Controllers\Controller;
 use App\Models\Property;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 
 class PropertyController extends Controller
 {
@@ -29,8 +28,8 @@ class PropertyController extends Controller
             ->get()
             ->sum('tenancies_count');
         $totalAvailableUnits = $totalUnits - $totalOccupiedUnits;
-        $overallOccupancyRate = $totalUnits > 0 
-            ? round(($totalOccupiedUnits / $totalUnits) * 100, 1) 
+        $overallOccupancyRate = $totalUnits > 0
+            ? round(($totalOccupiedUnits / $totalUnits) * 100, 1)
             : 0;
 
         // Use database-level pagination with proper eager loading
@@ -54,11 +53,11 @@ class PropertyController extends Controller
                 'units_count' => $property->units_count,
                 'active_tenants_count' => $property->tenancies->count(),
                 'occupied_units' => $property->tenancies->count(),
-                'available_units' => $property->units_count > 0 
-                    ? $property->units_count - $property->tenancies->count() 
+                'available_units' => $property->units_count > 0
+                    ? $property->units_count - $property->tenancies->count()
                     : 0,
-                'occupancy_rate' => $property->units_count > 0 
-                    ? round(($property->tenancies->count() / $property->units_count) * 100, 1) 
+                'occupancy_rate' => $property->units_count > 0
+                    ? round(($property->tenancies->count() / $property->units_count) * 100, 1)
                     : 0,
                 'created_at' => $property->created_at,
             ];
@@ -108,8 +107,8 @@ class PropertyController extends Controller
             'active_tenants_count' => $property->tenancies->count(),
             'occupied_units' => $property->tenancies->count(),
             'available_units' => $property->units_count - $property->tenancies->count(),
-            'occupancy_rate' => $property->units_count > 0 
-                ? round(($property->tenancies->count() / $property->units_count) * 100, 1) 
+            'occupancy_rate' => $property->units_count > 0
+                ? round(($property->tenancies->count() / $property->units_count) * 100, 1)
                 : 0,
             'created_at' => $property->created_at,
         ]);

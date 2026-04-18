@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Api\Landlord;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTenantWithTenancyRequest;
 use App\Models\Property;
-use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Models\Tenant;
 use App\Services\TenantService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TenantController extends Controller
 {
@@ -45,18 +45,20 @@ class TenantController extends Controller
         foreach ($propertiesData as $property) {
             foreach ($property->units as $unit) {
                 foreach ($unit->tenancies as $tenancy) {
-                    if (!$tenancy->tenant) continue;
+                    if (! $tenancy->tenant) {
+                        continue;
+                    }
                     $tenants[] = [
-                        'id'              => $tenancy->tenant->id,
-                        'tenant_code'     => $tenancy->tenant->tenant_code,
-                        'full_name'       => $tenancy->tenant->full_name,
-                        'phone'           => $tenancy->tenant->phone,
-                        'email'           => $tenancy->tenant->email,
-                        'tenancy_id'      => $tenancy->id,
-                        'tenancy_status'  => $tenancy->status,
-                        'unit_name'       => $unit->unit_name,
-                        'unit_code'       => $unit->unit_code,
-                        'property_name'   => $property->name,
+                        'id' => $tenancy->tenant->id,
+                        'tenant_code' => $tenancy->tenant->tenant_code,
+                        'full_name' => $tenancy->tenant->full_name,
+                        'phone' => $tenancy->tenant->phone,
+                        'email' => $tenancy->tenant->email,
+                        'tenancy_id' => $tenancy->id,
+                        'tenancy_status' => $tenancy->status,
+                        'unit_name' => $unit->unit_name,
+                        'unit_code' => $unit->unit_code,
+                        'property_name' => $property->name,
                     ];
                 }
             }
@@ -64,11 +66,11 @@ class TenantController extends Controller
 
         // Stats calculation
         $totalTenants = count($tenants);
-        $totalUnits = $propertiesData->sum(fn($p) => $p->units()->count());
-        $occupiedUnits = $propertiesData->sum(fn($p) => $p->units()->whereHas('tenancies', fn($q) => $q->where('status', 'active'))->count());
+        $totalUnits = $propertiesData->sum(fn ($p) => $p->units()->count());
+        $occupiedUnits = $propertiesData->sum(fn ($p) => $p->units()->whereHas('tenancies', fn ($q) => $q->where('status', 'active'))->count());
 
         $offset = ($page - 1) * $perPage;
-        
+
         return response()->json([
             'data' => array_slice($tenants, $offset, $perPage),
             'meta' => [
@@ -114,10 +116,12 @@ class TenantController extends Controller
 
         // Authorization check
         $hasAccess = $tenant->tenancies()
-            ->whereHas('unit.property', fn($q) => $q->where('owner_id', $request->user()->id))
+            ->whereHas('unit.property', fn ($q) => $q->where('owner_id', $request->user()->id))
             ->exists();
 
-        if (!$hasAccess) return response()->json(['message' => 'Unauthorized'], 403);
+        if (! $hasAccess) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         return response()->json($this->tenantService->getTenantDashboardData($tenant));
     }
@@ -128,11 +132,11 @@ class TenantController extends Controller
     public function update(Request $request, string $identifier): JsonResponse
     {
         $tenant = $this->findTenantByIdentifier($identifier);
-        
+
         $validated = $request->validate([
             'full_name' => 'sometimes|string|max:255',
             'phone' => 'sometimes|string|max:50',
-            'email' => 'sometimes|email|max:255|unique:tenants,email,' . $tenant->id,
+            'email' => 'sometimes|email|max:255|unique:tenants,email,'.$tenant->id,
             'emergency_contact_name' => 'nullable|string|max:255',
             'emergency_contact_phone' => 'nullable|string|max:50',
             'emergency_contact_relation' => 'nullable|string|max:100',
@@ -142,7 +146,7 @@ class TenantController extends Controller
 
         return response()->json([
             'message' => 'Tenant updated successfully',
-            'tenant' => $tenant
+            'tenant' => $tenant,
         ]);
     }
 
@@ -151,7 +155,7 @@ class TenantController extends Controller
      */
     public function destroy(Request $request, int $tenancyId): JsonResponse
     {
-        $tenancy = Tenancy::whereHas('unit.property', fn($q) => $q->where('owner_id', $request->user()->id))
+        $tenancy = Tenancy::whereHas('unit.property', fn ($q) => $q->where('owner_id', $request->user()->id))
             ->findOrFail($tenancyId);
 
         $tenancy->update([
@@ -172,6 +176,7 @@ class TenantController extends Controller
         if (preg_match('/^TEN-[A-Z0-9]{5,6}$/i', $identifier)) {
             return Tenant::where('tenant_code', strtoupper($identifier))->firstOrFail();
         }
+
         return Tenant::findOrFail((int) $identifier);
     }
 }

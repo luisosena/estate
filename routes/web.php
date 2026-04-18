@@ -1,26 +1,26 @@
 <?php
 
+use App\Http\Controllers\Web\Admin\AdminDashboardController;
+use App\Http\Controllers\Web\Admin\AdminLandlordController;
+use App\Http\Controllers\Web\Admin\AdminPropertyController;
+use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
+use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
+use App\Http\Controllers\Web\Landlord\LandlordPaymentController;
+use App\Http\Controllers\Web\Landlord\LandlordPropertyController;
+use App\Http\Controllers\Web\Landlord\LandlordRentBillController;
+use App\Http\Controllers\Web\Landlord\LandlordTenantController;
+use App\Http\Controllers\Web\Landlord\LandlordUnitController;
+use App\Http\Controllers\Web\Landlord\LandlordUtilityBillController;
+use App\Http\Controllers\Web\Landlord\LandlordUtilityController;
+use App\Http\Controllers\Web\Tenant\TenantDashboardController;
+use App\Http\Controllers\Web\Tenant\TenantNotificationController;
+use App\Http\Controllers\Web\Tenant\TenantPaymentsController;
+use App\Http\Controllers\Web\Tenant\TenantRentBillController;
+use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
-use App\Models\Tenant;
-use App\Http\Controllers\Web\Tenant\TenantDashboardController;
-use App\Http\Controllers\Web\Tenant\TenantPaymentsController;
-use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
-use App\Http\Controllers\Web\Tenant\TenantNotificationController;
-use App\Http\Controllers\Web\Admin\AdminDashboardController;
-use App\Http\Controllers\Web\Admin\AdminPropertyController;
-use App\Http\Controllers\Web\Admin\AdminLandlordController;
-use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
-use App\Http\Controllers\Web\Landlord\LandlordPropertyController;
-use App\Http\Controllers\Web\Landlord\LandlordTenantController;
-use App\Http\Controllers\Web\Landlord\LandlordUnitController;
-use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
-use App\Http\Controllers\Web\Landlord\LandlordPaymentController;
-use App\Http\Controllers\Web\Landlord\LandlordUtilityController;
-use App\Http\Controllers\Web\Landlord\LandlordUtilityBillController;
-use App\Http\Controllers\Web\Landlord\LandlordRentBillController;
-use App\Http\Controllers\Web\Tenant\TenantRentBillController;
 
 Route::get('/', function () {
     return Inertia::render('website/home');
@@ -33,9 +33,8 @@ Route::get('/welcome', function () {
     ]);
 })->name('welcome');
 
-
 Route::middleware(['auth'])->group(function () {
-    //Admin Routes
+    // Admin Routes
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
 
@@ -92,7 +91,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/landlords/{landlord}/toggle-status', [AdminLandlordController::class, 'toggleStatus'])
         ->name('admin.landlords.toggle-status');
 
-    //Landlord Routes
+    // Landlord Routes
     Route::get('/landlord/dashboard', [LandlordDashboardController::class, 'index'])
         ->name('landlord.dashboard');
 
@@ -101,7 +100,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/landlord/tenants/create', [LandlordTenantController::class, 'create'])
         ->name('landlord.tenants.create');
-        
+
     Route::post('/landlord/tenants', [LandlordTenantController::class, 'store'])
         ->name('landlord.tenants.store');
 
@@ -161,16 +160,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/landlord/notifications', [LandlordNotificationController::class, 'index'])
         ->name('landlord.notifications.index');
 
-    Route::put('/landlord/notifications/{id}/read', [LandlordNotificationController::class, 'markAsRead'])
+    Route::put('/landlord/notifications/{notification}/read', [LandlordNotificationController::class, 'markAsRead'])
         ->name('landlord.notifications.read');
 
-    Route::put('/landlord/notifications/{id}/unread', [LandlordNotificationController::class, 'markAsUnread'])
+    Route::put('/landlord/notifications/{notification}/unread', [LandlordNotificationController::class, 'markAsUnread'])
         ->name('landlord.notifications.unread');
 
     Route::put('/landlord/notifications/read-all', [LandlordNotificationController::class, 'markAllAsRead'])
         ->name('landlord.notifications.read-all');
 
-    Route::delete('/landlord/notifications/{id}', [LandlordNotificationController::class, 'destroy'])
+    Route::delete('/landlord/notifications/{notification}', [LandlordNotificationController::class, 'destroy'])
         ->name('landlord.notifications.destroy');
 
     // API Routes for notifications
@@ -225,11 +224,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/landlord/rent-bills/{rentBill}/waive', [LandlordRentBillController::class, 'waive'])
         ->name('landlord.rent-bills.waive');
 
-    //Tenant Routes
+    // Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');
 
-    
     Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
         ->name('tenant.payments');
 
@@ -261,16 +259,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tenant/notifications', [TenantNotificationController::class, 'index'])
         ->name('tenant.notifications.index');
 
-    Route::put('/tenant/notifications/{id}/read', [TenantNotificationController::class, 'markAsRead'])
+    Route::put('/tenant/notifications/{notification}/read', [TenantNotificationController::class, 'markAsRead'])
         ->name('tenant.notifications.read');
 
-    Route::put('/tenant/notifications/{id}/unread', [TenantNotificationController::class, 'markAsUnread'])
+    Route::put('/tenant/notifications/{notification}/unread', [TenantNotificationController::class, 'markAsUnread'])
         ->name('tenant.notifications.unread');
 
     Route::put('/tenant/notifications/read-all', [TenantNotificationController::class, 'markAllAsRead'])
         ->name('tenant.notifications.read-all');
 
-    Route::delete('/tenant/notifications/{id}', [TenantNotificationController::class, 'destroy'])
+    Route::delete('/tenant/notifications/{notification}', [TenantNotificationController::class, 'destroy'])
         ->name('tenant.notifications.destroy');
 
     // API Routes for tenant notifications
@@ -295,9 +293,10 @@ Route::get('/dashboard', function () {
 
 Route::get('/tests2', function () {
     $tenants = Tenant::query()->orderBy('id')->get();
+
     return Inertia::render('tests2', [
         'tenants' => $tenants,
     ]);
 })->name('tests2');
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

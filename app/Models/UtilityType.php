@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -15,17 +16,20 @@ class UtilityType extends Model
         'is_active',
     ];
 
-    protected $casts = [
-        'is_metered' => 'boolean',
-        'is_active'  => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'is_metered' => 'boolean',
+            'is_active' => 'boolean',
+        ];
+    }
 
     public function tenancyUtilities(): HasMany
     {
         return $this->hasMany(TenancyUtility::class);
     }
 
-    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
+    public function scopeActive($query): Builder
     {
         return $query->where('is_active', true);
     }

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Adds 'pending' status to payments table for utility payments
      * that start as pending until approved.
      */

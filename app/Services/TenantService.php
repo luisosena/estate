@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class TenantService
 {
@@ -66,7 +65,7 @@ class TenantService
      */
     public function createTenantWithTenancy(array $data, User $landlord): array
     {
-        return DB::transaction(function () use ($data, $landlord) {
+        return DB::transaction(function () use ($data) {
             // 1. Create Tenant
             $tenant = Tenant::create([
                 'full_name' => $data['full_name'],
@@ -90,7 +89,7 @@ class TenantService
 
             // 3. Handle Tenancy (if unit_id provided)
             $tenancy = null;
-            if (!empty($data['unit_id'])) {
+            if (! empty($data['unit_id'])) {
                 $tenancy = Tenancy::create([
                     'tenant_id' => $tenant->id,
                     'unit_id' => $data['unit_id'],
@@ -112,7 +111,7 @@ class TenantService
                 'credentials' => [
                     'username' => $username,
                     'password' => $username,
-                ]
+                ],
             ];
         });
     }
@@ -125,7 +124,7 @@ class TenantService
         do {
             $nameParts = explode(' ', trim($fullName));
             $base = strtolower(implode('.', array_slice($nameParts, 0, 3)));
-            $username = $base . rand(100, 999);
+            $username = $base.rand(100, 999);
         } while (User::where('username', $username)->exists());
 
         return $username;

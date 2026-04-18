@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\RentBill;
 use App\Models\Payment;
+use App\Models\RentBill;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -12,9 +13,9 @@ class RentBillService
     /**
      * Process a rent payment and update the rent bill status.
      *
-     * @param RentBill $rentBill The rent bill to update
-     * @param float $amount The payment amount
-     * @return void
+     * @param  RentBill  $rentBill  The rent bill to update
+     * @param  float  $amount  The payment amount
+     *
      * @throws InvalidArgumentException If the bill is already paid or waived
      */
     public function processRentPayment(RentBill $rentBill, float $amount): void
@@ -37,9 +38,9 @@ class RentBillService
      * - Finding the current month's bill if none specified
      * - Returning the rent bill ID or null if not found/required
      *
-     * @param int $tenancyId The tenancy ID
-     * @param int|null $requestedBillId The requested rent bill ID (optional)
-     * @param bool $required Whether a rent bill is required for rent payments
+     * @param  int  $tenancyId  The tenancy ID
+     * @param  int|null  $requestedBillId  The requested rent bill ID (optional)
+     * @param  bool  $required  Whether a rent bill is required for rent payments
      * @return array ['rent_bill_id' => int|null, 'error' => string|null]
      */
     public function linkPaymentToBill(int $tenancyId, ?int $requestedBillId = null, bool $required = false): array
@@ -52,7 +53,7 @@ class RentBillService
             $rentBill = RentBill::where('id', $requestedBillId)
                 ->where('tenancy_id', $tenancyId)
                 ->first();
-            
+
             if ($rentBill) {
                 if (in_array($rentBill->status, ['paid', 'waived'])) {
                     $error = "This rent bill has already been {$rentBill->status}.";
@@ -65,16 +66,16 @@ class RentBillService
         }
 
         // If no specific bill provided or not found, try to find one for current month
-        if (!$rentBillId && !$error) {
+        if (! $rentBillId && ! $error) {
             $currentBill = $this->getCurrentMonthBill($tenancyId);
-            if ($currentBill && !in_array($currentBill->status, ['paid', 'waived'])) {
+            if ($currentBill && ! in_array($currentBill->status, ['paid', 'waived'])) {
                 $rentBillId = $currentBill->id;
             }
         }
 
         // If rent bill is required but none found
-        if ($required && !$rentBillId && !$error) {
-            $error = $requestedBillId 
+        if ($required && ! $rentBillId && ! $error) {
+            $error = $requestedBillId
                 ? 'The specified rent bill is not valid or already paid.'
                 : 'No pending rent bill found for the current month. Please create a rent bill first.';
         }
@@ -89,10 +90,11 @@ class RentBillService
      * Create a payment and process rent bill update in a transaction.
      * This ensures atomicity - either both succeed or both fail.
      *
-     * @param array $paymentData The payment data
-     * @param int|null $rentBillId The rent bill ID to link (optional)
-     * @param float $paymentAmount The payment amount
+     * @param  array  $paymentData  The payment data
+     * @param  int|null  $rentBillId  The rent bill ID to link (optional)
+     * @param  float  $paymentAmount  The payment amount
      * @return Payment The created payment
+     *
      * @throws InvalidArgumentException If the rent bill processing fails
      */
     public function createPaymentWithRentBill(array $paymentData, ?int $rentBillId, float $paymentAmount): Payment
@@ -120,16 +122,15 @@ class RentBillService
     /**
      * Waive a rent bill.
      *
-     * @param RentBill $rentBill The rent bill to waive
-     * @param string|null $notes Optional notes for the waiver
-     * @return void
+     * @param  RentBill  $rentBill  The rent bill to waive
+     * @param  string|null  $notes  Optional notes for the waiver
      */
     public function waiveRentBill(RentBill $rentBill, ?string $notes = null): void
     {
         $rentBill->status = 'waived';
         $rentBill->amount_paid = $rentBill->amount_due;
         if ($notes) {
-            $rentBill->notes = ($rentBill->notes ? $rentBill->notes . "\n" : '') . "Waived: {$notes}";
+            $rentBill->notes = ($rentBill->notes ? $rentBill->notes."\n" : '')."Waived: {$notes}";
         }
         $rentBill->save();
     }
@@ -137,8 +138,7 @@ class RentBillService
     /**
      * Get the current month's rent bill for a tenancy.
      *
-     * @param int $tenancyId The tenancy ID
-     * @return RentBill|null
+     * @param  int  $tenancyId  The tenancy ID
      */
     public function getCurrentMonthBill(int $tenancyId): ?RentBill
     {
@@ -150,8 +150,8 @@ class RentBillService
     /**
      * Get pending rent bills for a tenancy.
      *
-     * @param int $tenancyId The tenancy ID
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @param  int  $tenancyId  The tenancy ID
+     * @return Collection
      */
     public function getPendingBills(int $tenancyId)
     {
@@ -164,8 +164,7 @@ class RentBillService
     /**
      * Calculate total outstanding rent for a tenancy.
      *
-     * @param int $tenancyId The tenancy ID
-     * @return float
+     * @param  int  $tenancyId  The tenancy ID
      */
     public function calculateTotalOutstanding(int $tenancyId): float
     {

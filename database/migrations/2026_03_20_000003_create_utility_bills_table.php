@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('utility_bills', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenancy_utility_id')
-                  ->constrained('tenancy_utilities')
-                  ->cascadeOnDelete();
+                ->constrained('tenancy_utilities')
+                ->cascadeOnDelete();
             $table->date('billing_month');                        // store as first day of the month, e.g. 2026-03-01
             $table->decimal('units_consumed', 10, 3)->nullable(); // null for flat-rate utilities
             $table->decimal('amount_due', 12, 2);

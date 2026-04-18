@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Web\Landlord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Landlord\WaiveBillRequest;
+use App\Http\Resources\PropertyResource;
+use App\Http\Resources\UtilityBillResource;
 use App\Models\Property;
 use App\Models\UtilityBill;
-use App\Http\Resources\UtilityBillResource;
-use App\Http\Resources\PropertyResource;
-use App\Http\Requests\Landlord\WaiveBillRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -22,8 +22,8 @@ class LandlordUtilityBillController extends Controller
         $landlord = $request->user();
 
         $query = UtilityBill::whereHas('tenancyUtility.tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->with([
                 'tenancyUtility.utilityType',
                 'tenancyUtility.tenancy.unit.property',
@@ -84,10 +84,7 @@ class LandlordUtilityBillController extends Controller
         $landlord = $request->user();
 
         // Verify landlord owns this utility bill
-        $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
-            abort(403);
-        }
+        $this->authorize('view', $utilityBill);
 
         $utilityBill->load([
             'tenancyUtility.utilityType',
@@ -107,28 +104,29 @@ class LandlordUtilityBillController extends Controller
     public function waive(WaiveBillRequest $request, UtilityBill $utilityBill)
     {
         $this->authorize('waive', $utilityBill);
- 
+
         try {
             if (in_array($utilityBill->status, ['paid', 'waived'])) {
                 return redirect()
                     ->back()
-                    ->with('error', 'This bill cannot be waived as it is already ' . $utilityBill->status);
+                    ->with('error', 'This bill cannot be waived as it is already '.$utilityBill->status);
             }
- 
+
             $validated = $request->validated();
             $notes = $validated['notes'] ?? 'Waived by landlord';
- 
+
             $utilityBill->update([
                 'status' => 'waived',
-                'notes' => ($utilityBill->notes ? $utilityBill->notes . "\n\n" : '') .
-                    $notes . ' on ' . now()->format('Y-m-d H:i:s'),
+                'notes' => ($utilityBill->notes ? $utilityBill->notes."\n\n" : '').
+                    $notes.' on '.now()->format('Y-m-d H:i:s'),
             ]);
 
             return redirect()
                 ->route('landlord.utility-bills.show', ['utilityBill' => $utilityBill->id])
                 ->with('success', 'Utility bill waived successfully.');
         } catch (\Exception $e) {
-            Log::error('Failed to waive utility bill: ' . $e->getMessage());
+            Log::error('Failed to waive utility bill: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Failed to waive utility bill.');
         }
     }

@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Notifications\Notifiable; 
-use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\Notifiable;
 
 class Tenant extends Model
 {
-    use SoftDeletes, Notifiable; 
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'tenant_code',
@@ -23,27 +26,27 @@ class Tenant extends Model
     ];
 
     // Relationships
-    public function user()
+    public function user(): HasOne
     {
         return $this->hasOne(User::class);
     }
 
-    public function tenancies()
+    public function tenancies(): HasMany
     {
         return $this->hasMany(Tenancy::class);
     }
 
-    public function identifications()
+    public function identifications(): HasMany
     {
         return $this->hasMany(TenantIdentification::class);
     }
 
-    public function payments()
+    public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
-    public function notifications()
+    public function notifications(): MorphMany
     {
         return $this->morphMany(DatabaseNotification::class, 'notifiable');
     }
@@ -56,9 +59,9 @@ class Tenant extends Model
     protected static function booted()
     {
         static::creating(function ($tenant) {
-            if (!$tenant->tenant_code) {
+            if (! $tenant->tenant_code) {
                 $lastId = Tenant::withTrashed()->max('id') + 1;
-                $tenant->tenant_code = 'TEN-' . str_pad($lastId, 5, '0', STR_PAD_LEFT);
+                $tenant->tenant_code = 'TEN-'.str_pad($lastId, 5, '0', STR_PAD_LEFT);
             }
         });
     }

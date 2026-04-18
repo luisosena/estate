@@ -21,7 +21,7 @@ class UnitResource extends JsonResource
             'unit_name' => $this->unit_name,
             'status' => $this->status,
             'created_at' => $this->created_at?->toDateTimeString(),
-            
+
             // Relationships
             'property' => PropertyResource::make($this->whenLoaded('property')),
             'tenancies' => TenancyResource::collection($this->whenLoaded('tenancies')),

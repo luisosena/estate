@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Property;
 use App\Models\Unit;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 
 class UnitController extends Controller
 {
@@ -90,11 +89,11 @@ class UnitController extends Controller
         $unit = Unit::whereHas('property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
-        ->with(['property:id,name,address', 'tenancies' => function ($query) {
-            $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date')
-                  ->with('tenant:id,full_name,email');
-        }])
-        ->findOrFail($unitId);
+            ->with(['property:id,name,address', 'tenancies' => function ($query) {
+                $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date')
+                    ->with('tenant:id,full_name,email');
+            }])
+            ->findOrFail($unitId);
 
         return response()->json([
             'id' => $unit->id,
@@ -174,7 +173,7 @@ class UnitController extends Controller
         })->findOrFail($unitId);
 
         $validated = $request->validate([
-            'unit_code' => 'sometimes|string|max:50|unique:units,unit_code,' . $unitId,
+            'unit_code' => 'sometimes|string|max:50|unique:units,unit_code,'.$unitId,
             'unit_name' => 'sometimes|string|max:100',
             'status' => 'sometimes|in:available,occupied,maintenance',
         ]);
@@ -214,7 +213,7 @@ class UnitController extends Controller
 
         $property = $unit->property;
         $unit->delete();
-        
+
         // Decrement total_units on property
         $property->decrement('total_units');
 

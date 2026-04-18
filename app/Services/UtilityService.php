@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Tenant;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
+use App\Models\Tenant;
 use App\Models\UtilityBill;
-use App\Models\UtilityType;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -62,13 +61,13 @@ class UtilityService
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return collect();
         }
 
         return UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
-                $q->where('tenancy_id', $activeTenancy->id);
-            })
+            $q->where('tenancy_id', $activeTenancy->id);
+        })
             ->whereIn('status', ['pending', 'partial', 'overdue'])
             ->with(['tenancyUtility.utilityType'])
             ->orderBy('due_date', 'asc')
@@ -129,7 +128,7 @@ class UtilityService
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return [
                 'bills' => collect(),
                 'total' => 0,
@@ -140,8 +139,8 @@ class UtilityService
         }
 
         $query = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
-                $q->where('tenancy_id', $activeTenancy->id);
-            })
+            $q->where('tenancy_id', $activeTenancy->id);
+        })
             ->with(['tenancyUtility.utilityType']);
 
         // Apply filters
@@ -171,15 +170,15 @@ class UtilityService
 
     /**
      * Process a utility payment and update the bill status.
-     * 
+     *
      * @throws \InvalidArgumentException If payment amount exceeds outstanding balance
      */
     public function processUtilityPayment(UtilityBill $bill, float $amount): void
     {
         DB::transaction(function () use ($bill, $amount) {
             // Use the model's built-in reconciliation logic
-            $bill->markPaid((float)$amount);
-            
+            $bill->markPaid((float) $amount);
+
             return $bill;
         });
     }

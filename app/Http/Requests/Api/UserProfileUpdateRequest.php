@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UserProfileUpdateRequest extends FormRequest
 {
@@ -16,7 +15,7 @@ class UserProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', 'unique:users,email,' . $this->user()->id],
+            'email' => ['sometimes', 'email', 'unique:users,email,'.$this->user()->id],
             'phone' => ['nullable', 'string', 'max:20'],
         ];
     }

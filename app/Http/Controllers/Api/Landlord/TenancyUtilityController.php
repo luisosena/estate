@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Landlord;
 use App\Http\Controllers\Controller;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
-use App\Models\UtilityType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +22,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy - with null safety checks
         $property = $tenancy->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (! $property || $property->owner_id !== $landlord->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -47,7 +46,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy - with null safety checks
         $property = $tenancy->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (! $property || $property->owner_id !== $landlord->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -112,7 +111,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy utility - with null safety checks
         $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (! $property || $property->owner_id !== $landlord->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -131,7 +130,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy utility - with null safety checks
         $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (! $property || $property->owner_id !== $landlord->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -179,7 +178,7 @@ class TenancyUtilityController extends Controller
 
         // Verify landlord owns this tenancy utility - with null safety checks
         $property = $tenancyUtility->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (! $property || $property->owner_id !== $landlord->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

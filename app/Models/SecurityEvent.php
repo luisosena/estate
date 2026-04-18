@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -17,9 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $location
  * @property array|null $metadata
  * @property string $severity
- * @property \Carbon\Carbon|null $created_at
- * @property \Carbon\Carbon|null $updated_at
- *
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read User|null $user
  */
 class SecurityEvent extends Model
@@ -28,23 +28,36 @@ class SecurityEvent extends Model
      * Event Types
      */
     public const EVENT_PASSWORD_CHANGED = 'password_changed';
+
     public const EVENT_PASSWORD_RESET_REQUESTED = 'password_reset_requested';
+
     public const EVENT_SUSPICIOUS_ACTIVITY = 'suspicious_activity';
+
     public const EVENT_UNUSUAL_LOCATION = 'unusual_location';
+
     public const EVENT_MULTIPLE_FAILED_ATTEMPTS = 'multiple_failed_attempts';
+
     public const EVENT_TOKEN_REVOKED = 'token_revoked';
+
     public const EVENT_SESSION_TERMINATED = 'session_terminated';
+
     public const EVENT_BIOMETRIC_ENABLED = 'biometric_enabled';
+
     public const EVENT_BIOMETRIC_DISABLED = 'biometric_disabled';
+
     public const EVENT_DEVICE_ADDED = 'device_added';
+
     public const EVENT_DEVICE_REMOVED = 'device_removed';
 
     /**
      * Severity Levels
      */
     public const SEVERITY_LOW = 'low';
+
     public const SEVERITY_MEDIUM = 'medium';
+
     public const SEVERITY_HIGH = 'high';
+
     public const SEVERITY_CRITICAL = 'critical';
 
     /**
@@ -118,16 +131,6 @@ class SecurityEvent extends Model
 
     /**
      * Create and save a new security event.
-     *
-     * @param int|null $userId
-     * @param string $eventType
-     * @param string|null $ipAddress
-     * @param string|null $userAgent
-     * @param string|null $deviceId
-     * @param string|null $location
-     * @param array|null $metadata
-     * @param string $severity
-     * @return static
      */
     public static function log(
         ?int $userId,

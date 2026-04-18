@@ -2,10 +2,15 @@
 
 namespace App\Providers;
 
+use App\Policies\NotificationPolicy;
 use App\Services\DocSyncService;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -17,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(DocSyncService::class, function ($app) {
-            return new DocSyncService();
+            return new DocSyncService;
         });
     }
 
@@ -27,8 +32,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (app()->environment('production')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+            URL::forceScheme('https');
         }
+
+        Gate::policy(DatabaseNotification::class, NotificationPolicy::class);
+
+        Model::preventLazyLoading(! app()->isProduction());
 
         $this->configureDefaults();
     }

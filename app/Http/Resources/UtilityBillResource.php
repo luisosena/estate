@@ -29,7 +29,7 @@ class UtilityBillResource extends JsonResource
             'notes' => $this->notes,
             'outstanding_amount' => max(0, $this->amount_due - $this->amount_paid),
             'created_at' => $this->created_at?->toDateTimeString(),
-            
+
             // Relationships
             'tenancy_utility' => TenancyUtilityResource::make($this->whenLoaded('tenancyUtility')),
             'payments' => PaymentResource::collection($this->whenLoaded('payments')),

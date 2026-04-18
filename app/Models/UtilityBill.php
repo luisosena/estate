@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UtilityBill extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'tenancy_utility_id',
         'billing_month',
@@ -19,13 +23,16 @@ class UtilityBill extends Model
         'notes',
     ];
 
-    protected $casts = [
-        'billing_month'   => 'date',
-        'due_date'        => 'date',
-        'amount_due'      => 'decimal:2',
-        'amount_paid'     => 'decimal:2',
-        'units_consumed'  => 'decimal:3',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'billing_month' => 'date',
+            'due_date' => 'date',
+            'amount_due' => 'decimal:2',
+            'amount_paid' => 'decimal:2',
+            'units_consumed' => 'decimal:3',
+        ];
+    }
 
     public function tenancyUtility(): BelongsTo
     {
@@ -53,19 +60,19 @@ class UtilityBill extends Model
         $this->save();
     }
 
-    public function scopePending($query): \Illuminate\Database\Eloquent\Builder
+    public function scopePending($query): Builder
     {
         return $query->where('status', 'pending');
     }
 
-    public function scopeOverdue($query): \Illuminate\Database\Eloquent\Builder
+    public function scopeOverdue($query): Builder
     {
         return $query->where(function ($q) {
             $q->where('status', 'overdue')
-              ->orWhere(function ($q) {
-                  $q->whereIn('status', ['pending', 'partial'])
-                    ->where('due_date', '<', now());
-              });
+                ->orWhere(function ($q) {
+                    $q->whereIn('status', ['pending', 'partial'])
+                        ->where('due_date', '<', now());
+                });
         });
     }
 }

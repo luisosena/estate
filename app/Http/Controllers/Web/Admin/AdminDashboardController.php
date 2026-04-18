@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Models\Property;
-use App\Models\Unit;
-use App\Models\Tenancy;
-use App\Models\User;
 use App\Http\Resources\LandlordResource;
 use App\Http\Resources\PropertyResource;
+use App\Models\Property;
+use App\Models\Tenancy;
+use App\Models\Unit;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AdminDashboardController extends Controller
 {
@@ -19,11 +19,12 @@ class AdminDashboardController extends Controller
         try {
             $user = $request->user();
 
-            if (!$user || $user->role !== 'admin') {
+            if (! $user || $user->role !== 'admin') {
                 return redirect()->route('login')->with('error', 'Access denied. Admin role required.');
             }
         } catch (\Exception $e) {
-            \Log::error('Admin dashboard error: ' . $e->getMessage());
+            \Log::error('Admin dashboard error: '.$e->getMessage());
+
             return redirect()->route('login')->with('error', 'Access denied.');
         }
 
@@ -44,11 +45,12 @@ class AdminDashboardController extends Controller
             ->get()
             ->map(function ($landlord) {
                 $resource = new LandlordResource($landlord);
+
                 return [
                     'id' => $landlord->id,
                     'type' => 'landlord_registration',
                     'title' => 'New Landlord Registered',
-                    'description' => $landlord->name . " joined the platform.",
+                    'description' => $landlord->name.' joined the platform.',
                     'time' => $landlord->created_at->diffForHumans(),
                     'icon' => 'users',
                     'payload' => $resource->resolve(),
@@ -61,11 +63,12 @@ class AdminDashboardController extends Controller
             ->get()
             ->map(function ($property) {
                 $resource = new PropertyResource($property);
+
                 return [
                     'id' => $property->id,
                     'type' => 'property_registration',
                     'title' => 'Property Added',
-                    'description' => $property->name . " was registered by " . ($property->landlord->name ?? 'Unknown') . ".",
+                    'description' => $property->name.' was registered by '.($property->landlord->name ?? 'Unknown').'.',
                     'time' => $property->created_at->diffForHumans(),
                     'icon' => 'building',
                     'payload' => $resource->resolve(),
@@ -79,7 +82,7 @@ class AdminDashboardController extends Controller
 
         return Inertia::render('admin/dashboard', [
             'stats' => $stats,
-            'activity' => $activity
+            'activity' => $activity,
         ]);
     }
 
@@ -91,9 +94,9 @@ class AdminDashboardController extends Controller
         return Inertia::render('admin/notifications/index', [
             'notifications' => [
                 'data' => [],
-                'total' => 0
+                'total' => 0,
             ],
-            'unreadCount' => 0
+            'unreadCount' => 0,
         ]);
     }
 }

@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Payment;
+use App\Models\Tenancy;
 use App\Models\Tenant;
+use App\Models\UtilityBill;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
@@ -20,11 +23,11 @@ class PaymentService
             ->values() ?? collect();
     }
 
-    public function processPayment(array $validated, \App\Models\Tenancy $activeTenancy, ?Payment $existingPayment = null): array
+    public function processPayment(array $validated, Tenancy $activeTenancy, ?Payment $existingPayment = null): array
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $activeTenancy, $existingPayment) {
+        return DB::transaction(function () use ($validated, $activeTenancy, $existingPayment) {
             // 1. Duplicate prevention
-            if (!$existingPayment) {
+            if (! $existingPayment) {
                 $recentDuplicate = $activeTenancy->payments()
                     ->where('amount', $validated['amount'])
                     ->where('payment_method', $validated['payment_method'])
@@ -43,20 +46,20 @@ class PaymentService
 
             // 2. Business Logic for Rent vs Utility
             if ($validated['payment_type'] === 'utility' && $utilityBillId) {
-                $bill = \App\Models\UtilityBill::find($utilityBillId);
+                $bill = UtilityBill::find($utilityBillId);
                 if ($bill) {
-                    $utilityService = app(\App\Services\UtilityService::class);
+                    $utilityService = app(UtilityService::class);
                     $utilityService->processUtilityPayment($bill, $validated['amount']);
                     $bill->refresh();
                     $status = $bill->status;
                 }
-            } else if ($validated['payment_type'] === 'rent') {
+            } elseif ($validated['payment_type'] === 'rent') {
                 $currentTotalPaid = $activeTenancy->payments()
                     ->whereIn('status', ['paid', 'partial'])
                     ->where('payment_type', 'rent')
-                    ->when($existingPayment, fn($q) => $q->where('id', '!=', $existingPayment->id))
+                    ->when($existingPayment, fn ($q) => $q->where('id', '!=', $existingPayment->id))
                     ->sum('amount');
-                
+
                 if ($currentTotalPaid + $validated['amount'] >= $monthlyRent) {
                     $status = 'paid';
                 }
@@ -95,6 +98,7 @@ class PaymentService
     public function updatePayment(Payment $payment, array $paymentData): Payment
     {
         $payment->update($paymentData);
+
         return $payment;
     }
 

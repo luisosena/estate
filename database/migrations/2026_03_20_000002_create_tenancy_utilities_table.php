@@ -11,11 +11,11 @@ return new class extends Migration
         Schema::create('tenancy_utilities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenancy_id')
-                  ->constrained('tenancies')
-                  ->cascadeOnDelete();
+                ->constrained('tenancies')
+                ->cascadeOnDelete();
             $table->foreignId('utility_type_id')
-                  ->constrained('utility_types')
-                  ->restrictOnDelete();
+                ->constrained('utility_types')
+                ->restrictOnDelete();
             $table->decimal('amount', 12, 2);                             // agreed fixed amount (for flat-rate utilities)
             $table->enum('billing_cycle', ['monthly', 'quarterly', 'annual'])->default('monthly');
             $table->string('provider', 255)->nullable();                  // migrated from old utilities.provider

@@ -16,7 +16,7 @@ class UtilityBillBelongsToTenancy implements ValidationRule
     {
         $bill = UtilityBill::find($value);
 
-        if (!$bill || !$bill->tenancyUtility || $bill->tenancyUtility->tenancy_id !== $this->tenancyId) {
+        if (! $bill || ! $bill->tenancyUtility || $bill->tenancyUtility->tenancy_id !== $this->tenancyId) {
             $fail('The selected utility bill does not belong to this tenancy.');
         }
     }

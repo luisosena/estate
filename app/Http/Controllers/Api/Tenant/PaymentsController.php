@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Api\Tenant;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenancy;
-use App\Models\RentBill;
+use App\Models\UtilityBill;
+use App\Services\RentBillService;
+use App\Services\UtilityService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\UtilityService;
-use App\Services\RentBillService;
-use App\Models\UtilityBill;
 
 class PaymentsController extends Controller
 {
@@ -112,7 +111,7 @@ class PaymentsController extends Controller
             ->where('status', 'active')
             ->first();
 
-        if (!$activeTenancy) {
+        if (! $activeTenancy) {
             return response()->json([
                 'error' => 'No active tenancy found.',
             ], 422);
@@ -125,7 +124,7 @@ class PaymentsController extends Controller
                 $lockedTenancy = Tenancy::lockForUpdate()->find($activeTenancy->id);
 
                 // If tenancy was deleted during concurrent request, fail gracefully
-                if (!$lockedTenancy) {
+                if (! $lockedTenancy) {
                     return ['error' => 'Transaction conflict. Please try again.'];
                 }
 
@@ -152,7 +151,7 @@ class PaymentsController extends Controller
                 // Calculate excess amount for rent payments (overpayment handling)
                 $excessAmount = 0;
                 $rentAmount = $validated['amount'];
-                
+
                 if ($validated['payment_type'] === 'rent' && $monthlyRent > 0) {
                     $remainingBalance = max(0, $monthlyRent - $currentTotalPaid);
                     if ($validated['amount'] > $remainingBalance) {
@@ -172,7 +171,7 @@ class PaymentsController extends Controller
                 if ($validated['payment_type'] === 'rent') {
                     $billLinkResult = app(RentBillService::class)->linkPaymentToBill(
                         $activeTenancy->id,
-                        !empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                        ! empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
                         false // Not required - allows payments without bill
                     );
                     $rentBillId = $billLinkResult['rent_bill_id'];
@@ -194,49 +193,49 @@ class PaymentsController extends Controller
                 ];
 
                 // Link to utility bill if provided
-                if ($validated['payment_type'] === 'utility' && !empty($validated['utility_bill_id'])) {
+                if ($validated['payment_type'] === 'utility' && ! empty($validated['utility_bill_id'])) {
                     $utilityBill = UtilityBill::with('tenancyUtility.tenancy.unit.property')
                         ->find($validated['utility_bill_id']);
-                    
+
                     // Verify the bill exists and belongs to this tenant's tenancy
-                    if (!$utilityBill) {
+                    if (! $utilityBill) {
                         return response()->json([
                             'error' => 'Utility bill not found.',
                         ], 422);
                     }
-                    
+
                     if ($utilityBill->tenancyUtility->tenancy_id !== $activeTenancy->id) {
                         return response()->json([
                             'error' => 'This utility bill does not belong to your active tenancy.',
                         ], 422);
                     }
-                    
+
                     // Verify the bill is payable (not already paid or waived)
                     if (in_array($utilityBill->status, ['paid', 'waived'])) {
                         return response()->json([
-                            'error' => 'This utility bill has already been ' . $utilityBill->status . '.',
+                            'error' => 'This utility bill has already been '.$utilityBill->status.'.',
                         ], 422);
                     }
-                    
+
                     $paymentData['utility_bill_id'] = $utilityBill->id;
-                    
+
                     // Process the utility bill payment
                     try {
                         app(UtilityService::class)->processUtilityPayment($utilityBill, $validated['amount']);
                     } catch (\InvalidArgumentException $e) {
                         return response()->json(['error' => $e->getMessage()], 422);
                     }
-                    
+
                     // Sync payment status with utility bill status
                     // Refresh the utility bill to get the updated status
                     $utilityBill->refresh();
                     $paymentData['status'] = $utilityBill->status;
 
                     // Validate the synced status is allowed
-                    if (!in_array($paymentData['status'], ['paid', 'partial', 'overdue', 'pending'])) {
+                    if (! in_array($paymentData['status'], ['paid', 'partial', 'overdue', 'pending'])) {
                         Log::warning('Unexpected utility bill status after payment', [
                             'utility_bill_id' => $utilityBill->id,
-                            'status' => $paymentData['status']
+                            'status' => $paymentData['status'],
                         ]);
                         $paymentData['status'] = 'partial'; // Safe fallback
                     }
@@ -245,7 +244,7 @@ class PaymentsController extends Controller
                 // Create payment with transactional rent bill processing
                 $payment = null;
                 $rentBillWarning = null;
-                
+
                 if ($validated['payment_type'] === 'rent' && $rentBillId) {
                     try {
                         // Use transactional service method for atomic payment + rent bill update
@@ -292,15 +291,15 @@ class PaymentsController extends Controller
                 'payment' => $result['payment'],
                 'excessAmount' => $result['excessAmount'] ?? 0,
             ];
-            
-            if (!empty($rentBillWarning)) {
+
+            if (! empty($rentBillWarning)) {
                 $response['warning'] = $rentBillWarning;
             }
-            
-            if (!empty($rentBillError)) {
+
+            if (! empty($rentBillError)) {
                 $response['rent_bill_warning'] = $rentBillError;
             }
-            
+
             return response()->json($response, 201);
 
         } catch (\Exception $e) {

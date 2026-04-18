@@ -2,15 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Support\Str;
-
 use App\Models\Message;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\RentBill;
-use App\Models\Tenant;
-use App\Models\TenancyUtility;
 use App\Models\Tenancy;
+use App\Models\TenancyUtility;
+use App\Models\Tenant;
 use App\Models\TenantIdentification;
 use App\Models\Unit;
 use App\Models\User;
@@ -19,6 +17,7 @@ use App\Models\UtilityType;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DevelopmentSeeder extends Seeder
 {
@@ -49,11 +48,11 @@ class DevelopmentSeeder extends Seeder
         // 2. ADMIN USER
         // =====================================================
         $admin = User::create([
-            'name'     => 'System Administrator',
+            'name' => 'System Administrator',
             'username' => 'admin',
-            'email'    => 'admin@estatemanager.co.tz',
+            'email' => 'admin@estatemanager.co.tz',
             'password' => Hash::make('admin'),
-            'role'     => 'admin',
+            'role' => 'admin',
         ]);
 
         // =====================================================
@@ -62,65 +61,65 @@ class DevelopmentSeeder extends Seeder
 
         // --- Landlord 1: Wanjiku Kamau ---
         $landlord1 = User::create([
-            'name'     => 'Wanjiku Kamau',
+            'name' => 'Wanjiku Kamau',
             'username' => 'wanjiku.kamau',
-            'email'    => 'wanjiku.kamau@estatemanager.co.tz',
+            'email' => 'wanjiku.kamau@estatemanager.co.tz',
             'password' => Hash::make('wanjiku.kamau'),
-            'role'     => 'landlord',
+            'role' => 'landlord',
         ]);
 
         $propA = Property::create([
-            'owner_id'      => $landlord1->id,
-            'name'          => 'Msasani Pearl Apartments',
-            'address'       => 'Plot 24, Msasani Peninsula',
-            'city'          => 'Dar es Salaam',
-            'state'         => 'Dar es Salaam',
-            'country'       => 'Tanzania',
-            'postal_code'   => '11101',
-            'total_units'   => 4,
+            'owner_id' => $landlord1->id,
+            'name' => 'Msasani Pearl Apartments',
+            'address' => 'Plot 24, Msasani Peninsula',
+            'city' => 'Dar es Salaam',
+            'state' => 'Dar es Salaam',
+            'country' => 'Tanzania',
+            'postal_code' => '11101',
+            'total_units' => 4,
             'property_type' => 'apartment',
-            'status'        => 'active',
-            'description'   => 'Modern 4-unit apartment block on the Msasani Peninsula with ocean views.',
-            'amenities'     => json_encode(['parking', 'security', 'backup_generator', 'water_tank']),
+            'status' => 'active',
+            'description' => 'Modern 4-unit apartment block on the Msasani Peninsula with ocean views.',
+            'amenities' => json_encode(['parking', 'security', 'backup_generator', 'water_tank']),
         ]);
 
         $propB = Property::create([
-            'owner_id'      => $landlord1->id,
-            'name'          => 'Kinondoni Garden Flats',
-            'address'       => '18 Kawawa Road, Kinondoni',
-            'city'          => 'Dar es Salaam',
-            'state'         => 'Dar es Salaam',
-            'country'       => 'Tanzania',
-            'postal_code'   => '11103',
-            'total_units'   => 3,
+            'owner_id' => $landlord1->id,
+            'name' => 'Kinondoni Garden Flats',
+            'address' => '18 Kawawa Road, Kinondoni',
+            'city' => 'Dar es Salaam',
+            'state' => 'Dar es Salaam',
+            'country' => 'Tanzania',
+            'postal_code' => '11103',
+            'total_units' => 3,
             'property_type' => 'apartment',
-            'status'        => 'active',
-            'description'   => 'Quiet residential flats in Kinondoni, close to shopping centres.',
-            'amenities'     => json_encode(['parking', 'garden', 'water_tank']),
+            'status' => 'active',
+            'description' => 'Quiet residential flats in Kinondoni, close to shopping centres.',
+            'amenities' => json_encode(['parking', 'garden', 'water_tank']),
         ]);
 
         // --- Landlord 2: Hassan Omar ---
         $landlord2 = User::create([
-            'name'     => 'Hassan Omar',
+            'name' => 'Hassan Omar',
             'username' => 'hassan.omar',
-            'email'    => 'hassan.omar@estatemanager.co.tz',
+            'email' => 'hassan.omar@estatemanager.co.tz',
             'password' => Hash::make('hassan.omar'),
-            'role'     => 'landlord',
+            'role' => 'landlord',
         ]);
 
         $propC = Property::create([
-            'owner_id'      => $landlord2->id,
-            'name'          => 'Arusha Heights Residences',
-            'address'       => 'Corridor Area, Sokoine Road',
-            'city'          => 'Arusha',
-            'state'         => 'Arusha',
-            'country'       => 'Tanzania',
-            'postal_code'   => '23101',
-            'total_units'   => 3,
+            'owner_id' => $landlord2->id,
+            'name' => 'Arusha Heights Residences',
+            'address' => 'Corridor Area, Sokoine Road',
+            'city' => 'Arusha',
+            'state' => 'Arusha',
+            'country' => 'Tanzania',
+            'postal_code' => '23101',
+            'total_units' => 3,
             'property_type' => 'house',
-            'status'        => 'active',
-            'description'   => 'Three independent houses near Arusha CBD, ideal for families.',
-            'amenities'     => json_encode(['parking', 'garden', 'borehole']),
+            'status' => 'active',
+            'description' => 'Three independent houses near Arusha CBD, ideal for families.',
+            'amenities' => json_encode(['parking', 'garden', 'borehole']),
         ]);
 
         $this->command->info('Landlords and properties seeded.');
@@ -152,127 +151,127 @@ class DevelopmentSeeder extends Seeder
         $tenantData = [
             [
                 'tenant_code' => 'TEN-00001',
-                'full_name'   => 'Amina Juma Salim',
-                'phone'       => '+255754123456',
-                'email'       => 'amina.salim@gmail.com',
-                'emergency_contact_name'     => 'Juma Salim',
-                'emergency_contact_phone'    => '+255754000111',
+                'full_name' => 'Amina Juma Salim',
+                'phone' => '+255754123456',
+                'email' => 'amina.salim@gmail.com',
+                'emergency_contact_name' => 'Juma Salim',
+                'emergency_contact_phone' => '+255754000111',
                 'emergency_contact_relation' => 'Father',
-                'username'    => 'amina.salim',
-                'unit'        => $uA1,
-                'move_in'     => '2025-08-01',
-                'rent'        => 450000,
-                'deposit'     => 900000,
-                'id_type'     => 'national_id',
-                'id_number'   => 'TZ-NID-19870321-001',
+                'username' => 'amina.salim',
+                'unit' => $uA1,
+                'move_in' => '2025-08-01',
+                'rent' => 450000,
+                'deposit' => 900000,
+                'id_type' => 'national_id',
+                'id_number' => 'TZ-NID-19870321-001',
             ],
             [
                 'tenant_code' => 'TEN-00002',
-                'full_name'   => 'Bernard Omondi',
-                'phone'       => '+255653234567',
-                'email'       => 'bernard.omondi@gmail.com',
-                'emergency_contact_name'     => 'Grace Omondi',
-                'emergency_contact_phone'    => '+255653000222',
+                'full_name' => 'Bernard Omondi',
+                'phone' => '+255653234567',
+                'email' => 'bernard.omondi@gmail.com',
+                'emergency_contact_name' => 'Grace Omondi',
+                'emergency_contact_phone' => '+255653000222',
                 'emergency_contact_relation' => 'Wife',
-                'username'    => 'bernard.omondi',
-                'unit'        => $uA2,
-                'move_in'     => '2025-10-01',
-                'rent'        => 600000,
-                'deposit'     => 1200000,
-                'id_type'     => 'passport',
-                'id_number'   => 'KE-PP-A4521876',
+                'username' => 'bernard.omondi',
+                'unit' => $uA2,
+                'move_in' => '2025-10-01',
+                'rent' => 600000,
+                'deposit' => 1200000,
+                'id_type' => 'passport',
+                'id_number' => 'KE-PP-A4521876',
             ],
             [
                 'tenant_code' => 'TEN-00003',
-                'full_name'   => 'Fatuma Rashid',
-                'phone'       => '+255712345678',
-                'email'       => 'fatuma.rashid@yahoo.com',
-                'emergency_contact_name'     => 'Rashid Khalid',
-                'emergency_contact_phone'    => '+255712000333',
+                'full_name' => 'Fatuma Rashid',
+                'phone' => '+255712345678',
+                'email' => 'fatuma.rashid@yahoo.com',
+                'emergency_contact_name' => 'Rashid Khalid',
+                'emergency_contact_phone' => '+255712000333',
                 'emergency_contact_relation' => 'Husband',
-                'username'    => 'fatuma.rashid',
-                'unit'        => $uA3,
-                'move_in'     => '2025-06-15',
-                'rent'        => 850000,
-                'deposit'     => 1700000,
-                'id_type'     => 'national_id',
-                'id_number'   => 'TZ-NID-19900615-003',
+                'username' => 'fatuma.rashid',
+                'unit' => $uA3,
+                'move_in' => '2025-06-15',
+                'rent' => 850000,
+                'deposit' => 1700000,
+                'id_type' => 'national_id',
+                'id_number' => 'TZ-NID-19900615-003',
             ],
             [
                 'tenant_code' => 'TEN-00004',
-                'full_name'   => 'David Mwangi Kariuki',
-                'phone'       => '+255785456789',
-                'email'       => 'david.mwangi@outlook.com',
-                'emergency_contact_name'     => 'Susan Kariuki',
-                'emergency_contact_phone'    => '+255785000444',
+                'full_name' => 'David Mwangi Kariuki',
+                'phone' => '+255785456789',
+                'email' => 'david.mwangi@outlook.com',
+                'emergency_contact_name' => 'Susan Kariuki',
+                'emergency_contact_phone' => '+255785000444',
                 'emergency_contact_relation' => 'Sister',
-                'username'    => 'david.mwangi',
-                'unit'        => $uB1,
-                'move_in'     => '2025-09-01',
-                'rent'        => 550000,
-                'deposit'     => 1100000,
-                'id_type'     => 'drivers_license',
-                'id_number'   => 'TZ-DL-2019-00445',
+                'username' => 'david.mwangi',
+                'unit' => $uB1,
+                'move_in' => '2025-09-01',
+                'rent' => 550000,
+                'deposit' => 1100000,
+                'id_type' => 'drivers_license',
+                'id_number' => 'TZ-DL-2019-00445',
             ],
             [
                 'tenant_code' => 'TEN-00005',
-                'full_name'   => 'Zainab Mohammed Ali',
-                'phone'       => '+255622567890',
-                'email'       => 'zainab.ali@gmail.com',
-                'emergency_contact_name'     => 'Mohammed Ali',
-                'emergency_contact_phone'    => '+255622000555',
+                'full_name' => 'Zainab Mohammed Ali',
+                'phone' => '+255622567890',
+                'email' => 'zainab.ali@gmail.com',
+                'emergency_contact_name' => 'Mohammed Ali',
+                'emergency_contact_phone' => '+255622000555',
                 'emergency_contact_relation' => 'Brother',
-                'username'    => 'zainab.ali',
-                'unit'        => $uC1,
-                'move_in'     => '2025-11-01',
-                'rent'        => 700000,
-                'deposit'     => 1400000,
-                'id_type'     => 'national_id',
-                'id_number'   => 'TZ-NID-19951120-005',
+                'username' => 'zainab.ali',
+                'unit' => $uC1,
+                'move_in' => '2025-11-01',
+                'rent' => 700000,
+                'deposit' => 1400000,
+                'id_type' => 'national_id',
+                'id_number' => 'TZ-NID-19951120-005',
             ],
         ];
 
-        $tenants   = [];
+        $tenants = [];
         $tenancies = [];
 
         foreach ($tenantData as $td) {
             $tenant = Tenant::create([
-                'tenant_code'                => $td['tenant_code'],
-                'full_name'                  => $td['full_name'],
-                'phone'                      => $td['phone'],
-                'email'                      => $td['email'],
-                'emergency_contact_name'     => $td['emergency_contact_name'],
-                'emergency_contact_phone'    => $td['emergency_contact_phone'],
+                'tenant_code' => $td['tenant_code'],
+                'full_name' => $td['full_name'],
+                'phone' => $td['phone'],
+                'email' => $td['email'],
+                'emergency_contact_name' => $td['emergency_contact_name'],
+                'emergency_contact_phone' => $td['emergency_contact_phone'],
                 'emergency_contact_relation' => $td['emergency_contact_relation'],
             ]);
 
             $user = User::create([
-                'name'      => $td['full_name'],
-                'username'  => $td['username'],
-                'email'     => $td['email'],
-                'password'  => Hash::make($td['username']),
-                'role'      => 'tenant',
+                'name' => $td['full_name'],
+                'username' => $td['username'],
+                'email' => $td['email'],
+                'password' => Hash::make($td['username']),
+                'role' => 'tenant',
                 'tenant_id' => $tenant->id,
             ]);
             $tenant->update(['id' => $tenant->id]); // keep reference
 
             TenantIdentification::create([
-                'tenant_id'   => $tenant->id,
-                'id_type'     => $td['id_type'],
-                'id_number'   => $td['id_number'],
+                'tenant_id' => $tenant->id,
+                'id_type' => $td['id_type'],
+                'id_number' => $td['id_number'],
                 'verified_at' => now()->subDays(rand(10, 60)),
             ]);
 
             $tenancy = Tenancy::create([
-                'tenant_id'        => $tenant->id,
-                'unit_id'          => $td['unit']->id,
-                'move_in_date'     => $td['move_in'],
-                'status'           => 'active',
-                'monthly_rent'     => $td['rent'],
+                'tenant_id' => $tenant->id,
+                'unit_id' => $td['unit']->id,
+                'move_in_date' => $td['move_in'],
+                'status' => 'active',
+                'monthly_rent' => $td['rent'],
                 'security_deposit' => $td['deposit'],
             ]);
 
-            $tenants[]   = ['tenant' => $tenant, 'user' => $user, 'data' => $td];
+            $tenants[] = ['tenant' => $tenant, 'user' => $user, 'data' => $td];
             $tenancies[] = $tenancy;
         }
 
@@ -311,13 +310,13 @@ class DevelopmentSeeder extends Seeder
         $tenancyUtilities = [];
         foreach ($utilityConfigs as [$ti, $uName, $amount, $provider, $meter]) {
             $tu = TenancyUtility::create([
-                'tenancy_id'      => $tenancies[$ti]->id,
+                'tenancy_id' => $tenancies[$ti]->id,
                 'utility_type_id' => $uTypes[$uName]->id,
-                'amount'          => $amount,
-                'billing_cycle'   => 'monthly',
-                'provider'        => $provider,
-                'meter_number'    => $meter,
-                'status'          => 'active',
+                'amount' => $amount,
+                'billing_cycle' => 'monthly',
+                'provider' => $provider,
+                'meter_number' => $meter,
+                'status' => 'active',
             ]);
             $tenancyUtilities[] = ['tu' => $tu, 'tenancy_index' => $ti, 'amount' => $amount];
         }
@@ -329,7 +328,7 @@ class DevelopmentSeeder extends Seeder
         // =====================================================
         // Current date reference: 2026-03-26
         $billingMonths = ['2026-01-01', '2026-02-01', '2026-03-01'];
-        $dueDays       = ['2026-01-05', '2026-02-05', '2026-03-05'];
+        $dueDays = ['2026-01-05', '2026-02-05', '2026-03-05'];
 
         // Statuses for each tenancy x month: [tenancy0, tenancy1, tenancy2, tenancy3, tenancy4]
         // Month Jan: all paid | Feb: mixed | Mar: some pending/overdue
@@ -343,28 +342,28 @@ class DevelopmentSeeder extends Seeder
         ];
 
         $rentAmountPaid = [
-            [['paid'=>450000],['paid'=>450000],['paid'=>450000]],
-            [['paid'=>600000],['paid'=>600000],['paid'=>0]],
-            [['paid'=>850000],['paid'=>400000],['paid'=>0]],
-            [['paid'=>550000],['paid'=>550000],['paid'=>550000]],
-            [['paid'=>700000],['paid'=>700000],['paid'=>0]],
+            [['paid' => 450000], ['paid' => 450000], ['paid' => 450000]],
+            [['paid' => 600000], ['paid' => 600000], ['paid' => 0]],
+            [['paid' => 850000], ['paid' => 400000], ['paid' => 0]],
+            [['paid' => 550000], ['paid' => 550000], ['paid' => 550000]],
+            [['paid' => 700000], ['paid' => 700000], ['paid' => 0]],
         ];
 
         $rentBills = [];
         foreach ($tenancies as $ti => $tenancy) {
             $rentBills[$ti] = [];
             foreach ($billingMonths as $mi => $bMonth) {
-                $status    = $rentBillStatuses[$ti][$mi];
-                $amtDue    = $tenancy->monthly_rent;
-                $amtPaid   = $rentAmountPaid[$ti][$mi]['paid'];
+                $status = $rentBillStatuses[$ti][$mi];
+                $amtDue = $tenancy->monthly_rent;
+                $amtPaid = $rentAmountPaid[$ti][$mi]['paid'];
 
                 $rb = RentBill::create([
-                    'tenancy_id'    => $tenancy->id,
+                    'tenancy_id' => $tenancy->id,
                     'billing_month' => $bMonth,
-                    'amount_due'    => $amtDue,
-                    'amount_paid'   => $amtPaid,
-                    'due_date'      => $dueDays[$mi],
-                    'status'        => $status,
+                    'amount_due' => $amtDue,
+                    'amount_paid' => $amtPaid,
+                    'due_date' => $dueDays[$mi],
+                    'status' => $status,
                 ]);
                 $rentBills[$ti][$mi] = $rb;
             }
@@ -375,40 +374,40 @@ class DevelopmentSeeder extends Seeder
         // =====================================================
         // 8. UTILITY BILLS (past 2 months per tenancy utility)
         // =====================================================
-        $ubMonths   = ['2026-02-01', '2026-03-01'];
+        $ubMonths = ['2026-02-01', '2026-03-01'];
         $ubDueDates = ['2026-02-28', '2026-03-31'];
 
         $utilityBills = [];
         foreach ($tenancyUtilities as $idx => $tucfg) {
             $utilityBills[$idx] = [];
-            $tu     = $tucfg['tu'];
+            $tu = $tucfg['tu'];
             $amount = $tucfg['amount'];
-            $ti     = $tucfg['tenancy_index'];
+            $ti = $tucfg['tenancy_index'];
 
             foreach ($ubMonths as $mi => $bMonth) {
                 // Feb: paid, Mar: pending for struggling tenants, paid for reliable ones
                 $reliableTenants = [0, 3]; // Amina, David
                 if (in_array($ti, $reliableTenants)) {
-                    $status  = 'paid';
+                    $status = 'paid';
                     $amtPaid = $amount;
                 } elseif ($ti === 1) {          // Bernard
-                    $status  = ($mi === 0) ? 'paid' : 'pending';
+                    $status = ($mi === 0) ? 'paid' : 'pending';
                     $amtPaid = ($mi === 0) ? $amount : 0;
                 } elseif ($ti === 2) {          // Fatuma
-                    $status  = ($mi === 0) ? 'partial' : 'overdue';
+                    $status = ($mi === 0) ? 'partial' : 'overdue';
                     $amtPaid = ($mi === 0) ? intval($amount * 0.5) : 0;
                 } else {                        // Zainab
-                    $status  = ($mi === 0) ? 'paid' : 'pending';
+                    $status = ($mi === 0) ? 'paid' : 'pending';
                     $amtPaid = ($mi === 0) ? $amount : 0;
                 }
 
                 $ub = UtilityBill::create([
                     'tenancy_utility_id' => $tu->id,
-                    'billing_month'      => $bMonth,
-                    'amount_due'         => $amount,
-                    'amount_paid'        => $amtPaid,
-                    'due_date'           => $ubDueDates[$mi],
-                    'status'             => $status,
+                    'billing_month' => $bMonth,
+                    'amount_due' => $amount,
+                    'amount_paid' => $amtPaid,
+                    'due_date' => $ubDueDates[$mi],
+                    'status' => $status,
                 ]);
                 $utilityBills[$idx][$mi] = $ub;
             }
@@ -427,16 +426,16 @@ class DevelopmentSeeder extends Seeder
             foreach ($rentBills[$ti] as $mi => $rb) {
                 if ($rb->amount_paid > 0) {
                     Payment::create([
-                        'tenant_id'        => $tenantRec->id,
-                        'tenancy_id'       => $tenancy->id,
-                        'rent_bill_id'     => $rb->id,
-                        'amount'           => $rb->amount_paid,
-                        'payment_type'     => 'rent',
-                        'payment_method'   => $methods[$ti % count($methods)],
-                        'status'           => $rb->amount_paid >= $rb->amount_due ? 'paid' : 'partial',
-                        'paid_at'          => now()->startOfMonth()->subMonths(2 - $mi)->addDays(rand(0, 4)),
-                        'due_date'         => $rb->due_date,
-                        'reference_number' => 'RNT-' . strtoupper(substr(md5($rb->id . $mi), 0, 8)),
+                        'tenant_id' => $tenantRec->id,
+                        'tenancy_id' => $tenancy->id,
+                        'rent_bill_id' => $rb->id,
+                        'amount' => $rb->amount_paid,
+                        'payment_type' => 'rent',
+                        'payment_method' => $methods[$ti % count($methods)],
+                        'status' => $rb->amount_paid >= $rb->amount_due ? 'paid' : 'partial',
+                        'paid_at' => now()->startOfMonth()->subMonths(2 - $mi)->addDays(rand(0, 4)),
+                        'due_date' => $rb->due_date,
+                        'reference_number' => 'RNT-'.strtoupper(substr(md5($rb->id.$mi), 0, 8)),
                     ]);
                 }
             }
@@ -444,23 +443,23 @@ class DevelopmentSeeder extends Seeder
 
         // Utility payments for paid utility bills
         foreach ($tenancyUtilities as $idx => $tucfg) {
-            $ti        = $tucfg['tenancy_index'];
+            $ti = $tucfg['tenancy_index'];
             $tenantRec = $tenants[$ti]['tenant'];
-            $tenancy   = $tenancies[$ti];
+            $tenancy = $tenancies[$ti];
 
             foreach ($utilityBills[$idx] as $mi => $ub) {
                 if ($ub->amount_paid > 0) {
                     Payment::create([
-                        'tenant_id'       => $tenantRec->id,
-                        'tenancy_id'      => $tenancy->id,
+                        'tenant_id' => $tenantRec->id,
+                        'tenancy_id' => $tenancy->id,
                         'utility_bill_id' => $ub->id,
-                        'amount'          => $ub->amount_paid,
-                        'payment_type'    => 'utility',
-                        'payment_method'  => $methods[($ti + 1) % count($methods)],
-                        'status'          => $ub->amount_paid >= $ub->amount_due ? 'paid' : 'partial',
-                        'paid_at'         => now()->startOfMonth()->subMonths(1 - $mi)->addDays(rand(1, 6)),
-                        'due_date'        => $ub->due_date,
-                        'reference_number'=> 'UTL-' . strtoupper(substr(md5($ub->id . $mi), 0, 8)),
+                        'amount' => $ub->amount_paid,
+                        'payment_type' => 'utility',
+                        'payment_method' => $methods[($ti + 1) % count($methods)],
+                        'status' => $ub->amount_paid >= $ub->amount_due ? 'paid' : 'partial',
+                        'paid_at' => now()->startOfMonth()->subMonths(1 - $mi)->addDays(rand(1, 6)),
+                        'due_date' => $ub->due_date,
+                        'reference_number' => 'UTL-'.strtoupper(substr(md5($ub->id.$mi), 0, 8)),
                     ]);
                 }
             }
@@ -470,16 +469,16 @@ class DevelopmentSeeder extends Seeder
         foreach ($tenancies as $ti => $tenancy) {
             $tenantRec = $tenants[$ti]['tenant'];
             Payment::create([
-                'tenant_id'      => $tenantRec->id,
-                'tenancy_id'     => $tenancy->id,
-                'amount'         => $tenancy->security_deposit,
-                'payment_type'   => 'rent',
+                'tenant_id' => $tenantRec->id,
+                'tenancy_id' => $tenancy->id,
+                'amount' => $tenancy->security_deposit,
+                'payment_type' => 'rent',
                 'payment_method' => 'bank_transfer',
-                'status'         => 'paid',
-                'paid_at'        => $tenancy->move_in_date,
-                'due_date'       => $tenancy->move_in_date,
-                'reference_number' => 'DEP-' . strtoupper($tenants[$ti]['data']['id_number'] ? substr(md5($tenants[$ti]['data']['id_number']), 0, 6) : 'INIT'),
-                'notes'          => 'Security deposit paid on move-in',
+                'status' => 'paid',
+                'paid_at' => $tenancy->move_in_date,
+                'due_date' => $tenancy->move_in_date,
+                'reference_number' => 'DEP-'.strtoupper($tenants[$ti]['data']['id_number'] ? substr(md5($tenants[$ti]['data']['id_number']), 0, 6) : 'INIT'),
+                'notes' => 'Security deposit paid on move-in',
             ]);
         }
 
@@ -506,9 +505,9 @@ class DevelopmentSeeder extends Seeder
 
         foreach ($msgs as [$sid, $rid, $body]) {
             Message::create([
-                'sender_id'   => $sid,
+                'sender_id' => $sid,
                 'receiver_id' => $rid,
-                'message'     => $body,
+                'message' => $body,
             ]);
         }
 
@@ -527,14 +526,14 @@ class DevelopmentSeeder extends Seeder
 
         foreach ($notifs as [$userId, $type, $data]) {
             DB::table('notifications')->insert([
-                'id'              => (string) Str::uuid(),
+                'id' => (string) Str::uuid(),
                 'notifiable_type' => 'App\Models\User',
-                'notifiable_id'   => $userId,
-                'type'            => $type,
-                'data'            => json_encode($data),
-                'read_at'         => null,
-                'created_at'      => now(),
-                'updated_at'      => now(),
+                'notifiable_id' => $userId,
+                'type' => $type,
+                'data' => json_encode($data),
+                'read_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
@@ -547,17 +546,17 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('====================================================');
         $this->command->info('  DEVELOPMENT SEEDER COMPLETED SUCCESSFULLY');
         $this->command->info('====================================================');
-        $this->command->info('  Properties      : ' . Property::count());
-        $this->command->info('  Units           : ' . Unit::count());
-        $this->command->info('  Tenants         : ' . Tenant::count());
-        $this->command->info('  Users           : ' . User::count());
-        $this->command->info('  Tenancies       : ' . Tenancy::count());
-        $this->command->info('  Utility Types   : ' . UtilityType::count());
-        $this->command->info('  Tenancy Utils   : ' . TenancyUtility::count());
-        $this->command->info('  Rent Bills      : ' . RentBill::count());
-        $this->command->info('  Utility Bills   : ' . UtilityBill::count());
-        $this->command->info('  Payments        : ' . Payment::count());
-        $this->command->info('  Messages        : ' . Message::count());
+        $this->command->info('  Properties      : '.Property::count());
+        $this->command->info('  Units           : '.Unit::count());
+        $this->command->info('  Tenants         : '.Tenant::count());
+        $this->command->info('  Users           : '.User::count());
+        $this->command->info('  Tenancies       : '.Tenancy::count());
+        $this->command->info('  Utility Types   : '.UtilityType::count());
+        $this->command->info('  Tenancy Utils   : '.TenancyUtility::count());
+        $this->command->info('  Rent Bills      : '.RentBill::count());
+        $this->command->info('  Utility Bills   : '.UtilityBill::count());
+        $this->command->info('  Payments        : '.Payment::count());
+        $this->command->info('  Messages        : '.Message::count());
         $this->command->info('====================================================');
         $this->command->info('  LOGIN CREDENTIALS  (password = username)');
         $this->command->info('----------------------------------------------------');

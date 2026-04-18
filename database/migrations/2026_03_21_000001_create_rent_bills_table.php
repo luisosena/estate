@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('rent_bills', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenancy_id')
-                  ->constrained('tenancies')
-                  ->cascadeOnDelete();
+                ->constrained('tenancies')
+                ->cascadeOnDelete();
             $table->date('billing_month');              // store as first day of the month, e.g. 2026-03-01
             $table->decimal('amount_due', 12, 2);       // the monthly rent amount
             $table->decimal('amount_paid', 12, 2)->default(0);

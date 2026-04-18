@@ -14,7 +14,10 @@ class TenancyUtilityPolicy
 
     public function view(User $user, TenancyUtility $tenancyUtility): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
     }
 
@@ -25,13 +28,19 @@ class TenancyUtilityPolicy
 
     public function update(User $user, TenancyUtility $tenancyUtility): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
     }
 
     public function delete(User $user, TenancyUtility $tenancyUtility): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
     }
 }

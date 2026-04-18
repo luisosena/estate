@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Actions\Fortify\CreateNewUser;
+use App\Http\Controllers\Controller;
 use App\Models\ApiToken;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 

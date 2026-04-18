@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Services\DocSyncService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
-use App\Services\DocSyncService;
 
 class SyncDocumentation extends Command
 {
@@ -35,10 +35,11 @@ class SyncDocumentation extends Command
             $diffOutput = $this->getGitDiff();
         }
 
-        $this->info('Diff length: ' . strlen($diffOutput));
-        
+        $this->info('Diff length: '.strlen($diffOutput));
+
         if (empty($diffOutput)) {
             $this->warn('No changes found to analyze.');
+
             return self::SUCCESS;
         }
 
@@ -47,25 +48,27 @@ class SyncDocumentation extends Command
 
         if (empty($changes)) {
             $this->warn('No parseable changes found.');
+
             return self::SUCCESS;
         }
 
-        $this->info("Found " . count($changes) . " changed files.");
+        $this->info('Found '.count($changes).' changed files.');
 
         // Analyze each change and determine documentation updates needed
         $updates = $this->docSync->analyzeChanges($changes);
 
         if (empty($updates)) {
             $this->info('✅ No documentation updates needed.');
+
             return self::SUCCESS;
         }
 
-        $this->warn("Found " . count($updates) . " documentation updates needed:");
+        $this->warn('Found '.count($updates).' documentation updates needed:');
 
         // Display the updates needed
         foreach ($updates as $update) {
             $this->line("  - {$update['doc_file']}: {$update['description']}");
-            
+
             if ($details) {
                 $this->line("    Change: {$update['change_summary']}");
             }
@@ -73,20 +76,23 @@ class SyncDocumentation extends Command
 
         if ($checkOnly) {
             $this->info('Running in check mode - no changes made.');
+
             return self::SUCCESS;
         }
 
         // Apply the updates (skip confirmation in CI or when --check is used)
-        $autoApply = !$checkOnly && !getenv('CI');
-        
+        $autoApply = ! $checkOnly && ! getenv('CI');
+
         if ($autoApply && $this->confirm('Apply these documentation updates?')) {
             $applied = $this->docSync->applyUpdates($updates);
-            
+
             $this->info("✅ Applied {$applied} documentation updates.");
+
             return self::SUCCESS;
         }
 
         $this->info('Cancelled.');
+
         return self::SUCCESS;
     }
 
@@ -95,29 +101,29 @@ class SyncDocumentation extends Command
         try {
             // Get git diff using Laravel's Process facade
             $result = Process::run('git diff HEAD --no-color');
-            
+
             if ($result->successful()) {
                 return $result->output();
             }
-            
+
             // Fallback: try with different approach
             $result = Process::run('git diff HEAD~1 HEAD --no-color');
-            
+
             if ($result->successful()) {
                 return $result->output();
             }
-            
+
             // Provide helpful error message with stderr output
             $errorOutput = $result->error();
             $this->error('Unable to retrieve git diff.');
-            if (!empty($errorOutput)) {
+            if (! empty($errorOutput)) {
                 $this->line("Error: {$errorOutput}");
             }
             $this->line('Consider passing a diff file with --diff option.');
         } catch (\Exception $e) {
-            $this->error('Failed to run git diff: ' . $e->getMessage());
+            $this->error('Failed to run git diff: '.$e->getMessage());
         }
-        
+
         return '';
     }
 }

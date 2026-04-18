@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use App\Models\Unit;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTenantWithTenancyRequest extends FormRequest
 {
@@ -19,7 +19,7 @@ class StoreTenantWithTenancyRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -34,7 +34,7 @@ class StoreTenantWithTenancyRequest extends FormRequest
 
             // Unit Assignment (Optional)
             'unit_id' => 'nullable|exists:units,id',
-            
+
             // Tenancy Information (Required if unit_id is present)
             'move_in_date' => 'required_with:unit_id|nullable|date',
             'monthly_rent' => 'required_with:unit_id|nullable|numeric|min:0',
@@ -69,14 +69,15 @@ class StoreTenantWithTenancyRequest extends FormRequest
             $landlord = auth()->user();
             $unitId = $this->input('unit_id');
 
-            if (!$unitId) {
+            if (! $unitId) {
                 return;
             }
 
             // Check if unit belongs to landlord
             $unit = Unit::find($unitId);
-            if (!$unit || $unit->property->owner_id !== $landlord->id) {
+            if (! $unit || $unit->property->owner_id !== $landlord->id) {
                 $validator->errors()->add('unit_id', 'You do not have access to this unit.');
+
                 return;
             }
 

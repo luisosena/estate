@@ -42,8 +42,8 @@ class MarkOverdueRentBills extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error("Failed to mark overdue rent bills: " . $e->getMessage());
-            Log::error("MarkOverdueRentBills failed: " . $e->getMessage(), [
+            $this->error('Failed to mark overdue rent bills: '.$e->getMessage());
+            Log::error('MarkOverdueRentBills failed: '.$e->getMessage(), [
                 'exception' => $e->getMessage(),
             ]);
 

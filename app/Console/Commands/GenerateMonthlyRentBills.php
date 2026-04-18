@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Tenancy;
 use App\Models\RentBill;
+use App\Models\Tenancy;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -51,6 +51,7 @@ class GenerateMonthlyRentBills extends Command
                         'monthly_rent' => $tenancy->monthly_rent,
                     ]);
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -82,7 +83,7 @@ class GenerateMonthlyRentBills extends Command
             $progressBar->finish();
             $this->newLine();
 
-            $this->info("Created {$count} new rent bill(s) for " . $billingMonth->format('F Y'));
+            $this->info("Created {$count} new rent bill(s) for ".$billingMonth->format('F Y'));
 
             Log::info("GenerateMonthlyRentBills: Created {$count} rent bills for {$billingMonth->format('Y-m')}", [
                 'billing_month' => $billingMonth->toDateString(),
@@ -91,8 +92,8 @@ class GenerateMonthlyRentBills extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error("Failed to generate rent bills: " . $e->getMessage());
-            Log::error("GenerateMonthlyRentBills failed: " . $e->getMessage(), [
+            $this->error('Failed to generate rent bills: '.$e->getMessage());
+            Log::error('GenerateMonthlyRentBills failed: '.$e->getMessage(), [
                 'exception' => $e->getMessage(),
             ]);
 

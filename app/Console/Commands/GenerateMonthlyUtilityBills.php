@@ -47,6 +47,7 @@ class GenerateMonthlyUtilityBills extends Command
                 // Skip utilities with no valid amount
                 if ($tu->amount === null || $tu->amount <= 0) {
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -74,14 +75,14 @@ class GenerateMonthlyUtilityBills extends Command
             $progressBar->finish();
             $this->newLine();
 
-            $this->info("Created {$count} new utility bill(s) for " . $billingMonth->format('F Y'));
+            $this->info("Created {$count} new utility bill(s) for ".$billingMonth->format('F Y'));
 
             Log::info("GenerateMonthlyUtilityBills: Created {$count} utility bills for {$billingMonth->format('Y-m')}");
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error("Failed to generate utility bills: " . $e->getMessage());
-            Log::error("GenerateMonthlyUtilityBills failed: " . $e->getMessage());
+            $this->error('Failed to generate utility bills: '.$e->getMessage());
+            Log::error('GenerateMonthlyUtilityBills failed: '.$e->getMessage());
 
             return Command::FAILURE;
         }

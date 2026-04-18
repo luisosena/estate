@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\UtilityBill;
 use App\Models\User;
+use App\Models\UtilityBill;
 
 class UtilityBillPolicy
 {
@@ -14,8 +14,10 @@ class UtilityBillPolicy
 
     public function view(User $user, UtilityBill $utilityBill): bool
     {
-        if ($user->role === 'admin') return true;
-        
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if ($user->role === 'landlord') {
             return $utilityBill->tenancyUtility->tenancy->unit->property->owner_id === $user->id;
         }
@@ -29,7 +31,10 @@ class UtilityBillPolicy
 
     public function waive(User $user, UtilityBill $utilityBill): bool
     {
-        if ($user->role === 'admin') return true;
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'landlord' && $utilityBill->tenancyUtility->tenancy->unit->property->owner_id === $user->id;
     }
 }

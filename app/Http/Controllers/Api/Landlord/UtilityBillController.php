@@ -22,8 +22,8 @@ class UtilityBillController extends Controller
         $perPage = $request->get('per_page', 15);
 
         $query = UtilityBill::whereHas('tenancyUtility.tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->with(['tenancyUtility.utilityType', 'tenancyUtility.tenancy.unit.property', 'payments']);
 
         // Apply filters
@@ -79,7 +79,7 @@ class UtilityBillController extends Controller
 
         // Verify landlord owns this utility bill - with null safety checks
         $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (! $property || $property->owner_id !== $landlord->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -104,7 +104,7 @@ class UtilityBillController extends Controller
 
         // Verify landlord owns this utility bill - with null safety checks
         $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (! $property || $property->owner_id !== $landlord->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -150,7 +150,7 @@ class UtilityBillController extends Controller
 
         // Verify landlord owns this utility bill - with null safety checks
         $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (!$property || $property->owner_id !== $landlord->id) {
+        if (! $property || $property->owner_id !== $landlord->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -158,14 +158,14 @@ class UtilityBillController extends Controller
             // Check if already paid or waived
             if (in_array($utilityBill->status, ['paid', 'waived'])) {
                 return response()->json([
-                    'message' => 'This bill cannot be waived because it is already ' . $utilityBill->status,
+                    'message' => 'This bill cannot be waived because it is already '.$utilityBill->status,
                 ], 422);
             }
 
             $utilityBill->update([
                 'status' => 'waived',
-                'notes' => ($utilityBill->notes ? $utilityBill->notes . '\n\n' : '') .
-                    'Waived by landlord on ' . now()->format('Y-m-d H:i:s'),
+                'notes' => ($utilityBill->notes ? $utilityBill->notes.'\n\n' : '').
+                    'Waived by landlord on '.now()->format('Y-m-d H:i:s'),
             ]);
 
             Log::info('Utility bill waived', [

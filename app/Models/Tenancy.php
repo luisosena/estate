@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tenancy extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'tenant_id',
         'unit_id',
@@ -23,22 +27,33 @@ class Tenancy extends Model
 
     protected $appends = ['tenant_code'];
 
+    protected function casts(): array
+    {
+        return [
+            'move_in_date' => 'date',
+            'move_out_date' => 'date',
+            'monthly_rent' => 'decimal:2',
+            'security_deposit' => 'decimal:2',
+            'final_meter_readings' => 'array',
+        ];
+    }
+
     public function getTenantCodeAttribute()
     {
         return $this->tenant?->tenant_code;
     }
 
-    public function tenant()
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    public function unit()
+    public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
     }
 
-    public function payments()
+    public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }

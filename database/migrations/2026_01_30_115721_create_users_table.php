@@ -31,7 +31,7 @@ return new class extends Migration
             // Authorization
             $table->enum('role', ['tenant', 'landlord', 'admin'])->index();
 
-            // Activity 
+            // Activity
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();
         });

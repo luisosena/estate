@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\RentBill;
 use App\Services\RentBillService;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 
 class RentBillController extends Controller
 {
@@ -31,8 +30,8 @@ class RentBillController extends Controller
         $tenantId = $request->get('tenant_id');
 
         $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->with(['tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name']);
 
         if ($status) {
@@ -96,14 +95,14 @@ class RentBillController extends Controller
         $landlord = $request->user();
 
         $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->with([
-                'tenancy.tenant:id,full_name,tenant_code,phone,email',
-                'tenancy.unit:id,unit_code,property_id',
-                'tenancy.unit.property:id,name',
-                'payments:id,amount,payment_method,paid_at,status,rent_bill_id',
-            ])
+            'tenancy.tenant:id,full_name,tenant_code,phone,email',
+            'tenancy.unit:id,unit_code,property_id',
+            'tenancy.unit.property:id,name',
+            'payments:id,amount,payment_method,paid_at,status,rent_bill_id',
+        ])
             ->findOrFail($id);
 
         return response()->json([
@@ -154,8 +153,8 @@ class RentBillController extends Controller
         $perPage = $request->get('per_page', 15);
 
         $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->overdue()
             ->with(['tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name'])
             ->orderBy('due_date', 'asc');
@@ -204,8 +203,8 @@ class RentBillController extends Controller
         $perPage = $request->get('per_page', 15);
 
         $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->pending()
             ->with(['tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name'])
             ->orderBy('due_date', 'asc');
@@ -252,8 +251,8 @@ class RentBillController extends Controller
         $landlord = $request->user();
 
         $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $query->where('owner_id', $landlord->id);
+        })
             ->findOrFail($id);
 
         // Check if already waived or paid

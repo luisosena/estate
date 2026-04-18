@@ -4,8 +4,9 @@ namespace App\Notifications;
 
 use App\Models\Tenancy;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class TenancyExpiringNotification extends Notification implements ShouldQueue
 {
@@ -33,10 +34,10 @@ class TenancyExpiringNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): \Illuminate\Notifications\Messages\MailMessage
+    public function toMail(object $notifiable): MailMessage
     {
-        $message = new \Illuminate\Notifications\Messages\MailMessage();
-        
+        $message = new MailMessage;
+
         if ($this->isForLandlord) {
             return $message
                 ->subject("Tenancy Expiring Soon - {$this->tenancy->tenant->full_name}")
@@ -45,16 +46,16 @@ class TenancyExpiringNotification extends Notification implements ShouldQueue
                 ->line("**Property:** {$this->tenancy->unit->property->name}")
                 ->line("**Unit:** {$this->tenancy->unit->unit_name} ({$this->tenancy->unit->unit_code})")
                 ->line("**End Date:** {$this->tenancy->move_out_date}")
-                ->line("")
+                ->line('')
                 ->action(
                     'View Tenant Details',
                     url("/landlord/tenants/{$this->tenancy->tenant->tenant_code}")
                 )
-                ->line("Please contact the tenant to discuss renewal or move-out arrangements.");
+                ->line('Please contact the tenant to discuss renewal or move-out arrangements.');
         }
 
         // Tenant notification
-        $subject = $this->daysUntilExpiry <= 3 
+        $subject = $this->daysUntilExpiry <= 3
             ? "URGENT: Your Tenancy Ends in {$this->daysUntilExpiry} Days"
             : "Your Tenancy Ends in {$this->daysUntilExpiry} Days";
 
@@ -62,30 +63,30 @@ class TenancyExpiringNotification extends Notification implements ShouldQueue
             ->subject($subject)
             ->greeting("Dear {$this->tenancy->tenant->full_name},")
             ->line("This is a reminder that your current tenancy will expire in {$this->daysUntilExpiry} days.")
-            ->line("")
-            ->line("**Property Details:**")
+            ->line('')
+            ->line('**Property Details:**')
             ->line("• Property: {$this->tenancy->unit->property->name}")
             ->line("• Unit: {$this->tenancy->unit->unit_name} ({$this->tenancy->unit->unit_code})")
             ->line("• End Date: {$this->tenancy->move_out_date}")
-            ->line("")
-            ->line("**Important Actions Required:**");
+            ->line('')
+            ->line('**Important Actions Required:**');
 
         if ($this->daysUntilExpiry <= 3) {
             return $message
-                ->line("• **IMMEDIATE ACTION REQUIRED** - Contact your landlord to discuss renewal or move-out plans")
-                ->line("• Schedule a final inspection with your landlord")
-                ->line("• Arrange for utility transfers if moving out")
-                ->line("• Update your forwarding address with the landlord")
-                ->line("")
-                ->line("Failure to vacate by the end date may result in additional charges.");
+                ->line('• **IMMEDIATE ACTION REQUIRED** - Contact your landlord to discuss renewal or move-out plans')
+                ->line('• Schedule a final inspection with your landlord')
+                ->line('• Arrange for utility transfers if moving out')
+                ->line('• Update your forwarding address with the landlord')
+                ->line('')
+                ->line('Failure to vacate by the end date may result in additional charges.');
         }
 
         return $message
-            ->line("• Contact your landlord to discuss renewal options")
-            ->line("• Schedule a walk-through inspection if you plan to move out")
-            ->line("• Arrange for utility transfers if applicable")
-            ->line("")
-            ->line("If you have any questions or need to discuss renewal options, please contact your landlord immediately.");
+            ->line('• Contact your landlord to discuss renewal options')
+            ->line('• Schedule a walk-through inspection if you plan to move out')
+            ->line('• Arrange for utility transfers if applicable')
+            ->line('')
+            ->line('If you have any questions or need to discuss renewal options, please contact your landlord immediately.');
     }
 
     /**
@@ -96,7 +97,7 @@ class TenancyExpiringNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => $this->isForLandlord 
+            'title' => $this->isForLandlord
                 ? "Tenancy Expiring Soon - {$this->tenancy->tenant->full_name}"
                 : "Your Tenancy Ends in {$this->daysUntilExpiry} Days",
             'message' => $this->isForLandlord

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationController extends Controller
 {
@@ -39,7 +38,7 @@ class NotificationController extends Controller
             ->get()
             ->map(function ($notification) {
                 $data = $notification->data;
-                
+
                 return [
                     'id' => $notification->id,
                     'type' => $notification->type,
@@ -74,12 +73,12 @@ class NotificationController extends Controller
     public function markAsRead(Request $request, string $id)
     {
         $landlord = $request->user();
-        
+
         $notification = $landlord->notifications()
             ->where('id', $id)
             ->firstOrFail();
 
-        if (!$notification->read_at) {
+        if (! $notification->read_at) {
             $notification->markAsRead();
         }
 
@@ -95,7 +94,7 @@ class NotificationController extends Controller
     public function markAllAsRead(Request $request)
     {
         $landlord = $request->user();
-        
+
         $landlord->unreadNotifications()->update(['read_at' => now()]);
 
         return response()->json([
@@ -110,7 +109,7 @@ class NotificationController extends Controller
     public function destroy(Request $request, string $id)
     {
         $landlord = $request->user();
-        
+
         $notification = $landlord->notifications()
             ->where('id', $id)
             ->firstOrFail();
