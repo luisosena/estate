@@ -20,8 +20,9 @@ class UtilityTypeFactory extends Factory
         return [
             'name' => $this->faker->randomElement(['Water', 'Electricity', 'Internet', 'Garbage']),
             'description' => $this->faker->sentence(),
-            'unit_price' => $this->faker->randomFloat(2, 1, 10),
-            'measure_unit' => $this->faker->randomElement(['Units', 'm3', 'kWh', 'Month']),
+            'unit' => $this->faker->randomElement(['Units', 'm3', 'kWh', 'Month']),
+            'is_metered' => false,
+            'is_active' => true,
         ];
     }
 }
