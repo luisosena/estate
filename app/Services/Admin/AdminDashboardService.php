@@ -7,7 +7,7 @@ use App\Models\Property;
 use App\Models\Tenancy;
 use App\Models\Unit;
 use App\Models\User;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+// use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AdminDashboardService
 {
@@ -40,7 +40,7 @@ class AdminDashboardService
     /**
      * Get recent activity feed.
      */
-    protected function getRecentActivity(): AnonymousResourceCollection
+    protected function getRecentActivity(): array
     {
         $recentLandlords = User::where('role', 'landlord')
             ->orderBy('created_at', 'desc')
@@ -57,6 +57,6 @@ class AdminDashboardService
             ->take(8)
             ->values();
 
-        return ActivityResource::collection($activity);
+        return ActivityResource::collection($activity)->resolve();
     }
 }

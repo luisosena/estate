@@ -28,6 +28,7 @@ class LandlordUtilityBillController extends Controller
                 'tenancyUtility.utilityType',
                 'tenancyUtility.tenancy.unit.property',
                 'tenancyUtility.tenancy.tenant',
+                'tenancyUtility.bills',
             ]);
 
         // Apply filters
@@ -90,6 +91,7 @@ class LandlordUtilityBillController extends Controller
             'tenancyUtility.utilityType',
             'tenancyUtility.tenancy.unit.property',
             'tenancyUtility.tenancy.tenant',
+            'tenancyUtility.bills',
             'payments',
         ]);
 

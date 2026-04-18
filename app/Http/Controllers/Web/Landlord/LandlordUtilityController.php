@@ -35,7 +35,7 @@ class LandlordUtilityController extends Controller
             $query->where('owner_id', $landlord->id);
         })
             ->where('status', 'active')
-            ->with(['unit.property', 'tenant', 'tenancyUtilities.utilityType'])
+            ->with(['unit.property', 'tenant', 'tenancyUtilities.utilityType', 'tenancyUtilities.bills'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -66,7 +66,7 @@ class LandlordUtilityController extends Controller
         return Inertia::render('landlord/utilities/create', [
             'tenancy' => new TenancyResource($tenancy->load(['unit.property', 'tenant'])),
             'utilityTypes' => UtilityTypeResource::collection($availableTypes->values()),
-            'existingUtilities' => TenancyUtilityResource::collection($tenancy->tenancyUtilities()->with('utilityType')->get()),
+            'existingUtilities' => TenancyUtilityResource::collection($tenancy->tenancyUtilities()->with(['utilityType', 'bills'])->get()),
         ]);
     }
 
@@ -127,7 +127,7 @@ class LandlordUtilityController extends Controller
         $this->authorize('update', $tenancyUtility);
 
         return Inertia::render('landlord/utilities/edit', [
-            'tenancyUtility' => new TenancyUtilityResource($tenancyUtility->load('utilityType')),
+            'tenancyUtility' => new TenancyUtilityResource($tenancyUtility->load(['utilityType', 'bills'])),
             'tenancy' => new TenancyResource($tenancyUtility->tenancy->load('unit.property', 'tenant')),
             'utilityTypes' => UtilityTypeResource::collection(UtilityType::active()->orderBy('name')->get()),
         ]);

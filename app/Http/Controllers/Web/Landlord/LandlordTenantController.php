@@ -41,7 +41,7 @@ class LandlordTenantController extends Controller
 
         return Inertia::render('landlord/tenants/index', [
             'tenants' => TenantResource::collection($data['tenants']),
-            'properties' => PropertyResource::collection($landlord->properties()->orderBy('name')->get()),
+            'properties' => PropertyResource::collection($landlord->properties()->orderBy('name')->get())->resolve(),
             'stats' => $data['stats'],
             'filters' => $data['filters'],
         ]);
@@ -153,13 +153,15 @@ class LandlordTenantController extends Controller
     {
         $this->authorize('create', Tenant::class);
 
-        $properties = $request->user()->properties()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
+        $availableUnits = Unit::whereHas('property', function ($query) use ($request) {
+            $query->where('owner_id', $request->user()->id);
+        })
+        ->where('status', 'available')
+        ->with('property:id,name,address')
+        ->get();
 
         return Inertia::render('landlord/tenants/create', [
-            'properties' => PropertyResource::collection($properties),
+            'availableUnits' => $availableUnits,
         ]);
     }
 

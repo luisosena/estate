@@ -46,7 +46,7 @@ class TenantUtilitiesController extends Controller
         }
 
         $utilities = $activeTenancy->tenancyUtilities()
-            ->with('utilityType')
+            ->with(['utilityType', 'bills'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -120,7 +120,7 @@ class TenantUtilitiesController extends Controller
         $query = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
             $q->where('tenancy_id', $activeTenancy->id);
         })
-            ->with(['tenancyUtility.utilityType']);
+            ->with(['tenancyUtility.utilityType', 'tenancyUtility.bills']);
 
         // Filter by status if provided
         if ($request->has('status') && $request->status) {
