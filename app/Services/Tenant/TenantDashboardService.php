@@ -56,10 +56,10 @@ class TenantDashboardService
                 ->take(5)
                 ->values() ?? collect([])),
             'utilities' => TenancyUtilityResource::collection($activeTenancy?->tenancyUtilities ?? collect([])),
-            'notifications' => NotificationResource::collection($tenant->user->notifications()
+            'notifications' => NotificationResource::collection($tenant->user?->notifications()
                 ->latest()
                 ->take(5)
-                ->get()),
+                ->get() ?? collect([])),
             'rent_bills' => $rentBills,
             'current_month_bill' => $currentMonthBill ?? ['data' => null],
         ];

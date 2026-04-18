@@ -16,13 +16,15 @@ use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\Unit;
 use App\Services\Landlord\OnboardingService;
+use App\Services\Landlord\TenantService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class LandlordTenantController extends Controller
 {
     public function __construct(
-        protected OnboardingService $onboardingService
+        protected OnboardingService $onboardingService,
+        protected TenantService $tenantService
     ) {
         $this->authorizeResource(Tenant::class, 'tenant');
     }
@@ -33,56 +35,13 @@ class LandlordTenantController extends Controller
     public function index(Request $request)
     {
         $landlord = $request->user();
-        $selectedPropertyId = $request->get('property');
-
-        // 1. Get properties for filter using relationship
-        $properties = $landlord->properties()
-            ->select('id', 'name', 'address')
-            ->orderBy('name')
-            ->get();
-
-        // 2. Build Tenant Query using relationship-based pattern
-        $query = Tenant::query()
-            ->whereHas('tenancies.unit.property', function ($q) use ($landlord, $selectedPropertyId) {
-                $q->where('owner_id', $landlord->id);
-                if ($selectedPropertyId && $selectedPropertyId !== 'all') {
-                    $q->where('id', $selectedPropertyId);
-                }
-            })
-            ->with(['tenancies' => function ($q) {
-                $q->where('status', 'active')->with(['unit.property']);
-            }]);
-
-        // Search logic
-        if ($search = $request->get('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('full_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('tenant_code', 'like', "%{$search}%");
-            });
-        }
-
-        $tenants = $query->paginate(15);
-
-        // 3. Stats using optimized relationship counts
-        $totalUnits = $landlord->properties()->sum('total_units');
-        $occupiedUnits = Tenancy::where('status', 'active')
-            ->whereHas('unit.property', fn ($q) => $q->where('owner_id', $landlord->id))
-            ->count();
+        $data = $this->tenantService->getTenantList($landlord, $request);
 
         return Inertia::render('landlord/tenants/index', [
-            'tenants' => TenantResource::collection($tenants),
-            'properties' => PropertyResource::collection($properties),
-            'stats' => [
-                'total_tenants' => $occupiedUnits,
-                'total_properties' => $properties->count(),
-                'total_units' => $totalUnits,
-                'occupied_units' => $occupiedUnits,
-            ],
-            'filters' => [
-                'property' => $selectedPropertyId,
-                'search' => $request->get('search'),
-            ],
+            'tenants' => TenantResource::collection($data['tenants']),
+            'properties' => PropertyResource::collection($landlord->properties()->orderBy('name')->get()),
+            'stats' => $data['stats'],
+            'filters' => $data['filters'],
         ]);
     }
 
@@ -110,7 +69,7 @@ class LandlordTenantController extends Controller
 
         return Inertia::render('landlord/tenants/by-property', [
             'tenants' => TenantResource::collection($tenants),
-            'property' => $property,
+            'property' => new PropertyResource($property),
         ]);
     }
 
@@ -215,20 +174,9 @@ class LandlordTenantController extends Controller
     {
         $this->authorize('update', $tenancy);
 
-        $validated = $request->validated();
+        $this->tenantService->changeUnit($tenancy, $request->validated('new_unit_id'));
 
-        return \DB::transaction(function () use ($validated, $tenancy) {
-            // 1. Mark old unit as available
-            $tenancy->unit->update(['status' => 'available']);
-
-            // 2. Update tenancy with new unit
-            $tenancy->update(['unit_id' => $validated['new_unit_id']]);
-
-            // 3. Mark new unit as occupied
-            Unit::where('id', $validated['new_unit_id'])->update(['status' => 'occupied']);
-
-            return redirect()->back()->with('success', 'Unit changed successfully.');
-        });
+        return redirect()->back()->with('success', 'Unit changed successfully.');
     }
 
     /**

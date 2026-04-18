@@ -162,16 +162,71 @@ class RentBillService
     }
 
     /**
-     * Calculate total outstanding rent for a tenancy.
-     *
-     * @param  int  $tenancyId  The tenancy ID
+     * Get a paginated list of rent bills for a landlord with statistics.
      */
-    public function calculateTotalOutstanding(int $tenancyId): float
+    public function getRentBillList(\App\Models\User $landlord, \Illuminate\Http\Request $request): array
     {
-        return RentBill::where('tenancy_id', $tenancyId)
-            ->whereIn('status', ['pending', 'partial', 'overdue'])
-            ->sum('amount_due') -
-            RentBill::where('tenancy_id', $tenancyId)
-                ->sum('amount_paid');
+        $status = $request->get('status');
+        $search = $request->get('search');
+
+        $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
+            $query->where('owner_id', $landlord->id);
+        })
+            ->with(['tenancy.tenant', 'tenancy.unit.property'])
+            ->orderBy('billing_month', 'desc');
+
+        if ($status && $status !== 'all') {
+            $query->where('rent_bills.status', $status);
+        }
+
+        // Search logic (Tenant name/code or Unit code)
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('tenancy.tenant', function ($q2) use ($search) {
+                    $q2->where('full_name', 'like', "%{$search}%")
+                        ->orWhere('tenant_code', 'like', "%{$search}%");
+                })->orWhereHas('tenancy.unit', function ($q2) use ($search) {
+                    $q2->where('unit_code', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $rentBills = $query->paginate(15);
+        $stats = $this->getRentStatistics($landlord);
+
+        return [
+            'rent_bills' => $rentBills,
+            'stats' => $stats,
+            'filters' => [
+                'status' => $status,
+                'search' => $search,
+            ],
+        ];
+    }
+
+    /**
+     * Calculate consolidated rent statistics for a landlord dashboard or list.
+     */
+    public function getRentStatistics(\App\Models\User $landlord): array
+    {
+        $baseQuery = RentBill::whereHas('tenancy.unit.property', fn ($query) => $query->where('owner_id', $landlord->id));
+
+        $rawStats = (clone $baseQuery)
+            ->selectRaw("
+                COUNT(*) as total_count,
+                SUM(CASE WHEN status = 'pending' AND (due_date >= CURRENT_DATE OR due_date IS NULL) THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status = 'overdue' OR (status IN ('pending', 'partial') AND due_date < CURRENT_DATE) THEN 1 ELSE 0 END) as overdue_count,
+                SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_count,
+                SUM(CASE WHEN status IN ('pending', 'partial', 'overdue') THEN amount_due - amount_paid ELSE 0 END) as total_outstanding
+            ")
+            ->first();
+
+        return [
+            'total' => (int) ($rawStats?->total_count ?? 0),
+            'pending' => (int) ($rawStats?->pending_count ?? 0),
+            'overdue' => (int) ($rawStats?->overdue_count ?? 0),
+            'paid' => (int) ($rawStats?->paid_count ?? 0),
+            'total_outstanding' => (float) ($rawStats?->total_outstanding ?? 0),
+        ];
     }
 }

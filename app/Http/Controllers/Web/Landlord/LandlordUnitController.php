@@ -39,23 +39,11 @@ class LandlordUnitController extends Controller
     {
         $landlord = $request->user();
 
-        return DB::transaction(function () use ($request, $landlord) {
-            $property = Property::where('owner_id', $landlord->id)
-                ->findOrFail($request->property_id);
+        $unit = $this->service->createUnit($landlord, $request->validated());
 
-            $unit = Unit::create([
-                'property_id' => $property->id,
-                'unit_code' => $request->unit_code,
-                'unit_name' => $request->unit_name,
-                'status' => 'available',
-            ]);
-
-            $property->increment('total_units');
-
-            return redirect()
-                ->route('landlord.properties.units', $property->id)
-                ->with('success', 'Unit created successfully!');
-        });
+        return redirect()
+            ->route('landlord.properties.units', $unit->property_id)
+            ->with('success', 'Unit created successfully!');
     }
 
     public function index(Request $request)

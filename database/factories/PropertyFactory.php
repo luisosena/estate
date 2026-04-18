@@ -27,7 +27,7 @@ class PropertyFactory extends Factory
             'state' => $this->faker->state(),
             'postal_code' => $this->faker->postcode(),
             'country' => $this->faker->country(),
-            'property_type' => $this->faker->randomElement(['Apartment', 'Bungalow', 'Commercial', 'Residential']),
+            'property_type' => $this->faker->randomElement(['apartment', 'house', 'commercial', 'mixed']),
             'status' => 'active',
             'amenities' => ['Parking', 'Security', 'Wi-Fi'],
             'policies' => ['No Smoking', 'No Pets'],

@@ -53,6 +53,28 @@ class UnitService
     }
 
     /**
+     * Create a new unit for a property.
+     */
+    public function createUnit(\App\Models\User $landlord, array $data): \App\Models\Unit
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($landlord, $data) {
+            $property = \App\Models\Property::where('owner_id', $landlord->id)
+                ->findOrFail($data['property_id']);
+
+            $unit = \App\Models\Unit::create([
+                'property_id' => $property->id,
+                'unit_code' => $data['unit_code'],
+                'unit_name' => $data['unit_name'],
+                'status' => 'available',
+            ]);
+
+            $property->increment('total_units');
+
+            return $unit;
+        });
+    }
+
+    /**
      * Calculate global metrics for the landlord.
      */
     protected function calculateMetrics(User $landlord, int $propertyCount): array

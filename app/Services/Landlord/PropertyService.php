@@ -16,7 +16,7 @@ class PropertyService
         $properties = $landlord->properties()
             ->withCount(['units'])
             ->withCount(['tenancies as active_tenants_count' => function ($query) {
-                $query->where('status', 'active');
+                $query->where('tenancies.status', 'active');
             }])
             ->orderBy('name')
             ->paginate($perPage);

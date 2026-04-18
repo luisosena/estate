@@ -14,7 +14,6 @@ class Property extends Model
 
     protected $fillable = [
         'owner_id',
-        'landlord_id',
         'name',
         'total_units',
         'address',
@@ -54,6 +53,13 @@ class Property extends Model
 
     public function tenancies(): HasManyThrough
     {
-        return $this->hasManyThrough(Tenancy::class, Unit::class, 'property_id', 'unit_id');
+        return $this->hasManyThrough(
+            Tenancy::class,
+            Unit::class,
+            'property_id', // Foreign key on units table...
+            'unit_id',     // Foreign key on tenancies table...
+            'id',          // Local key on properties table...
+            'id'           // Local key on units table...
+        );
     }
 }

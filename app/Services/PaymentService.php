@@ -23,6 +23,25 @@ class PaymentService
             ->values() ?? collect();
     }
 
+    /**
+     * Calculate the pending rent amount for a tenancy.
+     */
+    public function calculatePendingRent(?Tenancy $tenancy): float
+    {
+        if (! $tenancy) {
+            return 0.0;
+        }
+
+        $monthlyRent = $tenancy->monthly_rent ?? 0;
+
+        $totalPaid = $tenancy->payments()
+            ->whereIn('status', ['paid', 'partial'])
+            ->where('payment_type', 'rent')
+            ->sum('amount');
+
+        return (float) max(0, $monthlyRent - $totalPaid);
+    }
+
     public function processPayment(array $validated, Tenancy $activeTenancy, ?Payment $existingPayment = null): array
     {
         return DB::transaction(function () use ($validated, $activeTenancy, $existingPayment) {

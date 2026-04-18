@@ -12,54 +12,20 @@ use Inertia\Inertia;
 
 class LandlordRentBillController extends Controller
 {
+    public function __construct(protected RentBillService $service) {}
+
     /**
      * List all rent bills for the landlord.
      */
     public function index(Request $request)
     {
         $landlord = $request->user();
-
-        $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->with(['tenancy.tenant', 'tenancy.unit.property'])
-            ->orderBy('billing_month', 'desc');
-
-        $status = $request->get('status');
-        if ($status && $status !== 'all') {
-            $query->where('rent_bills.status', $status);
-        }
-
-        $rentBills = $query->paginate(15);
-
-        // Get overall stats (Global)
-        $statsQuery = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        });
-
-        $totalCount = (clone $statsQuery)->count();
-        $pendingCount = (clone $statsQuery)->where('rent_bills.status', 'pending')->count();
-        $overdueCount = (clone $statsQuery)->where(function ($q) {
-            $q->where('rent_bills.status', 'overdue')
-                ->orWhere(function ($q2) {
-                    $q2->whereIn('rent_bills.status', ['pending', 'partial'])
-                        ->where('rent_bills.due_date', '<', now()->toDateString());
-                });
-        })->count();
-        $paidCount = (clone $statsQuery)->where('rent_bills.status', 'paid')->count();
+        $data = $this->service->getRentBillList($landlord, $request);
 
         return Inertia::render('landlord/rent-bills/index', [
-            'rentBills' => RentBillResource::collection($rentBills),
-            'stats' => [
-                'total' => $totalCount,
-                'pending' => $pendingCount,
-                'overdue' => $overdueCount,
-                'paid' => $paidCount,
-            ],
-            'filters' => [
-                'status' => $status,
-                'search' => $request->get('search'),
-            ],
+            'rentBills' => RentBillResource::collection($data['rent_bills']),
+            'stats' => $data['stats'],
+            'filters' => $data['filters'],
         ]);
     }
 

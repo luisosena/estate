@@ -29,38 +29,21 @@ class TenantPaymentsController extends Controller
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-        $tenant = $user->tenant;
+        $tenant = $request->user()->tenant;
 
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
             ->first();
 
-        $payments = [];
-        if ($activeTenancy) {
-            $payments = $activeTenancy->payments()
-                ->orderByDesc('paid_at')
-                ->paginate(15);
-        }
-
-        // Calculate pending amount
-        $pendingAmount = 0;
-        $monthlyRent = 0;
-        if ($activeTenancy) {
-            $monthlyRent = $activeTenancy->monthly_rent ?? 0;
-            // Only consider rent payments for pending amount calculation
-            $totalPaid = $activeTenancy->payments()
-                ->whereIn('status', ['paid', 'partial'])
-                ->where('payment_type', 'rent')
-                ->sum('amount');
-            $pendingAmount = max(0, $monthlyRent - $totalPaid);
-        }
+        $payments = $activeTenancy 
+            ? $activeTenancy->payments()->orderByDesc('paid_at')->paginate(15) 
+            : collect([]);
 
         return Inertia::render('tenant/payments', [
             'tenant' => new TenantResource($tenant),
             'tenancy' => $activeTenancy ? new TenancyResource($activeTenancy) : null,
             'payments' => $activeTenancy ? PaymentResource::collection($payments) : null,
-            'pendingAmount' => $pendingAmount,
+            'pendingAmount' => $this->paymentService->calculatePendingRent($activeTenancy),
         ]);
     }
 
@@ -88,14 +71,6 @@ class TenantPaymentsController extends Controller
             $this->authorize('view', $existingPayment);
         }
 
-        // Calculate pending amount
-        $monthlyRent = $activeTenancy->monthly_rent ?? 0;
-        $totalPaid = $activeTenancy->payments()
-            ->whereIn('status', ['paid', 'partial'])
-            ->where('payment_type', 'rent')
-            ->sum('amount');
-        $pendingAmount = max(0, $monthlyRent - $totalPaid);
-
         // Fetch pending utility bills
         $pendingUtilityBills = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
             $q->where('tenancy_id', $activeTenancy->id);
@@ -109,7 +84,7 @@ class TenantPaymentsController extends Controller
             'tenant' => new TenantResource($tenant),
             'tenancy' => new TenancyResource($activeTenancy),
             'existingPayment' => $existingPayment ? new PaymentResource($existingPayment) : null,
-            'pendingAmount' => $pendingAmount,
+            'pendingAmount' => $this->paymentService->calculatePendingRent($activeTenancy),
             'pendingUtilityBills' => UtilityBillResource::collection($pendingUtilityBills),
             'paymentMethods' => [
                 ['value' => 'mobile_money', 'label' => 'Mobile Money'],

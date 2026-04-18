@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
+use App\Http\Resources\NotificationResource;
 use App\Http\Controllers\Controller;
 use App\Services\Admin\AdminDashboardService;
 use Illuminate\Http\Request;
@@ -22,15 +23,12 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Display the admin's notifications (placeholder).
+     * Display the admin's notifications.
      */
     public function notifications(Request $request)
     {
         return Inertia::render('admin/notifications/index', [
-            'notifications' => [
-                'data' => [],
-                'total' => 0,
-            ],
+            'notifications' => NotificationResource::collection(collect([])),
             'unreadCount' => 0,
         ]);
     }
