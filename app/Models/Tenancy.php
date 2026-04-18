@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -78,5 +79,13 @@ class Tenancy extends Model
     public function rentBills(): HasMany
     {
         return $this->hasMany(RentBill::class);
+    }
+
+    /**
+     * Scope a query to only include active tenancies.
+     */
+    public function scopeActive($query): Builder
+    {
+        return $query->where('status', 'active');
     }
 }

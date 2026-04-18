@@ -11,20 +11,16 @@ use App\Http\Resources\UtilityBillResource;
 use App\Models\Payment;
 use App\Models\UtilityBill;
 use App\Services\PaymentService;
-use App\Services\UtilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TenantPaymentsController extends Controller
 {
-    protected $utilityService;
-
     protected $paymentService;
 
-    public function __construct(UtilityService $utilityService, PaymentService $paymentService)
+    public function __construct(PaymentService $paymentService)
     {
-        $this->utilityService = $utilityService;
         $this->paymentService = $paymentService;
     }
 

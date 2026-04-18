@@ -7,7 +7,10 @@ use App\Http\Requests\Landlord\ChangeUnitRequest;
 use App\Http\Requests\Landlord\OnboardTenantRequest;
 use App\Http\Requests\Landlord\UpdateTenantRequest;
 use App\Http\Resources\PaymentResource;
+use App\Http\Resources\PropertyResource;
+use App\Http\Resources\TenancyResource;
 use App\Http\Resources\TenantResource;
+use App\Http\Resources\UnitResource;
 use App\Models\Property;
 use App\Models\Tenancy;
 use App\Models\Tenant;
@@ -69,7 +72,7 @@ class LandlordTenantController extends Controller
 
         return Inertia::render('landlord/tenants/index', [
             'tenants' => TenantResource::collection($tenants),
-            'properties' => $properties,
+            'properties' => PropertyResource::collection($properties),
             'stats' => [
                 'total_tenants' => $occupiedUnits,
                 'total_properties' => $properties->count(),
@@ -131,26 +134,15 @@ class LandlordTenantController extends Controller
         $tenancyHistory = $tenant->tenancies()
             ->with(['unit.property'])
             ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($t) {
-                return [
-                    'id' => $t->id,
-                    'status' => $t->status,
-                    'move_in_date' => $t->move_in_date,
-                    'move_out_date' => $t->move_out_date,
-                    'monthly_rent' => $t->monthly_rent,
-                    'unit_name' => $t->unit?->unit_name,
-                    'property_name' => $t->unit?->property?->name,
-                ];
-            });
+            ->get();
 
         return Inertia::render('landlord/tenants/show', [
             'tenant' => new TenantResource($tenant),
-            'tenancy' => $activeTenancy,
-            'unit' => $activeTenancy?->unit,
-            'property' => $activeTenancy?->unit?->property,
+            'tenancy' => $activeTenancy ? new TenancyResource($activeTenancy) : null,
+            'unit' => $activeTenancy?->unit ? new UnitResource($activeTenancy->unit) : null,
+            'property' => $activeTenancy?->unit?->property ? new PropertyResource($activeTenancy->unit->property) : null,
             'payments' => PaymentResource::collection($payments),
-            'tenancy_history' => $tenancyHistory,
+            'tenancy_history' => TenancyResource::collection($tenancyHistory),
             'outstandingRent' => 0, // Placeholder for logic
             'outstandingUtilities' => 0, // Placeholder
         ]);
@@ -200,7 +192,7 @@ class LandlordTenantController extends Controller
             ->get();
 
         return Inertia::render('landlord/tenants/create', [
-            'properties' => $properties,
+            'properties' => PropertyResource::collection($properties),
         ]);
     }
 

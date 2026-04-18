@@ -5,8 +5,10 @@ namespace App\Services\Tenant;
 use App\Http\Resources\NotificationResource;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\RentBillResource;
+use App\Http\Resources\TenancyResource;
 use App\Http\Resources\TenancyUtilityResource;
 use App\Http\Resources\TenantResource;
+use App\Http\Resources\UnitResource;
 use App\Models\RentBill;
 use App\Models\Tenant;
 
@@ -47,11 +49,8 @@ class TenantDashboardService
 
         return [
             'tenant' => new TenantResource($tenant),
-            'unit' => $activeTenancy?->unit,
-            'tenancy' => $activeTenancy ? [
-                'move_in_date' => $activeTenancy->move_in_date,
-                'status' => $activeTenancy->status,
-            ] : null,
+            'unit' => $activeTenancy ? new UnitResource($activeTenancy->unit) : null,
+            'tenancy' => $activeTenancy ? new TenancyResource($activeTenancy) : null,
             'payments' => PaymentResource::collection($activeTenancy?->payments
                 ->sortByDesc(fn ($p) => $p->paid_at ?? $p->created_at)
                 ->take(5)
