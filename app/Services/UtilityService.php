@@ -40,7 +40,7 @@ class UtilityService
     {
         // Check for unpaid bills
         $unpaidBills = $tenancyUtility->bills()
-            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->whereIn('utility_bills.status', ['pending', 'partial', 'overdue'])
             ->exists();
 
         if ($unpaidBills) {
@@ -58,7 +58,7 @@ class UtilityService
     public function getPendingBillsForTenant(Tenant $tenant): Collection
     {
         $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
+            ->where('tenancies.status', 'active')
             ->first();
 
         if (! $activeTenancy) {
@@ -68,7 +68,7 @@ class UtilityService
         return UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
             $q->where('tenancy_id', $activeTenancy->id);
         })
-            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->whereIn('utility_bills.status', ['pending', 'partial', 'overdue'])
             ->with(['tenancyUtility.utilityType'])
             ->orderBy('due_date', 'asc')
             ->get();
@@ -125,7 +125,7 @@ class UtilityService
     public function getBillsForTenant(Tenant $tenant, array $filters = []): array
     {
         $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
+            ->where('tenancies.status', 'active')
             ->first();
 
         if (! $activeTenancy) {
@@ -145,7 +145,7 @@ class UtilityService
 
         // Apply filters
         if (isset($filters['status'])) {
-            $query->where('status', $filters['status']);
+            $query->where('utility_bills.status', $filters['status']);
         }
 
         if (isset($filters['billing_month'])) {

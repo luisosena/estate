@@ -20,7 +20,7 @@ class TenantDashboardService
     public function getDashboardData(Tenant $tenant): array
     {
         $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
+            ->where('tenancies.status', 'active')
             ->with(['unit', 'payments', 'tenancyUtilities.utilityType', 'tenancyUtilities.bills'])
             ->first();
 

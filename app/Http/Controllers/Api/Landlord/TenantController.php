@@ -30,7 +30,7 @@ class TenantController extends Controller
         $query = Property::where('owner_id', $landlord->id)
             ->with([
                 'units.tenancies' => function ($query) {
-                    $query->where('status', 'active')->with('tenant');
+                    $query->where('tenancies.status', 'active')->with('tenant');
                 },
             ]);
 
@@ -67,7 +67,7 @@ class TenantController extends Controller
         // Stats calculation
         $totalTenants = count($tenants);
         $totalUnits = $propertiesData->sum(fn ($p) => $p->units()->count());
-        $occupiedUnits = $propertiesData->sum(fn ($p) => $p->units()->whereHas('tenancies', fn ($q) => $q->where('status', 'active'))->count());
+        $occupiedUnits = $propertiesData->sum(fn ($p) => $p->units()->whereHas('tenancies', fn ($q) => $q->where('tenancies.status', 'active'))->count());
 
         $offset = ($page - 1) * $perPage;
 

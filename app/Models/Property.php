@@ -62,4 +62,12 @@ class Property extends Model
             'id'           // Local key on units table...
         );
     }
+
+    /**
+     * Scope a query to only include active properties.
+     */
+    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where('properties.status', 'active');
+    }
 }

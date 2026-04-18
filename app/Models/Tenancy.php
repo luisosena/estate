@@ -70,7 +70,7 @@ class Tenancy extends Model
 
     public function activeUtilities(): HasMany
     {
-        return $this->hasMany(TenancyUtility::class)->where('status', 'active');
+        return $this->hasMany(TenancyUtility::class)->where('tenancy_utilities.status', 'active');
     }
 
     /**
@@ -86,6 +86,6 @@ class Tenancy extends Model
      */
     public function scopeActive($query): Builder
     {
-        return $query->where('status', 'active');
+        return $query->where('tenancies.status', 'active');
     }
 }

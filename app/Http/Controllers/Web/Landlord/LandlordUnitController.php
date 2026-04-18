@@ -17,13 +17,15 @@ class LandlordUnitController extends Controller
 {
     public function __construct(protected UnitService $service)
     {
-        $this->authorizeResource(Unit::class, 'unit');
+        // Authorization handled explicitly in methods
     }
 
     // ... (create and store methods remain same as they are already simple enough)
 
     public function create(Request $request)
     {
+        $this->authorize('create', Unit::class);
+
         $landlord = $request->user();
 
         $properties = Property::where('owner_id', $landlord->id)
@@ -37,6 +39,8 @@ class LandlordUnitController extends Controller
 
     public function store(StoreUnitRequest $request)
     {
+        $this->authorize('create', Unit::class);
+
         $landlord = $request->user();
 
         $unit = $this->service->createUnit($landlord, $request->validated());
@@ -48,6 +52,8 @@ class LandlordUnitController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Unit::class);
+
         $data = $this->service->getUnitList($request->user(), $request);
 
         return Inertia::render('landlord/units/index', [
@@ -78,6 +84,8 @@ class LandlordUnitController extends Controller
 
     public function show(Unit $unit)
     {
+        $this->authorize('view', $unit);
+
         $unit->load(['property', 'tenancies.tenant']);
 
         return Inertia::render('landlord/units/show', [

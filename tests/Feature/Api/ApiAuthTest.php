@@ -22,7 +22,7 @@ it('allows login via /api/v1/auth/login and authenticates subsequent requests wi
     ]);
 
     $loginResponse = $this->postJson('/api/v1/auth/login', [
-        'email' => $user->email,
+        'username' => $user->username,
         'password' => $password,
     ]);
 

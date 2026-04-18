@@ -15,8 +15,9 @@ class UtilitiesTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
-        $this->tenant = Tenant::factory()->create(['user_id' => $this->user->id]);
+        $tenant = Tenant::factory()->create();
+        $this->user = User::factory()->create(['tenant_id' => $tenant->id]);
+        $this->tenant = $tenant;
     }
 
     public function test_tenant_can_view_utilities_page()

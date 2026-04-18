@@ -26,7 +26,7 @@ class LandlordTenantController extends Controller
         protected OnboardingService $onboardingService,
         protected TenantService $tenantService
     ) {
-        $this->authorizeResource(Tenant::class, 'tenant');
+        // Authorization handled explicitly in methods
     }
 
     /**
@@ -34,6 +34,8 @@ class LandlordTenantController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Tenant::class);
+
         $landlord = $request->user();
         $data = $this->tenantService->getTenantList($landlord, $request);
 
@@ -50,6 +52,8 @@ class LandlordTenantController extends Controller
      */
     public function byProperty(Request $request, $propertyId)
     {
+        $this->authorize('viewAny', Tenant::class);
+
         $landlord = $request->user();
         $property = Property::where('owner_id', $landlord->id)->findOrFail($propertyId);
 
@@ -78,10 +82,10 @@ class LandlordTenantController extends Controller
      */
     public function show(Request $request, Tenant $tenant)
     {
-        // View authorization handled by authorizeResource and TenantPolicy
+        $this->authorize('view', $tenant);
 
         $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
+            ->where('tenancies.status', 'active')
             ->with(['unit.property'])
             ->first();
 
@@ -112,6 +116,8 @@ class LandlordTenantController extends Controller
      */
     public function update(UpdateTenantRequest $request, Tenant $tenant)
     {
+        $this->authorize('update', $tenant);
+
         $validated = $request->validated();
 
         $tenant->update($validated);
@@ -145,6 +151,8 @@ class LandlordTenantController extends Controller
      */
     public function create(Request $request)
     {
+        $this->authorize('create', Tenant::class);
+
         $properties = $request->user()->properties()
             ->select('id', 'name')
             ->orderBy('name')
@@ -160,6 +168,8 @@ class LandlordTenantController extends Controller
      */
     public function store(OnboardTenantRequest $request)
     {
+        $this->authorize('create', Tenant::class);
+
         $this->onboardingService->onboard($request->validated());
 
         return redirect()

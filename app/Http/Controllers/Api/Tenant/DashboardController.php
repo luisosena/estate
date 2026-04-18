@@ -30,7 +30,7 @@ class DashboardController extends Controller
             }
 
             $activeTenancy = $tenant->tenancies()
-                ->where('status', 'active')
+                ->where('tenancies.status', 'active')
                 ->with(['unit', 'payments', 'tenancyUtilities.utilityType'])
                 ->first();
 

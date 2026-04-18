@@ -15,8 +15,11 @@ class PaymentsTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
-        $this->tenant = Tenant::factory()->create(['user_id' => $this->user->id]);
+        $this->tenant = Tenant::factory()->create();
+        $this->user = User::factory()->create([
+            'role' => 'tenant',
+            'tenant_id' => $this->tenant->id
+        ]);
     }
 
     public function test_tenant_can_view_payments_page()

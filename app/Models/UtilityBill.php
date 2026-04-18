@@ -62,16 +62,16 @@ class UtilityBill extends Model
 
     public function scopePending($query): Builder
     {
-        return $query->where('status', 'pending');
+        return $query->where('utility_bills.status', 'pending');
     }
 
     public function scopeOverdue($query): Builder
     {
         return $query->where(function ($q) {
-            $q->where('status', 'overdue')
+            $q->where('utility_bills.status', 'overdue')
                 ->orWhere(function ($q) {
-                    $q->whereIn('status', ['pending', 'partial'])
-                        ->where('due_date', '<', now());
+                    $q->whereIn('utility_bills.status', ['pending', 'partial'])
+                        ->where('utility_bills.due_date', '<', now());
                 });
         });
     }

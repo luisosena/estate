@@ -82,11 +82,11 @@ class UnitService
         $metricsQuery = Unit::whereHas('property', fn ($q) => $q->where('owner_id', $landlord->id));
 
         $totalUnits = (clone $metricsQuery)->count();
-        $occupiedUnits = (clone $metricsQuery)->where('status', 'occupied')->count();
+        $occupiedUnits = (clone $metricsQuery)->where('units.status', 'occupied')->count();
 
         return [
             'total_units' => $totalUnits,
-            'available_units' => (clone $metricsQuery)->where('status', 'available')->count(),
+            'available_units' => (clone $metricsQuery)->where('units.status', 'available')->count(),
             'occupied_units' => $occupiedUnits,
             'occupancy_rate' => $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0,
             'total_properties' => $propertyCount,
@@ -100,11 +100,11 @@ class UnitService
     {
         $propMetricsQuery = Unit::where('property_id', $propertyId);
         $propTotal = (clone $propMetricsQuery)->count();
-        $propOccupied = (clone $propMetricsQuery)->where('status', 'occupied')->count();
+        $propOccupied = (clone $propMetricsQuery)->where('units.status', 'occupied')->count();
 
         return [
             'total_units' => $propTotal,
-            'available_units' => (clone $propMetricsQuery)->where('status', 'available')->count(),
+            'available_units' => (clone $propMetricsQuery)->where('units.status', 'available')->count(),
             'occupied_units' => $propOccupied,
             'occupancy_rate' => $propTotal > 0 ? round(($propOccupied / $propTotal) * 100, 1) : 0,
             'total_properties' => 1,

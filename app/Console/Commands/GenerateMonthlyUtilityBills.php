@@ -35,7 +35,7 @@ class GenerateMonthlyUtilityBills extends Command
             $count = 0;
 
             $tenancyUtilities = TenancyUtility::active()
-                ->whereHas('tenancy', fn ($q) => $q->where('status', 'active'))
+                ->whereHas('tenancy', fn ($q) => $q->where('tenancies.status', 'active'))
                 ->with('utilityType')
                 ->get();
 

@@ -22,11 +22,13 @@ class LandlordUtilityController extends Controller
      */
     public function __construct()
     {
-        $this->authorizeResource(TenancyUtility::class, 'tenancyUtility');
+        // Authorization handled explicitly in methods
     }
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', TenancyUtility::class);
+
         $landlord = $request->user();
 
         $tenancies = Tenancy::whereHas('unit.property', function ($query) use ($landlord) {
@@ -122,7 +124,7 @@ class LandlordUtilityController extends Controller
      */
     public function edit(Request $request, TenancyUtility $tenancyUtility)
     {
-        // Authorization handled by authorizeResource
+        $this->authorize('update', $tenancyUtility);
 
         return Inertia::render('landlord/utilities/edit', [
             'tenancyUtility' => new TenancyUtilityResource($tenancyUtility->load('utilityType')),
@@ -136,7 +138,7 @@ class LandlordUtilityController extends Controller
      */
     public function update(UpdateUtilityRequest $request, TenancyUtility $tenancyUtility)
     {
-        // Authorization handled by authorizeResource
+        $this->authorize('update', $tenancyUtility);
 
         $validated = $request->validated();
 
@@ -158,7 +160,7 @@ class LandlordUtilityController extends Controller
      */
     public function destroy(Request $request, TenancyUtility $tenancyUtility)
     {
-        // Authorization handled by authorizeResource
+        $this->authorize('delete', $tenancyUtility);
 
         try {
             $unpaidBills = $tenancyUtility->bills()

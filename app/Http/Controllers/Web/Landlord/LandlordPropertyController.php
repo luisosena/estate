@@ -13,7 +13,7 @@ class LandlordPropertyController extends Controller
 {
     public function __construct(protected PropertyService $service)
     {
-        $this->authorizeResource(Property::class, 'property');
+        // Implicitly handled via $this->authorize in methods
     }
 
     /**
@@ -21,6 +21,8 @@ class LandlordPropertyController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Property::class);
+
         $data = $this->service->getPropertyList($request->user());
 
         return Inertia::render('landlord/properties/index', [

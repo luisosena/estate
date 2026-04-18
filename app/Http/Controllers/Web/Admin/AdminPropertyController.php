@@ -18,11 +18,13 @@ class AdminPropertyController extends Controller
      */
     public function __construct()
     {
-        $this->authorizeResource(Property::class, 'property');
+        // Authorization handled explicitly in methods
     }
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Property::class);
+
         $user = $request->user();
 
         $query = Property::with(['landlord']);
@@ -68,6 +70,8 @@ class AdminPropertyController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Property::class);
+
         $user = request()->user();
 
         $landlords = User::where('role', 'landlord')->orderBy('name')->get();
@@ -82,6 +86,8 @@ class AdminPropertyController extends Controller
      */
     public function store(PropertyRequest $request)
     {
+        $this->authorize('create', Property::class);
+
         $validated = $request->validated();
 
         $property = Property::create($validated);
@@ -96,6 +102,8 @@ class AdminPropertyController extends Controller
      */
     public function show(Property $property)
     {
+        $this->authorize('view', $property);
+
         $property->load(['landlord', 'units', 'units.tenancies.tenant']);
 
         return Inertia::render('admin/properties/show', [
@@ -108,6 +116,8 @@ class AdminPropertyController extends Controller
      */
     public function edit(Property $property)
     {
+        $this->authorize('update', $property);
+
         $property->load(['landlord']);
         $landlords = User::where('role', 'landlord')->orderBy('name')->get();
 
@@ -122,6 +132,8 @@ class AdminPropertyController extends Controller
      */
     public function update(PropertyRequest $request, Property $property)
     {
+        $this->authorize('update', $property);
+
         $validated = $request->validated();
 
         $property->update($validated);
@@ -136,6 +148,8 @@ class AdminPropertyController extends Controller
      */
     public function destroy(Property $property)
     {
+        $this->authorize('delete', $property);
+
         // Check if property has units
         if ($property->units()->exists()) {
             return redirect()

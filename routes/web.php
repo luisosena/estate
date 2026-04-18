@@ -277,6 +277,18 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/tenant/notifications/recent', [TenantNotificationController::class, 'recent'])
         ->name('tenant.notifications.recent');
+
+    Route::get('/dashboard', function (Illuminate\Http\Request $request) {
+        $user = $request->user();
+
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($user->role === 'landlord') {
+            return redirect()->route('landlord.dashboard');
+        } else {
+            return redirect()->route('tenant.dashboard');
+        }
+    })->name('dashboard');
 });
 
 Route::get('/mail', function () {
@@ -286,10 +298,6 @@ Route::get('/mail', function () {
 Route::get('/tests', function () {
     return Inertia::render('tests');
 })->name('tests');
-
-Route::get('/dashboard', function () {
-    return Inertia::render('dashboard');
-})->name('dashboard');
 
 Route::get('/tests2', function () {
     $tenants = Tenant::query()->orderBy('id')->get();

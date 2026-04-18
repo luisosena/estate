@@ -26,7 +26,7 @@ class TenantService
                 }
             })
             ->with(['tenancies' => function ($q) {
-                $q->where('status', 'active')->with(['unit.property']);
+                $q->where('tenancies.status', 'active')->with(['unit.property']);
             }]);
 
         // Search logic
@@ -60,7 +60,7 @@ class TenantService
     {
         $totalUnits = $landlord->properties()->sum('total_units');
         
-        $occupiedUnits = Tenancy::where('status', 'active')
+        $occupiedUnits = Tenancy::where('tenancies.status', 'active')
             ->whereHas('unit.property', fn ($q) => $q->where('owner_id', $landlord->id))
             ->count();
 

@@ -32,7 +32,7 @@ class TenantPaymentsController extends Controller
         $tenant = $request->user()->tenant;
 
         $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
+            ->where('tenancies.status', 'active')
             ->first();
 
         $payments = $activeTenancy 
@@ -56,7 +56,7 @@ class TenantPaymentsController extends Controller
         $tenant = $user->tenant;
 
         $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
+            ->where('tenancies.status', 'active')
             ->first();
 
         if (! $activeTenancy) {
@@ -75,7 +75,7 @@ class TenantPaymentsController extends Controller
         $pendingUtilityBills = UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
             $q->where('tenancy_id', $activeTenancy->id);
         })
-            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->whereIn('utility_bills.status', ['pending', 'partial', 'overdue'])
             ->with('tenancyUtility.utilityType')
             ->orderBy('due_date', 'asc')
             ->get();
@@ -103,7 +103,7 @@ class TenantPaymentsController extends Controller
         $validated = $request->validated();
 
         $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
+            ->where('tenancies.status', 'active')
             ->first();
 
         if (! $activeTenancy) {

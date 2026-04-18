@@ -28,7 +28,7 @@ class LandlordPaymentController extends Controller
     {
         $this->rentBillService = $rentBillService;
         $this->utilityService = $utilityService;
-        $this->authorizeResource(Payment::class, 'payment');
+        // Authorization handled explicitly in methods
     }
 
     /**
@@ -38,6 +38,8 @@ class LandlordPaymentController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Payment::class);
+
         $landlord = $request->user();
 
         // Base query for filtering payments belonging to landlord's properties
@@ -177,7 +179,7 @@ class LandlordPaymentController extends Controller
      */
     public function update(PaymentUpdateRequest $request, Payment $payment)
     {
-        // Authorization handled by authorizeResource
+        $this->authorize('update', $payment);
 
         $landlord = $request->user();
 
@@ -218,7 +220,7 @@ class LandlordPaymentController extends Controller
      */
     public function destroy(Request $request, Payment $payment)
     {
-        // Authorization handled by authorizeResource
+        $this->authorize('delete', $payment);
 
         $landlord = $request->user();
 

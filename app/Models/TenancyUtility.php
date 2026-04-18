@@ -48,6 +48,6 @@ class TenancyUtility extends Model
 
     public function scopeActive($query): Builder
     {
-        return $query->where('status', 'active');
+        return $query->where('tenancy_utilities.status', 'active');
     }
 }

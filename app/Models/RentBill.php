@@ -60,16 +60,16 @@ class RentBill extends Model
 
     public function scopePending($query): Builder
     {
-        return $query->where('status', 'pending');
+        return $query->where('rent_bills.status', 'pending');
     }
 
     public function scopeOverdue($query): Builder
     {
         return $query->where(function ($q) {
-            $q->where('status', 'overdue')
+            $q->where('rent_bills.status', 'overdue')
                 ->orWhere(function ($q) {
-                    $q->whereIn('status', ['pending', 'partial'])
-                        ->where('due_date', '<', now());
+                    $q->whereIn('rent_bills.status', ['pending', 'partial'])
+                        ->where('rent_bills.due_date', '<', now());
                 });
         });
     }
