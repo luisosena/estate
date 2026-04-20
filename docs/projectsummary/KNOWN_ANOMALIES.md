@@ -78,6 +78,8 @@ enum Role: string
 
 **Location**: `app/Http/Controllers/Api/`
 
+> **RESOLVED (Epoch 2)**: All entities are now wrapped in strict Laravel `*Resource.php` API layer standards, wrapping JSON payloads cleanly inside a `'data'` block.
+
 **Impact**: 
 - Inconsistent response formats
 - No data transformation layer
@@ -119,6 +121,8 @@ php artisan make:resource PropertyCollection
 **Issue**: Limited test coverage
 
 **Location**: No tests directory visible in standard location
+
+> **RESOLVED (Epoch 3)**: A massive architectural adoption of Pest testing has been built into the project, including strict `ArchTest.php` architecture mapping, comprehensive Feature API End-to-End endpoint checking, and Data Isolation validation.
 
 **Impact**: Risk of regressions
 
@@ -270,6 +274,8 @@ if ($user->role === 'landlord') { ... }
 **Pattern**: Controllers directly manipulate models instead of using services
 
 **Example**: In TenantController - direct model creation
+
+> **RESOLVED (Epoch 2)**: Controllers were entirely stripped of fat business logic. These logic mappings were successfully decoupled and abstracted entirely into the `/app/Services/*` namespace (e.g. `TenantService`, `OnboardingService`, `DashboardServices`).
 
 **Recommendation**: Move all business logic to service classes
 

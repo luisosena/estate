@@ -271,16 +271,15 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 
 #### `tests/`
 
-- **`Feature/Auth`**
-  - Tests for authentication, email verification, password confirmation, password reset, registration, 2FA challenge, and verification notifications.
-- **`Feature/DashboardTest.php`**
-  - Tests dashboard behavior.
-- **`Feature/Settings`**
-  - Tests for password update, profile update, and two-factor authentication.
-- **`Unit/ExampleTest.php`**
-  - Sample unit test.
-- **`Pest.php`, `TestCase.php`**
-  - Pest bootstrap and base test case.
+- **`Feature/Admin`**: Admin portal access and actions
+- **`Feature/Api`**: Complete Mobile API tests (Landlord & Tenant endpoints, Data Isolation)
+- **`Feature/Auth`**: Authentication, verification, login flows
+- **`Feature/Landlord`**: Web Application controllers for Landlords
+- **`Feature/Models`**: Unit tests for eloquent model behaviors
+- **`Feature/Services`**: Comprehensive tests for isolated business logic
+- **`Feature/Tenant`**: Web Application controllers for Tenants
+- **`ArchTest.php`**: Architecture rules mapping rigid structures
+- **`Pest.php`, `TestCase.php`**: Pest bootstrap and base test case
 
 ---
 
@@ -318,8 +317,12 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
 
 - **Quality & tooling**
   - Linting and formatting set up for both PHP and JS/TS.
-  - Testing powered by Pest with coverage for auth, dashboard, and settings behaviors.
+  - Testing powered by Pest with robust boundaries around `ArchTest` architectural safeguarding, Service-layer direct tests, and comprehensive multi-tenant API Feature tests preventing cross-tenancy data spillage.
 
+- **Architectural Scaling (Q2 2026)**
+  - **Service Pattern**: Migrated from Fat Controllers to lightweight Action endpoints calling dedicated Service classes (`TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`).
+  - **API Contract Enforcement**: Implementation of arrayed `*Resource.php` specifications for Eloquent models yielding strictly typed wrapper `'data'` payload responses for all active endpoints.
+  
 - **Landlord Workflow Refinements (Q2 2026)**
   - **Add Tenant Flow**: Completely restructured mobile form with full-width vertical stacking for premium UX.
   - **Unit Selection**: Real-time "available" unit filtering with card-based dropdown menus.

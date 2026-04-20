@@ -245,6 +245,7 @@ graph TB
 Located in the root (not resources/js), using Inertia.js for SSR:
 - **Web Controllers**: `app/Http/Controllers/Web/`
 - **Pages**: Inertia page components rendered server-side
+- **Persistent Layouts**: Inertia continuous layouts mapping (`AdminLayout`, `LandlordLayout`) resolving toggle-state resets and visual flashing globally.
 - **Middleware**: HandleInertiaRequests, HandleAppearance
 
 ### 2. API Layer (REST)
@@ -255,7 +256,7 @@ Located in `app/Http/Controllers/Api/`:
 
 ### 3. Business Logic Layer
 Located in:
-- **Services**: `app/Services/` (PaymentService, TenantService, UtilityService)
+- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`).
 - **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, etc.)
 - **Actions**: `app/Actions/Fortify/` (User creation, password validation)
 
