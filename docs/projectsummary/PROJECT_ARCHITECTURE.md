@@ -482,6 +482,17 @@ Laravel scheduler handles:
 - `MarkOverdueUtilityBills` - Marks pending/partial bills as overdue (daily)
 - `GenerateMonthlyUtilityBills` - Creates monthly bills for active utilities (monthly)
 
+## Quality Assurance & Testing Architecture
+
+The project maintains a rigorous, phased testing approach powered by **Pest**. 
+The test footprints are completely isolated, ensuring reliable test environments, preventing data leaks across partitions, and validating correct API behavior via Sanctum.
+
+Testing is divided into core phases:
+1. **Core Service Testing**: Isolated behavior-driven tests validating business logic inside the `app/Services` directory (e.g. `RentBillService`, `PaymentService`).
+2. **Tenant Data Isolation**: Assertions guaranteeing that Tenant accounts cannot fetch data cross-tenancy on Web views.
+3. **API Contracts**: Exhaustive feature testing providing nearly 100% test density specifically targeting the Mobile API endpoints securely bridging `Sanctum::actingAs`.
+4. **Architectural Guardrails**: Enforcing global layout restrictions using `arch()` tests (e.g., prohibiting `dd()` traces, enforcing `FormRequest` extensions).
+
 ## Summary
 
 This architecture follows:
@@ -491,4 +502,5 @@ This architecture follows:
 - **Middleware pattern** for cross-cutting concerns
 - **Role-based access control** (RBAC)
 - **API-first design** supporting both web and mobile clients
+- **Test-Driven Architecture** supported by Pest
 - **Server-side rendering** with Inertia.js for optimal performance

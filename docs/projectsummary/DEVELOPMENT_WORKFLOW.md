@@ -274,58 +274,70 @@ docs(api): update endpoint documentation
 ### Running Tests
 
 ```bash
-# Run all tests
-composer test
+# Run all feature and unit tests with Pest
+php artisan test
 
-# Run with coverage
-composer test:coverage
+# Compact mode to see high-level passes
+php artisan test --compact
 
-# Run specific test file
-./vendor/bin/pest tests/Feature/TenantTest.php
-
-# Run tests matching pattern
-./vendor/bin/pest --filter="tenant"
+# Run tests matching pattern or class
+php artisan test --filter="PaymentServiceTest"
 ```
+
+> [!NOTE]
+> We use the Pest testing framework for its readable syntax, chained expectations, and architecture testing capabilities. It is a wrapper around PHPUnit, allowing seamless use of Laravel's built-in testing helpers. Both traditional PHPUnit classes and Pest closures are supported, but Pest is the standard for new tests.
 
 ### Test Structure
 
 ```
 tests/
-├── Feature/          # Feature/integration tests
-│   ├── TenantTest.php
-│   └── PaymentTest.php
-├── Unit/             # Unit tests
-│   └── Services/
-│       └── TenantServiceTest.php
-└── Pest.php         # Test setup and helpers
+├── Feature/          # Feature and Integration tests
+│   ├── Admin/        # Admin portal access and actions
+│   ├── Api/          # Complete Mobile API tests (Landlord & Tenant)
+│   ├── Landlord/     # web Application controllers for Landlord
+│   ├── Models/       # Unit tests for eloquent model behaviors
+│   ├── Services/     # Comprehensive tests for isolated business logic
+│   └── Tenant/       # Web Application controllers for Tenant
+├── ArchTest.php      # Architecture rules (no dd/dump, rigid structures)
+├── TestCase.php      # Base suite with Sanctum and Tenancy helpers
+└── Pest.php          # Global Pest configurations
 ```
 
 ### Writing Tests
 
-Example test with Pest:
+Our application provides core helpers inside `TestCase.php` to handle complex multi-tenant data structures, particularly within the APIs. Always leverage them when building out new scopes.
+
+**API Test Example (Pest):**
 
 ```php
 <?php
 
-use App\Models\User;
-use App\Models\Tenant;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->landlord = User::factory()->create(['role' => 'landlord']);
+    // Generate a secure, pre-authenticated Landlord schema down to the Unit
+    [
+        'user'     => $this->user, 
+        'property' => $this->property, 
+        'unit'     => $this->unit
+    ] = $this->createApiLandlord();
 });
 
-it('creates a tenant with valid data', function () {
-    $response = $this->actingAs($this->landlord)
-        ->post('/landlord/tenants', [
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'email' => 'john@example.com',
-        ]);
+test('landlord can fetch their properties', function () {
+    $this->getJson('/api/landlord/properties')
+        ->assertOk()
+        ->assertJsonStructure(['properties']);
+});
+```
 
-    $response->assertRedirect();
-    $this->assertDatabaseHas('tenants', [
-        'email' => 'john@example.com',
-    ]);
+**Service Test Example:**
+
+```php
+test('it prevents processing payments higher than outstanding amount', function () {
+    expect(fn() => 
+        $this->service->processRentPayment($this->bill->id, 50000)
+    )->toThrow(\Exception::class, 'Payment amount exceeds outstanding balance.');
 });
 ```
 
