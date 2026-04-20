@@ -46,8 +46,8 @@ $defineApiRoutes = function (): void {
                 Route::get('sessions', [SessionController::class, 'index']);
                 Route::get('sessions/{tokenId}', [SessionController::class, 'show']);
                 Route::post('sessions/{tokenId}/activity', [SessionController::class, 'updateActivity']);
-                Route::delete('sessions/{tokenId}', [SessionController::class, 'terminate']);
                 Route::delete('sessions/terminate-all', [SessionController::class, 'terminateAll']);
+                Route::delete('sessions/{tokenId}', [SessionController::class, 'terminate']);
             });
         });
 

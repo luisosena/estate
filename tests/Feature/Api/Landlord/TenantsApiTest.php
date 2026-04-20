@@ -74,5 +74,5 @@ test('landlord cannot remove another landlords tenant', function () {
     ]);
 
     $this->deleteJson("/api/landlord/tenants/{$otherTenancy->id}/remove")
-        ->assertForbidden();
+        ->assertNotFound();
 });

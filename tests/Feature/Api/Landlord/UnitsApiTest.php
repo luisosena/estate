@@ -24,6 +24,7 @@ test('landlord can create a unit for own property', function () {
     $this->postJson('/api/landlord/units', [
         'property_id' => $this->property->id,
         'unit_code'   => 'A101',
+        'unit_name'   => 'A101',
         'floor'       => 1,
     ])->assertCreated();
 

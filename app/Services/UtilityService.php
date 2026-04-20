@@ -62,7 +62,7 @@ class UtilityService
             ->first();
 
         if (! $activeTenancy) {
-            return collect();
+            return new Collection;
         }
 
         return UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {

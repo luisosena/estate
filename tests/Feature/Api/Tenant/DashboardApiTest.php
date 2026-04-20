@@ -32,7 +32,7 @@ test('tenant dashboard is scoped to own tenant data', function () {
 
 test('unauthenticated request to tenant dashboard returns 401', function () {
     $this->withoutMiddleware(\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class);
-    auth()->logout();
+    $this->app['auth']->forgetGuards();
 
     $this->getJson('/api/tenant/dashboard', ['Authorization' => ''])
         ->assertUnauthorized();

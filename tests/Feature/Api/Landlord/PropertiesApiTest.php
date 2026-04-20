@@ -89,7 +89,7 @@ test('landlord cannot delete a property that has units', function () {
 
 test('unauthenticated request to properties returns 401', function () {
     $this->withoutMiddleware(\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class);
-    auth()->logout();
+    $this->app['auth']->forgetGuards();
 
     $this->getJson('/api/landlord/properties', ['Authorization' => ''])
         ->assertUnauthorized();

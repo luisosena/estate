@@ -52,5 +52,5 @@ test('landlord cannot delete another users notification', function () {
     $otherNotification = makeLandlordNotification($other);
 
     $this->deleteJson("/api/landlord/notifications/{$otherNotification->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });

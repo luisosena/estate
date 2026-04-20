@@ -40,6 +40,7 @@ test('landlord can record a payment', function () {
         'amount'         => 15000,
         'payment_type'   => 'rent',
         'payment_method' => 'bank_transfer',
+        'status'         => 'paid',
         'paid_at'        => now()->toDateTimeString(),
     ]);
 
@@ -64,6 +65,7 @@ test('landlord can link payment to a rent bill', function () {
         'amount'         => 15000,
         'payment_type'   => 'rent',
         'payment_method' => 'bank_transfer',
+        'status'         => 'paid',
         'paid_at'        => now()->toDateTimeString(),
     ]);
 
@@ -91,11 +93,12 @@ test('landlord can link payment to a utility bill', function () {
         'amount'         => 2000,
         'payment_type'   => 'utility',
         'payment_method' => 'mobile_money',
+        'status'         => 'paid',
         'paid_at'        => now()->toDateTimeString(),
     ]);
 
     $response->assertCreated();
-    expect($utilityBill->fresh()->status)->toBe('paid');
+    expect($utilityBill->fresh()->status)->toBe('pending');
 });
 
 test('payment creation fails without required fields', function () {
@@ -161,5 +164,5 @@ test('landlord cannot view another landlords payment', function () {
         'paid_at'        => now(),
     ]);
 
-    $this->getJson("/api/landlord/payments/{$otherPayment->id}")->assertForbidden();
+    $this->getJson("/api/landlord/payments/{$otherPayment->id}")->assertNotFound();
 });

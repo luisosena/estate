@@ -20,6 +20,9 @@ class DashboardController extends Controller
     {
         try {
             $landlord = $request->user();
+            if ($landlord->role !== 'landlord') {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
 
             // Get all properties owned by this landlord
             $properties = Property::where('owner_id', $landlord->id)
@@ -141,9 +144,9 @@ class DashboardController extends Controller
             })
                 ->selectRaw('
                     SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
-                    SUM(CASE WHEN status = "overdue" OR (status IN ("pending", "partial") AND due_date < CURDATE()) THEN 1 ELSE 0 END) as overdue_count,
+                    SUM(CASE WHEN status = "overdue" OR (status IN ("pending", "partial") AND due_date < ?) THEN 1 ELSE 0 END) as overdue_count,
                     SUM(CASE WHEN status IN ("pending", "partial", "overdue") THEN amount_due - amount_paid ELSE 0 END) as total_outstanding
-                ')
+                ', [now()->toDateString()])
                 ->first();
 
             $pendingRentBills = (int) ($rentStats->pending_count ?? 0);

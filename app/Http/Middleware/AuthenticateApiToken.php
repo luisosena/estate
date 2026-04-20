@@ -12,6 +12,13 @@ class AuthenticateApiToken
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Allow requests already authenticated via the Sanctum guard (e.g. in tests).
+        if (Auth::guard('sanctum')->check()) {
+            Auth::setUser(Auth::guard('sanctum')->user());
+
+            return $next($request);
+        }
+
         $raw = $request->bearerToken();
 
         if (! $raw) {

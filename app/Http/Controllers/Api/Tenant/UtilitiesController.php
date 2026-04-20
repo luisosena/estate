@@ -35,7 +35,7 @@ class UtilitiesController extends Controller
         }
 
         return response()->json([
-            'data' => $activeTenancy->tenancyUtilities,
+            'utilities' => $activeTenancy->tenancyUtilities,
             'tenancy' => [
                 'id' => $activeTenancy->id,
                 'monthly_rent' => $activeTenancy->monthly_rent,
@@ -91,7 +91,7 @@ class UtilitiesController extends Controller
         $totalOutstanding = $totalDue - $totalPaid;
 
         return response()->json([
-            'data' => $bills,
+            'bills' => $bills,
             'summary' => [
                 'total_due' => $totalDue,
                 'total_paid' => $totalPaid,

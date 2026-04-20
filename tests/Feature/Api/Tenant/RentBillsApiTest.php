@@ -58,7 +58,7 @@ test('tenant cannot view another tenants rent bill', function () {
         'due_date'      => now()->endOfMonth(),
     ]);
 
-    $this->getJson("/api/tenant/rent-bills/{$otherBill->id}")->assertForbidden();
+    $this->getJson("/api/tenant/rent-bills/{$otherBill->id}")->assertNotFound();
 });
 
 test('tenant with no active tenancy receives empty rent bills list', function () {

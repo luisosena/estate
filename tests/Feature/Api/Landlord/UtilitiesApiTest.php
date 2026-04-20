@@ -40,6 +40,7 @@ test('landlord can assign utility to tenancy', function () {
         'utility_type_id' => $this->utilityType->id,
         'amount'          => 2500,
         'billing_cycle'   => 'monthly',
+        'status'          => 'active',
     ])->assertCreated();
 
     $this->assertDatabaseHas('tenancy_utilities', [

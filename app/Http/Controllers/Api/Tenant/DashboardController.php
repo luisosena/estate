@@ -22,11 +22,11 @@ class DashboardController extends Controller
 
             $tenant = $user->tenant;
 
-            if (! $tenant) {
+            if (! $tenant || $user->role !== 'tenant') {
                 return response()->json([
                     'tenant' => ['id' => 0, 'full_name' => 'No Tenant Found'],
                     'payments' => [],
-                ]);
+                ], 403);
             }
 
             $activeTenancy = $tenant->tenancies()

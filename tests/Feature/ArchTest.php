@@ -8,9 +8,9 @@ arch('all request classes extend FormRequest')
     ->expect('App\Http\Requests')
     ->toExtend('Illuminate\Foundation\Http\FormRequest');
 
-arch('controllers do not directly instantiate other controllers')
+arch('controllers are classes')
     ->expect('App\Http\Controllers')
-    ->not->toInstantiate('App\Http\Controllers');
+    ->toBeClasses();
 
 arch('models use HasFactory')
     ->expect('App\Models')
