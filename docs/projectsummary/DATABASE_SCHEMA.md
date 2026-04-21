@@ -20,7 +20,7 @@ erDiagram
     UTILITY_BILL ||--o{ PAYMENT : "linked to"
     RENT_BILL ||--o{ PAYMENT : "linked to"
     USER ||--o{ NOTIFICATION : "receives"
-    USER ||--o{ API_TOKEN : "has"
+    USER ||--o{ PERSONAL_ACCESS_TOKEN : "has"
     USER ||--o{ SECURITY_EVENT : "generates"
     TENANT ||--o{ TENANT_IDENTIFICATION : "has"
     TENANT ||--o{ MESSAGE : "sends/receives"
@@ -103,7 +103,7 @@ erDiagram
 **Relationships**:
 - BelongsTo Tenant (when role is 'tenant')
 - HasMany Property (when role is 'landlord' or 'admin')
-- HasMany ApiToken
+- HasMany PersonalAccessToken (Sanctum)
 - HasMany SecurityEvent
 
 ---
@@ -549,37 +549,35 @@ erDiagram
 
 ---
 
-### 14. api_tokens
+---
 
-**Purpose**: API authentication tokens for mobile/web API access.
+### 14. personal_access_tokens (Sanctum)
 
-**Migration**: `database/migrations/2026_03_05_173200_create_api_tokens_table.php`
+**Purpose**: API authentication tokens for mobile/web API access using Laravel Sanctum.
 
-**Additional Migrations**:
-- `database/migrations/2026_03_07_200000_add_device_tracking_to_api_tokens_table.php`
+**Migration**: Created by Laravel Sanctum default migration.
 
 **Attributes**:
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
-| user_id | BIGINT | FOREIGN KEY (users.id) | Token owner |
-| name | VARCHAR(255) | NOT NULL | Token name (device identifier) |
+| tokenable_type | VARCHAR(255) | NOT NULL | Morph type (App\Models\User) |
+| tokenable_id | BIGINT | NOT NULL | Morph ID |
+| name | VARCHAR(255) | NOT NULL | Token name (e.g. 'mobile-app') |
 | token | VARCHAR(64) | UNIQUE, NOT NULL | Hashed token value |
-| abilities | JSON | NOT NULL | Token permissions/abilities |
-| expires_at | TIMESTAMP | NULLABLE | Token expiration |
+| abilities | TEXT | NULLABLE | Token permissions/abilities |
 | last_used_at | TIMESTAMP | NULLABLE | Last token usage |
-| device_info | JSON | NULLABLE | Device details (IP, user-agent) |
+| expires_at | TIMESTAMP | NULLABLE | Token expiration |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
 **Indexes**:
 - PRIMARY KEY (id)
 - UNIQUE INDEX on token
-- INDEX on user_id
+- INDEX on (tokenable_type, tokenable_id)
 
 **Relationships**:
-- BelongsTo User
-
+- MorphTo User (tokenable)
 ---
 
 ### 15. security_events
@@ -653,29 +651,7 @@ The following tables are created by Laravel framework:
 
 ## Custom Field Definitions
 
-### JSON Fields
-
 *(No custom JSON fields for units table in the current schema)*
-
-#### api_tokens.abilities
-Stores token permissions:
-```json
-["*"]
-// or specific abilities
-["landlord:read", "landlord:write"]
-```
-
-#### api_tokens.device_info
-Stores device information:
-```json
-{
-  "ip": "192.168.1.1",
-  "user_agent": "Mozilla/5.0...",
-  "device": "iPhone 14",
-  "platform": "iOS"
-}
-```
-
 #### security_events.event_data
 Stores event-specific data:
 ```json
@@ -793,12 +769,12 @@ erDiagram
         boolean verified
     }
     
-    API_TOKEN {
+    PERSONAL_ACCESS_TOKEN {
         bigint id PK
-        bigint user_id FK
+        string tokenable_type
+        bigint tokenable_id
         string name
         string token UK
-        json abilities
     }
     
     SECURITY_EVENT {
@@ -811,7 +787,7 @@ erDiagram
     
     USER ||--o| TENANT : "tenant role"
     USER ||--o{ PROPERTY : "landlord role"
-    USER ||--o{ API_TOKEN : "has"
+    USER ||--o{ PERSONAL_ACCESS_TOKEN : "has"
     USER ||--o{ SECURITY_EVENT : "generates"
     TENANT ||--o{ TENANCY : "has"
     TENANT ||--o{ TENANT_IDENTIFICATION : "has"

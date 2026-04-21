@@ -20,15 +20,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 /** Persist auth tokens to secure storage. */
 async function saveTokens(response: AuthResponse): Promise<void> {
   await setItem('auth_token', response.token);
-  if (response.refresh_token) {
-    await setItem('refresh_token', response.refresh_token);
-  }
 }
 
 /** Clear all auth tokens from secure storage. */
 async function clearTokens(): Promise<void> {
   await deleteItem('auth_token');
-  await deleteItem('refresh_token');
+  await deleteItem('refresh_token'); // Clean up any legacy token
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

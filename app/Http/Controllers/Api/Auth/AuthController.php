@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Http\Controllers\Controller;
-use App\Models\ApiToken;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -19,21 +19,10 @@ class AuthController extends Controller
         // Log the registration event if needed
         $user->forceFill(['last_login_at' => now()])->save();
 
-        $rawToken = bin2hex(random_bytes(32));
-        $rawRefreshToken = bin2hex(random_bytes(32));
-
-        ApiToken::create([
-            'user_id' => $user->id,
-            'token_hash' => hash('sha256', $rawToken),
-            'refresh_token_hash' => hash('sha256', $rawRefreshToken),
-            'expires_at' => now()->addHours(8),
-            'refresh_expires_at' => now()->addDays(30),
-            'last_used_at' => now(),
-        ]);
+        $token = $user->createToken($request->input('device_name', 'mobile-app'))->plainTextToken;
 
         return response()->json([
-            'token' => $rawToken,
-            'refresh_token' => $rawRefreshToken,
+            'token' => $token,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -61,25 +50,14 @@ class AuthController extends Controller
             ]);
         }
 
-        $rawToken = bin2hex(random_bytes(32));
-        $rawRefreshToken = bin2hex(random_bytes(32));
-
-        ApiToken::create([
-            'user_id' => $user->id,
-            'token_hash' => hash('sha256', $rawToken),
-            'refresh_token_hash' => hash('sha256', $rawRefreshToken),
-            'expires_at' => now()->addHours(8),
-            'refresh_expires_at' => now()->addDays(30),
-            'last_used_at' => now(),
-        ]);
+        $token = $user->createToken($request->input('device_name', 'mobile-app'))->plainTextToken;
 
         $user->forceFill(['last_login_at' => now()])->save();
 
         $user->loadMissing('tenant');
 
         return response()->json([
-            'token' => $rawToken,
-            'refresh_token' => $rawRefreshToken,
+            'token' => $token,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -97,12 +75,16 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $raw = $request->bearerToken();
-        if ($raw) {
-            ApiToken::query()
-                ->where('token_hash', hash('sha256', $raw))
-                ->whereNull('revoked_at')
-                ->update(['revoked_at' => now()]);
+        $user = $request->user();
+
+        if ($user) {
+            $user->currentAccessToken()->delete();
+
+            // Clear current authentication state for both guards to ensure test stability and session isolation
+            if (method_exists(auth()->guard('sanctum'), 'forgetUser')) {
+                auth()->guard('sanctum')->forgetUser();
+            }
+            Auth::guard('web')->logout();
         }
 
         return response()->json(['message' => 'Logged out']);
@@ -128,38 +110,6 @@ class AuthController extends Controller
                 'phone' => $user->tenant->phone,
                 'email' => $user->tenant->email,
             ] : null,
-        ]);
-    }
-
-    public function refresh(Request $request)
-    {
-        $validated = $request->validate([
-            'refresh_token' => ['required', 'string'],
-        ]);
-
-        $refreshHash = hash('sha256', $validated['refresh_token']);
-
-        $apiToken = ApiToken::query()
-            ->where('refresh_token_hash', $refreshHash)
-            ->whereNull('revoked_at')
-            ->whereNotNull('refresh_expires_at')
-            ->where('refresh_expires_at', '>', now())
-            ->first();
-
-        if (! $apiToken) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
-
-        $rawToken = bin2hex(random_bytes(32));
-
-        $apiToken->forceFill([
-            'token_hash' => hash('sha256', $rawToken),
-            'expires_at' => now()->addHours(8),
-            'last_used_at' => now(),
-        ])->save();
-
-        return response()->json([
-            'token' => $rawToken,
         ]);
     }
 }

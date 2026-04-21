@@ -8,7 +8,7 @@ This is a Laravel 12 + React 19 full-stack property management application calle
 ### Backend
 - **Framework**: Laravel 12.x
 - **PHP Version**: 8.2+
-- **Authentication**: Laravel Fortify (session-based for web, token-based for API)
+- **Authentication**: Laravel Fortify (web), Laravel Sanctum (API)
 - **Server-Side Rendering**: Inertia.js with React 19
 
 ### Frontend (Web)
@@ -337,11 +337,9 @@ app/Services/UtilityService.php
 
 ### Security Module
 ```
-app/Http/Middleware/AuthenticateApiToken.php
-app/Models/ApiToken.php
 app/Models/SecurityEvent.php
 ```
-- **Features**: API token management, device tracking, security event logging
+- **Features**: Security event logging and auditing.
 
 ## Data Flow
 
@@ -372,11 +370,11 @@ sequenceDiagram
     
     Mobile->>Laravel: POST /api/auth/login
     Laravel->>Database: Verify credentials
-    Database->>Laravel: User data + generate tokens
-    Laravel->>Mobile: Access token + Refresh token
+    Database->>Laravel: User data + generate Sanctum token
+    Laravel->>Mobile: Plain text access token
     
-    Mobile->>Laravel: GET /api/landlord/dashboard (with Bearer token)
-    Laravel->>Laravel: Validate API token
+    Mobile->>Laravel: GET /api/tenant/dashboard (with Bearer token)
+    Laravel->>Laravel: Validate via auth:sanctum
     Laravel->>Mobile: Dashboard data
 ```
 
@@ -428,10 +426,8 @@ sequenceDiagram
 ### API Routes (Token-based)
 ```
 /api/auth/login       -> AuthController@login
-/api/auth/refresh     -> AuthController@refresh
 /api/auth/logout      -> AuthController@logout
 /api/auth/me          -> AuthController@me
-/api/auth/sessions    -> SessionController
 
 /api/tenant/dashboard    -> Tenant\DashboardController
 /api/tenant/payments     -> Tenant\PaymentsController
@@ -454,8 +450,8 @@ sequenceDiagram
 1. **web** - Session encryption, cookie signing, CSRF protection
 2. **auth** - User authentication verification
 3. **auth.role** - Role-based redirect after login
-4. **auth.api** - API token authentication
-5. **throttle** - Rate limiting (30 requests/minute for sessions)
+4. **auth:sanctum** - API token authentication
+5. **throttle** - Rate limiting
 6. **HandleAppearance** - Inertia theme handling
 7. **HandleInertiaRequests** - Inertia share data, version checking
 

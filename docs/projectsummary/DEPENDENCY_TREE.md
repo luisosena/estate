@@ -12,7 +12,8 @@ This document provides a complete inventory of all dependencies, their exact ver
 | Package | Version | Purpose |
 |---------|---------|---------|
 | laravel/framework | ^12.0 | Core Laravel framework |
-| laravel/fortify | ^1.30 | Authentication backend |
+| laravel/fortify | ^1.30 | Authentication backend (Web) |
+| laravel/sanctum | ^4.4 | Authentication backend (API) |
 | laravel/tinker | ^2.10.1 | REPL for Laravel |
 | laravel/wayfinder | ^0.1.9 | Routing helpers |
 
@@ -310,8 +311,8 @@ php artisan optimize:clear
 
 | Package | Security Note |
 |---------|---------------|
-| laravel/framework | LTS for security patches |
 | laravel/fortify | Maintained by Laravel team |
+| laravel/sanctum | Maintained by Laravel team |
 | mockery/mockery | Development only |
 
 ### Node Dependencies

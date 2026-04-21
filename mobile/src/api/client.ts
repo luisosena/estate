@@ -3,28 +3,16 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 // API Base URL - Platform-aware configuration
-// For development, use appropriate URL based on platform
 const getApiBaseUrl = () => {
-  // Check if custom URL is provided via environment variable
-  // For physical devices, set EXPO_PUBLIC_API_URL in mobile/.env to your PC's Wi-Fi IP
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
 
-  // Platform-specific fallback URLs
   if (Platform.OS === 'web') {
     return 'http://localhost:8000/api/v1';
   } else if (Platform.OS === 'android') {
-    // 10.0.2.2 is the Android emulator's alias for the host machine's loopback.
-    // This does NOT work on physical devices — set EXPO_PUBLIC_API_URL in .env instead.
-    console.warn(
-      '[API] No EXPO_PUBLIC_API_URL set. Falling back to Android emulator address (10.0.2.2). ' +
-      'If you are on a physical device, create mobile/.env with:\n' +
-      'EXPO_PUBLIC_API_URL=http://<YOUR_PC_WIFI_IP>:8000/api/v1'
-    );
     return 'http://10.0.2.2:8000/api/v1';
   } else {
-    // iOS simulator can use localhost
     return 'http://localhost:8000/api/v1';
   }
 };
@@ -33,11 +21,6 @@ const API_BASE_URL = getApiBaseUrl();
 
 class ApiClient {
   private client: AxiosInstance;
-  private isRefreshing = false;
-  private failedQueue: Array<{
-    resolve: (token: string) => void;
-    reject: (error: Error) => void;
-  }> = [];
 
   constructor() {
     this.client = axios.create({
@@ -67,79 +50,19 @@ class ApiClient {
       }
     );
 
-    // Response interceptor - Handle token refresh
+    // Response interceptor - Simple error handling
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
-        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          if (this.isRefreshing) {
-            return new Promise((resolve, reject) => {
-              this.failedQueue.push({ resolve, reject });
-            })
-              .then((token) => {
-                if (originalRequest.headers) {
-                  originalRequest.headers.Authorization = `Bearer ${token}`;
-                }
-                return this.client(originalRequest);
-              })
-              .catch((err) => Promise.reject(err));
-          }
-
-          originalRequest._retry = true;
-          this.isRefreshing = true;
-
-          try {
-            const refreshToken = await SecureStore.getItemAsync('refresh_token');
-            if (!refreshToken) {
-              throw new Error('No refresh token');
-            }
-
-            // Use direct axios.post to avoid sending potentially expired token in interceptor
-            // The refresh endpoint doesn't require authentication - it uses the refresh_token grant
-            const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-              refresh_token: refreshToken,
-            });
-
-            const { token, refresh_token } = response.data;
-            await SecureStore.setItemAsync('auth_token', token);
-            // Handle refresh token rotation - update if server provides new one
-            if (refresh_token) {
-              await SecureStore.setItemAsync('refresh_token', refresh_token);
-            }
-
-            this.processQueue(null, token);
-            this.isRefreshing = false;
-
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
-            return this.client(originalRequest);
-          } catch (refreshError) {
-            this.processQueue(refreshError as Error, null);
-            this.isRefreshing = false;
-            // Clear tokens and trigger re-login
-            await SecureStore.deleteItemAsync('auth_token');
-            await SecureStore.deleteItemAsync('refresh_token');
-            return Promise.reject(refreshError);
-          }
+        if (error.response?.status === 401) {
+          // Token is invalid or revoked. Clear local state.
+          await this.clearTokens();
+          // Note: App-wide logout is typically handled by the AuthContext observing the null token
         }
 
         return Promise.reject(error);
       }
     );
-  }
-
-  private processQueue(error: Error | null, token: string | null) {
-    this.failedQueue.forEach((prom) => {
-      if (error) {
-        prom.reject(error);
-      } else if (token) {
-        prom.resolve(token);
-      }
-    });
-    this.failedQueue = [];
   }
 
   // Generic request methods
@@ -176,7 +99,7 @@ class ApiClient {
   // Clear tokens (for logout)
   async clearTokens(): Promise<void> {
     await SecureStore.deleteItemAsync('auth_token');
-    await SecureStore.deleteItemAsync('refresh_token');
+    await SecureStore.deleteItemAsync('refresh_token'); // Clean up legacy if it exists
   }
 }
 

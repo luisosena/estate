@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
-use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Landlord\DashboardController as LandlordDashboardController;
 use App\Http\Controllers\Api\Landlord\NotificationController;
 use App\Http\Controllers\Api\Landlord\PaymentController;
@@ -35,20 +34,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 $defineApiRoutes = function (): void {
-    Route::middleware('auth.api')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
         // Authentication routes
         Route::prefix('auth')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
-
-            // Session management - balanced rate limiting (30/min) for mobile app usage while still providing enumeration protection
-            Route::middleware('throttle:30,1')->group(function () {
-                Route::get('sessions', [SessionController::class, 'index']);
-                Route::get('sessions/{tokenId}', [SessionController::class, 'show']);
-                Route::post('sessions/{tokenId}/activity', [SessionController::class, 'updateActivity']);
-                Route::delete('sessions/terminate-all', [SessionController::class, 'terminateAll']);
-                Route::delete('sessions/{tokenId}', [SessionController::class, 'terminate']);
-            });
         });
 
         // User Management (Admin/Landlord only - role check in controller)
@@ -152,7 +142,6 @@ $defineApiRoutes = function (): void {
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login']);
         Route::post('register', [AuthController::class, 'register']);
-        Route::post('refresh', [AuthController::class, 'refresh']);
     });
 };
 

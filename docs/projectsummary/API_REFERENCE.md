@@ -18,7 +18,7 @@ Development: http://localhost:8000/api
 
 ### Token-Based Authentication (API)
 
-All API endpoints (except login/refresh) require a Bearer token.
+All API endpoints (except login) require a Bearer token.
 
 **Header**:
 ```
@@ -44,23 +44,12 @@ Login and obtain access tokens.
 **Response** (200 OK):
 ```json
 {
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "token_type": "Bearer",
-  "expires_in": 3600
+  "access_token": "1|ABC...",
+  "token_type": "Bearer"
 }
 ```
 
-**POST /api/auth/refresh**
 
-Refresh an expired access token.
-
-**Request**:
-```json
-{
-  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-}
-```
 
 ---
 
@@ -99,8 +88,7 @@ All errors follow a consistent format:
 | Code | Description |
 |------|-------------|
 | invalid_credentials | Login credentials are incorrect |
-| token_expired | Access token has expired |
-| token_invalid | Access token is invalid |
+| token_invalid | Access token is invalid or unauthorized |
 | insufficient_permission | User doesn't have required permission |
 | rate_limit_exceeded | Too many requests |
 | resource_not_found | Requested resource doesn't exist |
@@ -166,10 +154,8 @@ GET /api/landlord/tenants?page=2&per_page=25
 **Response** (200):
 ```json
 {
-  "access_token": "...",
-  "refresh_token": "...",
+  "access_token": "1|ABC...",
   "token_type": "Bearer",
-  "expires_in": 3600,
   "user": {
     "id": 1,
     "name": "John Doe",
@@ -194,10 +180,8 @@ GET /api/landlord/tenants?page=2&per_page=25
 **Response** (200):
 ```json
 {
-  "access_token": "...",
-  "refresh_token": "...",
+  "access_token": "1|ABC...",
   "token_type": "Bearer",
-  "expires_in": 3600,
   "user": {
     "id": 1,
     "name": "John Doe",
@@ -207,12 +191,6 @@ GET /api/landlord/tenants?page=2&per_page=25
 }
 ```
 
-#### POST /api/auth/refresh
-**Description**: Refresh access token
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| refresh_token | string | Yes | Valid refresh token |
 
 #### POST /api/auth/logout
 **Description**: Invalidate current token
@@ -235,32 +213,6 @@ GET /api/landlord/tenants?page=2&per_page=25
 }
 ```
 
-#### GET /api/auth/sessions
-**Description**: List all active sessions
-**Auth Required**: Yes
-
-**Response** (200):
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "name": "iPhone 14",
-      "device_info": {
-        "ip": "192.168.1.1",
-        "user_agent": "Mozilla/5.0...",
-        "device": "iPhone 14"
-      },
-      "last_used_at": "2024-01-15T10:30:00Z",
-      "created_at": "2024-01-01T08:00:00Z"
-    }
-  ]
-}
-```
-
-#### DELETE /api/auth/sessions/{id}
-**Description**: Revoke a specific session
-**Auth Required**: Yes
 
 ---
 

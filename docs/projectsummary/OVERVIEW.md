@@ -3,7 +3,7 @@
 ### 1. Summary
 
 **Estate Practice** is a Laravel + Inertia + React/TypeScript application for property/tenant management, with role‑oriented dashboards (landlord, tenant), a mail view, and a modern glassmorphism UI.  
-It uses Laravel 12 on the backend with Fortify for authentication and Inertia for the SPA layer, and a Vite + Tailwind + React 19 front‑end.
+It uses Laravel 12 on the backend with Fortify for session-based web auth and Sanctum for token-based API auth, with Inertia for the SPA layer, and a Vite + Tailwind + React 19 front‑end.
 
 ---
 
@@ -14,8 +14,8 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - **Framework**: Laravel ^12.0 (`laravel/framework`)
   - **SPA adapter**: `inertiajs/inertia-laravel` ^2.0
   - **Authentication & security**:
-    - `laravel/fortify` ^1.30 for auth flows (registration, login, password reset, email verification, 2FA)
-    - `Laravel\Fortify\Features` toggles features like registration
+    - `laravel/fortify` ^1.30 for web auth flows (registration, login, password reset, 2FA)
+    - `laravel/sanctum` ^4.0 for mobile API authentication (permanent tokens)
   - **Routing & URLs**:
     - `laravel/wayfinder` ^0.1.9
     - `tightenco/ziggy` ^2.6 (mirrored on the frontend with `ziggy-js`)
@@ -124,7 +124,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
   - `PasswordUpdateRequest.php`, `ProfileDeleteRequest.php`, `ProfileUpdateRequest.php`, `TwoFactorAuthenticationRequest.php`: form request validators for settings routes.
 
 - **`Models`**
-  - `User.php`: main auth user model (Fortify enabled).
+  - `User.php`: main auth user model (Fortify and Sanctum enabled).
   - `Tenant.php`: domain model for tenants.
   - `UtilityType.php`: utility category catalog (water, electricity, security, etc.).
   - `TenancyUtility.php`: links tenancies to utility types with billing amounts.
@@ -313,7 +313,7 @@ It uses Laravel 12 on the backend with Fortify for authentication and Inertia fo
     - Tenant: View rent bills, current month bill, make payments linked to specific bills.
     - Landlord: Manage rent bills, view overdue/pending bills, waive bills.
   - Dashboard enhancements showing rent bill statistics.
-  - Token-based authentication with API client.
+  - **Sanctum Authentication**: Permanent API tokens for seamless mobile login once credentials reside on the device.
 
 - **Quality & tooling**
   - Linting and formatting set up for both PHP and JS/TS.
