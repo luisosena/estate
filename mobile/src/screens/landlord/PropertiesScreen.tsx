@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { landlordApi } from '../../api/landlord';
 import { PropertyRowSkeleton } from '../../components/common/SkeletonVariants';
@@ -23,6 +24,7 @@ export function LandlordPropertiesScreen() {
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
 
   useLayoutEffect(() => {
@@ -45,14 +47,16 @@ export function LandlordPropertiesScreen() {
   const fetchProperties = async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch properties
       const data = await landlordApi.getProperties();
       setProperties(data.data);
       setHasLoaded(true);
-    } catch (error) {
-      console.error('Failed to fetch properties:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch properties:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -69,6 +73,15 @@ export function LandlordPropertiesScreen() {
     setRefreshing(true);
     fetchProperties();
   };
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={fetchProperties} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer

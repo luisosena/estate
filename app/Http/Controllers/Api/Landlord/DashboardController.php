@@ -64,32 +64,43 @@ class DashboardController extends Controller
                 ->count();
 
             // Get recent payments with tenant and unit info
+            // Calculate revenue MTD (Month To Date)
+            $revenueMtd = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
+                $query->where('owner_id', $landlord->id);
+            })
+                ->where('status', 'paid')
+                ->whereMonth('paid_at', Carbon::now()->month)
+                ->whereYear('paid_at', Carbon::now()->year)
+                ->sum('amount');
+
+            // Get recent payments with tenant and unit info
             $recentPayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
                 $query->where('owner_id', $landlord->id);
             })
-                ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id'])
-                ->with('tenancy.unit:id,unit_name,property_id')
+                ->with(['tenant:id,full_name,tenant_code', 'tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_name,property_id'])
                 ->orderBy('paid_at', 'desc')
                 ->take(5)
                 ->get()
                 ->map(function ($payment) {
-                    // Calculate due date as 1st of next month (typical rent billing cycle)
-                    $dueDate = Carbon::now()->addMonth()->startOfMonth()->format('Y-m-d');
-
                     return [
                         'id' => $payment->id,
-                        'amount' => $payment->amount,
-                        'payment_type' => $payment->payment_type,
+                        'amount' => (float) $payment->amount,
+                        'paid_at' => $payment->paid_at ? $payment->paid_at->toISOString() : null,
                         'status' => $payment->status,
-                        'paid_at' => $payment->paid_at,
-                        'due_date' => $dueDate,
                         'tenant_name' => $payment->tenant?->full_name,
-                        'unit_number' => $payment->tenancy?->unit?->unit_name,
-                        'tenant' => $payment->tenant ? [
-                            'id' => $payment->tenant->id,
-                            'full_name' => $payment->tenant->full_name,
-                            'tenant_code' => $payment->tenant->tenant_code,
-                        ] : null,
+                        'unit_code' => $payment->tenancy?->unit?->unit_code,
+                        'tenancy' => [
+                            'id' => $payment->tenancy_id,
+                            'tenant' => $payment->tenant ? [
+                                'id' => $payment->tenant->id,
+                                'full_name' => $payment->tenant->full_name,
+                                'tenant_code' => $payment->tenant->tenant_code,
+                            ] : null,
+                            'unit' => $payment->tenancy?->unit ? [
+                                'id' => $payment->tenancy->unit->id,
+                                'unit_code' => $payment->tenancy->unit->unit_code,
+                            ] : null,
+                        ],
                     ];
                 });
 
@@ -101,7 +112,7 @@ class DashboardController extends Controller
                 ->where('status', 'active')
                 ->whereNotNull('move_out_date')
                 ->where('move_out_date', '<=', $thirtyDaysFromNow)
-                ->with(['tenant:id,full_name,email', 'unit:id,unit_name,property_id'])
+                ->with(['tenant:id,full_name,email,tenant_code', 'unit:id,unit_name,property_id'])
                 ->orderBy('move_out_date', 'asc')
                 ->take(5)
                 ->get()
@@ -131,7 +142,7 @@ class DashboardController extends Controller
                     'name' => $property->name,
                     'address' => $property->address,
                     'units_count' => $property->units_count,
-                    'active_tenants_count' => $property->tenancies->count(),
+                    'active_tenancies_count' => $property->tenancies->count(),
                 ];
             });
 
@@ -159,6 +170,7 @@ class DashboardController extends Controller
                 'occupied_units' => $occupiedUnits,
                 'vacant_units' => $vacantUnits,
                 'total_tenants' => $totalActiveTenants,
+                'revenue_mtd' => $revenueMtd,
                 'pending_payments' => $pendingPayments,
                 'overdue_payments' => $overduePayments,
                 'pending_rent_bills' => $pendingRentBills,

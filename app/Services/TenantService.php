@@ -18,15 +18,7 @@ class TenantService
         $activeTenancy = $this->getActiveTenancy($tenant);
 
         return [
-            'tenant' => [
-                'id' => $tenant->id,
-                'full_name' => $tenant->full_name,
-                'phone' => $tenant->phone,
-                'email' => $tenant->email,
-                'tenant_code' => $tenant->tenant_code,
-                'emergency_contact_name' => $tenant->emergency_contact_name,
-                'emergency_contact_phone' => $tenant->emergency_contact_phone,
-            ],
+            'tenant' => $tenant,
             'unit' => $activeTenancy?->unit,
             'tenancy' => $activeTenancy ? [
                 'id' => $activeTenancy->id,
@@ -46,6 +38,8 @@ class TenantService
                 ->latest()
                 ->take(5)
                 ->get(),
+            'rent_bills' => $activeTenancy?->rentBills()->latest('billing_month')->take(6)->get() ?? [],
+            'current_month_bill' => $activeTenancy?->rentBills()->where('billing_month', '>=', now()->startOfMonth())->first(),
         ];
     }
 
@@ -56,7 +50,7 @@ class TenantService
     {
         return $tenant->tenancies()
             ->where('status', 'active')
-            ->with(['unit', 'payments', 'tenancyUtilities'])
+            ->with(['unit', 'payments.tenant', 'tenancyUtilities'])
             ->first();
     }
 
@@ -102,6 +96,8 @@ class TenantService
 
                 // Update unit status
                 Unit::find($data['unit_id'])->update(['status' => 'occupied']);
+
+                $tenancy->load('tenant');
             }
 
             return [

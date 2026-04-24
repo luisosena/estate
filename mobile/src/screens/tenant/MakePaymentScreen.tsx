@@ -25,6 +25,7 @@ import { DetailBoxSkeleton, ListSectionSkeleton } from '../../components/common/
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
 import type { UtilityBill, RentBill } from '../../types';
 import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
@@ -43,6 +44,7 @@ export function MakePaymentScreen() {
   const { monthlyRent = 0, pendingAmount = 0, rentBillId } = route.params || {};
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [utilityBills, setUtilityBills] = useState<UtilityBill[]>([]);
@@ -102,8 +104,9 @@ export function MakePaymentScreen() {
           }
         }
         shouldAutoSelectBill.current = false;
-      } catch (error) {
-        console.error('Failed to fetch bills:', error);
+      } catch (err: any) {
+        console.error('Failed to fetch bills:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
       } finally {
         setLoadingBills(false);
         setLoading(false);
@@ -165,8 +168,9 @@ export function MakePaymentScreen() {
       ? rentBills.find(b => b.id === selectedRentBillId)
       : utilityBills.find(b => b.id === selectedUtilityBillId);
 
-    return (
-      <ScreenContainer
+  
+  return (
+    <ScreenContainer
         scrollable
         edges={['bottom', 'left', 'right']}
         style={styles.scrollContent}

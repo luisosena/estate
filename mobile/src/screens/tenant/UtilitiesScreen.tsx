@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 import { tenantApi } from '../../api/tenant';
 import { Skeleton } from '../../components/common/Skeleton';
 import { Card } from '../../components/common/Card';
@@ -23,6 +24,7 @@ export function TenantUtilitiesScreen() {
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [utilities, setUtilities] = useState<Utility[]>([]);
   const [summary, setSummary] = useState({ total_outstanding: 0 });
 
@@ -39,6 +41,7 @@ export function TenantUtilitiesScreen() {
   const fetchUtilities = async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       const response = await tenantApi.getUtilities();
@@ -48,8 +51,9 @@ export function TenantUtilitiesScreen() {
       const outstanding = utilitiesData.reduce((sum: number, u: any) => sum + (u.amount_due - u.amount_paid), 0);
       setSummary({ total_outstanding: outstanding });
       setHasLoaded(true);
-    } catch (error) {
-      console.error('Failed to fetch utilities:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch utilities:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -64,6 +68,15 @@ export function TenantUtilitiesScreen() {
     setRefreshing(true);
     fetchUtilities();
   };
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={fetchUtilities} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer

@@ -7,6 +7,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { tenantApi } from '../../api/tenant';
 import { Skeleton } from '../../components/common/Skeleton';
@@ -31,6 +32,7 @@ export function TenantDashboardScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TenantDashboard | null>(null);
 
   useLayoutEffect(() => {
@@ -47,8 +49,9 @@ export function TenantDashboardScreen() {
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       setData(await tenantApi.getDashboard());
-    } catch (error) {
-      console.error('Failed to fetch dashboard:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch dashboard:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -67,6 +70,15 @@ export function TenantDashboardScreen() {
   const outstandingRent = data?.current_month_bill 
     ? data.current_month_bill.amount_due - data.current_month_bill.amount_paid 
     : 0;
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={fetchDashboard} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer

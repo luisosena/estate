@@ -38,6 +38,7 @@ This plan details the addition of a "Minimalist Luxury" PIN lock feature to the 
 > [!WARNING]
 > 1. **PIN Length**: Should we go with a **4-digit** (faster) or **6-digit** (more secure) PIN? 
 > 2. **Auto-Lock Timeout**: Should the app lock *instantly* upon minimization, or should there be a short grace period (e.g., 30 seconds) before the PIN is required again?
+> 3. **Biometrics**: Should we include FaceID/TouchID support as a premium feature?
 
 ## Verification Plan
 

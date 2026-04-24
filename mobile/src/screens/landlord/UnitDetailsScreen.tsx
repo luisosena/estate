@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { landlordApi } from '../../api/landlord';
 import { Card } from '../../components/common/Card';
@@ -36,6 +37,7 @@ export function UnitDetailsScreen() {
   const fetchUnit = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -89,8 +91,17 @@ export function UnitDetailsScreen() {
   };
 
   if (error || (!unit && !loading)) {
+  
+  if (error) {
     return (
-      <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={() => {}} />
+      </ScreenContainer>
+    );
+  }
+
+  return (
+    <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
         <Text style={screenStyles.empty}>{error || 'Unit not found.'}</Text>
       </ScreenContainer>
     );

@@ -9,6 +9,7 @@ import { colors } from '../../constants/colors';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 import { useAddTenant } from '../../hooks/useAddTenant';
 import { LandlordTenantsStackParamList, LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
 import { landlordApi } from '../../api/landlord';
@@ -47,6 +48,7 @@ export function AddTenantScreen() {
       landlordApi.getUnit(unitId).then(setUnitDetails).catch(console.error);
     }
   }, [unitId]);
+
 
   return (
     <ScreenContainer withKeyboard scrollable edges={['bottom', 'left', 'right']}>

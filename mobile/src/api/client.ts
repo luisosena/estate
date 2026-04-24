@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
+import axiosRetry from 'axios-retry';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
@@ -30,6 +31,17 @@ class ApiClient {
         'Accept': 'application/json',
       },
       timeout: 30000,
+    });
+
+    // Configure retry logic
+    axiosRetry(this.client, {
+      retries: 3,
+      retryDelay: axiosRetry.exponentialDelay,
+      retryCondition: (error) => {
+        // Retry on network errors or 5xx server errors
+        return axiosRetry.isNetworkOrIdempotentRequestError(error) || 
+               (error.response?.status ? error.response.status >= 500 : false);
+      },
     });
 
     this.setupInterceptors();

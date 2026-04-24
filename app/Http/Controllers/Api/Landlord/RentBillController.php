@@ -55,23 +55,7 @@ class RentBillController extends Controller
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get()
-            ->map(function ($bill) {
-                return [
-                    'id' => $bill->id,
-                    'billing_month' => $bill->billing_month->format('Y-m'),
-                    'amount_due' => $bill->amount_due,
-                    'amount_paid' => $bill->amount_paid,
-                    'outstanding_amount' => $bill->outstanding_amount,
-                    'due_date' => $bill->due_date->format('Y-m-d'),
-                    'status' => $bill->status,
-                    'notes' => $bill->notes,
-                    'tenant_name' => $bill->tenancy?->tenant?->full_name,
-                    'tenant_code' => $bill->tenancy?->tenant?->tenant_code,
-                    'unit_number' => $bill->tenancy?->unit?->unit_code,
-                    'property_name' => $bill->tenancy?->unit?->property?->name,
-                    'created_at' => $bill->created_at,
-                ];
-            });
+            ->map(fn ($bill) => $this->transformRentBill($bill));
 
         $totalPages = ceil($totalItems / $perPage);
 
@@ -87,6 +71,45 @@ class RentBillController extends Controller
     }
 
     /**
+     * Transform a rent bill model into a standardized array.
+     */
+    private function transformRentBill(RentBill $bill): array
+    {
+        return [
+            'id' => $bill->id,
+            'billing_month' => $bill->billing_month->format('Y-m'),
+            'amount_due' => (float) $bill->amount_due,
+            'amount_paid' => (float) $bill->amount_paid,
+            'outstanding_amount' => (float) $bill->outstanding_amount,
+            'due_date' => $bill->due_date->format('Y-m-d'),
+            'status' => $bill->status,
+            'notes' => $bill->notes,
+            'tenant' => $bill->tenancy?->tenant ? [
+                'id' => $bill->tenancy->tenant->id,
+                'full_name' => $bill->tenancy->tenant->full_name,
+                'tenant_code' => $bill->tenancy->tenant->tenant_code,
+                'phone' => $bill->tenancy->tenant->phone,
+                'email' => $bill->tenancy->tenant->email,
+            ] : null,
+            'unit' => $bill->tenancy?->unit ? [
+                'id' => $bill->tenancy->unit->id,
+                'unit_code' => $bill->tenancy->unit->unit_code,
+            ] : null,
+            'property' => $bill->tenancy?->unit?->property ? [
+                'id' => $bill->tenancy->unit->property->id,
+                'name' => $bill->tenancy->unit->property->name,
+            ] : null,
+            'payments' => $bill->relationLoaded('payments') ? $bill->payments->map(fn ($p) => [
+                'id' => $p->id,
+                'amount' => (float) $p->amount,
+                'paid_at' => $p->paid_at ? $p->paid_at->toISOString() : null,
+                'status' => $p->status,
+            ]) : [],
+            'created_at' => $bill->created_at,
+        ];
+    }
+
+    /**
      * Get a single rent bill.
      * GET /api/v1/landlord/rent-bills/{id}
      */
@@ -98,47 +121,15 @@ class RentBillController extends Controller
             $query->where('owner_id', $landlord->id);
         })
             ->with([
-            'tenancy.tenant:id,full_name,tenant_code,phone,email',
-            'tenancy.unit:id,unit_code,property_id',
-            'tenancy.unit.property:id,name',
-            'payments:id,amount,payment_method,paid_at,status,rent_bill_id',
-        ])
+                'tenancy.tenant:id,full_name,tenant_code,phone,email',
+                'tenancy.unit:id,unit_code,property_id',
+                'tenancy.unit.property:id,name',
+                'payments:id,rent_bill_id,amount,paid_at,status',
+            ])
             ->findOrFail($id);
 
         return response()->json([
-            'id' => $rentBill->id,
-            'billing_month' => $rentBill->billing_month->format('Y-m'),
-            'amount_due' => $rentBill->amount_due,
-            'amount_paid' => $rentBill->amount_paid,
-            'outstanding_amount' => $rentBill->outstanding_amount,
-            'due_date' => $rentBill->due_date->format('Y-m-d'),
-            'status' => $rentBill->status,
-            'notes' => $rentBill->notes,
-            'tenant' => $rentBill->tenancy?->tenant ? [
-                'id' => $rentBill->tenancy->tenant->id,
-                'full_name' => $rentBill->tenancy->tenant->full_name,
-                'tenant_code' => $rentBill->tenancy->tenant->tenant_code,
-                'phone' => $rentBill->tenancy->tenant->phone,
-                'email' => $rentBill->tenancy->tenant->email,
-            ] : null,
-            'unit' => $rentBill->tenancy?->unit ? [
-                'id' => $rentBill->tenancy->unit->id,
-                'unit_code' => $rentBill->tenancy->unit->unit_code,
-            ] : null,
-            'property' => $rentBill->tenancy?->unit?->property ? [
-                'id' => $rentBill->tenancy->unit->property->id,
-                'name' => $rentBill->tenancy->unit->property->name,
-            ] : null,
-            'payments' => $rentBill->payments->map(function ($payment) {
-                return [
-                    'id' => $payment->id,
-                    'amount' => $payment->amount,
-                    'payment_method' => $payment->payment_method,
-                    'paid_at' => $payment->paid_at,
-                    'status' => $payment->status,
-                ];
-            }),
-            'created_at' => $rentBill->created_at,
+            'data' => $this->transformRentBill($rentBill),
         ]);
     }
 
@@ -163,21 +154,7 @@ class RentBillController extends Controller
         $rentBills = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get()
-            ->map(function ($bill) {
-                return [
-                    'id' => $bill->id,
-                    'billing_month' => $bill->billing_month->format('Y-m'),
-                    'amount_due' => $bill->amount_due,
-                    'amount_paid' => $bill->amount_paid,
-                    'outstanding_amount' => $bill->outstanding_amount,
-                    'due_date' => $bill->due_date->format('Y-m-d'),
-                    'status' => $bill->status,
-                    'tenant_name' => $bill->tenancy?->tenant?->full_name,
-                    'tenant_code' => $bill->tenancy?->tenant?->tenant_code,
-                    'unit_number' => $bill->tenancy?->unit?->unit_code,
-                    'property_name' => $bill->tenancy?->unit?->property?->name,
-                ];
-            });
+            ->map(fn ($bill) => $this->transformRentBill($bill));
 
         $totalPages = ceil($totalItems / $perPage);
 
@@ -213,21 +190,7 @@ class RentBillController extends Controller
         $rentBills = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get()
-            ->map(function ($bill) {
-                return [
-                    'id' => $bill->id,
-                    'billing_month' => $bill->billing_month->format('Y-m'),
-                    'amount_due' => $bill->amount_due,
-                    'amount_paid' => $bill->amount_paid,
-                    'outstanding_amount' => $bill->outstanding_amount,
-                    'due_date' => $bill->due_date->format('Y-m-d'),
-                    'status' => $bill->status,
-                    'tenant_name' => $bill->tenancy?->tenant?->full_name,
-                    'tenant_code' => $bill->tenancy?->tenant?->tenant_code,
-                    'unit_number' => $bill->tenancy?->unit?->unit_code,
-                    'property_name' => $bill->tenancy?->unit?->property?->name,
-                ];
-            });
+            ->map(fn ($bill) => $this->transformRentBill($bill));
 
         $totalPages = ceil($totalItems / $perPage);
 
@@ -270,14 +233,7 @@ class RentBillController extends Controller
 
         return response()->json([
             'message' => 'Rent bill waived successfully',
-            'rent_bill' => [
-                'id' => $rentBill->id,
-                'billing_month' => $rentBill->billing_month->format('Y-m'),
-                'amount_due' => $rentBill->amount_due,
-                'amount_paid' => $rentBill->amount_paid,
-                'status' => $rentBill->status,
-                'notes' => $rentBill->notes,
-            ],
+            'data' => $this->transformRentBill($rentBill),
         ]);
     }
 }

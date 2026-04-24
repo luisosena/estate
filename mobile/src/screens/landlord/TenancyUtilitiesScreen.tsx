@@ -6,6 +6,7 @@ import { Text, Portal, Modal, TextInput, SegmentedButtons } from 'react-native-p
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { landlordApi } from '../../api/landlord';
 import { Card } from '../../components/common/Card';
@@ -40,6 +41,7 @@ export function TenancyUtilitiesScreen() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [utilities, setUtilities] = useState<Utility[]>([]);
   const [utilityTypes, setUtilityTypes] = useState<UtilityType[]>([]);
   
@@ -75,6 +77,7 @@ export function TenancyUtilitiesScreen() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch utility readings
@@ -84,8 +87,9 @@ export function TenancyUtilitiesScreen() {
       ]);
       setUtilities(utilitiesRes.data);
       setUtilityTypes(typesRes.data);
-    } catch (error) {
-      console.error('Failed to fetch utilities:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch utilities:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -159,9 +163,10 @@ export function TenancyUtilitiesScreen() {
       setShowModal(false);
       resetForm();
       fetchData();
-    } catch (error: any) {
-      console.error('Failed to save utility:', error);
-      Alert.alert('Error', error?.response?.data?.message || 'Failed to save utility.');
+    } catch (err: any) {
+      console.error('Failed to cancel request', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
+      Alert.alert('Error', err?.response?.data?.message || 'Failed to save utility.');
     } finally {
       setSubmitting(false);
     }

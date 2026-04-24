@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { landlordApi } from '../../api/landlord';
 import { BillRowSkeleton, PaymentRowSkeleton } from '../../components/common/SkeletonVariants';
@@ -29,6 +30,7 @@ export function LandlordPaymentsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
 
   useLayoutEffect(() => {
@@ -43,13 +45,15 @@ export function LandlordPaymentsScreen() {
   const fetchPayments = async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch payments
       const data = await landlordApi.getPayments();
       setPayments(data.data);
-    } catch (error) {
-      console.error('Failed to fetch payments:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch payments:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -64,6 +68,15 @@ export function LandlordPaymentsScreen() {
     setRefreshing(true);
     fetchPayments();
   };
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={fetchPayments} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer

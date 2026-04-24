@@ -34,12 +34,22 @@ test('tenant can list own rent bills', function () {
 
 test('tenant can view current rent bill', function () {
     $this->getJson('/api/tenant/rent-bills/current')
-        ->assertOk();
+        ->assertOk()
+        ->assertJsonStructure([
+            'data' => [
+                'has_current_bill',
+                'rent_bill' => ['id', 'billing_month', 'amount_due', 'amount_paid', 'outstanding_amount', 'due_date', 'status', 'payments'],
+                'monthly_rent',
+            ],
+        ]);
 });
 
 test('tenant can view single own rent bill', function () {
     $this->getJson("/api/tenant/rent-bills/{$this->bill->id}")
         ->assertOk()
+        ->assertJsonStructure([
+            'data' => ['id', 'billing_month', 'amount_due', 'amount_paid', 'outstanding_amount', 'due_date', 'status', 'payments'],
+        ])
         ->assertJsonFragment(['id' => $this->bill->id]);
 });
 

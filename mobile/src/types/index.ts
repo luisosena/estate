@@ -233,7 +233,7 @@ export interface RentBill {
   };
   unit?: {
     id: number;
-    unit_number: string;
+    unit_code: string;
   };
   property?: {
     id: number;

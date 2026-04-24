@@ -10,6 +10,7 @@ import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { landlordApi } from '../../api/landlord';
 import { Skeleton } from '../../components/common/Skeleton';
 import { SummaryHeaderSkeleton, BillRowSkeleton } from '../../components/common/SkeletonVariants';
+import { ErrorState } from '../../components/common/ErrorState';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { colors } from '../../constants/colors';
@@ -40,6 +41,7 @@ export function LandlordRentBillsScreen() {
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [bills, setBills] = useState<RentBill[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -59,6 +61,7 @@ export function LandlordRentBillsScreen() {
   const fetchBills = useCallback(async (pageNum?: number) => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch rent bills
@@ -73,8 +76,9 @@ export function LandlordRentBillsScreen() {
       setPage(currentPage);
       pageRef.current = currentPage;
       setHasLoaded(true);
-    } catch (error) {
-      console.error('Failed to fetch rent bills:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch rent bills:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load rent bills. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -104,6 +108,14 @@ export function LandlordRentBillsScreen() {
   const totalOutstanding = bills.reduce((sum, b) => sum + (b.amount_due - b.amount_paid), 0);
   const pendingCount = bills.filter(b => b.status === 'pending').length;
   const overdueCount = bills.filter(b => b.status === 'overdue').length;
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={() => fetchBills(1)} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer
@@ -193,7 +205,7 @@ export function LandlordRentBillsScreen() {
                       {bill.tenant?.full_name || 'Unknown'}
                     </Text>
                     <Text style={styles.billMeta}>
-                      {bill.property?.name}{bill.unit ? ` · Unit ${bill.unit.unit_number}` : ''}
+                      {bill.property?.name}{bill.unit ? ` · Unit ${bill.unit.unit_code}` : ''}
                     </Text>
                     <Text style={styles.billDate}>Due: {formatDate(bill.due_date)}</Text>
                   </View>

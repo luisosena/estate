@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { tenantApi } from '../../api/tenant';
 import { Skeleton } from '../../components/common/Skeleton';
@@ -27,6 +28,7 @@ export function TenantRentBillsScreen() {
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [bills, setBills] = useState<RentBill[]>([]);
   const [summary, setSummary] = useState<RentBillSummary | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('All');
@@ -44,6 +46,7 @@ export function TenantRentBillsScreen() {
   const fetchBills = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       const data = await tenantApi.getRentBills();
@@ -57,8 +60,9 @@ export function TenantRentBillsScreen() {
       setBills(filteredBills);
       setSummary(data.summary);
       setHasLoaded(true);
-    } catch (error) {
-      console.error('Failed to fetch rent bills:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch rent bills:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -88,6 +92,15 @@ export function TenantRentBillsScreen() {
       rentBillId: bill.id,
     });
   };
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={() => {}} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer

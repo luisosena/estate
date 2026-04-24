@@ -24,7 +24,12 @@ class UtilityBillController extends Controller
         $query = UtilityBill::whereHas('tenancyUtility.tenancy.unit.property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
-            ->with(['tenancyUtility.utilityType', 'tenancyUtility.tenancy.unit.property', 'payments']);
+            ->with([
+                'tenancyUtility.utilityType',
+                'tenancyUtility.tenancy.unit.property',
+                'tenancyUtility.tenancy.tenant', // Ensure tenant is loaded for Tenancy->tenant_code
+                'payments.tenant'               // Ensure tenant is loaded for Payment->tenant_code
+            ]);
 
         // Apply filters
         if ($request->has('status')) {

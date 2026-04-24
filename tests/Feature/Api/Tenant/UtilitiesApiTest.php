@@ -9,42 +9,42 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     [
-        'user'    => $this->user,
-        'tenant'  => $this->tenant,
+        'user' => $this->user,
+        'tenant' => $this->tenant,
         'tenancy' => $this->tenancy,
     ] = $this->createApiTenant();
 
     $this->utilityType = UtilityType::factory()->create(['is_active' => true]);
-    $this->tu          = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+    $this->tu = TenancyUtility::factory()->create([
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
-        'amount'          => 2000,
-        'billing_cycle'   => 'monthly',
-        'status'          => 'active',
+        'amount' => 2000,
+        'billing_cycle' => 'monthly',
+        'status' => 'active',
     ]);
 });
 
 test('tenant can list own utility subscriptions', function () {
     $this->getJson('/api/tenant/utilities')
         ->assertOk()
-        ->assertJsonStructure(['utilities']);
+        ->assertJsonStructure(['data', 'tenancy']);
 });
 
 test('tenant can list own utility bills', function () {
     UtilityBill::factory()->create([
         'tenancy_utility_id' => $this->tu->id,
-        'status'             => 'pending',
+        'status' => 'pending',
     ]);
 
     $this->getJson('/api/tenant/utility-bills')
         ->assertOk()
-        ->assertJsonStructure(['bills']);
+        ->assertJsonStructure(['data', 'summary']);
 });
 
 test('utility data is scoped to the active tenancy', function () {
     $response = $this->getJson('/api/tenant/utilities')->assertOk();
 
-    $ids = collect($response->json('utilities'))->pluck('id');
+    $ids = collect($response->json('data'))->pluck('id');
     expect($ids->contains($this->tu->id))->toBeTrue();
 });
 
@@ -53,5 +53,5 @@ test('tenant with no active tenancy gets empty utility response', function () {
 
     $response = $this->getJson('/api/tenant/utilities')->assertOk();
 
-    expect($response->json('utilities'))->toBeEmpty();
+    expect($response->json('data'))->toBeEmpty();
 });

@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { landlordApi } from '../../api/landlord';
 import { Skeleton } from '../../components/common/Skeleton';
@@ -77,6 +78,15 @@ export function PropertyDetailsScreen() {
     setRefreshing(true);
     fetchPropertyAndUnits();
   };
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={() => {}} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer 

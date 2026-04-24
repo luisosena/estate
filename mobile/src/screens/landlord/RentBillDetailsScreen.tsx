@@ -7,10 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { landlordApi } from '../../api/landlord';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
-import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
+import { Badge } from '../../components/common/Badge';
 import { Skeleton } from '../../components/common/Skeleton';
 import { DetailBoxSkeleton, ListSectionSkeleton } from '../../components/common/SkeletonVariants';
+import { ErrorState } from '../../components/common/ErrorState';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';
@@ -35,6 +36,7 @@ export function LandlordRentBillDetailsScreen() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [bill, setBill] = useState<RentBill | null>(null);
 
   useLayoutEffect(() => {
@@ -49,15 +51,15 @@ export function LandlordRentBillDetailsScreen() {
   const fetchBill = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch bill details
       const response = await landlordApi.getRentBill(billId);
-      // Backend consistency check: handles both { data: RentBill } and direct RentBill responses
-      const billData = (response as any).data || response;
-      setBill(billData);
-    } catch (error) {
-      console.error('Failed to fetch rent bill:', error);
+      setBill(response.data);
+    } catch (err: any) {
+      console.error('Failed to fetch rent bill:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load rent bill. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -95,6 +97,14 @@ export function LandlordRentBillDetailsScreen() {
       ]
     );
   };
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={fetchBill} />
+      </ScreenContainer>
+    );
+  }
 
   if (!bill && !loading) {
     return (
@@ -203,7 +213,7 @@ export function LandlordRentBillDetailsScreen() {
             {bill.unit && (
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Unit</Text>
-                <Text style={styles.detailValue}>Unit {bill.unit.unit_number}</Text>
+                <Text style={styles.detailValue}>Unit {bill.unit.unit_code}</Text>
               </View>
             )}
             <View style={styles.detailRow}>

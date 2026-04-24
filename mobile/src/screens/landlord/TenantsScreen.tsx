@@ -9,6 +9,7 @@ import { ScreenContainer } from '../../components/common/ScreenContainer';
 
 import { landlordApi } from '../../api/landlord';
 import { TenantCardSkeleton } from '../../components/common/SkeletonVariants';
+import { ErrorState } from '../../components/common/ErrorState';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
@@ -23,6 +24,7 @@ export function LandlordTenantsScreen() {
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
 
   useLayoutEffect(() => {
@@ -46,14 +48,16 @@ export function LandlordTenantsScreen() {
   const fetchTenants = async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch tenants
       const data = await landlordApi.getTenants();
       setTenants(data.data);
       setHasLoaded(true);
-    } catch (error) {
-      console.error('Failed to fetch tenants:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch tenants:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load tenants. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -76,7 +80,10 @@ export function LandlordTenantsScreen() {
       onRefresh={onRefresh}
       edges={['bottom', 'left', 'right']}
     >
-      <View style={styles.listContainer}>
+      {error ? (
+        <ErrorState message={error} onRetry={fetchTenants} />
+      ) : (
+        <View style={styles.listContainer}>
         {loading ? (
           Array(6).fill(0).map((_, i) => (
             <TenantCardSkeleton key={`skeleton-${i}`} />
@@ -134,6 +141,7 @@ export function LandlordTenantsScreen() {
           </Card>
         )}
       </View>
+      )}
     </ScreenContainer>
   );
 }

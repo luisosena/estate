@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { tenantApi } from '../../api/tenant';
 import { Skeleton } from '../../components/common/Skeleton';
@@ -29,6 +30,7 @@ export function TenantUtilityBillsScreen() {
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [bills, setBills] = useState<UtilityBill[]>([]);
   const [summary, setSummary] = useState<UtilityBillSummary | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('All');
@@ -45,6 +47,7 @@ export function TenantUtilityBillsScreen() {
   const fetchBills = async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       const filter = activeFilter === 'All' ? undefined : activeFilter.toLowerCase();
@@ -52,8 +55,9 @@ export function TenantUtilityBillsScreen() {
       setBills(data.data);
       setSummary(data.summary);
       setHasLoaded(true);
-    } catch (error) {
-      console.error('Failed to fetch utility bills:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch utility bills:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -80,6 +84,15 @@ export function TenantUtilityBillsScreen() {
       pendingAmount: summary?.total_outstanding || 0,
     });
   };
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={fetchBills} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer

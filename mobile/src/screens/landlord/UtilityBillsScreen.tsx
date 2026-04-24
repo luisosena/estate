@@ -6,6 +6,7 @@ import { Text, Portal, Modal, TextInput, SegmentedButtons } from 'react-native-p
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { landlordApi } from '../../api/landlord';
 import { Skeleton } from '../../components/common/Skeleton';
@@ -36,6 +37,7 @@ export function LandlordUtilityBillsScreen() {
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [bills, setBills] = useState<UtilityBill[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -65,6 +67,7 @@ export function LandlordUtilityBillsScreen() {
   const fetchBills = useCallback(async (pageNum: number = 1) => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch utility bills
@@ -78,8 +81,9 @@ export function LandlordUtilityBillsScreen() {
       setTotalPages(response.meta.total_pages);
       setPage(pageNum);
       setHasLoaded(true);
-    } catch (error) {
-      console.error('Failed to fetch utility bills:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch utility bills:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);

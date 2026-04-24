@@ -5,6 +5,7 @@ import { View, ScrollView, Alert, StyleSheet } from 'react-native';
 import { Text, TextInput, HelperText } from 'react-native-paper';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { landlordApi } from '../../api';
 import { ChangePasswordForm } from '../../components/profile/ChangePasswordForm';
@@ -59,8 +60,8 @@ export function LandlordEditProfileScreen() {
         email: profileUser.email || '',
         phone: profileUser.phone || '',
       });
-    } catch (error) {
-      console.error('Error loading profile:', error);
+    } catch (err: any) {
+      console.error('Failed to loadProfile', err);
     } finally {
       setLoading(false);
     }
@@ -106,6 +107,7 @@ export function LandlordEditProfileScreen() {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
+
 
   return (
     <ScreenContainer scrollable withKeyboard edges={['bottom', 'left', 'right']}>

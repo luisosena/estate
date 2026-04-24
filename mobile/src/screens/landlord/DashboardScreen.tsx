@@ -10,6 +10,7 @@ import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { landlordApi } from '../../api/landlord';
 import { Skeleton } from '../../components/common/Skeleton';
 import { StatCardSkeleton } from '../../components/common/SkeletonVariants';
+import { ErrorState } from '../../components/common/ErrorState';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
@@ -27,6 +28,7 @@ export function LandlordDashboardScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<LandlordDashboard | null>(null);
 
   useLayoutEffect(() => {
@@ -46,12 +48,14 @@ export function LandlordDashboardScreen() {
 
   const fetchDashboard = async () => {
     try {
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       // Fetch dashboard
       setData(await landlordApi.getDashboard());
-    } catch (error) {
-      console.error('Failed to fetch dashboard:', error);
+    } catch (err: any) {
+      console.error('Failed to fetch dashboard:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load dashboard. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -74,7 +78,11 @@ export function LandlordDashboardScreen() {
       onRefresh={onRefresh}
       edges={['top', 'bottom', 'left', 'right']}
     >
-      <View style={styles.welcomeSection}>
+      {error ? (
+        <ErrorState message={error} onRetry={fetchDashboard} />
+      ) : (
+        <>
+          <View style={styles.welcomeSection}>
         <Text style={styles.welcomeText}>Welcome back, {user?.name}!</Text>
         <Text style={styles.dateText}>{formatDate(new Date().toISOString())}</Text>
       </View>
@@ -174,6 +182,8 @@ export function LandlordDashboardScreen() {
           <Text style={screenStyles.empty}>No recent payments</Text>
         )}
       </View>
+        </>
+      )}
       <View style={{ height: 40 }} />
     </ScreenContainer>
   );

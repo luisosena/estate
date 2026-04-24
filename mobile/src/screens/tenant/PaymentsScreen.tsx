@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 import { tenantApi } from '../../api/tenant';
 import { Skeleton } from '../../components/common/Skeleton';
 import { BillRowSkeleton } from '../../components/common/SkeletonVariants';
@@ -44,6 +45,7 @@ export function TenantPaymentsScreen() {
     try {
       setLoading(true);
       setError(null);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       const data = await tenantApi.getPayments();
@@ -75,6 +77,15 @@ export function TenantPaymentsScreen() {
     setRefreshing(true);
     fetchPayments();
   };
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={fetchPayments} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer 

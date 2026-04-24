@@ -8,6 +8,7 @@ import { colors } from '../../constants/colors';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 import { landlordApi } from '../../api/landlord';
 import { LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
 
@@ -64,13 +65,14 @@ export function AddPropertyScreen() {
       Alert.alert('Success', 'Property added successfully', [
         { text: 'OK', onPress: () => navigation.goBack() }
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create property:', error);
-      Alert.alert('Error', 'Failed to add property. Please try again.');
+      Alert.alert('Error', error?.response?.data?.message || 'Failed to add property. Please try again.');
     } finally {
       setSaving(false);
     }
   };
+
 
   return (
     <ScreenContainer 

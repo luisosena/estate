@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
@@ -59,6 +60,7 @@ export function LandlordProfileScreen() {
       isDestructive: true,
     },
   ];
+
 
   return (
     <ScreenContainer

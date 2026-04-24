@@ -50,19 +50,7 @@ class RentBillController extends Controller
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get()
-            ->map(function ($bill) {
-                return [
-                    'id' => $bill->id,
-                    'billing_month' => $bill->billing_month->format('Y-m'),
-                    'amount_due' => $bill->amount_due,
-                    'amount_paid' => $bill->amount_paid,
-                    'outstanding_amount' => $bill->outstanding_amount,
-                    'due_date' => $bill->due_date->format('Y-m-d'),
-                    'status' => $bill->status,
-                    'notes' => $bill->notes,
-                    'created_at' => $bill->created_at,
-                ];
-            });
+            ->map(fn ($bill) => $this->transformRentBill($bill));
 
         $totalPages = ceil($totalItems / $perPage);
 
@@ -75,6 +63,38 @@ class RentBillController extends Controller
                 'total_pages' => $totalPages,
             ],
         ]);
+    }
+
+    /**
+     * Transform a rent bill model into a standardized array.
+     */
+    private function transformRentBill(RentBill $bill): array
+    {
+        return [
+            'id' => $bill->id,
+            'billing_month' => $bill->billing_month->format('Y-m'),
+            'amount_due' => (float) $bill->amount_due,
+            'amount_paid' => (float) $bill->amount_paid,
+            'outstanding_amount' => (float) $bill->outstanding_amount,
+            'due_date' => $bill->due_date->format('Y-m-d'),
+            'status' => $bill->status,
+            'notes' => $bill->notes,
+            'unit' => $bill->tenancy?->unit ? [
+                'id' => $bill->tenancy->unit->id,
+                'unit_code' => $bill->tenancy->unit->unit_code,
+            ] : null,
+            'property' => $bill->tenancy?->unit?->property ? [
+                'id' => $bill->tenancy->unit->property->id,
+                'name' => $bill->tenancy->unit->property->name,
+            ] : null,
+            'payments' => $bill->relationLoaded('payments') ? $bill->payments->map(fn ($p) => [
+                'id' => $p->id,
+                'amount' => (float) $p->amount,
+                'paid_at' => $p->paid_at ? $p->paid_at->toISOString() : null,
+                'status' => $p->status,
+            ]) : [],
+            'created_at' => $bill->created_at,
+        ];
     }
 
     /**
@@ -122,35 +142,11 @@ class RentBillController extends Controller
         }
 
         return response()->json([
-            'has_current_bill' => true,
-            'rent_bill' => [
-                'id' => $rentBill->id,
-                'billing_month' => $rentBill->billing_month->format('Y-m'),
-                'amount_due' => $rentBill->amount_due,
-                'amount_paid' => $rentBill->amount_paid,
-                'outstanding_amount' => $rentBill->outstanding_amount,
-                'due_date' => $rentBill->due_date->format('Y-m-d'),
-                'status' => $rentBill->status,
-                'notes' => $rentBill->notes,
-                'payments' => $rentBill->payments->map(function ($payment) {
-                    return [
-                        'id' => $payment->id,
-                        'amount' => $payment->amount,
-                        'payment_method' => $payment->payment_method,
-                        'paid_at' => $payment->paid_at,
-                        'status' => $payment->status,
-                    ];
-                }),
+            'data' => [
+                'has_current_bill' => true,
+                'rent_bill' => $this->transformRentBill($rentBill),
+                'monthly_rent' => (float) $activeTenancy->monthly_rent,
             ],
-            'monthly_rent' => $activeTenancy->monthly_rent,
-            'unit' => $activeTenancy->unit ? [
-                'id' => $activeTenancy->unit->id,
-                'unit_code' => $activeTenancy->unit->unit_code,
-            ] : null,
-            'property' => $activeTenancy->unit?->property ? [
-                'id' => $activeTenancy->unit->property->id,
-                'name' => $activeTenancy->unit->property->name,
-            ] : null,
         ]);
     }
 
@@ -186,32 +182,17 @@ class RentBillController extends Controller
         }
 
         return response()->json([
-            'id' => $rentBill->id,
-            'billing_month' => $rentBill->billing_month->format('Y-m'),
-            'amount_due' => $rentBill->amount_due,
-            'amount_paid' => $rentBill->amount_paid,
-            'outstanding_amount' => $rentBill->outstanding_amount,
-            'due_date' => $rentBill->due_date->format('Y-m-d'),
-            'status' => $rentBill->status,
-            'notes' => $rentBill->notes,
-            'payments' => $rentBill->payments->map(function ($payment) {
-                return [
-                    'id' => $payment->id,
-                    'amount' => $payment->amount,
-                    'payment_method' => $payment->payment_method,
-                    'paid_at' => $payment->paid_at,
-                    'status' => $payment->status,
-                ];
-            }),
-            'unit' => $rentBill->tenancy?->unit ? [
-                'id' => $rentBill->tenancy->unit->id,
-                'unit_code' => $rentBill->tenancy->unit->unit_code,
-            ] : null,
-            'property' => $rentBill->tenancy?->unit?->property ? [
-                'id' => $rentBill->tenancy->unit->property->id,
-                'name' => $rentBill->tenancy->unit->property->name,
-            ] : null,
-            'created_at' => $rentBill->created_at,
+            'data' => array_merge($this->transformRentBill($rentBill), [
+                'payments' => $rentBill->payments->map(function ($payment) {
+                    return [
+                        'id' => $payment->id,
+                        'amount' => (float) $payment->amount,
+                        'payment_method' => $payment->payment_method,
+                        'paid_at' => $payment->paid_at ? $payment->paid_at->toISOString() : null,
+                        'status' => $payment->status,
+                    ];
+                }),
+            ]),
         ]);
     }
 }

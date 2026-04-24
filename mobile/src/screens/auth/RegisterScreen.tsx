@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { TextInput, Button, Text, HelperText } from 'react-native-paper';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/errors';
@@ -38,8 +39,8 @@ export function RegisterScreen() {
       return;
     }
 
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
       await register({ name, username: username.trim(), email, password, password_confirmation: confirmPassword });
@@ -49,6 +50,15 @@ export function RegisterScreen() {
       setLoading(false);
     }
   };
+
+
+  if (error) {
+    return (
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={() => {}} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer scrollable withKeyboard edges={['top', 'bottom', 'left', 'right']}>

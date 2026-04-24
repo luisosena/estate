@@ -6,6 +6,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { tenantApi } from '../../api/tenant';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
@@ -29,6 +30,7 @@ export function TenantRentBillDetailsScreen() {
   
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [bill, setBill] = useState<RentBill | null>(null);
 
   useLayoutEffect(() => {
@@ -43,14 +45,14 @@ export function TenantRentBillDetailsScreen() {
   const fetchBill = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
       const response = await tenantApi.getRentBill(billId);
-      // Backend consistency check: handles both { data: RentBill } and direct RentBill responses
-      const billData = (response as any).data || response;
-      setBill(billData);
-    } catch (error) {
-      console.error('Failed to fetch rent bill:', error);
+      setBill(response.data);
+    } catch (err: any) {
+      console.error('Failed to fetch rent bill:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -77,8 +79,17 @@ export function TenantRentBillDetailsScreen() {
   };
 
   if (!bill && !loading) {
+  
+  if (error) {
     return (
-      <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
+      <ScreenContainer edges={['bottom', 'left', 'right']}>
+        <ErrorState message={error} onRetry={() => {}} />
+      </ScreenContainer>
+    );
+  }
+
+  return (
+    <ScreenContainer edges={['bottom', 'left', 'right']} style={{ justifyContent: 'center', alignItems: 'center' }}>
         <Text style={screenStyles.empty}>Rent bill not found</Text>
       </ScreenContainer>
     );
@@ -166,9 +177,9 @@ export function TenantRentBillDetailsScreen() {
               </View>
             )}
             {bill.unit && (
-              <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
+              <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Unit</Text>
-                <Text style={styles.detailValue}>Unit {bill.unit.unit_number}</Text>
+                <Text style={styles.detailValue}>Unit {bill.unit.unit_code}</Text>
               </View>
             )}
           </View>
