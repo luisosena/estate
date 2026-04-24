@@ -28,7 +28,7 @@ class UtilityBillController extends Controller
                 'tenancyUtility.utilityType',
                 'tenancyUtility.tenancy.unit.property',
                 'tenancyUtility.tenancy.tenant', // Ensure tenant is loaded for Tenancy->tenant_code
-                'payments.tenant'               // Ensure tenant is loaded for Payment->tenant_code
+                'payments.tenant',               // Ensure tenant is loaded for Payment->tenant_code
             ]);
 
         // Apply filters
@@ -112,6 +112,7 @@ class UtilityBillController extends Controller
         $utilityBill->load([
             'tenancyUtility.utilityType',
             'tenancyUtility.tenancy.unit.property',
+            'tenancyUtility.tenancy.tenant',
             'payments' => function ($query) {
                 $query->orderBy('paid_at', 'desc');
             },
@@ -135,7 +136,7 @@ class UtilityBillController extends Controller
                 'notes' => $utilityBill->notes,
                 'created_at' => $utilityBill->created_at,
                 'updated_at' => $utilityBill->updated_at,
-                'payments' => $utilityBill->payments->map(fn($p) => [
+                'payments' => $utilityBill->payments->map(fn ($p) => [
                     'id' => $p->id,
                     'amount' => $p->amount,
                     'paid_at' => $p->paid_at,

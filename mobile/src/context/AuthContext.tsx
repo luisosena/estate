@@ -15,7 +15,7 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /** Persist auth tokens to secure storage. */
 async function saveTokens(response: AuthResponse): Promise<void> {

@@ -16,6 +16,7 @@ interface SkeletonProps {
   borderRadius?: number;
   style?: ViewStyle;
   variant?: 'rectangle' | 'circle' | 'text';
+  testID?: string;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -30,6 +31,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   borderRadius = 8,
   style,
   variant = 'rectangle',
+  testID,
 }) => {
   const shimmerValue = useSharedValue(0);
 
@@ -71,6 +73,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
         },
         style,
       ]}
+      testID={testID}
     >
       <Animated.View style={[styles.shimmerContainer, animatedStyle]}>
         <View style={styles.shimmer} />

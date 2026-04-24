@@ -168,7 +168,7 @@ export function LandlordDashboardScreen() {
               </View>
               <View style={styles.rowInfo}>
                 <Text style={styles.rowTitle}>{payment.tenant_name}</Text>
-                <Text style={styles.rowSubtitle}>Unit {payment.unit_number}</Text>
+                <Text style={styles.rowSubtitle}>Unit {payment.unit_code}</Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={styles.rowValue}>{formatCurrency(payment.amount)}</Text>

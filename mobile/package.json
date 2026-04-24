@@ -56,7 +56,7 @@
   "jest": {
     "preset": "react-native",
     "setupFilesAfterEnv": [
-      "@testing-library/jest-native/extend-expect"
+      "<rootDir>/src/__tests__/setup.ts"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
@@ -64,7 +64,7 @@
       "/ios/"
     ],
     "transformIgnorePatterns": [
-      "node_modules/(?!(react-native|@react-native|@react-navigation|expo|expo-.*|@expo/vector-icons|react-native-paper)/)"
+      "node_modules/(?!(react-native|@react-native|@react-navigation|expo|expo-.*|@expo/.*|@expo-google-fonts/.*|@testing-library/.*|@expo/vector-icons|react-native-paper|react-native-reanimated)/)"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/"

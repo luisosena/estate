@@ -98,7 +98,7 @@ export interface Tenancy {
 export interface Payment {
   id: number;
   tenant_name?: string;
-  unit_number?: string;
+  unit_code?: string;
   property_name?: string;
   amount: number;
   paid_at: string | null;

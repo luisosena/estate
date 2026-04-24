@@ -52,10 +52,10 @@ export function ScreenContainer({
   // Content style handles the safe area padding
   const safeAreaStyle: ViewStyle = {
     flex: 1,
-    paddingTop: edges.includes('top') ? insets.top : 0,
-    paddingBottom: edges.includes('bottom') ? insets.bottom : 0,
-    paddingLeft: edges.includes('left') ? insets.left : 0,
-    paddingRight: edges.includes('right') ? insets.right : 0,
+    paddingTop: edges?.includes('top') ? (insets?.top ?? 0) : 0,
+    paddingBottom: edges?.includes('bottom') ? (insets?.bottom ?? 0) : 0,
+    paddingLeft: edges?.includes('left') ? (insets?.left ?? 0) : 0,
+    paddingRight: edges?.includes('right') ? (insets?.right ?? 0) : 0,
   };
 
   const content = scrollable ? (
