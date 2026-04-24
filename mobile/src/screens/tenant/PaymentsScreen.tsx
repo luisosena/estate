@@ -48,12 +48,12 @@ export function TenantPaymentsScreen() {
       setError(null);
       // 200ms delay for smooth transition
       await new Promise(resolve => setTimeout(resolve, 200));
-      const data = await tenantApi.getPayments();
-      setPayments(data.payments);
-      setPendingAmount(data.pendingAmount);
+      const response = await tenantApi.getPayments();
+      setPayments(response.data.payments);
+      setPendingAmount(response.data.pending_amount);
       
       // Find the most recent paid payment
-      const sorted = [...data.payments].filter(p => p.status === 'paid').sort((a, b) => {
+      const sorted = [...response.data.payments].filter(p => p.status === 'paid').sort((a, b) => {
         const dateA = a.paid_at ?? a.created_at ?? '';
         const dateB = b.paid_at ?? b.created_at ?? '';
         return new Date(dateB).getTime() - new Date(dateA).getTime();

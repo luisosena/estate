@@ -15,47 +15,45 @@ export const mockProperty: Property = {
   name: 'Ocean View Apartments',
   address: '123 Beach Road',
   description: 'Luxury apartments with sea view',
-  units_count: 10,
-  vacant_units_count: 2,
+  total_units: 10,
+  occupied_units: 8,
+  vacant_units: 2,
   created_at: '2023-01-01T00:00:00Z',
-  updated_at: '2023-01-01T00:00:00Z',
 };
 
 export const mockUnit: Unit = {
   id: 1,
   property_id: 1,
   unit_code: 'A1',
-  unit_type: '2BR',
-  rent_amount: 1500,
+  unit_name: 'Unit A1',
   status: 'occupied',
   property_name: 'Ocean View Apartments', // Flattened
-  tenant_name: 'John Doe', // Flattened
   created_at: '2023-01-01T00:00:00Z',
   updated_at: '2023-01-01T00:00:00Z',
 };
 
 export const mockDashboard: LandlordDashboard = {
-  stats: {
-    total_properties: 5,
-    total_units: 50,
-    occupied_units: 45,
-    vacant_units: 5,
-    total_tenants: 45,
-    monthly_revenue: 67500,
-    pending_rent: 5000,
-  },
+  total_properties: 5,
+  total_units: 50,
+  occupied_units: 45,
+  vacant_units: 5,
+  total_tenants: 45,
+  pending_payments: 5000,
   recent_payments: [
     {
       id: 1,
       amount: 1500,
       paid_at: '2024-04-20T10:00:00Z',
-      status: 'confirmed',
+      status: 'paid',
       tenant_name: 'John Doe',
       property_name: 'Ocean View Apartments',
       unit_code: 'A1',
     } as any,
   ],
-  overdue_bills: [],
+  expiring_leases: [],
+  pending_rent_bills: 2,
+  overdue_rent_bills: 1,
+  total_rent_outstanding: 5000,
 };
 
 export const landlordApi = {

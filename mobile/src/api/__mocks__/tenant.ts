@@ -6,15 +6,12 @@ import {
 } from '../../types';
 
 export const mockTenantDashboard: TenantDashboard = {
-  stats: {
-    pending_rent: 1500,
-    pending_utilities: 50,
-    next_due_date: '2024-05-01',
-    last_payment_amount: 1550,
-    last_payment_date: '2024-04-01',
-  },
-  recent_payments: [],
-  upcoming_bills: [],
+  tenant: {} as any,
+  unit: null,
+  tenancy: null,
+  payments: [],
+  utilities: [],
+  notifications: [],
 };
 
 export const tenantApi = {

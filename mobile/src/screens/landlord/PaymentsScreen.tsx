@@ -159,7 +159,7 @@ export function LandlordPaymentsScreen() {
                       {payment.tenant_name || 'Unknown Tenant'}
                     </Text>
                     <Text style={styles.rowSubtitle}>
-                      {payment.unit_number ? `Unit ${payment.unit_number} · ` : ''}{methodLabel}
+                      {payment.unit_code ? `Unit ${payment.unit_code} · ` : ''}{methodLabel}
                     </Text>
                   </View>
 

@@ -1,4 +1,4 @@
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
@@ -63,11 +63,9 @@ export function LandlordPropertiesScreen() {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchProperties();
-    }, [])
-  );
+  useEffect(() => {
+    fetchProperties();
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
