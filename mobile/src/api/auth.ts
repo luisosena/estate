@@ -19,8 +19,10 @@ export const authApi = {
     await api.clearTokens();
   },
 
-  me: (): Promise<AuthUser> =>
-    api.get<AuthUser>('/auth/me'),
+  me: async (): Promise<AuthUser> => {
+    const response = await api.get<{ data: AuthUser }>('/auth/me');
+    return response.data;
+  },
 
   refreshToken: (): Promise<{ token: string }> =>
     api.post<{ token: string }>('/auth/refresh'),

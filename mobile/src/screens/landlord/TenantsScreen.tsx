@@ -116,10 +116,12 @@ export function LandlordTenantsScreen() {
 
                   <View style={styles.tenantInfo}>
                     <Text style={styles.tenantName}>{tenant.full_name}</Text>
-                    <Text style={styles.tenantLocation}>{tenant.email}</Text>
+                    <Text style={styles.tenantLocation}>
+                      {tenant.unit_name ? `Unit ${tenant.unit_name}` : (tenant.unit_code ? `Unit ${tenant.unit_code}` : 'No Unit Assigned')}
+                    </Text>
                     <View style={styles.tenantStatsRow}>
                       <Text style={styles.statsText}>
-                        Phone: <Text style={{ fontWeight: '600', color: colors.text.primary }}>{tenant.phone}</Text>
+                        {tenant.property_name || 'No Property'}
                       </Text>
                     </View>
                   </View>

@@ -77,7 +77,7 @@ class DashboardController extends Controller
             $recentPayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
                 $query->where('owner_id', $landlord->id);
             })
-                ->with(['tenant:id,full_name,tenant_code', 'tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_name,property_id'])
+                ->with(['tenant:id,full_name,tenant_code', 'tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_code,unit_name,property_id'])
                 ->orderBy('paid_at', 'desc')
                 ->take(5)
                 ->get()

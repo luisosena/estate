@@ -8,4 +8,8 @@ landing page
 
 onboarding flows
 
+documents storage
+
+automated workflows
+
 marketing

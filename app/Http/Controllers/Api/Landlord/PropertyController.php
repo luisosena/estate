@@ -53,7 +53,7 @@ class PropertyController extends Controller
                 'units_count' => $property->units_count,
                 'active_tenants_count' => $property->tenancies->count(),
                 'occupied_units' => $property->tenancies->count(),
-                'available_units' => $property->units_count > 0
+                'vacant_units' => $property->units_count > 0
                     ? $property->units_count - $property->tenancies->count()
                     : 0,
                 'occupancy_rate' => $property->units_count > 0
@@ -107,7 +107,7 @@ class PropertyController extends Controller
                 'units_count' => $property->units_count,
                 'active_tenants_count' => $property->tenancies->count(),
                 'occupied_units' => $property->tenancies->count(),
-                'available_units' => $property->units_count - $property->tenancies->count(),
+                'vacant_units' => $property->units_count - $property->tenancies->count(),
                 'occupancy_rate' => $property->units_count > 0
                     ? round(($property->tenancies->count() / $property->units_count) * 100, 1)
                     : 0,

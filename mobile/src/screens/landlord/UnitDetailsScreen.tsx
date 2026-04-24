@@ -108,7 +108,6 @@ export function UnitDetailsScreen() {
   }
 
   const activeTenancy = unit?.tenancies?.find((t) => t.status === 'active');
-  const currentTenant = activeTenancy?.tenant;
 
   return (
     <ScreenContainer 
@@ -137,7 +136,7 @@ export function UnitDetailsScreen() {
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons name="business-outline" size={14} color={colors.text.secondary} />
-                <Text style={styles.subtext}> {unit.property?.name || 'Unknown Property'}</Text>
+                <Text style={styles.subtext}> {unit.property_name || 'Unknown Property'}</Text>
               </View>
             </View>
           </View>
@@ -198,19 +197,19 @@ export function UnitDetailsScreen() {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Current Tenant</Text>
             </View>
-            {currentTenant ? (
+            {activeTenancy?.tenant_name ? (
               <View style={styles.tenantRowBox}>
                 <View style={styles.tenantAvatar}>
-                   <Text style={styles.tenantAvatarText}>{currentTenant.full_name.charAt(0).toUpperCase()}</Text>
+                   <Text style={styles.tenantAvatarText}>{activeTenancy.tenant_name.charAt(0).toUpperCase()}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <Text style={styles.tenantTitle}>{currentTenant.full_name}</Text>
+                     <Text style={styles.tenantTitle}>{activeTenancy.tenant_name}</Text>
                      {activeTenancy?.monthly_rent && (
                        <Text style={styles.specValueMain}>{formatCurrency(activeTenancy.monthly_rent)}/mo</Text>
                      )}
                    </View>
-                   <Text style={styles.tenantSubtitle}>{currentTenant.email}</Text>
+                   <Text style={styles.tenantSubtitle}>{activeTenancy.tenant_email}</Text>
                    {activeTenancy?.start_date && (
                      <Text style={styles.tenantDate}>Since {formatDate(activeTenancy.start_date)}</Text>
                    )}
@@ -231,7 +230,7 @@ export function UnitDetailsScreen() {
                  <View style={styles.pastTenantsBox}>
                    {unit.tenancies.filter(t => t.status !== 'active').map((tenancy, idx, arr) => (
                      <View key={tenancy.id} style={[styles.pastTenantRow, idx === arr.length - 1 && { borderBottomWidth: 0 }]}>
-                       <Text style={styles.tenantTitle}>{tenancy.tenant?.full_name || 'Unknown'}</Text>
+                       <Text style={styles.tenantTitle}>{tenancy.tenant_name || 'Unknown'}</Text>
                        <Text style={styles.tenantDate}>
                          {tenancy.end_date ? `Ended: ${formatDate(tenancy.end_date)}` : tenancy.status}
                        </Text>

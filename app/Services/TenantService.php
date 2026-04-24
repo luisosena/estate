@@ -32,8 +32,22 @@ class TenantService
                     return $payment->paid_at ?? $payment->created_at;
                 })
                 ->take(5)
-                ->values() ?? [],
-            'utilities' => $activeTenancy?->tenancyUtilities,
+                ->values()
+                ->map(function ($payment) {
+                    $data = $payment->toArray();
+                    $data['utility_type_name'] = $payment->payment_type === 'utility' 
+                        ? $payment->utilityBill?->tenancyUtility?->utilityType?->name 
+                        : null;
+                    return $data;
+                })
+                ->all() ?? [],
+            'utilities' => $activeTenancy?->tenancyUtilities
+                ? $activeTenancy->tenancyUtilities->map(function ($utility) {
+                    $data = $utility->toArray();
+                    $data['utility_type_name'] = $utility->utilityType?->name;
+                    return $data;
+                })->all()
+                : [],
             'notifications' => $tenant->notifications()
                 ->latest()
                 ->take(5)
@@ -50,7 +64,7 @@ class TenantService
     {
         return $tenant->tenancies()
             ->where('status', 'active')
-            ->with(['unit', 'payments.tenant', 'tenancyUtilities'])
+            ->with(['unit', 'payments.tenant', 'payments.utilityBill.tenancyUtility.utilityType', 'tenancyUtilities.utilityType'])
             ->first();
     }
 

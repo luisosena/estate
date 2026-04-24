@@ -47,6 +47,11 @@ export interface Tenant {
   emergency_contact_phone?: string;
   emergency_contact_relation?: string;
   tenancies?: Tenancy[];
+  // Flattened properties from tenants list API
+  unit_name?: string;
+  unit_code?: string;
+  property_name?: string;
+  tenancy_status?: string;
 }
 
 export interface Unit {
@@ -74,6 +79,9 @@ export interface UnitTenancy {
   end_date?: string | null;
   monthly_rent?: number;
   security_deposit?: number;
+  tenant_id?: number;
+  tenant_name?: string;
+  tenant_email?: string;
   tenant?: {
     id: number;
     full_name: string;
@@ -108,6 +116,7 @@ export interface Payment {
   payment_method: 'mobile_money' | 'bank_transfer' | null;
   reference_number: string | null;
   notes: string | null;
+  utility_type_name?: string | null;
   created_at?: string;
   updated_at?: string;
 }
