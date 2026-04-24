@@ -39,6 +39,8 @@ class UtilitiesController extends Controller
                 'id' => $u->id,
                 'tenancy_id' => $u->tenancy_id,
                 'utility_type_id' => $u->utility_type_id,
+                'utility_type_name' => $u->utilityType->name,
+                'utility_type_unit' => $u->utilityType->unit,
                 'amount' => $u->amount,
                 'billing_cycle' => $u->billing_cycle,
                 'provider' => $u->provider,
@@ -46,14 +48,9 @@ class UtilitiesController extends Controller
                 'meter_number' => $u->meter_number,
                 'status' => $u->status,
                 'notes' => $u->notes,
-                'utility_type' => $u->utilityType ? [
-                    'id' => $u->utilityType->id,
-                    'name' => $u->utilityType->name,
-                    'unit' => $u->utilityType->unit,
-                ] : null,
             ]),
-            'tenancy' => [
-                'id' => $activeTenancy->id,
+            'meta' => [
+                'tenancy_id' => $activeTenancy->id,
                 'monthly_rent' => $activeTenancy->monthly_rent,
             ],
         ]);
@@ -110,6 +107,8 @@ class UtilitiesController extends Controller
             'data' => $bills->map(fn ($b) => [
                 'id' => $b->id,
                 'tenancy_utility_id' => $b->tenancy_utility_id,
+                'utility_type_name' => $b->tenancyUtility->utilityType->name,
+                'utility_type_unit' => $b->tenancyUtility->utilityType->unit,
                 'billing_month' => $b->billing_month?->format('Y-m'),
                 'units_consumed' => $b->units_consumed,
                 'amount_due' => $b->amount_due,
@@ -117,17 +116,10 @@ class UtilitiesController extends Controller
                 'due_date' => $b->due_date?->toIso8601String(),
                 'status' => $b->status,
                 'notes' => $b->notes,
-                'tenancy_utility' => $b->tenancyUtility ? [
-                    'id' => $b->tenancyUtility->id,
-                    'provider' => $b->tenancyUtility->provider,
-                    'account_number' => $b->tenancyUtility->account_number,
-                    'utility_type' => $b->tenancyUtility->utilityType ? [
-                        'id' => $b->tenancyUtility->utilityType->id,
-                        'name' => $b->tenancyUtility->utilityType->name,
-                    ] : null,
-                ] : null,
+                'provider' => $b->tenancyUtility->provider,
+                'account_number' => $b->tenancyUtility->account_number,
             ]),
-            'summary' => [
+            'meta' => [
                 'total_due' => $totalDue,
                 'total_paid' => $totalPaid,
                 'total_outstanding' => $totalOutstanding,

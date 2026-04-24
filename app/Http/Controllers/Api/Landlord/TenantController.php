@@ -99,10 +99,12 @@ class TenantController extends Controller
 
         return response()->json([
             'message' => 'Tenant created successfully',
-            'tenant' => $result['tenant'],
-            'tenancy' => $result['tenancy'],
-            'user' => [
-                'username' => $result['credentials']['username'],
+            'data' => [
+                'tenant' => $result['tenant'],
+                'tenancy' => $result['tenancy'],
+                'user' => [
+                    'username' => $result['credentials']['username'],
+                ],
             ],
         ], 201);
     }
@@ -123,7 +125,9 @@ class TenantController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        return response()->json($this->tenantService->getTenantDashboardData($tenant));
+        return response()->json([
+            'data' => $this->tenantService->getTenantDashboardData($tenant),
+        ]);
     }
 
     /**
@@ -146,7 +150,7 @@ class TenantController extends Controller
 
         return response()->json([
             'message' => 'Tenant updated successfully',
-            'tenant' => $tenant,
+            'data' => $tenant,
         ]);
     }
 

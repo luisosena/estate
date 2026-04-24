@@ -26,13 +26,22 @@ beforeEach(function () {
 test('landlord can list own tenants', function () {
     $this->getJson('/api/landlord/tenants')
         ->assertOk()
-        ->assertJsonStructure(['data']);
+        ->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'id', 'tenant_code', 'full_name', 'phone', 'email', 
+                    'tenancy_id', 'tenancy_status', 'unit_name', 'unit_code', 'property_name'
+                ]
+            ],
+            'meta' => ['current_page', 'total', 'total_pages'],
+            'stats' => ['total_tenants', 'total_units', 'occupied_units', 'occupancy_rate'],
+        ]);
 });
 
 test('landlord can view tenant detail by identifier', function () {
     $this->getJson("/api/landlord/tenants/{$this->tenant->tenant_code}")
         ->assertOk()
-        ->assertJsonFragment(['id' => $this->tenant->id]);
+        ->assertJsonPath('data.tenant.id', $this->tenant->id);
 });
 
 test('landlord can onboard a new tenant via API', function () {

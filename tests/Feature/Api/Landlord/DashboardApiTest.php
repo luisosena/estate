@@ -15,15 +15,17 @@ test('landlord can access API dashboard', function () {
     $this->getJson('/api/landlord/dashboard')
         ->assertOk()
         ->assertJsonStructure([
-            'total_properties',
-            'total_units',
-            'total_tenants',
-            'revenue_mtd',
-            'recent_payments' => [
-                '*' => ['id', 'amount', 'paid_at', 'status', 'tenant_name', 'unit_code', 'tenancy' => ['id', 'tenant', 'unit']],
-            ],
-            'properties' => [
-                '*' => ['id', 'name', 'address', 'units_count', 'active_tenancies_count'],
+            'data' => [
+                'total_properties',
+                'total_units',
+                'total_tenants',
+                'revenue_mtd',
+                'recent_payments' => [
+                    '*' => ['id', 'amount', 'paid_at', 'status', 'tenant_name', 'unit_code', 'tenancy' => ['id', 'tenant', 'unit']],
+                ],
+                'properties' => [
+                    '*' => ['id', 'name', 'address', 'units_count', 'active_tenancies_count'],
+                ],
             ],
         ]);
 });
@@ -33,7 +35,7 @@ test('landlord dashboard stats are scoped to own data', function () {
     $other = User::factory()->create(['role' => 'landlord']);
     Property::factory()->create(['owner_id' => $other->id]);
 
-    $ownStats = $this->getJson('/api/landlord/dashboard')->json('total_properties');
+    $ownStats = $this->getJson('/api/landlord/dashboard')->json('data.total_properties');
 
     expect($ownStats)->not->toBeNull();
 });

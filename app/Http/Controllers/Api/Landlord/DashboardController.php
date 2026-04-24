@@ -165,21 +165,23 @@ class DashboardController extends Controller
             $totalRentOutstanding = (float) ($rentStats->total_outstanding ?? 0);
 
             return response()->json([
-                'total_properties' => $totalProperties,
-                'total_units' => $totalUnits,
-                'occupied_units' => $occupiedUnits,
-                'vacant_units' => $vacantUnits,
-                'total_tenants' => $totalActiveTenants,
-                'revenue_mtd' => $revenueMtd,
-                'pending_payments' => $pendingPayments,
-                'overdue_payments' => $overduePayments,
-                'pending_rent_bills' => $pendingRentBills,
-                'overdue_rent_bills' => $overdueRentBills,
-                'total_rent_outstanding' => $totalRentOutstanding,
-                'recent_payments' => $recentPayments,
-                'expiring_leases' => $expiringLeases,
-                'properties' => $formattedProperties,
-                'unread_notifications' => $unreadNotificationsCount,
+                'data' => [
+                    'total_properties' => $totalProperties,
+                    'total_units' => $totalUnits,
+                    'occupied_units' => $occupiedUnits,
+                    'vacant_units' => $vacantUnits,
+                    'total_tenants' => $totalActiveTenants,
+                    'revenue_mtd' => $revenueMtd,
+                    'pending_payments' => $pendingPayments,
+                    'overdue_payments' => $overduePayments,
+                    'pending_rent_bills' => $pendingRentBills,
+                    'overdue_rent_bills' => $overdueRentBills,
+                    'total_rent_outstanding' => $totalRentOutstanding,
+                    'recent_payments' => $recentPayments,
+                    'expiring_leases' => $expiringLeases,
+                    'properties' => $formattedProperties,
+                    'unread_notifications' => $unreadNotificationsCount,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([

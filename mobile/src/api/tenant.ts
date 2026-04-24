@@ -26,24 +26,36 @@ export interface PaymentFormData {
 }
 
 export interface PaymentsResponse {
-  payments: Payment[];
-  tenant: Tenant;
-  tenancy: {
-    id: number;
-    monthly_rent: number;
-  } | null;
-  pendingAmount: number;
+  data: {
+    payments: Payment[];
+    tenant: Tenant;
+    pending_amount: number;
+  };
+  meta: {
+    tenancy: {
+      id: number;
+      monthly_rent: number;
+      status: string;
+    } | null;
+  };
 }
 
 export interface CreatePaymentResponse {
   success: boolean;
   message: string;
-  payment: Payment;
+  data: {
+    payment: Payment;
+    excess_amount: number;
+    warning?: string | null;
+    rent_bill_warning?: string | null;
+  };
 }
 
 export const tenantApi = {
-  getDashboard: (): Promise<TenantDashboard> =>
-    api.get<TenantDashboard>('/tenant/dashboard'),
+  getDashboard: async (): Promise<TenantDashboard> => {
+    const response = await api.get<{ data: TenantDashboard }>('/tenant/dashboard');
+    return response.data;
+  },
 
   getPayments: (): Promise<PaymentsResponse> =>
     api.get<PaymentsResponse>('/tenant/payments'),
@@ -55,20 +67,34 @@ export const tenantApi = {
    * Fetches utilities for the authenticated tenant.
    * @returns Promise resolving to utilities array and tenancy info including monthly rent
    */
-  getUtilities: (): Promise<{ data: Utility[]; tenancy: { id: number; monthly_rent: number } }> =>
-    api.get<{ data: Utility[]; tenancy: { id: number; monthly_rent: number } }>('/tenant/utilities'),
+  getUtilities: async (): Promise<{ data: Utility[]; tenancy: { id: number; monthly_rent: number } }> => {
+    const response = await api.get<{ data: Utility[]; meta: { tenancy_id: number; monthly_rent: number } }>('/tenant/utilities');
+    return { 
+      data: response.data, 
+      tenancy: { 
+        id: response.meta.tenancy_id, 
+        monthly_rent: response.meta.monthly_rent 
+      } 
+    };
+  },
 
-  getUtilityBills: (status?: string): Promise<{ data: UtilityBill[]; summary: UtilityBillSummary }> =>
-    api.get<{ data: UtilityBill[]; summary: UtilityBillSummary }>('/tenant/utility-bills', {
+  getUtilityBills: async (status?: string): Promise<{ data: UtilityBill[]; summary: UtilityBillSummary }> => {
+    const response = await api.get<{ data: UtilityBill[]; meta: UtilityBillSummary }>('/tenant/utility-bills', {
       ...(status && { status }),
-    }),
+    });
+    return { data: response.data, summary: response.meta };
+  },
 
   // Profile Management
-  getProfile: (): Promise<{ user: UserProfile }> =>
-    api.get<{ user: UserProfile }>('/tenant/profile'),
+  getProfile: async (): Promise<{ user: UserProfile }> => {
+    const response = await api.get<{ data: UserProfile }>('/tenant/profile');
+    return { user: response.data };
+  },
 
-  updateProfile: (data: TenantProfileUpdateData): Promise<{ message: string; user: UserProfile }> =>
-    api.put<{ message: string; user: UserProfile }>('/tenant/profile', data),
+  updateProfile: async (data: TenantProfileUpdateData): Promise<{ message: string; user: UserProfile }> => {
+    const response = await api.put<{ message: string; data: UserProfile }>('/tenant/profile', data);
+    return { message: response.message, user: response.data };
+  },
 
   // Password Update
   updatePassword: (data: PasswordUpdateData): Promise<{ message: string }> =>

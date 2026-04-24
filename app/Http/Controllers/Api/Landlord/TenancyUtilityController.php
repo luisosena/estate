@@ -31,8 +31,26 @@ class TenancyUtilityController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $formattedUtilities = $utilities->map(function ($utility) {
+            return [
+                'id' => $utility->id,
+                'tenancy_id' => $utility->tenancy_id,
+                'utility_type_id' => $utility->utility_type_id,
+                'utility_type_name' => $utility->utilityType->name,
+                'utility_type_unit' => $utility->utilityType->unit,
+                'amount' => $utility->amount,
+                'billing_cycle' => $utility->billing_cycle,
+                'provider' => $utility->provider,
+                'account_number' => $utility->account_number,
+                'meter_number' => $utility->meter_number,
+                'status' => $utility->status,
+                'notes' => $utility->notes,
+                'created_at' => $utility->created_at,
+            ];
+        });
+
         return response()->json([
-            'data' => $utilities,
+            'data' => $formattedUtilities,
         ]);
     }
 
@@ -87,7 +105,15 @@ class TenancyUtilityController extends Controller
 
             return response()->json([
                 'message' => 'Utility assigned successfully',
-                'data' => $tenancyUtility->load('utilityType'),
+                'data' => [
+                    'id' => $tenancyUtility->id,
+                    'tenancy_id' => $tenancyUtility->tenancy_id,
+                    'utility_type_id' => $tenancyUtility->utility_type_id,
+                    'utility_type_name' => $tenancyUtility->utilityType->name,
+                    'amount' => $tenancyUtility->amount,
+                    'status' => $tenancyUtility->status,
+                    'created_at' => $tenancyUtility->created_at,
+                ],
             ], 201);
         } catch (\Exception $e) {
             Log::error('Failed to assign utility to tenancy', [
@@ -115,8 +141,26 @@ class TenancyUtilityController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $tenancyUtility->load(['utilityType', 'tenancy.unit.property']);
+
         return response()->json([
-            'data' => $tenancyUtility->load(['utilityType', 'tenancy.unit.property']),
+            'data' => [
+                'id' => $tenancyUtility->id,
+                'tenancy_id' => $tenancyUtility->tenancy_id,
+                'utility_type_id' => $tenancyUtility->utility_type_id,
+                'utility_type_name' => $tenancyUtility->utilityType->name,
+                'utility_type_unit' => $tenancyUtility->utilityType->unit,
+                'unit_code' => $tenancyUtility->tenancy->unit->unit_code,
+                'property_name' => $tenancyUtility->tenancy->unit->property->name,
+                'amount' => $tenancyUtility->amount,
+                'billing_cycle' => $tenancyUtility->billing_cycle,
+                'provider' => $tenancyUtility->provider,
+                'account_number' => $tenancyUtility->account_number,
+                'meter_number' => $tenancyUtility->meter_number,
+                'status' => $tenancyUtility->status,
+                'notes' => $tenancyUtility->notes,
+                'created_at' => $tenancyUtility->created_at,
+            ],
         ]);
     }
 
@@ -154,7 +198,12 @@ class TenancyUtilityController extends Controller
 
             return response()->json([
                 'message' => 'Utility updated successfully',
-                'data' => $tenancyUtility->load('utilityType'),
+                'data' => [
+                    'id' => $tenancyUtility->id,
+                    'status' => $tenancyUtility->status,
+                    'amount' => $tenancyUtility->amount,
+                    'updated_at' => $tenancyUtility->updated_at,
+                ],
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to update tenancy utility', [

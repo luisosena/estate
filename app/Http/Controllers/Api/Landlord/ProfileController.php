@@ -20,7 +20,7 @@ class ProfileController extends Controller
         }
 
         return response()->json([
-            'user' => [
+            'data' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
@@ -45,7 +45,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => [
+            'data' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,

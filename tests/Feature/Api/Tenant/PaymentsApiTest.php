@@ -15,7 +15,11 @@ beforeEach(function () {
 test('tenant can list own payments', function () {
     $this->getJson('/api/tenant/payments')
         ->assertOk()
-        ->assertJsonStructure(['payments']);
+        ->assertJsonStructure([
+            'data' => [
+                'payments',
+            ],
+        ]);
 });
 
 test('tenant can record a rent payment', function () {

@@ -53,10 +53,8 @@ class UnitController extends Controller
                 'unit_code' => $unit->unit_code,
                 'unit_name' => $unit->unit_name,
                 'status' => $unit->status,
-                'property' => [
-                    'id' => $unit->property->id,
-                    'name' => $unit->property->name,
-                ],
+                'property_id' => $unit->property_id,
+                'property_name' => $unit->property->name,
                 'created_at' => $unit->created_at->format('Y-m-d H:i'),
             ];
         });
@@ -96,27 +94,29 @@ class UnitController extends Controller
             ->findOrFail($unitId);
 
         return response()->json([
-            'id' => $unit->id,
-            'unit_code' => $unit->unit_code,
-            'unit_name' => $unit->unit_name,
-            'status' => $unit->status,
-            'created_at' => $unit->created_at->format('Y-m-d H:i'),
-            'property' => [
-                'id' => $unit->property->id,
-                'name' => $unit->property->name,
-                'address' => $unit->property->address,
+            'data' => [
+                'id' => $unit->id,
+                'unit_code' => $unit->unit_code,
+                'unit_name' => $unit->unit_name,
+                'status' => $unit->status,
+                'property_id' => $unit->property_id,
+                'property_name' => $unit->property->name,
+                'property_address' => $unit->property->address,
+                'created_at' => $unit->created_at->format('Y-m-d H:i'),
+                'tenancies' => $unit->tenancies->map(function ($tenancy) {
+                    return [
+                        'id' => $tenancy->id,
+                        'status' => $tenancy->status,
+                        'start_date' => $tenancy->move_in_date,
+                        'end_date' => $tenancy->move_out_date,
+                        'monthly_rent' => $tenancy->monthly_rent,
+                        'security_deposit' => $tenancy->security_deposit,
+                        'tenant_id' => $tenancy->tenant->id,
+                        'tenant_name' => $tenancy->tenant->full_name,
+                        'tenant_email' => $tenancy->tenant->email,
+                    ];
+                }),
             ],
-            'tenancies' => $unit->tenancies->map(function ($tenancy) {
-                return [
-                    'id' => $tenancy->id,
-                    'status' => $tenancy->status,
-                    'start_date' => $tenancy->move_in_date,
-                    'end_date' => $tenancy->move_out_date,
-                    'monthly_rent' => $tenancy->monthly_rent,
-                    'security_deposit' => $tenancy->security_deposit,
-                    'tenant' => $tenancy->tenant,
-                ];
-            }),
         ]);
     }
 
@@ -149,7 +149,7 @@ class UnitController extends Controller
 
         return response()->json([
             'message' => 'Unit created successfully',
-            'unit' => [
+            'data' => [
                 'id' => $unit->id,
                 'unit_code' => $unit->unit_code,
                 'unit_name' => $unit->unit_name,
@@ -182,7 +182,7 @@ class UnitController extends Controller
 
         return response()->json([
             'message' => 'Unit updated successfully',
-            'unit' => [
+            'data' => [
                 'id' => $unit->id,
                 'unit_code' => $unit->unit_code,
                 'unit_name' => $unit->unit_name,

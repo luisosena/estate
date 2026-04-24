@@ -26,62 +26,64 @@ class DashboardController extends Controller
             $data = $this->tenantService->getTenantDashboardData($user->tenant);
 
             return response()->json([
-                'tenant' => [
-                    'id' => $data['tenant']->id,
-                    'full_name' => $data['tenant']->full_name,
-                    'phone' => $data['tenant']->phone,
-                    'email' => $data['tenant']->email,
-                    'is_active' => true,
-                ],
+                'data' => [
+                    'tenant' => [
+                        'id' => $data['tenant']->id,
+                        'full_name' => $data['tenant']->full_name,
+                        'phone' => $data['tenant']->phone,
+                        'email' => $data['tenant']->email,
+                        'is_active' => true,
+                    ],
 
-                'unit' => $data['unit'] ? [
-                    'id' => $data['unit']->id,
-                    'unit_name' => $data['unit']->unit_name,
-                    'unit_code' => $data['unit']->unit_code,
-                    'property' => $data['unit']->property ? [
-                        'id' => $data['unit']->property->id,
-                        'name' => $data['unit']->property->name,
+                    'unit' => $data['unit'] ? [
+                        'id' => $data['unit']->id,
+                        'unit_name' => $data['unit']->unit_name,
+                        'unit_code' => $data['unit']->unit_code,
+                        'property' => $data['unit']->property ? [
+                            'id' => $data['unit']->property->id,
+                            'name' => $data['unit']->property->name,
+                        ] : null,
                     ] : null,
-                ] : null,
 
-                'tenancy' => $data['tenancy'] ? [
-                    'id' => $data['tenancy']['id'],
-                    'unit_id' => $data['unit']?->id,
-                    'move_in_date' => $data['tenancy']['move_in_date'],
-                    'status' => $data['tenancy']['status'],
-                    'monthly_rent' => $data['tenancy']['monthly_rent'],
-                    'security_deposit' => $data['tenancy']['security_deposit'],
-                ] : null,
+                    'tenancy' => $data['tenancy'] ? [
+                        'id' => $data['tenancy']['id'],
+                        'unit_id' => $data['unit']?->id,
+                        'move_in_date' => $data['tenancy']['move_in_date'],
+                        'status' => $data['tenancy']['status'],
+                        'monthly_rent' => $data['tenancy']['monthly_rent'],
+                        'security_deposit' => $data['tenancy']['security_deposit'],
+                    ] : null,
 
-                'payments' => collect($data['payments'])->map(fn ($p) => [
-                    'id' => $p->id,
-                    'amount' => $p->amount,
-                    'payment_type' => $p->payment_type,
-                    'payment_method' => $p->payment_method,
-                    'status' => $p->status,
-                    'paid_at' => $p->paid_at?->toIso8601String(),
-                    'reference_number' => $p->reference_number,
-                ]),
+                    'payments' => collect($data['payments'])->map(fn ($p) => [
+                        'id' => $p->id,
+                        'amount' => $p->amount,
+                        'payment_type' => $p->payment_type,
+                        'payment_method' => $p->payment_method,
+                        'status' => $p->status,
+                        'paid_at' => $p->paid_at?->toIso8601String(),
+                        'reference_number' => $p->reference_number,
+                    ]),
 
-                'rent_bills' => collect($data['rent_bills'])->map(fn ($rb) => [
-                    'id' => $rb->id,
-                    'billing_month' => $rb->billing_month?->format('Y-m'),
-                    'amount_due' => $rb->amount_due,
-                    'amount_paid' => $rb->amount_paid,
-                    'due_date' => $rb->due_date?->toIso8601String(),
-                    'status' => $rb->status,
-                ]),
+                    'rent_bills' => collect($data['rent_bills'])->map(fn ($rb) => [
+                        'id' => $rb->id,
+                        'billing_month' => $rb->billing_month?->format('Y-m'),
+                        'amount_due' => $rb->amount_due,
+                        'amount_paid' => $rb->amount_paid,
+                        'due_date' => $rb->due_date?->toIso8601String(),
+                        'status' => $rb->status,
+                    ]),
 
-                'current_month_bill' => $data['current_month_bill'] ? [
-                    'id' => $data['current_month_bill']->id,
-                    'billing_month' => $data['current_month_bill']->billing_month?->format('Y-m'),
-                    'amount_due' => $data['current_month_bill']->amount_due,
-                    'amount_paid' => $data['current_month_bill']->amount_paid,
-                    'status' => $data['current_month_bill']->status,
-                ] : null,
+                    'current_month_bill' => $data['current_month_bill'] ? [
+                        'id' => $data['current_month_bill']->id,
+                        'billing_month' => $data['current_month_bill']->billing_month?->format('Y-m'),
+                        'amount_due' => $data['current_month_bill']->amount_due,
+                        'amount_paid' => $data['current_month_bill']->amount_paid,
+                        'status' => $data['current_month_bill']->status,
+                    ] : null,
 
-                'utilities' => $data['utilities'],
-                'notifications' => $data['notifications'],
+                    'utilities' => $data['utilities'],
+                    'notifications' => $data['notifications'],
+                ],
             ]);
         } catch (\Exception $e) {
             \Log::error('Api DashboardController error: '.$e->getMessage());

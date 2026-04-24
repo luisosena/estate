@@ -89,18 +89,20 @@ class PaymentController extends Controller
             ->findOrFail($paymentId);
 
         return response()->json([
-            'id' => $payment->id,
-            'amount' => $payment->amount,
-            'payment_type' => $payment->payment_type,
-            'payment_method' => $payment->payment_method,
-            'status' => $payment->status,
-            'paid_at' => $payment->paid_at,
-            'due_date' => $payment->due_date,
-            'created_at' => $payment->created_at,
-            'tenant_name' => $payment->tenant?->full_name,
-            'tenant_code' => $payment->tenant?->tenant_code,
-            'unit_number' => $payment->tenancy?->unit?->unit_code,
-            'property_name' => $payment->tenancy?->unit?->property?->name,
+            'data' => [
+                'id' => $payment->id,
+                'amount' => $payment->amount,
+                'payment_type' => $payment->payment_type,
+                'payment_method' => $payment->payment_method,
+                'status' => $payment->status,
+                'paid_at' => $payment->paid_at,
+                'due_date' => $payment->due_date,
+                'created_at' => $payment->created_at,
+                'tenant_name' => $payment->tenant?->full_name,
+                'tenant_code' => $payment->tenant?->tenant_code,
+                'unit_number' => $payment->tenancy?->unit?->unit_code,
+                'property_name' => $payment->tenancy?->unit?->property?->name,
+            ],
         ]);
     }
 
@@ -192,7 +194,7 @@ class PaymentController extends Controller
 
         $response = [
             'message' => 'Payment created successfully',
-            'payment' => [
+            'data' => [
                 'id' => $payment->id,
                 'tenant_id' => $payment->tenant_id,
                 'tenancy_id' => $payment->tenancy_id,
@@ -239,7 +241,7 @@ class PaymentController extends Controller
 
         return response()->json([
             'message' => 'Payment updated successfully',
-            'payment' => [
+            'data' => [
                 'id' => $payment->id,
                 'amount' => $payment->amount,
                 'payment_type' => $payment->payment_type,

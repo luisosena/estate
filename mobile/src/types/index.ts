@@ -54,6 +54,8 @@ export interface Unit {
   unit_code: string;
   unit_name: string;
   property_id?: number;
+  property_name?: string;
+  property_address?: string;
   status?: 'occupied' | 'vacant' | 'maintenance' | 'available';
   property?: {
     id: number;
@@ -166,7 +168,9 @@ export interface Utility {
   meter_number: string | null;
   status: 'active' | 'suspended' | 'disconnected';
   notes: string | null;
-  utility_type: UtilityType | null;
+  utility_type_name?: string;
+  utility_type_unit?: string;
+  utility_type?: UtilityType | null;
 }
 
 export interface UtilityBill {
@@ -179,6 +183,13 @@ export interface UtilityBill {
   due_date: string;
   status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
   notes: string | null;
+  utility_type_name?: string;
+  utility_type_unit?: string;
+  unit_code?: string;
+  tenant_name?: string;
+  property_name?: string;
+  provider?: string;
+  account_number?: string;
   created_at?: string;
   updated_at?: string;
   tenancy_utility?: {
@@ -345,8 +356,15 @@ export interface PasswordUpdateData {
 
 export interface PaginatedResponse<T> {
   data: T[];
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  // Legacy support - ensure compatibility with older screens if needed
+  current_page?: number;
+  last_page?: number;
+  per_page?: number;
+  total?: number;
 }

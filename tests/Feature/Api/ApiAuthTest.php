@@ -44,9 +44,11 @@ it('allows login via /api/v1/auth/login and authenticates subsequent requests wi
 
     $meResponse->assertOk();
     $meResponse->assertJson([
-        'id' => $user->id,
-        'email' => $user->email,
-        'role' => 'tenant',
+        'data' => [
+            'id' => $user->id,
+            'email' => $user->email,
+            'role' => 'tenant',
+        ],
     ]);
 
     // 3. Test authenticated feature route
@@ -54,7 +56,7 @@ it('allows login via /api/v1/auth/login and authenticates subsequent requests wi
         ->getJson('/api/v1/tenant/dashboard');
 
     $dashboardResponse->assertOk();
-    $dashboardResponse->assertJsonPath('tenant.id', $tenant->id);
+    $dashboardResponse->assertJsonPath('data.tenant.id', $tenant->id);
 
     // 4. Test Logout
     $logoutResponse = $this->withHeader('Authorization', "Bearer {$token}")

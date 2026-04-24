@@ -54,21 +54,29 @@ export function validateTenantIdentifier(identifier: string): string {
 
 export const landlordApi = {
   // Dashboard
-  getDashboard: (): Promise<LandlordDashboard> =>
-    api.get<LandlordDashboard>('/landlord/dashboard'),
+  getDashboard: async (): Promise<LandlordDashboard> => {
+    const response = await api.get<{ data: LandlordDashboard }>('/landlord/dashboard');
+    return response.data;
+  },
 
   // Properties
   getProperties: (page = 1): Promise<PaginatedResponse<Property>> =>
     api.get<PaginatedResponse<Property>>('/landlord/properties', { page }),
 
-  getProperty: (propertyId: number): Promise<Property> =>
-    api.get<Property>(`/landlord/properties/${propertyId}`),
+  getProperty: async (propertyId: number): Promise<Property> => {
+    const response = await api.get<{ data: Property }>(`/landlord/properties/${propertyId}`);
+    return response.data;
+  },
 
-  createProperty: (data: Partial<Property>): Promise<Property> =>
-    api.post<Property>('/landlord/properties', data),
+  createProperty: async (data: Partial<Property>): Promise<Property> => {
+    const response = await api.post<{ message: string; data: Property }>('/landlord/properties', data);
+    return response.data;
+  },
 
-  updateProperty: (propertyId: number, data: Partial<Property>): Promise<Property> =>
-    api.put<Property>(`/landlord/properties/${propertyId}`, data),
+  updateProperty: async (propertyId: number, data: Partial<Property>): Promise<Property> => {
+    const response = await api.put<{ message: string; data: Property }>(`/landlord/properties/${propertyId}`, data);
+    return response.data;
+  },
 
   deleteProperty: (propertyId: number): Promise<void> =>
     api.delete(`/landlord/properties/${propertyId}`),
@@ -88,14 +96,20 @@ export const landlordApi = {
       status: 'available',
     }),
 
-  getUnit: (unitId: number): Promise<Unit> =>
-    api.get<Unit>(`/landlord/units/${unitId}`),
+  getUnit: async (unitId: number): Promise<Unit> => {
+    const response = await api.get<{ data: Unit }>(`/landlord/units/${unitId}`);
+    return response.data;
+  },
 
-  createUnit: (data: Partial<Unit>): Promise<Unit> =>
-    api.post<Unit>('/landlord/units', data),
+  createUnit: async (data: Partial<Unit>): Promise<Unit> => {
+    const response = await api.post<{ message: string; data: Unit }>('/landlord/units', data);
+    return response.data;
+  },
 
-  updateUnit: (unitId: number, data: Partial<Unit>): Promise<Unit> =>
-    api.put<Unit>(`/landlord/units/${unitId}`, data),
+  updateUnit: async (unitId: number, data: Partial<Unit>): Promise<Unit> => {
+    const response = await api.put<{ message: string; data: Unit }>(`/landlord/units/${unitId}`, data);
+    return response.data;
+  },
 
   deleteUnit: (unitId: number): Promise<void> =>
     api.delete(`/landlord/units/${unitId}`),
@@ -109,41 +123,29 @@ export const landlordApi = {
    * Security: Uses tenant_code instead of tenant ID to prevent enumeration attacks.
    * @param tenantIdentifier - The tenant code (e.g., 'TEN-ABC123') or numeric ID
    */
-  getTenant: (tenantIdentifier: string): Promise<TenantDashboard> => {
+  getTenant: async (tenantIdentifier: string): Promise<TenantDashboard> => {
     const validated = validateTenantIdentifier(tenantIdentifier);
-    return api.get<TenantDashboard>(`/landlord/tenants/${validated}`);
+    const response = await api.get<{ data: TenantDashboard }>(`/landlord/tenants/${validated}`);
+    return response.data;
   },
 
-  createTenant: (data: Partial<Tenant>): Promise<Tenant> =>
-    api.post<Tenant>('/landlord/tenants', data),
+  createTenant: async (data: Partial<Tenant>): Promise<Tenant> => {
+    const response = await api.post<{ message: string; data: Tenant }>('/landlord/tenants', data);
+    return response.data;
+  },
 
   /**
    * Updates a tenant by their unique tenant code.
    * Security: Uses tenant_code instead of tenant ID to prevent enumeration attacks.
    * @param tenantCode - The unique tenant code (e.g., 'TEN-ABC123')
    */
-  updateTenant: (tenantCode: string, data: Partial<Tenant>): Promise<Tenant> =>
-    api.put<Tenant>(`/landlord/tenants/${tenantCode}`, data),
+  updateTenant: async (tenantCode: string, data: Partial<Tenant>): Promise<Tenant> => {
+    const response = await api.put<{ data: Tenant }>(`/landlord/tenants/${tenantCode}`, data);
+    return response.data;
+  },
 
   deleteTenant: (tenancyId: number): Promise<void> =>
     api.delete(`/landlord/tenants/${tenancyId}/remove`),
-
-  // Tenancies
-  getTenancies: (page = 1): Promise<PaginatedResponse<Tenancy>> =>
-    api.get<PaginatedResponse<Tenancy>>('/landlord/tenancies', { page }),
-
-  getTenancy: (tenancyId: number): Promise<Tenancy> =>
-    api.get<Tenancy>(`/landlord/tenancies/${tenancyId}`),
-
-  createTenancy: (data: {
-    tenant_id: number;
-    unit_id: number;
-    move_in_date: string;
-    rent_amount: number;
-    rent_due_day: number;
-    deposit_amount: number;
-  }): Promise<Tenancy> =>
-    api.post<Tenancy>('/landlord/tenancies', data),
 
   // Payments
   getPayments: (page = 1): Promise<PaginatedResponse<Payment>> =>
@@ -259,11 +261,15 @@ export const landlordApi = {
     api.get<{ data: RentBill[] }>('/landlord/rent-bills/pending'),
 
   // Profile Management
-  getProfile: (): Promise<{ user: UserProfile }> =>
-    api.get<{ user: UserProfile }>('/landlord/profile'),
+  getProfile: async (): Promise<{ user: UserProfile }> => {
+    const response = await api.get<{ data: UserProfile }>('/landlord/profile');
+    return { user: response.data };
+  },
 
-  updateProfile: (data: LandlordProfileUpdateData): Promise<{ message: string; user: UserProfile }> =>
-    api.put<{ message: string; user: UserProfile }>('/landlord/profile', data),
+  updateProfile: async (data: LandlordProfileUpdateData): Promise<{ message: string; user: UserProfile }> => {
+    const response = await api.put<{ message: string; data: UserProfile }>('/landlord/profile', data);
+    return { message: response.message, user: response.data };
+  },
 
   // Password Update
   updatePassword: (data: PasswordUpdateData): Promise<{ message: string }> =>

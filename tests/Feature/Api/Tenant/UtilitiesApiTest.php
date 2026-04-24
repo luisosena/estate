@@ -27,7 +27,7 @@ beforeEach(function () {
 test('tenant can list own utility subscriptions', function () {
     $this->getJson('/api/tenant/utilities')
         ->assertOk()
-        ->assertJsonStructure(['data', 'tenancy']);
+        ->assertJsonStructure(['data', 'meta' => ['tenancy_id', 'monthly_rent']]);
 });
 
 test('tenant can list own utility bills', function () {
@@ -38,7 +38,7 @@ test('tenant can list own utility bills', function () {
 
     $this->getJson('/api/tenant/utility-bills')
         ->assertOk()
-        ->assertJsonStructure(['data', 'summary']);
+        ->assertJsonStructure(['data', 'meta']);
 });
 
 test('utility data is scoped to the active tenancy', function () {

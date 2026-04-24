@@ -73,19 +73,23 @@ class PaymentsController extends Controller
         $pendingAmount = max(0, $monthlyRent - $totalPaid);
 
         return response()->json([
-            'tenant' => [
-                'id' => $tenant->id,
-                'full_name' => $tenant->full_name,
-                'phone' => $tenant->phone,
-                'email' => $tenant->email,
+            'data' => [
+                'tenant' => [
+                    'id' => $tenant->id,
+                    'full_name' => $tenant->full_name,
+                    'phone' => $tenant->phone,
+                    'email' => $tenant->email,
+                ],
+                'payments' => $payments,
+                'pending_amount' => $pendingAmount,
             ],
-            'tenancy' => $displayTenancy ? [
-                'id' => $displayTenancy->id,
-                'monthly_rent' => $monthlyRent,
-                'status' => $activeTenancy ? 'active' : 'ended',
-            ] : null,
-            'payments' => $payments,
-            'pendingAmount' => $pendingAmount,
+            'meta' => [
+                'tenancy' => $displayTenancy ? [
+                    'id' => $displayTenancy->id,
+                    'monthly_rent' => $monthlyRent,
+                    'status' => $activeTenancy ? 'active' : 'ended',
+                ] : null,
+            ],
         ]);
     }
 
@@ -285,22 +289,16 @@ class PaymentsController extends Controller
             }
 
             // Include warning if rent bill was not found/linked properly
-            $response = [
+            return response()->json([
                 'success' => true,
                 'message' => 'Payment processed successfully!',
-                'payment' => $result['payment'],
-                'excessAmount' => $result['excessAmount'] ?? 0,
-            ];
-
-            if (! empty($rentBillWarning)) {
-                $response['warning'] = $rentBillWarning;
-            }
-
-            if (! empty($rentBillError)) {
-                $response['rent_bill_warning'] = $rentBillError;
-            }
-
-            return response()->json($response, 201);
+                'data' => [
+                    'payment' => $result['payment'],
+                    'excess_amount' => $result['excessAmount'] ?? 0,
+                    'warning' => $rentBillWarning ?? null,
+                    'rent_bill_warning' => $rentBillError ?? null,
+                ],
+            ], 201);
 
         } catch (\Exception $e) {
             Log::error('Failed to process payment via API', [

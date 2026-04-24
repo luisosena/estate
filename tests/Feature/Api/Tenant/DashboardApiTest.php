@@ -40,12 +40,14 @@ test('tenant dashboard returns structured data', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure([
-            'tenant' => ['id', 'full_name', 'email'],
-            'unit' => ['id', 'unit_name', 'property' => ['id', 'name']],
-            'tenancy' => ['id', 'move_in_date', 'status', 'monthly_rent'],
-            'payments',
-            'rent_bills',
-            'current_month_bill',
+            'data' => [
+                'tenant' => ['id', 'full_name', 'email'],
+                'unit' => ['id', 'unit_name', 'property' => ['id', 'name']],
+                'tenancy' => ['id', 'move_in_date', 'status', 'monthly_rent'],
+                'payments',
+                'rent_bills',
+                'current_month_bill',
+            ],
         ]);
 });
 
@@ -59,6 +61,6 @@ test('tenant dashboard handles missing tenancy gracefully', function () {
     $response = $this->actingAs($user)->getJson('/api/tenant/dashboard');
 
     $response->assertStatus(200)
-        ->assertJsonPath('unit', null)
-        ->assertJsonPath('tenancy', null);
+        ->assertJsonPath('data.unit', null)
+        ->assertJsonPath('data.tenancy', null);
 });

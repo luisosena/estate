@@ -63,8 +63,29 @@ class UtilityBillController extends Controller
 
         $totalPages = ceil($totalItems / $perPage);
 
+        $formattedBills = $bills->map(function ($bill) {
+            return [
+                'id' => $bill->id,
+                'tenancy_utility_id' => $bill->tenancy_utility_id,
+                'utility_type_name' => $bill->tenancyUtility->utilityType->name,
+                'utility_type_unit' => $bill->tenancyUtility->utilityType->unit,
+                'unit_code' => $bill->tenancyUtility->tenancy->unit->unit_code,
+                'tenant_name' => $bill->tenancyUtility->tenancy->tenant->full_name,
+                'property_name' => $bill->tenancyUtility->tenancy->unit->property->name,
+                'billing_month' => $bill->billing_month,
+                'units_consumed' => $bill->units_consumed,
+                'amount_due' => $bill->amount_due,
+                'amount_paid' => $bill->amount_paid,
+                'due_date' => $bill->due_date,
+                'status' => $bill->status,
+                'notes' => $bill->notes,
+                'created_at' => $bill->created_at,
+                'updated_at' => $bill->updated_at,
+            ];
+        });
+
         return response()->json([
-            'data' => $bills,
+            'data' => $formattedBills,
             'meta' => [
                 'current_page' => (int) $page,
                 'per_page' => (int) $perPage,
@@ -88,14 +109,40 @@ class UtilityBillController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $utilityBill->load([
+            'tenancyUtility.utilityType',
+            'tenancyUtility.tenancy.unit.property',
+            'payments' => function ($query) {
+                $query->orderBy('paid_at', 'desc');
+            },
+        ]);
+
         return response()->json([
-            'data' => $utilityBill->load([
-                'tenancyUtility.utilityType',
-                'tenancyUtility.tenancy.unit.property',
-                'payments' => function ($query) {
-                    $query->orderBy('paid_at', 'desc');
-                },
-            ]),
+            'data' => [
+                'id' => $utilityBill->id,
+                'tenancy_utility_id' => $utilityBill->tenancy_utility_id,
+                'utility_type_name' => $utilityBill->tenancyUtility->utilityType->name,
+                'utility_type_unit' => $utilityBill->tenancyUtility->utilityType->unit,
+                'unit_code' => $utilityBill->tenancyUtility->tenancy->unit->unit_code,
+                'tenant_name' => $utilityBill->tenancyUtility->tenancy->tenant->full_name,
+                'property_name' => $utilityBill->tenancyUtility->tenancy->unit->property->name,
+                'billing_month' => $utilityBill->billing_month,
+                'units_consumed' => $utilityBill->units_consumed,
+                'amount_due' => $utilityBill->amount_due,
+                'amount_paid' => $utilityBill->amount_paid,
+                'due_date' => $utilityBill->due_date,
+                'status' => $utilityBill->status,
+                'notes' => $utilityBill->notes,
+                'created_at' => $utilityBill->created_at,
+                'updated_at' => $utilityBill->updated_at,
+                'payments' => $utilityBill->payments->map(fn($p) => [
+                    'id' => $p->id,
+                    'amount' => $p->amount,
+                    'paid_at' => $p->paid_at,
+                    'status' => $p->status,
+                    'reference_number' => $p->reference_number,
+                ]),
+            ],
         ]);
     }
 
@@ -131,7 +178,14 @@ class UtilityBillController extends Controller
 
             return response()->json([
                 'message' => 'Utility bill updated successfully',
-                'data' => $utilityBill->load('tenancyUtility.utilityType'),
+                'data' => [
+                    'id' => $utilityBill->id,
+                    'status' => $utilityBill->status,
+                    'amount_due' => $utilityBill->amount_due,
+                    'amount_paid' => $utilityBill->amount_paid,
+                    'units_consumed' => $utilityBill->units_consumed,
+                    'updated_at' => $utilityBill->updated_at,
+                ],
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to update utility bill', [
@@ -180,7 +234,11 @@ class UtilityBillController extends Controller
 
             return response()->json([
                 'message' => 'Utility bill waived successfully',
-                'data' => $utilityBill->fresh('tenancyUtility.utilityType'),
+                'data' => [
+                    'id' => $utilityBill->id,
+                    'status' => $utilityBill->status,
+                    'updated_at' => $utilityBill->updated_at,
+                ],
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to waive utility bill', [

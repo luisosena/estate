@@ -97,20 +97,22 @@ class PropertyController extends Controller
             ->findOrFail($propertyId);
 
         return response()->json([
-            'id' => $property->id,
-            'name' => $property->name,
-            'address' => $property->address,
-            'property_type' => $property->property_type,
-            'description' => $property->description,
-            'total_units' => $property->total_units,
-            'units_count' => $property->units_count,
-            'active_tenants_count' => $property->tenancies->count(),
-            'occupied_units' => $property->tenancies->count(),
-            'available_units' => $property->units_count - $property->tenancies->count(),
-            'occupancy_rate' => $property->units_count > 0
-                ? round(($property->tenancies->count() / $property->units_count) * 100, 1)
-                : 0,
-            'created_at' => $property->created_at,
+            'data' => [
+                'id' => $property->id,
+                'name' => $property->name,
+                'address' => $property->address,
+                'property_type' => $property->property_type,
+                'description' => $property->description,
+                'total_units' => $property->total_units,
+                'units_count' => $property->units_count,
+                'active_tenants_count' => $property->tenancies->count(),
+                'occupied_units' => $property->tenancies->count(),
+                'available_units' => $property->units_count - $property->tenancies->count(),
+                'occupancy_rate' => $property->units_count > 0
+                    ? round(($property->tenancies->count() / $property->units_count) * 100, 1)
+                    : 0,
+                'created_at' => $property->created_at,
+            ],
         ]);
     }
 
@@ -140,7 +142,7 @@ class PropertyController extends Controller
 
         return response()->json([
             'message' => 'Property created successfully',
-            'property' => [
+            'data' => [
                 'id' => $property->id,
                 'name' => $property->name,
                 'address' => $property->address,
@@ -174,7 +176,7 @@ class PropertyController extends Controller
 
         return response()->json([
             'message' => 'Property updated successfully',
-            'property' => [
+            'data' => [
                 'id' => $property->id,
                 'name' => $property->name,
                 'address' => $property->address,

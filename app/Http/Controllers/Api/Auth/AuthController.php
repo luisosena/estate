@@ -100,16 +100,18 @@ class AuthController extends Controller
         $user->loadMissing('tenant');
 
         return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-            'tenant' => $user->tenant ? [
-                'id' => $user->tenant->id,
-                'full_name' => $user->tenant->full_name,
-                'phone' => $user->tenant->phone,
-                'email' => $user->tenant->email,
-            ] : null,
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'tenant' => $user->tenant ? [
+                    'id' => $user->tenant->id,
+                    'full_name' => $user->tenant->full_name,
+                    'phone' => $user->tenant->phone,
+                    'email' => $user->tenant->email,
+                ] : null,
+            ],
         ]);
     }
 }

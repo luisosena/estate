@@ -17,7 +17,6 @@ use App\Http\Controllers\Api\Tenant\DashboardController;
 use App\Http\Controllers\Api\Tenant\PaymentsController;
 use App\Http\Controllers\Api\Tenant\ProfileController as TenantProfileController;
 use App\Http\Controllers\Api\Tenant\RentBillController as TenantRentBillController;
-use App\Http\Controllers\Api\Tenant\UtilitiesController;
 use App\Http\Controllers\Api\Tenant\UtilitiesController as TenantUtilitiesController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -58,7 +57,7 @@ $defineApiRoutes = function (): void {
             Route::middleware('throttle:10,1')->group(function () {
                 Route::post('payments', [PaymentsController::class, 'store']);
             });
-            Route::get('utilities', [UtilitiesController::class, 'index']);
+            Route::get('utilities', [TenantUtilitiesController::class, 'index']);
             Route::get('utility-bills', [TenantUtilitiesController::class, 'bills']);
 
             // Rent Bill Management
