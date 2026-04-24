@@ -203,13 +203,14 @@ GET /api/landlord/tenants?page=2&per_page=25
 **Response** (200):
 ```json
 {
-  "id": 1,
-  "name": "John Doe",
-  "username": "john.doe",
-  "email": "john@example.com",
-  "role": "landlord",
-  "tenant_id": null,
-  "last_login_at": "2024-01-15T10:30:00Z"
+  "data": {
+    "id": 1,
+    "name": "John Doe",
+    "username": "john.doe",
+    "email": "john@example.com",
+    "role": "landlord",
+    "phone": "+1234567890"
+  }
 }
 ```
 
