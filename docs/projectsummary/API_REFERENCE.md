@@ -255,13 +255,22 @@ GET /api/landlord/tenants?page=2&per_page=25
   "total_units": 50,
   "occupied_units": 42,
   "vacant_units": 8,
-  "occupancy_rate": 84,
   "total_tenants": 45,
-  "monthly_revenue": 25000.00,
   "pending_payments": 3,
-  "overdue_payments": 2,
-  "recent_payments": [...],
-  "expiring_tenancies": [...]
+  "recent_payments": [
+    {
+      "id": 1,
+      "amount": 500.00,
+      "paid_at": "2024-01-15T10:30:00Z",
+      "status": "paid",
+      "tenant_name": "John Doe",
+      "unit_code": "101"
+    }
+  ],
+  "expiring_leases": [...],
+  "pending_rent_bills": 5,
+  "overdue_rent_bills": 2,
+  "total_rent_outstanding": 2500.00
 }
 ```
 
@@ -280,8 +289,8 @@ GET /api/landlord/tenants?page=2&per_page=25
 | pending_rent_bills | int | Number of pending rent bills |
 | overdue_rent_bills | int | Number of overdue rent bills |
 | total_rent_outstanding | decimal | Total outstanding rent amount |
-| recent_payments | array | Latest payment records |
-| expiring_tenancies | array | Tenancies expiring in next 30 days |
+| recent_payments | array | Latest payment records (flattened with tenant_name and unit_code) |
+| expiring_leases | array | Tenancies expiring in next 30 days |
 
 #### Properties
 
@@ -807,10 +816,21 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
       "due_date": "2026-03-05",
       "status": "pending",
       "notes": null,
-      "tenant_name": "John Doe",
-      "tenant_code": "TNT001",
-      "unit_number": "101",
-      "property_name": "Sunset Apartments",
+      "tenant": {
+        "id": 1,
+        "full_name": "John Doe",
+        "tenant_code": "TNT001",
+        "phone": "+255712345678",
+        "email": "john@example.com"
+      },
+      "unit": {
+        "id": 5,
+        "unit_code": "101"
+      },
+      "property": {
+        "id": 1,
+        "name": "Sunset Apartments"
+      },
       "created_at": "2026-03-01T00:00:00Z"
     }
   ],
@@ -831,35 +851,38 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 
 ##### GET /api/landlord/rent-bills/{id}
 **Description**: Get rent bill details with payments
+**Auth Required**: Yes
 
 **Response** (200):
 ```json
 {
-  "id": 1,
-  "billing_month": "2026-03",
-  "amount_due": 500.00,
-  "amount_paid": 0,
-  "outstanding_amount": 500.00,
-  "due_date": "2026-03-05",
-  "status": "pending",
-  "notes": null,
-  "tenant": {
+  "data": {
     "id": 1,
-    "full_name": "John Doe",
-    "tenant_code": "TNT001",
-    "phone": "+255712345678",
-    "email": "john@example.com"
-  },
-  "unit": {
-    "id": 5,
-    "unit_code": "101"
-  },
-  "property": {
-    "id": 1,
-    "name": "Sunset Apartments"
-  },
-  "payments": [],
-  "created_at": "2026-03-01T00:00:00Z"
+    "billing_month": "2026-03",
+    "amount_due": 500.00,
+    "amount_paid": 0,
+    "outstanding_amount": 500.00,
+    "due_date": "2026-03-05",
+    "status": "pending",
+    "notes": null,
+    "tenant": {
+      "id": 1,
+      "full_name": "John Doe",
+      "tenant_code": "TNT001",
+      "phone": "+255712345678",
+      "email": "john@example.com"
+    },
+    "unit": {
+      "id": 5,
+      "unit_code": "101"
+    },
+    "property": {
+      "id": 1,
+      "name": "Sunset Apartments"
+    },
+    "payments": [],
+    "created_at": "2026-03-01T00:00:00Z"
+  }
 }
 ```
 
@@ -1154,6 +1177,19 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
       "due_date": "2026-03-05",
       "status": "pending",
       "notes": null,
+      "tenant": {
+        "id": 1,
+        "full_name": "John Doe",
+        "tenant_code": "TNT001"
+      },
+      "unit": {
+        "id": 5,
+        "unit_code": "101"
+      },
+      "property": {
+        "id": 1,
+        "name": "Sunset Apartments"
+      },
       "created_at": "2026-03-01T00:00:00Z"
     }
   ],
@@ -1173,8 +1209,7 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 **Response** (200):
 ```json
 {
-  "has_current_bill": true,
-  "rent_bill": {
+  "data": {
     "id": 1,
     "billing_month": "2026-03",
     "amount_due": 500.00,
@@ -1183,16 +1218,20 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
     "due_date": "2026-03-05",
     "status": "pending",
     "notes": null,
+    "tenant": {
+      "id": 1,
+      "full_name": "John Doe",
+      "tenant_code": "TNT001"
+    },
+    "unit": {
+      "id": 5,
+      "unit_code": "101"
+    },
+    "property": {
+      "id": 1,
+      "name": "Sunset Apartments"
+    },
     "payments": []
-  },
-  "monthly_rent": 500.00,
-  "unit": {
-    "id": 5,
-    "unit_code": "101"
-  },
-  "property": {
-    "id": 1,
-    "name": "Sunset Apartments"
   }
 }
 ```
@@ -1200,6 +1239,34 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 ##### GET /api/tenant/rent-bills/{id}
 **Description**: Get rent bill details
 **Auth Required**: Yes (tenant role)
+
+**Response** (200):
+{
+  "data": {
+    "id": 1,
+    "billing_month": "2026-03",
+    "amount_due": 500.00,
+    "amount_paid": 0,
+    "outstanding_amount": 500.00,
+    "due_date": "2026-03-05",
+    "status": "pending",
+    "notes": null,
+    "tenant": {
+      "id": 1,
+      "full_name": "John Doe",
+      "tenant_code": "TNT001"
+    },
+    "unit": {
+      "id": 5,
+      "unit_code": "101"
+    },
+    "property": {
+      "id": 1,
+      "name": "Sunset Apartments"
+    },
+    "payments": []
+  }
+}
 
 ---
 

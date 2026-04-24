@@ -321,11 +321,11 @@ It uses Laravel 12 on the backend with Fortify for session-based web auth and Sa
 
 - **Architectural Scaling (Q2 2026)**
   - **Service Pattern**: Migrated from Fat Controllers to lightweight Action endpoints calling dedicated Service classes (`TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`).
-  - **API Contract Enforcement**: Implementation of arrayed `*Resource.php` specifications for Eloquent models yielding strictly typed wrapper `'data'` payload responses for all active endpoints.
+  - **API Contract Standardization**: Implementation of standardized JSON response structures, ensuring all single-resource endpoints use a `'data'` wrapper and complex relationships (e.g., Tenancy → Unit) are flattened to match mobile TypeScript interfaces, preventing client-side crashes and reducing parsing overhead.
   
 - **Landlord Workflow Refinements (Q2 2026)**
   - **Add Tenant Flow**: Completely restructured mobile form with full-width vertical stacking for premium UX.
   - **Unit Selection**: Real-time "available" unit filtering with card-based dropdown menus.
-  - **Tenant Details**: High-fidelity dashboard view with nested data structures showing active tenancy, units, and billing history.
-  - **Crash Resilience**: Implementation of nested data handling for Tenant Dashboard API responses, eliminating client-side TypeErrors.
+  - **Tenant Details**: High-fidelity dashboard view with standardized and flattened data structures showing active tenancy, units, and billing history.
+  - **Crash Resilience**: Elimination of deeply nested API responses in favor of flattened structures, resolving persistent `TypeError` issues in the mobile app.
 

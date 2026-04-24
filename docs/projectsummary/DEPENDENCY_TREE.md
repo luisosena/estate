@@ -180,6 +180,15 @@ This document provides a complete inventory of all dependencies, their exact ver
 | expo-secure-store | ~14.0.0 | Secure storage |
 | @react-native-async-storage/async-storage | ^2.1.0 | Async storage |
 
+#### Mobile Testing (Development)
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| jest | ^29.7.0 | Testing framework |
+| jest-expo | ~52.0.0 | Expo-specific Jest preset |
+| @testing-library/react-native | ^12.9.0 | React Native testing utilities |
+| react-test-renderer | 18.3.1 | React test rendering |
+
 ---
 
 ## Dependency Conflict Notes

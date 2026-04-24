@@ -112,7 +112,25 @@ php artisan make:resource PropertyCollection
 - Core UI screens implemented for both roles
 - Navigation with bottom tabs and nested stacks
 
-**Impact**: Core functionality available, additional features may be added over time
+**Impact**: Core functionality available, additional features may be added over time.
+
+---
+
+### 4. API-Mobile Data Inconsistency (Standardization In Progress)
+
+**Issue**: Inconsistent JSON structures between backend and mobile frontend, specifically regarding deep nesting vs. flat structures.
+
+**Location**: `app/Http/Controllers/Api/` and `mobile/src/api/`
+
+**Details**:
+- Some endpoints return flat fields (`unit_number`) while others return objects (`unit: { unit_code }`).
+- Single resource endpoints often lacked the `'data'` wrapper, causing mobile crashes.
+
+**Status**:
+- **Standardized**: Rent Bills (Landlord/Tenant) and Dashboard `recent_payments` have been flattened and wrapped in `data`.
+- **Pending**: Utilities, Properties, and Units still require manual auditing for structure alignment.
+
+**Workaround**: Mobile app uses defensive parsing `(response as any).data || response` until standardization is complete.
 
 ---
 

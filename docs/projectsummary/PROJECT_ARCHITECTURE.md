@@ -179,7 +179,7 @@ interface RentBill {
   };
   unit?: {
     id: number;
-    unit_number: string;
+    unit_code: string;
   };
   property?: {
     id: number;
@@ -489,6 +489,7 @@ Testing is divided into core phases:
 2. **Tenant Data Isolation**: Assertions guaranteeing that Tenant accounts cannot fetch data cross-tenancy on Web views.
 3. **API Contracts**: Exhaustive feature testing providing nearly 100% test density specifically targeting the Mobile API endpoints securely bridging `Sanctum::actingAs`.
 4. **Architectural Guardrails**: Enforcing global layout restrictions using `arch()` tests (e.g., prohibiting `dd()` traces, enforcing `FormRequest` extensions).
+5. **API Response Standardization**: A contract layer ensuring all single-resource API responses are wrapped in a `'data'` key and complex nested objects (e.g., `tenancy.unit.property`) are flattened to match mobile TypeScript interfaces, reducing client-side complexity and preventing crashes.
 
 ## Summary
 
