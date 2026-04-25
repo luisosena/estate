@@ -67,11 +67,29 @@ class UtilityBillController extends Controller
             return [
                 'id' => $bill->id,
                 'tenancy_utility_id' => $bill->tenancy_utility_id,
-                'utility_type_name' => $bill->tenancyUtility->utilityType->name,
-                'utility_type_unit' => $bill->tenancyUtility->utilityType->unit,
-                'unit_code' => $bill->tenancyUtility->tenancy->unit->unit_code,
-                'tenant_name' => $bill->tenancyUtility->tenancy->tenant->full_name,
-                'property_name' => $bill->tenancyUtility->tenancy->unit->property->name,
+                'tenancy_utility' => [
+                    'id' => $bill->tenancy_utility_id,
+                    'utility_type' => $bill->tenancyUtility->utilityType ? [
+                        'id' => $bill->tenancyUtility->utilityType->id,
+                        'name' => $bill->tenancyUtility->utilityType->name,
+                        'unit' => $bill->tenancyUtility->utilityType->unit,
+                    ] : null,
+                    'tenancy' => [
+                        'id' => $bill->tenancyUtility->tenancy->id,
+                        'unit' => [
+                            'id' => $bill->tenancyUtility->tenancy->unit->id,
+                            'unit_code' => $bill->tenancyUtility->tenancy->unit->unit_code,
+                            'property' => [
+                                'id' => $bill->tenancyUtility->tenancy->unit->property->id,
+                                'name' => $bill->tenancyUtility->tenancy->unit->property->name,
+                            ],
+                        ],
+                        'tenant' => [
+                            'id' => $bill->tenancyUtility->tenancy->tenant->id,
+                            'full_name' => $bill->tenancyUtility->tenancy->tenant->full_name,
+                        ],
+                    ],
+                ],
                 'billing_month' => $bill->billing_month,
                 'units_consumed' => $bill->units_consumed,
                 'amount_due' => $bill->amount_due,
@@ -79,6 +97,9 @@ class UtilityBillController extends Controller
                 'due_date' => $bill->due_date,
                 'status' => $bill->status,
                 'notes' => $bill->notes,
+                'provider' => $bill->tenancyUtility?->provider,
+                'account_number' => $bill->tenancyUtility?->account_number,
+                'meter_number' => $bill->tenancyUtility?->meter_number,
                 'created_at' => $bill->created_at,
                 'updated_at' => $bill->updated_at,
             ];
@@ -122,11 +143,29 @@ class UtilityBillController extends Controller
             'data' => [
                 'id' => $utilityBill->id,
                 'tenancy_utility_id' => $utilityBill->tenancy_utility_id,
-                'utility_type_name' => $utilityBill->tenancyUtility->utilityType->name,
-                'utility_type_unit' => $utilityBill->tenancyUtility->utilityType->unit,
-                'unit_code' => $utilityBill->tenancyUtility->tenancy->unit->unit_code,
-                'tenant_name' => $utilityBill->tenancyUtility->tenancy->tenant->full_name,
-                'property_name' => $utilityBill->tenancyUtility->tenancy->unit->property->name,
+                'tenancy_utility' => [
+                    'id' => $utilityBill->tenancy_utility_id,
+                    'utility_type' => $utilityBill->tenancyUtility->utilityType ? [
+                        'id' => $utilityBill->tenancyUtility->utilityType->id,
+                        'name' => $utilityBill->tenancyUtility->utilityType->name,
+                        'unit' => $utilityBill->tenancyUtility->utilityType->unit,
+                    ] : null,
+                    'tenancy' => [
+                        'id' => $utilityBill->tenancyUtility->tenancy->id,
+                        'unit' => [
+                            'id' => $utilityBill->tenancyUtility->tenancy->unit->id,
+                            'unit_code' => $utilityBill->tenancyUtility->tenancy->unit->unit_code,
+                            'property' => [
+                                'id' => $utilityBill->tenancyUtility->tenancy->unit->property->id,
+                                'name' => $utilityBill->tenancyUtility->tenancy->unit->property->name,
+                            ],
+                        ],
+                        'tenant' => [
+                            'id' => $utilityBill->tenancyUtility->tenancy->tenant->id,
+                            'full_name' => $utilityBill->tenancyUtility->tenancy->tenant->full_name,
+                        ],
+                    ],
+                ],
                 'billing_month' => $utilityBill->billing_month,
                 'units_consumed' => $utilityBill->units_consumed,
                 'amount_due' => $utilityBill->amount_due,
@@ -134,6 +173,9 @@ class UtilityBillController extends Controller
                 'due_date' => $utilityBill->due_date,
                 'status' => $utilityBill->status,
                 'notes' => $utilityBill->notes,
+                'provider' => $utilityBill->tenancyUtility?->provider,
+                'account_number' => $utilityBill->tenancyUtility?->account_number,
+                'meter_number' => $utilityBill->tenancyUtility?->meter_number,
                 'created_at' => $utilityBill->created_at,
                 'updated_at' => $utilityBill->updated_at,
                 'payments' => $utilityBill->payments->map(fn ($p) => [

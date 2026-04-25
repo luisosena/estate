@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Services\TenantService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -55,13 +56,13 @@ class DashboardController extends Controller
                     ] : null,
 
                     'payments' => collect($data['payments'])->map(fn ($p) => [
-                        'id' => $p->id,
-                        'amount' => $p->amount,
-                        'payment_type' => $p->payment_type,
-                        'payment_method' => $p->payment_method,
-                        'status' => $p->status,
-                        'paid_at' => $p->paid_at?->toIso8601String(),
-                        'reference_number' => $p->reference_number,
+                        'id' => $p['id'],
+                        'amount' => $p['amount'],
+                        'payment_type' => $p['payment_type'],
+                        'payment_method' => $p['payment_method'],
+                        'status' => $p['status'],
+                        'paid_at' => $p['paid_at'] ? Carbon::parse($p['paid_at'])->toIso8601String() : null,
+                        'reference_number' => $p['reference_number'] ?? null,
                     ]),
 
                     'rent_bills' => collect($data['rent_bills'])->map(fn ($rb) => [

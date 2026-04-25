@@ -20,21 +20,21 @@ beforeEach(function () {
     $this->tenant = Tenant::factory()->create();
     $this->tenantUser = User::factory()->create([
         'role' => 'tenant',
-        'tenant_id' => $this->tenant->id
+        'tenant_id' => $this->tenant->id,
     ]);
     $this->tenancy = Tenancy::factory()->create([
         'unit_id' => $this->unit->id,
         'tenant_id' => $this->tenant->id,
-        'status' => 'active'
+        'status' => 'active',
     ]);
     $this->utilityType = UtilityType::factory()->create();
 });
 
-test('landlord can list utility bills with flattened fields', function () {
+test('landlord can list utility bills with nested tenancy_utility', function () {
     Sanctum::actingAs($this->landlord);
     $tenancyUtility = TenancyUtility::factory()->create([
         'tenancy_id' => $this->tenancy->id,
-        'utility_type_id' => $this->utilityType->id
+        'utility_type_id' => $this->utilityType->id,
     ]);
     UtilityBill::factory()->count(2)->create(['tenancy_utility_id' => $tenancyUtility->id]);
 
@@ -45,23 +45,35 @@ test('landlord can list utility bills with flattened fields', function () {
             'data' => [
                 '*' => [
                     'id',
-                    'utility_type_name',
-                    'unit_code',
-                    'tenant_name',
-                    'property_name',
+                    'tenancy_utility' => [
+                        'utility_type' => [
+                            'name',
+                        ],
+                        'tenancy' => [
+                            'unit' => [
+                                'unit_code',
+                                'property' => [
+                                    'name',
+                                ],
+                            ],
+                            'tenant' => [
+                                'full_name',
+                            ],
+                        ],
+                    ],
                     'amount_due',
-                    'status'
-                ]
+                    'status',
+                ],
             ],
-            'meta'
+            'meta',
         ]);
 });
 
-test('tenant can list their utilities with flattened fields', function () {
+test('tenant can list their utilities with nested utility_type', function () {
     Sanctum::actingAs($this->tenantUser);
     TenancyUtility::factory()->create([
         'tenancy_id' => $this->tenancy->id,
-        'utility_type_id' => $this->utilityType->id
+        'utility_type_id' => $this->utilityType->id,
     ]);
 
     $response = $this->getJson('/api/tenant/utilities');
@@ -71,24 +83,26 @@ test('tenant can list their utilities with flattened fields', function () {
             'data' => [
                 '*' => [
                     'id',
-                    'utility_type_name',
-                    'utility_type_unit',
+                    'utility_type' => [
+                        'name',
+                        'unit',
+                    ],
                     'amount',
-                    'status'
-                ]
+                    'status',
+                ],
             ],
             'meta' => [
                 'tenancy_id',
-                'monthly_rent'
-            ]
+                'monthly_rent',
+            ],
         ]);
 });
 
-test('tenant can list their utility bills with flattened fields', function () {
+test('tenant can list their utility bills with nested tenancy_utility', function () {
     Sanctum::actingAs($this->tenantUser);
     $tenancyUtility = TenancyUtility::factory()->create([
         'tenancy_id' => $this->tenancy->id,
-        'utility_type_id' => $this->utilityType->id
+        'utility_type_id' => $this->utilityType->id,
     ]);
     UtilityBill::factory()->create(['tenancy_utility_id' => $tenancyUtility->id]);
 
@@ -99,16 +113,28 @@ test('tenant can list their utility bills with flattened fields', function () {
             'data' => [
                 '*' => [
                     'id',
-                    'utility_type_name',
+                    'tenancy_utility' => [
+                        'utility_type' => [
+                            'name',
+                        ],
+                        'tenancy' => [
+                            'unit' => [
+                                'unit_code',
+                            ],
+                            'tenant' => [
+                                'full_name',
+                            ],
+                        ],
+                    ],
                     'billing_month',
                     'amount_due',
                     'status',
-                    'provider'
-                ]
+                    'provider',
+                ],
             ],
             'meta' => [
                 'total_due',
-                'total_outstanding'
-            ]
+                'total_outstanding',
+            ],
         ]);
 });

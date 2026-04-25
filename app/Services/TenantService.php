@@ -33,20 +33,9 @@ class TenantService
                 })
                 ->take(5)
                 ->values()
-                ->map(function ($payment) {
-                    $data = $payment->toArray();
-                    $data['utility_type_name'] = $payment->payment_type === 'utility' 
-                        ? $payment->utilityBill?->tenancyUtility?->utilityType?->name 
-                        : null;
-                    return $data;
-                })
-                ->all() ?? [],
+                ->toArray() ?? [],
             'utilities' => $activeTenancy?->tenancyUtilities
-                ? $activeTenancy->tenancyUtilities->map(function ($utility) {
-                    $data = $utility->toArray();
-                    $data['utility_type_name'] = $utility->utilityType?->name;
-                    return $data;
-                })->all()
+                ? $activeTenancy->tenancyUtilities->toArray()
                 : [],
             'notifications' => $tenant->notifications()
                 ->latest()

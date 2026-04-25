@@ -116,7 +116,7 @@ export interface Payment {
   payment_method: 'mobile_money' | 'bank_transfer' | null;
   reference_number: string | null;
   notes: string | null;
-  utility_type_name?: string | null;
+  utility_bill?: UtilityBill | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -177,9 +177,18 @@ export interface Utility {
   meter_number: string | null;
   status: 'active' | 'suspended' | 'disconnected';
   notes: string | null;
-  utility_type_name?: string;
-  utility_type_unit?: string;
   utility_type?: UtilityType | null;
+  tenancy?: {
+    id: number;
+    unit?: {
+      id: number;
+      unit_code: string;
+      property?: {
+        id: number;
+        name: string;
+      };
+    };
+  };
 }
 
 export interface UtilityBill {
@@ -192,13 +201,9 @@ export interface UtilityBill {
   due_date: string;
   status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
   notes: string | null;
-  utility_type_name?: string;
-  utility_type_unit?: string;
-  unit_code?: string;
-  tenant_name?: string;
-  property_name?: string;
   provider?: string;
   account_number?: string;
+  meter_number?: string;
   created_at?: string;
   updated_at?: string;
   tenancy_utility?: {
@@ -213,6 +218,21 @@ export interface UtilityBill {
     status: 'active' | 'suspended' | 'disconnected';
     notes: string | null;
     utility_type: UtilityType | null;
+    tenancy?: {
+      id: number;
+      unit?: {
+        id: number;
+        unit_code: string;
+        property?: {
+          id: number;
+          name: string;
+        };
+      };
+      tenant?: {
+        id: number;
+        full_name: string;
+      };
+    };
   };
   // Only populated for landlord endpoints
   payments?: Payment[];

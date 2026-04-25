@@ -39,7 +39,8 @@ class RentBillController extends Controller
         $perPage = $request->get('per_page', 15);
         $status = $request->get('status');
 
-        $query = RentBill::where('tenancy_id', $activeTenancy->id);
+        $query = RentBill::where('tenancy_id', $activeTenancy->id)
+            ->with(['tenancy.unit.property']);
 
         if ($status) {
             $query->where('status', $status);
@@ -72,11 +73,11 @@ class RentBillController extends Controller
     {
         return [
             'id' => $bill->id,
-            'billing_month' => $bill->billing_month->format('Y-m'),
+            'billing_month' => $bill->billing_month?->format('Y-m'),
             'amount_due' => (float) $bill->amount_due,
             'amount_paid' => (float) $bill->amount_paid,
             'outstanding_amount' => (float) $bill->outstanding_amount,
-            'due_date' => $bill->due_date->format('Y-m-d'),
+            'due_date' => $bill->due_date?->format('Y-m-d'),
             'status' => $bill->status,
             'notes' => $bill->notes,
             'unit' => $bill->tenancy?->unit ? [
@@ -120,7 +121,7 @@ class RentBillController extends Controller
 
         $rentBill = RentBill::where('tenancy_id', $activeTenancy->id)
             ->where('billing_month', now()->startOfMonth())
-            ->with('payments:id,amount,payment_method,paid_at,status')
+            ->with(['payments:id,amount,payment_method,paid_at,status', 'tenancy.unit.property'])
             ->first();
 
         if (! $rentBill) {

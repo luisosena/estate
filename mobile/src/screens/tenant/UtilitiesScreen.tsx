@@ -141,7 +141,11 @@ export function TenantUtilitiesScreen() {
                     </View>
                     <View style={styles.utilityInfo}>
                       <Text style={styles.utilityName}>{capitalize(utility.utility_type?.name || 'Unknown')}</Text>
-                      <Text style={styles.utilityMeta}>Ref: {utility.account_number || 'N/A'}</Text>
+                      <Text style={styles.utilityMeta}>
+                        {utility.account_number || utility.meter_number 
+                          ? `Ref: ${utility.account_number || utility.meter_number}` 
+                          : (utility.provider || 'Standard Connection')}
+                      </Text>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                        <Badge label={capitalize(utility.status)} status={status} />

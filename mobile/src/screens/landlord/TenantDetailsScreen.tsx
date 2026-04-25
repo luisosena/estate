@@ -268,8 +268,8 @@ export function TenantDetailsScreen() {
                    </View>
                    <View style={styles.rowInfo}>
                      <Text style={styles.rowTitle}>
-                       {payment.payment_type === 'utility' && payment.utility_type_name 
-                         ? payment.utility_type_name 
+                       {payment.payment_type === 'utility' && payment.utility_bill?.tenancy_utility?.utility_type?.name 
+                         ? payment.utility_bill.tenancy_utility.utility_type.name 
                          : (payment.payment_type ? payment.payment_type.charAt(0).toUpperCase() + payment.payment_type.slice(1) : 'Payment')}
                      </Text>
                    </View>
@@ -300,7 +300,7 @@ export function TenantDetailsScreen() {
                        </View>
                        <View style={styles.rowInfo}>
                           <Text style={styles.rowTitle}>
-                             {utility.utility_type_name || utility.utility_type?.name || 'Utility'}
+                             {utility.utility_type?.name || 'Utility'}
                           </Text>
                           <Text style={styles.rowSubtitle}>
                              {utility.provider || 'Standard Provider'} • {utility.billing_cycle}

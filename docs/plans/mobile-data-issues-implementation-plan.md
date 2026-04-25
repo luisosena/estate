@@ -63,9 +63,9 @@ Comprehensive plan to fix mobile data flow failures, testing gaps, and API contr
 **Tasks (Scale-up - PENDING)**:
 - [ ] **Paginated Meta Migration**: Update all paginated endpoints to return `{ data: [...], meta: { current_page, ... } }`.
 - [ ] **Utility Standardization**:
-    - Refactor `UtilityBillController` to flatten `utility_type_name`, `unit_code`, `property_name`, etc.
-    - Update `UtilityBill` interface in `mobile/src/types/index.ts` (Done).
-- [ ] **Property & Unit Standardization**: Flatten property/unit details and wrap in `data`.
+    - Refactor `UtilityBillController` to enforce strict nested `tenancy_utility.tenancy.unit` and `tenant` structures, REMOVING ALL flattened shortcuts (`utility_type_name`, `unit_code`, `property_name`, `tenant_name`).
+    - Update `UtilityBill` and `Utility` interfaces in `mobile/src/types/index.ts` to expect nested objects.
+- [ ] **Property & Unit Standardization**: Enforce nested `property` and `unit` objects inside tenancies/bills, avoiding flattened `property_name` or `unit_code`.
 - [ ] Remove defensive `(response as any).data || response` patterns from remaining mobile screens.
 
 ### 2.2 Add Comprehensive API Contract Tests (Backend)

@@ -78,7 +78,7 @@ export function MakePaymentScreen() {
       setLoadingBills(true);
       try {
         // TEMPORARY: Delay for testing skeletons
-        await new Promise(resolve => setTimeout(resolve, 4000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         if (paymentType === 'utility') {
           const response = await tenantApi.getUtilityBills();
