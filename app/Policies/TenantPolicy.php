@@ -2,17 +2,27 @@
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\Tenant;
 use App\Models\User;
 
 class TenantPolicy
 {
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->role === Role::Admin) {
+            return true;
+        }
+
+        return null;
+    }
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['admin', 'landlord']);
+        return $user->role === Role::Landlord;
     }
 
     /**
@@ -20,23 +30,10 @@ class TenantPolicy
      */
     public function view(User $user, Tenant $tenant): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        if ($user->role === 'landlord') {
-            return $tenant->tenancies()
-                ->whereHas('unit.property', function ($query) use ($user) {
-                    $query->where('owner_id', $user->id);
-                })
-                ->exists();
-        }
-
-        if ($user->role === 'tenant') {
-            return $user->tenant_id === $tenant->id;
-        }
-
-        return false;
+        // A landlord can view a tenant if they have a tenancy in the landlord's property
+        return $tenant->tenancies()->whereHas('unit.property', function ($query) use ($user) {
+            $query->where('owner_id', $user->id);
+        })->exists();
     }
 
     /**
@@ -44,7 +41,7 @@ class TenantPolicy
      */
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'landlord']);
+        return $user->role === Role::Landlord;
     }
 
     /**
@@ -52,19 +49,7 @@ class TenantPolicy
      */
     public function update(User $user, Tenant $tenant): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        if ($user->role === 'landlord') {
-            return $tenant->tenancies()
-                ->whereHas('unit.property', function ($query) use ($user) {
-                    $query->where('owner_id', $user->id);
-                })
-                ->exists();
-        }
-
-        return false;
+        return $this->view($user, $tenant);
     }
 
     /**
@@ -72,6 +57,6 @@ class TenantPolicy
      */
     public function delete(User $user, Tenant $tenant): bool
     {
-        return $user->role === 'admin';
+        return $this->view($user, $tenant);
     }
 }
