@@ -13,7 +13,7 @@ beforeEach(function () {
 });
 
 test('tenant can list own payments', function () {
-    $this->getJson('/api/tenant/payments')
+    $this->getJson('/api/v1/tenant/payments')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
@@ -23,7 +23,7 @@ test('tenant can list own payments', function () {
 });
 
 test('tenant can record a rent payment', function () {
-    $response = $this->postJson('/api/tenant/payments', [
+    $response = $this->postJson('/api/v1/tenant/payments', [
         'amount'         => 15000,
         'payment_type'   => 'rent',
         'payment_method' => 'mobile_money',
@@ -38,13 +38,13 @@ test('tenant can record a rent payment', function () {
 });
 
 test('payment creation fails without required fields', function () {
-    $this->postJson('/api/tenant/payments', [])->assertUnprocessable();
+    $this->postJson('/api/v1/tenant/payments', [])->assertUnprocessable();
 });
 
 test('payment is rejected when tenant has no active tenancy', function () {
     $this->tenancy->update(['status' => 'ended']);
 
-    $this->postJson('/api/tenant/payments', [
+    $this->postJson('/api/v1/tenant/payments', [
         'amount'         => 5000,
         'payment_type'   => 'rent',
         'payment_method' => 'mobile_money',

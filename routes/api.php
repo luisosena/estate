@@ -144,8 +144,6 @@ $defineApiRoutes = function (): void {
     });
 };
 
-// Unversioned routes (e.g. /api/auth/login)
-$defineApiRoutes();
 
 // Versioned routes for mobile/web clients (e.g. /api/v1/auth/login)
 Route::prefix('v1')->group($defineApiRoutes);

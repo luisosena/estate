@@ -13,6 +13,7 @@ test('login screen can be rendered', function () {
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
+    $this->withoutExceptionHandling();
     $response = $this->post(route('login.store'), [
         'username' => $user->username,
         'password' => 'password',

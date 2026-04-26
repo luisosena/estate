@@ -17,7 +17,7 @@ beforeEach(function () {
 test('landlord can list their units with data wrapper and flattened fields', function () {
     Unit::factory()->count(3)->create(['property_id' => $this->property->id]);
 
-    $response = $this->getJson('/api/landlord/units');
+    $response = $this->getJson('/api/v1/landlord/units');
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -40,7 +40,7 @@ test('landlord can list their units with data wrapper and flattened fields', fun
 test('landlord can show a unit with data wrapper and flattened fields', function () {
     $unit = Unit::factory()->create(['property_id' => $this->property->id]);
 
-    $response = $this->getJson("/api/landlord/units/{$unit->id}");
+    $response = $this->getJson("/api/v1/landlord/units/{$unit->id}");
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -65,7 +65,7 @@ test('landlord can store a unit with data wrapper', function () {
         'unit_name' => 'Unit XYZ'
     ];
 
-    $response = $this->postJson('/api/landlord/units', $data);
+    $response = $this->postJson('/api/v1/landlord/units', $data);
 
     $response->assertStatus(201)
         ->assertJsonStructure([
@@ -88,7 +88,7 @@ test('landlord can update a unit with data wrapper', function () {
         'unit_name' => 'Updated Unit Name'
     ];
 
-    $response = $this->putJson("/api/landlord/units/{$unit->id}", $data);
+    $response = $this->putJson("/api/v1/landlord/units/{$unit->id}", $data);
 
     $response->assertStatus(200)
         ->assertJsonStructure([

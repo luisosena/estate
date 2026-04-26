@@ -11,7 +11,7 @@ test('landlord can get their profile with data wrapper', function () {
     $landlord = User::factory()->create(['role' => 'landlord']);
     Sanctum::actingAs($landlord);
 
-    $response = $this->getJson('/api/landlord/profile');
+    $response = $this->getJson('/api/v1/landlord/profile');
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -32,7 +32,7 @@ test('tenant can get their profile with data wrapper', function () {
     ]);
     Sanctum::actingAs($tenantUser);
 
-    $response = $this->getJson('/api/tenant/profile');
+    $response = $this->getJson('/api/v1/tenant/profile');
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -57,7 +57,7 @@ test('landlord can update their profile with data wrapper', function () {
         'email' => 'updated@example.com'
     ];
 
-    $response = $this->putJson('/api/landlord/profile', $data);
+    $response = $this->putJson('/api/v1/landlord/profile', $data);
 
     $response->assertStatus(200)
         ->assertJsonStructure([

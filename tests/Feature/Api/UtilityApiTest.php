@@ -38,7 +38,7 @@ test('landlord can list utility bills with nested tenancy_utility', function () 
     ]);
     UtilityBill::factory()->count(2)->create(['tenancy_utility_id' => $tenancyUtility->id]);
 
-    $response = $this->getJson('/api/landlord/utility-bills');
+    $response = $this->getJson('/api/v1/landlord/utility-bills');
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -76,7 +76,7 @@ test('tenant can list their utilities with nested utility_type', function () {
         'utility_type_id' => $this->utilityType->id,
     ]);
 
-    $response = $this->getJson('/api/tenant/utilities');
+    $response = $this->getJson('/api/v1/tenant/utilities');
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -106,7 +106,7 @@ test('tenant can list their utility bills with nested tenancy_utility', function
     ]);
     UtilityBill::factory()->create(['tenancy_utility_id' => $tenancyUtility->id]);
 
-    $response = $this->getJson('/api/tenant/utility-bills');
+    $response = $this->getJson('/api/v1/tenant/utility-bills');
 
     $response->assertStatus(200)
         ->assertJsonStructure([

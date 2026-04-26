@@ -24,7 +24,7 @@ beforeEach(function () {
 });
 
 test('landlord can list own tenants', function () {
-    $this->getJson('/api/landlord/tenants')
+    $this->getJson('/api/v1/landlord/tenants')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
@@ -39,7 +39,7 @@ test('landlord can list own tenants', function () {
 });
 
 test('landlord can view tenant detail by identifier', function () {
-    $this->getJson("/api/landlord/tenants/{$this->tenant->tenant_code}")
+    $this->getJson("/api/v1/landlord/tenants/{$this->tenant->tenant_code}")
         ->assertOk()
         ->assertJsonPath('data.tenant.id', $this->tenant->id);
 });
@@ -48,7 +48,7 @@ test('landlord can onboard a new tenant via API', function () {
     $this->unit->update(['status' => 'available']);
     $freshUnit = Unit::factory()->create(['property_id' => $this->property->id, 'status' => 'available']);
 
-    $response = $this->postJson('/api/landlord/tenants', [
+    $response = $this->postJson('/api/v1/landlord/tenants', [
         'full_name'        => 'John API',
         'email'            => 'john.api@example.com',
         'phone'            => '0700000001',
@@ -63,11 +63,11 @@ test('landlord can onboard a new tenant via API', function () {
 });
 
 test('tenant onboarding fails without required fields', function () {
-    $this->postJson('/api/landlord/tenants', [])->assertUnprocessable();
+    $this->postJson('/api/v1/landlord/tenants', [])->assertUnprocessable();
 });
 
 test('landlord can remove own tenant', function () {
-    $this->deleteJson("/api/landlord/tenants/{$this->tenancy->id}/remove")
+    $this->deleteJson("/api/v1/landlord/tenants/{$this->tenancy->id}/remove")
         ->assertOk();
 });
 
@@ -82,6 +82,6 @@ test('landlord cannot remove another landlords tenant', function () {
         'status'    => 'active',
     ]);
 
-    $this->deleteJson("/api/landlord/tenants/{$otherTenancy->id}/remove")
+    $this->deleteJson("/api/v1/landlord/tenants/{$otherTenancy->id}/remove")
         ->assertNotFound();
 });

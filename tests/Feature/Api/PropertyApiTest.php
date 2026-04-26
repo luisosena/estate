@@ -15,7 +15,7 @@ beforeEach(function () {
 test('landlord can list their properties with data wrapper', function () {
     Property::factory()->count(3)->create(['owner_id' => $this->landlord->id]);
 
-    $response = $this->getJson('/api/landlord/properties');
+    $response = $this->getJson('/api/v1/landlord/properties');
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -37,7 +37,7 @@ test('landlord can list their properties with data wrapper', function () {
 test('landlord can show a property with data wrapper', function () {
     $property = Property::factory()->create(['owner_id' => $this->landlord->id]);
 
-    $response = $this->getJson("/api/landlord/properties/{$property->id}");
+    $response = $this->getJson("/api/v1/landlord/properties/{$property->id}");
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -60,7 +60,7 @@ test('landlord can store a property with data wrapper', function () {
         'description' => 'A test property'
     ];
 
-    $response = $this->postJson('/api/landlord/properties', $data);
+    $response = $this->postJson('/api/v1/landlord/properties', $data);
 
     $response->assertStatus(201)
         ->assertJsonStructure([
@@ -83,7 +83,7 @@ test('landlord can update a property with data wrapper', function () {
         'name' => 'Updated Property'
     ];
 
-    $response = $this->putJson("/api/landlord/properties/{$property->id}", $data);
+    $response = $this->putJson("/api/v1/landlord/properties/{$property->id}", $data);
 
     $response->assertStatus(200)
         ->assertJsonStructure([

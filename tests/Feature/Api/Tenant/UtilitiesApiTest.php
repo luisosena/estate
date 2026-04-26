@@ -25,7 +25,7 @@ beforeEach(function () {
 });
 
 test('tenant can list own utility subscriptions', function () {
-    $this->getJson('/api/tenant/utilities')
+    $this->getJson('/api/v1/tenant/utilities')
         ->assertOk()
         ->assertJsonStructure(['data', 'meta' => ['tenancy_id', 'monthly_rent']]);
 });
@@ -36,13 +36,13 @@ test('tenant can list own utility bills', function () {
         'status' => 'pending',
     ]);
 
-    $this->getJson('/api/tenant/utility-bills')
+    $this->getJson('/api/v1/tenant/utility-bills')
         ->assertOk()
         ->assertJsonStructure(['data', 'meta']);
 });
 
 test('utility data is scoped to the active tenancy', function () {
-    $response = $this->getJson('/api/tenant/utilities')->assertOk();
+    $response = $this->getJson('/api/v1/tenant/utilities')->assertOk();
 
     $ids = collect($response->json('data'))->pluck('id');
     expect($ids->contains($this->tu->id))->toBeTrue();
@@ -51,7 +51,7 @@ test('utility data is scoped to the active tenancy', function () {
 test('tenant with no active tenancy gets empty utility response', function () {
     $this->tenancy->update(['status' => 'ended']);
 
-    $response = $this->getJson('/api/tenant/utilities')->assertOk();
+    $response = $this->getJson('/api/v1/tenant/utilities')->assertOk();
 
     expect($response->json('data'))->toBeEmpty();
 });

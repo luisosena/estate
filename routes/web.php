@@ -281,9 +281,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function (Illuminate\Http\Request $request) {
         $user = $request->user();
 
-        if ($user->role === 'admin') {
+        if ($user->role === \App\Enums\Role::Admin) {
             return redirect()->route('admin.dashboard');
-        } elseif ($user->role === 'landlord') {
+        } elseif ($user->role === \App\Enums\Role::Landlord) {
             return redirect()->route('landlord.dashboard');
         } else {
             return redirect()->route('tenant.dashboard');
@@ -291,20 +291,5 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 });
 
-Route::get('/mail', function () {
-    return Inertia::render('mail');
-})->name('mail');
-
-Route::get('/tests', function () {
-    return Inertia::render('tests');
-})->name('tests');
-
-Route::get('/tests2', function () {
-    $tenants = Tenant::query()->orderBy('id')->get();
-
-    return Inertia::render('tests2', [
-        'tenants' => $tenants,
-    ]);
-})->name('tests2');
 
 require __DIR__.'/settings.php';

@@ -2,20 +2,27 @@
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\Unit;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UnitPolicy
 {
-    use HandlesAuthorization;
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->role === Role::Admin) {
+            return true;
+        }
+
+        return null;
+    }
 
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->role === 'admin' || $user->role === 'landlord';
+        return $user->role === Role::Landlord;
     }
 
     /**
@@ -23,15 +30,7 @@ class UnitPolicy
      */
     public function view(User $user, Unit $unit): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        if ($user->role === 'landlord') {
-            return $unit->property->owner_id === $user->id;
-        }
-
-        return false;
+        return $unit->property->owner_id === $user->id;
     }
 
     /**
@@ -39,7 +38,7 @@ class UnitPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'admin' || $user->role === 'landlord';
+        return $user->role === Role::Landlord;
     }
 
     /**
@@ -47,15 +46,7 @@ class UnitPolicy
      */
     public function update(User $user, Unit $unit): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        if ($user->role === 'landlord') {
-            return $unit->property->owner_id === $user->id;
-        }
-
-        return false;
+        return $unit->property->owner_id === $user->id;
     }
 
     /**
@@ -63,14 +54,6 @@ class UnitPolicy
      */
     public function delete(User $user, Unit $unit): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        if ($user->role === 'landlord') {
-            return $unit->property->owner_id === $user->id;
-        }
-
-        return false;
+        return $unit->property->owner_id === $user->id;
     }
 }

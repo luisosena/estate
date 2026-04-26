@@ -2,19 +2,26 @@
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UserPolicy
 {
-    use HandlesAuthorization;
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->role === Role::Admin) {
+            return true;
+        }
+
+        return null;
+    }
 
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->role === 'admin';
+        return false; // only admin (handled by before())
     }
 
     /**
@@ -22,10 +29,6 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
         return $user->id === $model->id;
     }
 
@@ -34,7 +37,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'admin';
+        return false; // only admin (handled by before())
     }
 
     /**
@@ -42,10 +45,6 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
         return $user->id === $model->id;
     }
 
@@ -54,6 +53,6 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return $user->role === 'admin';
+        return false; // only admin (handled by before())
     }
 }

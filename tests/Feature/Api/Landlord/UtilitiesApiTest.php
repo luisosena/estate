@@ -28,7 +28,7 @@ beforeEach(function () {
 // --- Utility types ---
 
 test('landlord can list utility types', function () {
-    $this->getJson('/api/landlord/utility-types')
+    $this->getJson('/api/v1/landlord/utility-types')
         ->assertOk()
         ->assertJsonStructure(['data']);
 });
@@ -36,7 +36,7 @@ test('landlord can list utility types', function () {
 // --- Tenancy utilities ---
 
 test('landlord can assign utility to tenancy', function () {
-    $this->postJson("/api/landlord/tenancies/{$this->tenancy->id}/utilities", [
+    $this->postJson("/api/v1/landlord/tenancies/{$this->tenancy->id}/utilities", [
         'utility_type_id' => $this->utilityType->id,
         'amount'          => 2500,
         'billing_cycle'   => 'monthly',
@@ -56,7 +56,7 @@ test('landlord can update a tenancy utility', function () {
         'amount'          => 1000,
     ]);
 
-    $this->putJson("/api/landlord/tenancy-utilities/{$tu->id}", ['amount' => 2000])
+    $this->putJson("/api/v1/landlord/tenancy-utilities/{$tu->id}", ['amount' => 2000])
         ->assertOk();
 
     expect($tu->fresh()->amount)->toEqual('2000.00');
@@ -68,7 +68,7 @@ test('landlord can remove utility with no unpaid bills', function () {
         'utility_type_id' => $this->utilityType->id,
     ]);
 
-    $this->deleteJson("/api/landlord/tenancy-utilities/{$tu->id}")->assertOk();
+    $this->deleteJson("/api/v1/landlord/tenancy-utilities/{$tu->id}")->assertOk();
     $this->assertDatabaseMissing('tenancy_utilities', ['id' => $tu->id]);
 });
 
@@ -79,13 +79,13 @@ test('landlord cannot remove utility with unpaid bills', function () {
     ]);
     UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id, 'status' => 'pending']);
 
-    $this->deleteJson("/api/landlord/tenancy-utilities/{$tu->id}")->assertUnprocessable();
+    $this->deleteJson("/api/v1/landlord/tenancy-utilities/{$tu->id}")->assertUnprocessable();
 });
 
 // --- Utility bills ---
 
 test('landlord can list utility bills', function () {
-    $this->getJson('/api/landlord/utility-bills')
+    $this->getJson('/api/v1/landlord/utility-bills')
         ->assertOk()
         ->assertJsonStructure(['data']);
 });
@@ -94,7 +94,7 @@ test('landlord can view a single utility bill', function () {
     $tu   = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
     $bill = UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id, 'status' => 'pending']);
 
-    $this->getJson("/api/landlord/utility-bills/{$bill->id}")
+    $this->getJson("/api/v1/landlord/utility-bills/{$bill->id}")
         ->assertOk()
         ->assertJsonFragment(['id' => $bill->id]);
 });
@@ -103,7 +103,7 @@ test('landlord can waive a pending utility bill', function () {
     $tu   = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
     $bill = UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id, 'status' => 'pending', 'amount_due' => 1500, 'amount_paid' => 0]);
 
-    $this->postJson("/api/landlord/utility-bills/{$bill->id}/waive", ['notes' => 'Waiver reason'])
+    $this->postJson("/api/v1/landlord/utility-bills/{$bill->id}/waive", ['notes' => 'Waiver reason'])
         ->assertOk();
 
     expect($bill->fresh()->status)->toBe('waived');
@@ -113,5 +113,5 @@ test('landlord cannot waive an already paid utility bill', function () {
     $tu   = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
     $bill = UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id, 'status' => 'paid', 'amount_due' => 1500, 'amount_paid' => 1500]);
 
-    $this->postJson("/api/landlord/utility-bills/{$bill->id}/waive")->assertUnprocessable();
+    $this->postJson("/api/v1/landlord/utility-bills/{$bill->id}/waive")->assertUnprocessable();
 });
