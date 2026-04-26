@@ -36,7 +36,7 @@ test('landlord can list utility bills for their properties', function () {
         'tenancy_utility_id' => $this->tu->id,
     ]);
  
-    $this->getJson('/api/landlord/utility-bills')
+    $this->getJson('/api/v1/landlord/utility-bills')
         ->assertOk()
         ->assertJsonCount(3, 'data')
         ->assertJsonStructure([
@@ -65,7 +65,7 @@ test('landlord utility bill listing handles payments without lazy loading errors
     ]);
  
     // This should NOT throw a 500 error
-    $this->getJson('/api/landlord/utility-bills')
+    $this->getJson('/api/v1/landlord/utility-bills')
         ->assertOk();
 });
 

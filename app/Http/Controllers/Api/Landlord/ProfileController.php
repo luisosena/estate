@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Landlord;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UserProfileUpdateRequest;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,7 @@ class ProfileController extends Controller
     {
         $user = request()->user();
 
-        if ($user->role !== 'landlord') {
+        if ($user->role !== Role::Landlord) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -37,7 +38,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role !== 'landlord') {
+        if ($user->role !== Role::Landlord) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 

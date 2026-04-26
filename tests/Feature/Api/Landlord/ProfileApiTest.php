@@ -9,20 +9,20 @@ beforeEach(function () {
 });
 
 test('landlord can view own profile', function () {
-    $this->getJson('/api/landlord/profile')
+    $this->getJson('/api/v1/landlord/profile')
         ->assertOk()
         ->assertJsonFragment(['id' => $this->landlord->id]);
 });
 
 test('landlord can update profile name', function () {
-    $this->putJson('/api/landlord/profile', ['name' => 'New Name'])
+    $this->putJson('/api/v1/landlord/profile', ['name' => 'New Name'])
         ->assertOk();
 
     expect($this->landlord->fresh()->name)->toBe('New Name');
 });
 
 test('landlord can change password via API', function () {
-    $this->putJson('/api/landlord/password', [
+    $this->putJson('/api/v1/landlord/password', [
         'current_password'      => 'password',
         'password'              => 'NewSecure@123',
         'password_confirmation' => 'NewSecure@123',
@@ -30,7 +30,7 @@ test('landlord can change password via API', function () {
 });
 
 test('password change fails with wrong current password', function () {
-    $this->putJson('/api/landlord/password', [
+    $this->putJson('/api/v1/landlord/password', [
         'current_password'      => 'wrong_password',
         'password'              => 'NewSecure@123',
         'password_confirmation' => 'NewSecure@123',

@@ -27,7 +27,7 @@ beforeEach(function () {
 });
 
 test('landlord can list rent bills with nested structure', function () {
-    $this->getJson('/api/landlord/rent-bills')
+    $this->getJson('/api/v1/landlord/rent-bills')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
@@ -49,7 +49,7 @@ test('landlord can list rent bills with nested structure', function () {
 });
 
 test('landlord can view single rent bill with nested structure', function () {
-    $this->getJson("/api/landlord/rent-bills/{$this->rentBill->id}")
+    $this->getJson("/api/v1/landlord/rent-bills/{$this->rentBill->id}")
         ->assertOk()
         ->assertJsonStructure([
             'data' => [

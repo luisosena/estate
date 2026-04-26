@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
+use App\Enums\Role;
+
 use App\Http\Resources\NotificationResource;
 use App\Http\Controllers\Controller;
 use App\Services\Admin\AdminDashboardService;
@@ -15,7 +17,7 @@ class AdminDashboardController extends Controller
     public function index(Request $request)
     {
         // Admin authorization check (Alternative to middleware)
-        if (! $request->user() || $request->user()->role !== 'admin') {
+        if (! $request->user() || $request->user()->role !== Role::Admin) {
             return redirect()->route('login')->with('error', 'Access denied.');
         }
 

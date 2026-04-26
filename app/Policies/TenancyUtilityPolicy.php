@@ -2,45 +2,43 @@
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\TenancyUtility;
 use App\Models\User;
 
 class TenancyUtilityPolicy
 {
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->role === Role::Admin) {
+            return true;
+        }
+
+        return null;
+    }
+
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['admin', 'landlord']);
+        return $user->role === Role::Landlord;
     }
 
     public function view(User $user, TenancyUtility $tenancyUtility): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        return $user->role === 'landlord' && $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
+        return $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
     }
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'landlord']);
+        return $user->role === Role::Landlord;
     }
 
     public function update(User $user, TenancyUtility $tenancyUtility): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        return $user->role === 'landlord' && $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
+        return $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
     }
 
     public function delete(User $user, TenancyUtility $tenancyUtility): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        return $user->role === 'landlord' && $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
+        return $tenancyUtility->tenancy->unit->property->owner_id === $user->id;
     }
 }

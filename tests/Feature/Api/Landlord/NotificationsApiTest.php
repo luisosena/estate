@@ -25,7 +25,7 @@ function makeLandlordNotification(\App\Models\User $user, bool $read = false): D
 test('landlord can list notifications', function () {
     makeLandlordNotification($this->landlord);
 
-    $this->getJson('/api/landlord/notifications')
+    $this->getJson('/api/v1/landlord/notifications')
         ->assertOk()
         ->assertJsonStructure(['data']);
 });
@@ -33,7 +33,7 @@ test('landlord can list notifications', function () {
 test('landlord can mark notification as read', function () {
     $notification = makeLandlordNotification($this->landlord);
 
-    $this->putJson("/api/landlord/notifications/{$notification->id}/read")
+    $this->putJson("/api/v1/landlord/notifications/{$notification->id}/read")
         ->assertOk();
 
     expect($notification->fresh()->read_at)->not->toBeNull();
@@ -42,7 +42,7 @@ test('landlord can mark notification as read', function () {
 test('landlord can delete own notification', function () {
     $notification = makeLandlordNotification($this->landlord);
 
-    $this->deleteJson("/api/landlord/notifications/{$notification->id}")->assertOk();
+    $this->deleteJson("/api/v1/landlord/notifications/{$notification->id}")->assertOk();
 
     $this->assertDatabaseMissing('notifications', ['id' => $notification->id]);
 });
@@ -51,6 +51,6 @@ test('landlord cannot delete another users notification', function () {
     $other             = \App\Models\User::factory()->create(['role' => 'landlord']);
     $otherNotification = makeLandlordNotification($other);
 
-    $this->deleteJson("/api/landlord/notifications/{$otherNotification->id}")
+    $this->deleteJson("/api/v1/landlord/notifications/{$otherNotification->id}")
         ->assertNotFound();
 });

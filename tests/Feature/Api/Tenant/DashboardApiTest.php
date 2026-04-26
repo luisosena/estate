@@ -36,7 +36,7 @@ test('tenant dashboard returns structured data', function () {
         'billing_month' => now()->startOfMonth(),
     ]);
 
-    $response = $this->actingAs($user)->getJson('/api/tenant/dashboard');
+    $response = $this->actingAs($user)->getJson('/api/v1/tenant/dashboard');
 
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -58,7 +58,7 @@ test('tenant dashboard handles missing tenancy gracefully', function () {
         'tenant_id' => $tenant->id,
     ]);
 
-    $response = $this->actingAs($user)->getJson('/api/tenant/dashboard');
+    $response = $this->actingAs($user)->getJson('/api/v1/tenant/dashboard');
 
     $response->assertStatus(200)
         ->assertJsonPath('data.unit', null)

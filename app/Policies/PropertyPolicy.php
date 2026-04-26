@@ -54,16 +54,16 @@ class PropertyPolicy
      */
     public function delete(User $user, Property $property): bool
     {
-        return $property->owner_id === $user->id;
+        return false;
     }
 
     public function restore(User $user, Property $property): bool
     {
-        return $property->owner_id === $user->id;
+        return false;
     }
 
     public function forceDelete(User $user, Property $property): bool
     {
-        return $property->owner_id === $user->id;
+        return false;
     }
 }

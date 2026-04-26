@@ -28,13 +28,13 @@ beforeEach(function () {
 });
 
 test('landlord can list payments', function () {
-    $this->getJson('/api/landlord/payments')
+    $this->getJson('/api/v1/landlord/payments')
         ->assertOk()
         ->assertJsonStructure(['data']);
 });
 
 test('landlord can record a payment', function () {
-    $response = $this->postJson('/api/landlord/payments', [
+    $response = $this->postJson('/api/v1/landlord/payments', [
         'tenant_id'      => $this->tenant->id,
         'tenancy_id'     => $this->tenancy->id,
         'amount'         => 15000,
@@ -58,7 +58,7 @@ test('landlord can link payment to a rent bill', function () {
         'status'        => 'pending',
     ]);
 
-    $response = $this->postJson('/api/landlord/payments', [
+    $response = $this->postJson('/api/v1/landlord/payments', [
         'tenant_id'      => $this->tenant->id,
         'tenancy_id'     => $this->tenancy->id,
         'rent_bill_id'   => $bill->id,
@@ -86,7 +86,7 @@ test('landlord can link payment to a utility bill', function () {
         'status'             => 'pending',
     ]);
 
-    $response = $this->postJson('/api/landlord/payments', [
+    $response = $this->postJson('/api/v1/landlord/payments', [
         'tenant_id'      => $this->tenant->id,
         'tenancy_id'     => $this->tenancy->id,
         'utility_bill_id' => $utilityBill->id,
@@ -102,7 +102,7 @@ test('landlord can link payment to a utility bill', function () {
 });
 
 test('payment creation fails without required fields', function () {
-    $this->postJson('/api/landlord/payments', [])->assertUnprocessable();
+    $this->postJson('/api/v1/landlord/payments', [])->assertUnprocessable();
 });
 
 test('landlord can view single payment', function () {
@@ -116,7 +116,7 @@ test('landlord can view single payment', function () {
         'paid_at'        => now(),
     ]);
 
-    $this->getJson("/api/landlord/payments/{$payment->id}")->assertOk();
+    $this->getJson("/api/v1/landlord/payments/{$payment->id}")->assertOk();
 });
 
 test('landlord can update a payment note', function () {
@@ -130,7 +130,7 @@ test('landlord can update a payment note', function () {
         'paid_at'        => now(),
     ]);
 
-    $this->putJson("/api/landlord/payments/{$payment->id}", ['notes' => 'Updated note'])
+    $this->putJson("/api/v1/landlord/payments/{$payment->id}", ['notes' => 'Updated note'])
         ->assertOk();
 });
 
@@ -145,7 +145,7 @@ test('landlord can delete a payment', function () {
         'paid_at'        => now(),
     ]);
 
-    $this->deleteJson("/api/landlord/payments/{$payment->id}")->assertOk();
+    $this->deleteJson("/api/v1/landlord/payments/{$payment->id}")->assertOk();
 });
 
 test('landlord cannot view another landlords payment', function () {
@@ -164,5 +164,5 @@ test('landlord cannot view another landlords payment', function () {
         'paid_at'        => now(),
     ]);
 
-    $this->getJson("/api/landlord/payments/{$otherPayment->id}")->assertNotFound();
+    $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}")->assertNotFound();
 });

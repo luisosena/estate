@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Tenant;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Services\TenantService;
 use Carbon\Carbon;
@@ -20,7 +21,7 @@ class DashboardController extends Controller
                 return response()->json(['message' => 'Unauthenticated'], 401);
             }
 
-            if ($user->role !== 'tenant' || ! $user->tenant) {
+            if ($user->role !== Role::Tenant || ! $user->tenant) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
 

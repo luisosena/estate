@@ -15,13 +15,13 @@ beforeEach(function () {
 });
 
 test('landlord can list units', function () {
-    $this->getJson('/api/landlord/units')
+    $this->getJson('/api/v1/landlord/units')
         ->assertOk()
         ->assertJsonStructure(['data']);
 });
 
 test('landlord can create a unit for own property', function () {
-    $this->postJson('/api/landlord/units', [
+    $this->postJson('/api/v1/landlord/units', [
         'property_id' => $this->property->id,
         'unit_code'   => 'A101',
         'unit_name'   => 'A101',
@@ -32,13 +32,13 @@ test('landlord can create a unit for own property', function () {
 });
 
 test('unit creation fails without required fields', function () {
-    $this->postJson('/api/landlord/units', [])->assertUnprocessable();
+    $this->postJson('/api/v1/landlord/units', [])->assertUnprocessable();
 });
 
 test('landlord can update own unit', function () {
     $this->unit->update(['status' => 'available']);
 
-    $this->putJson("/api/landlord/units/{$this->unit->id}", [
+    $this->putJson("/api/v1/landlord/units/{$this->unit->id}", [
         'unit_code' => 'B202',
     ])->assertOk();
 });
@@ -46,7 +46,7 @@ test('landlord can update own unit', function () {
 test('landlord can delete a vacant unit', function () {
     $vacant = Unit::factory()->create(['property_id' => $this->property->id, 'status' => 'available']);
 
-    $this->deleteJson("/api/landlord/units/{$vacant->id}")->assertOk();
+    $this->deleteJson("/api/v1/landlord/units/{$vacant->id}")->assertOk();
 
     $this->assertDatabaseMissing('units', ['id' => $vacant->id]);
 });
@@ -56,7 +56,7 @@ test('landlord cannot see units from another landlords property', function () {
     $otherProp = Property::factory()->create(['owner_id' => $other->id]);
     $otherUnit = Unit::factory()->create(['property_id' => $otherProp->id]);
 
-    $response = $this->getJson('/api/landlord/units')->assertOk();
+    $response = $this->getJson('/api/v1/landlord/units')->assertOk();
     $ids      = collect($response->json('data'))->pluck('id');
 
     expect($ids->contains($otherUnit->id))->toBeFalse();

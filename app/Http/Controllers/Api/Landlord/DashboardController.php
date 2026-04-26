@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Landlord;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Property;
@@ -20,7 +21,7 @@ class DashboardController extends Controller
     {
         try {
             $landlord = $request->user();
-            if ($landlord->role !== 'landlord') {
+            if ($landlord->role !== Role::Landlord) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
 

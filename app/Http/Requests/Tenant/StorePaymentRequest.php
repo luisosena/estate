@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Tenant;
 
+use App\Enums\Role;
+
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,7 +14,7 @@ class StorePaymentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->role === 'tenant';
+        return $this->user() && $this->user()->role === Role::Tenant;
     }
 
     /**

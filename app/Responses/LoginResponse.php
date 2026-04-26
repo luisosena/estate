@@ -12,7 +12,8 @@ class LoginResponse extends FortifyLoginResponse
         $user = $request->user();
 
         // Debug: Log the user role and redirect URL
-        \Log::info('LoginResponse called for user: '.$user->email.' with role: '.$user->role);
+        $roleValue = $user->role instanceof \App\Enums\Role ? $user->role->value : $user->role;
+        \Log::info('LoginResponse called for user: '.$user->email.' with role: '.$roleValue);
 
         $redirectUrl = RoleRedirects::urlByRole($user->role);
 

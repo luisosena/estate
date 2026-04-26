@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Role;
+
 use App\Models\Unit;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -13,7 +15,7 @@ class StoreTenantWithTenancyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->user() && auth()->user()->role === 'landlord';
+        return auth()->user() && auth()->user()->role === Role::Landlord;
     }
 
     /**

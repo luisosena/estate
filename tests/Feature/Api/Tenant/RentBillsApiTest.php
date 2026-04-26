@@ -27,13 +27,13 @@ beforeEach(function () {
 });
 
 test('tenant can list own rent bills', function () {
-    $this->getJson('/api/tenant/rent-bills')
+    $this->getJson('/api/v1/tenant/rent-bills')
         ->assertOk()
         ->assertJsonStructure(['data']);
 });
 
 test('tenant can view current rent bill', function () {
-    $this->getJson('/api/tenant/rent-bills/current')
+    $this->getJson('/api/v1/tenant/rent-bills/current')
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
@@ -45,7 +45,7 @@ test('tenant can view current rent bill', function () {
 });
 
 test('tenant can view single own rent bill', function () {
-    $this->getJson("/api/tenant/rent-bills/{$this->bill->id}")
+    $this->getJson("/api/v1/tenant/rent-bills/{$this->bill->id}")
         ->assertOk()
         ->assertJsonStructure([
             'data' => ['id', 'billing_month', 'amount_due', 'amount_paid', 'outstanding_amount', 'due_date', 'status', 'payments'],
@@ -68,13 +68,13 @@ test('tenant cannot view another tenants rent bill', function () {
         'due_date'      => now()->endOfMonth(),
     ]);
 
-    $this->getJson("/api/tenant/rent-bills/{$otherBill->id}")->assertNotFound();
+    $this->getJson("/api/v1/tenant/rent-bills/{$otherBill->id}")->assertNotFound();
 });
 
 test('tenant with no active tenancy receives empty rent bills list', function () {
     $this->tenancy->update(['status' => 'ended']);
 
-    $response = $this->getJson('/api/tenant/rent-bills')->assertOk();
+    $response = $this->getJson('/api/v1/tenant/rent-bills')->assertOk();
 
     expect($response->json('data'))->toBeEmpty();
 });

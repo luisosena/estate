@@ -33,13 +33,13 @@ beforeEach(function () {
 });
 
 test('landlord can list all rent bills', function () {
-    $this->getJson('/api/landlord/rent-bills')
+    $this->getJson('/api/v1/landlord/rent-bills')
         ->assertOk()
         ->assertJsonStructure(['data', 'meta']);
 });
 
 test('landlord can filter rent bills by status', function () {
-    $response = $this->getJson('/api/landlord/rent-bills?status=pending')->assertOk();
+    $response = $this->getJson('/api/v1/landlord/rent-bills?status=pending')->assertOk();
 
     $statuses = collect($response->json('data'))->pluck('status')->unique()->values();
     expect($statuses->count())->toBe(1)
@@ -47,25 +47,25 @@ test('landlord can filter rent bills by status', function () {
 });
 
 test('landlord can list pending bills', function () {
-    $this->getJson('/api/landlord/rent-bills/pending')
+    $this->getJson('/api/v1/landlord/rent-bills/pending')
         ->assertOk()
         ->assertJsonStructure(['data', 'meta']);
 });
 
 test('landlord can list overdue bills', function () {
-    $this->getJson('/api/landlord/rent-bills/overdue')
+    $this->getJson('/api/v1/landlord/rent-bills/overdue')
         ->assertOk()
         ->assertJsonStructure(['data', 'meta']);
 });
 
 test('landlord can view single rent bill', function () {
-    $this->getJson("/api/landlord/rent-bills/{$this->bill->id}")
+    $this->getJson("/api/v1/landlord/rent-bills/{$this->bill->id}")
         ->assertOk()
         ->assertJsonFragment(['id' => $this->bill->id]);
 });
 
 test('landlord can waive a pending rent bill', function () {
-    $this->postJson("/api/landlord/rent-bills/{$this->bill->id}/waive", ['notes' => 'Goodwill'])
+    $this->postJson("/api/v1/landlord/rent-bills/{$this->bill->id}/waive", ['notes' => 'Goodwill'])
         ->assertOk()
         ->assertJsonFragment(['status' => 'waived']);
 
@@ -75,7 +75,7 @@ test('landlord can waive a pending rent bill', function () {
 test('landlord cannot waive an already paid bill via API', function () {
     $this->bill->update(['status' => 'paid', 'amount_paid' => 15000]);
 
-    $this->postJson("/api/landlord/rent-bills/{$this->bill->id}/waive")
+    $this->postJson("/api/v1/landlord/rent-bills/{$this->bill->id}/waive")
         ->assertUnprocessable();
 });
 
@@ -91,5 +91,5 @@ test('landlord cannot access another landlords rent bill', function () {
         'due_date'      => now()->endOfMonth(),
     ]);
 
-    $this->getJson("/api/landlord/rent-bills/{$otherBill->id}")->assertNotFound();
+    $this->getJson("/api/v1/landlord/rent-bills/{$otherBill->id}")->assertNotFound();
 });

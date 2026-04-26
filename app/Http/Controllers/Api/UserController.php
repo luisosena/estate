@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -18,14 +19,14 @@ class UserController extends Controller
     public function index(Request $request): JsonResponse
     {
         // Verify user has admin or landlord role
-        if (! in_array($request->user()->role, ['admin', 'landlord'])) {
+        if (! in_array($request->user()->role, [Role::Admin, Role::Landlord])) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
         $query = User::query()->with('tenant');
 
         // Landlords can only see their own account and tenants in their properties
-        if ($request->user()->role === 'landlord') {
+        if ($request->user()->role === Role::Landlord) {
             $landlordId = $request->user()->id;
             $query->where(function ($q) use ($landlordId) {
                 $q->where('id', $landlordId)
@@ -62,7 +63,7 @@ class UserController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        if (! in_array($request->user()->role, ['admin', 'landlord'])) {
+        if (! in_array($request->user()->role, [Role::Admin, Role::Landlord])) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -73,7 +74,7 @@ class UserController extends Controller
         }
 
         // Landlords can only view their own account or tenants in their properties
-        if ($request->user()->role === 'landlord') {
+        if ($request->user()->role === Role::Landlord) {
             $isOwner = $request->user()->id === $id;
 
             // Eager load relationships to prevent N+1 query issue
@@ -102,7 +103,7 @@ class UserController extends Controller
         $user = $request->user();
 
         // Only admin can create admins; landlords can only create tenants
-        if ($user->role === 'landlord') {
+        if ($user->role === Role::Landlord) {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'email', 'unique:users,email'],
@@ -110,7 +111,7 @@ class UserController extends Controller
                 'role' => ['required', Rule::in(['tenant'])], // Landlords can only create tenants
                 'phone' => ['nullable', 'string', 'max:20'],
             ]);
-        } elseif ($user->role !== 'admin') {
+        } elseif ($user->role !== Role::Admin) {
             return response()->json(['message' => 'Forbidden'], 403);
         } else {
             // Admin can create any role
@@ -148,7 +149,7 @@ class UserController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         // Users can only update their own profile unless admin
-        if ($request->user()->role !== 'admin' && $request->user()->id !== $id) {
+        if ($request->user()->role !== Role::Admin && $request->user()->id !== $id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -166,7 +167,7 @@ class UserController extends Controller
         ]);
 
         // Non-admin users cannot change their own role
-        if ($request->user()->role !== 'admin') {
+        if ($request->user()->role !== Role::Admin) {
             unset($validated['role']);
         }
 
@@ -184,7 +185,7 @@ class UserController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        if ($request->user()->role !== 'admin') {
+        if ($request->user()->role !== Role::Admin) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
