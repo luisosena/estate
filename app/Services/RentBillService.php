@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Payment;
 use App\Models\RentBill;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -164,7 +166,7 @@ class RentBillService
     /**
      * Get a paginated list of rent bills for a landlord with statistics.
      */
-    public function getRentBillList(\App\Models\User $landlord, \Illuminate\Http\Request $request): array
+    public function getRentBillList(User $landlord, Request $request): array
     {
         $status = $request->get('status');
         $search = $request->get('search');
@@ -205,9 +207,40 @@ class RentBillService
     }
 
     /**
+     * Sync an existing (usually async confirmed) payment to a rent bill.
+     * Guards against double-crediting if the bill was already synced synchronously.
+     */
+    public function syncPaymentWithRentBill(Payment $payment): void
+    {
+        if ($payment->status !== 'pending') {
+            return;
+        }
+
+        if ($payment->rent_bill_id) {
+            $rentBill = RentBill::find($payment->rent_bill_id);
+            if ($rentBill && ! in_array($rentBill->status, ['paid', 'waived'])) {
+                $this->processRentPayment($rentBill, (float) $payment->amount);
+            }
+        }
+    }
+
+    /**
+     * Calculate total outstanding rent for a tenancy.
+     *
+     * @param  int  $tenancyId  The tenancy ID
+     */
+    public function calculateTotalOutstanding(int $tenancyId): float
+    {
+        return (float) RentBill::where('tenancy_id', $tenancyId)
+            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->selectRaw('SUM(amount_due - amount_paid) as outstanding')
+            ->value('outstanding') ?? 0.0;
+    }
+
+    /**
      * Calculate consolidated rent statistics for a landlord dashboard or list.
      */
-    public function getRentStatistics(\App\Models\User $landlord): array
+    public function getRentStatistics(User $landlord): array
     {
         $baseQuery = RentBill::whereHas('tenancy.unit.property', fn ($query) => $query->where('owner_id', $landlord->id));
 

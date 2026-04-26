@@ -20,13 +20,33 @@ class PaymentResource extends JsonResource
             'payment_type' => $this->payment_type,
             'payment_method' => $this->payment_method,
             'status' => $this->status,
-            'transaction_id' => $this->when(isset($this->transaction_id), $this->transaction_id),
             'paid_at' => is_string($this->paid_at) ? $this->paid_at : $this->paid_at?->toDateTimeString(),
+            'due_date' => $this->due_date,
             'created_at' => $this->created_at?->toDateTimeString(),
-            // Relationships
+            'updated_at' => $this->updated_at?->toDateTimeString(),
+            'reference_number' => $this->reference_number,
+            'notes' => $this->notes,
+            // Gateway tracking fields (Phase 3)
+            'receipt_path' => $this->receipt_path,
+            'gateway' => $this->gateway,
+            'gateway_status' => $this->gateway_status,
+            'gateway_reference' => $this->gateway_reference,
+            // Relation-derived display fields (populated when relationships are loaded)
+            'tenant_name' => $this->whenLoaded('tenant', fn () => $this->tenant?->full_name),
+            'tenant_code' => $this->whenLoaded('tenant', fn () => $this->tenant?->tenant_code),
+            'unit_number' => $this->whenLoaded('tenancy', fn () => $this->tenancy?->unit?->unit_code),
+            'property_name' => $this->whenLoaded('tenancy', fn () => $this->tenancy?->unit?->property?->name),
+            // Nested resource relationships
             'tenant' => TenantResource::make($this->whenLoaded('tenant')),
             'tenancy' => TenancyResource::make($this->whenLoaded('tenancy')),
-            'rent_bill' => RentBillResource::make($this->whenLoaded('rentBill')),
+            // Linked bill IDs
+            'rent_bill_id' => $this->rent_bill_id,
+            'utility_bill_id' => $this->utility_bill_id,
+            'rent_bill' => $this->whenLoaded('rentBill', fn () => $this->rentBill ? [
+                'id' => $this->rentBill->id,
+                'billing_month' => $this->rentBill->billing_month?->format('Y-m'),
+                'status' => $this->rentBill->status,
+            ] : null),
         ];
     }
 }

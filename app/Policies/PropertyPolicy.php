@@ -2,17 +2,27 @@
 
 namespace App\Policies;
 
+use App\Enums\Role;
 use App\Models\Property;
 use App\Models\User;
 
 class PropertyPolicy
 {
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->role === Role::Admin) {
+            return true;
+        }
+
+        return null;
+    }
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['admin', 'landlord']);
+        return $user->role === Role::Landlord;
     }
 
     /**
@@ -20,11 +30,7 @@ class PropertyPolicy
      */
     public function view(User $user, Property $property): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        return $user->role === 'landlord' && $property->owner_id === $user->id;
+        return $property->owner_id === $user->id;
     }
 
     /**
@@ -32,7 +38,7 @@ class PropertyPolicy
      */
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'landlord']);
+        return $user->role === Role::Landlord;
     }
 
     /**
@@ -40,11 +46,7 @@ class PropertyPolicy
      */
     public function update(User $user, Property $property): bool
     {
-        if ($user->role === 'admin') {
-            return true;
-        }
-
-        return $user->role === 'landlord' && $property->owner_id === $user->id;
+        return $property->owner_id === $user->id;
     }
 
     /**
@@ -52,6 +54,16 @@ class PropertyPolicy
      */
     public function delete(User $user, Property $property): bool
     {
-        return $user->role === 'admin';
+        return $property->owner_id === $user->id;
+    }
+
+    public function restore(User $user, Property $property): bool
+    {
+        return $property->owner_id === $user->id;
+    }
+
+    public function forceDelete(User $user, Property $property): bool
+    {
+        return $property->owner_id === $user->id;
     }
 }
