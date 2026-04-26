@@ -8,9 +8,11 @@ This document provides complete documentation of all API endpoints in the Estate
 ## Base URL
 
 ```
-Production: https://api.yourdomain.com
-Development: http://localhost:8000/api
+Production: https://api.yourdomain.com/api/v1
+Development: http://localhost:8000/api/v1
 ```
+
+> **Note**: All API endpoints are strictly versioned under `/api/v1/`. Unversioned routes (`/api/*`) are not registered.
 
 ---
 
@@ -29,7 +31,7 @@ Accept: application/json
 
 ### Obtaining Tokens
 
-**POST /api/auth/login**
+**POST /api/v1/auth/login**
 
 Login and obtain access tokens.
 
@@ -143,7 +145,7 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 ### Authentication Endpoints
 
-#### POST /api/auth/login
+#### POST /api/v1/auth/login
 **Description**: Authenticate user and obtain tokens
 
 | Field | Type | Required | Description |
@@ -166,7 +168,7 @@ GET /api/landlord/tenants?page=2&per_page=25
 }
 ```
 
-#### POST /api/auth/register
+#### POST /api/v1/auth/register
 **Description**: Register a new user and obtain tokens
 
 | Field | Type | Required | Description |
@@ -192,11 +194,11 @@ GET /api/landlord/tenants?page=2&per_page=25
 ```
 
 
-#### POST /api/auth/logout
+#### POST /api/v1/auth/logout
 **Description**: Invalidate current token
 **Auth Required**: Yes
 
-#### GET /api/auth/me
+#### GET /api/v1/auth/me
 **Description**: Get current authenticated user
 **Auth Required**: Yes
 
@@ -219,33 +221,33 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 ### User Management Endpoints
 
-#### GET /api/users
+#### GET /api/v1/users
 **Description**: List all users (Landlords see their tenants, Admins see all)
 **Auth Required**: Yes (admin or landlord)
 
-#### POST /api/users
-**Description**: Create a new user manualy
+#### POST /api/v1/users
+**Description**: Create a new user manually
 **Auth Required**: Yes (admin only)
 
-#### GET /api/users/{id}
+#### GET /api/v1/users/{id}
 **Description**: Get specific user details
 **Auth Required**: Yes (admin or landlord owning the user's property)
 
-#### PUT /api/users/{id}
+#### PUT /api/v1/users/{id}
 **Description**: Update user
 **Auth Required**: Yes (admin only)
 
-#### DELETE /api/users/{id}
+#### DELETE /api/v1/users/{id}
 **Description**: Delete user account
 **Auth Required**: Yes (admin only)
 
 ---
 
-### Landlord API Endpoints
+### Landlord API Endpoints (`/api/v1/landlord/*`)
 
 #### Dashboard
 
-##### GET /api/landlord/dashboard
+##### GET /api/v1/landlord/dashboard
 **Description**: Get landlord dashboard data
 **Auth Required**: Yes (landlord or admin)
 

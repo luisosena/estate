@@ -3,6 +3,8 @@
 ## Overview
 This document provides a complete inventory of all dependencies, their exact versions, transitive dependencies, and any known conflicts or compatibility issues in the Estate Practice application.
 
+> **Note**: All packages below reflect versions installed on `port/payment-architecture` branch. Actual locked versions can be read from `composer.lock` and `package-lock.json`.
+
 ---
 
 ## PHP Dependencies
@@ -11,11 +13,12 @@ This document provides a complete inventory of all dependencies, their exact ver
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| laravel/framework | ^12.0 | Core Laravel framework |
-| laravel/fortify | ^1.30 | Authentication backend (Web) |
-| laravel/sanctum | ^4.4 | Authentication backend (API) |
+| laravel/framework | ^12.0 (12.56.0) | Core Laravel framework |
+| laravel/fortify | ^1.36 | Authentication backend (Web) |
+| laravel/sanctum | ^4.3 | Authentication backend (API) |
 | laravel/tinker | ^2.10.1 | REPL for Laravel |
-| laravel/wayfinder | ^0.1.9 | Routing helpers |
+| laravel/wayfinder | ^0.1.15 | Routing helpers |
+| twilio/sdk | ^8.x | WhatsApp notification channel via Twilio API |
 
 ### Server-Side Rendering
 
@@ -33,7 +36,7 @@ This document provides a complete inventory of all dependencies, their exact ver
 | laravel/pail | ^1.2.2 | Log tailing |
 | mockery/mockery | ^1.6 | Mocking library |
 | nunomaduro/collision | ^8.6 | Error handling |
-| pestphp/pest | ^4.3 | Testing framework |
+| pestphp/pest | ^4.4 | Testing framework |
 | pestphp/pest-plugin-laravel | ^4.0 | Laravel Pest integration |
 | fakerphp/faker | ^1.23 | Fake data generation |
 

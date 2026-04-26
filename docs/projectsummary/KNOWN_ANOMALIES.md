@@ -48,27 +48,9 @@ This document comprehensively documents all known issues, deprecated package ver
 
 ## Technical Debt
 
-### 1. Hardcoded Values
+### 1. Hardcoded Values / String Role Comparisons
 
-**Location**: Various controllers and services
-
-**Examples**:
-- Hardcoded role names in controllers
-- String-based role checks instead of constants
-
-**Impact**: Potential for typos, harder to maintain
-
-**Recommendation**: Create Role enum constants:
-```php
-namespace App\Enums;
-
-enum Role: string
-{
-    case ADMIN = 'admin';
-    case LANDLORD = 'landlord';
-    case TENANT = 'tenant';
-}
-```
+> **RESOLVED (Phase 1 Port)**: `App\Enums\Role` has been implemented as a PHP 8.1 backed string enum. The `User.role` column is cast to this enum in the model. All Policies, FormRequests, Controllers, and redirect logic now use `Role::Admin`, `Role::Landlord`, `Role::Tenant` — no string literals remain.
 
 ---
 
@@ -79,17 +61,6 @@ enum Role: string
 **Location**: `app/Http/Controllers/Api/`
 
 > **RESOLVED (Epoch 2)**: All entities are now wrapped in strict Laravel `*Resource.php` API layer standards, wrapping JSON payloads cleanly inside a `'data'` block.
-
-**Impact**: 
-- Inconsistent response formats
-- No data transformation layer
-- Harder to version API
-
-**Recommendation**: Implement Laravel API Resources:
-```php
-php artisan make:resource PropertyResource
-php artisan make:resource PropertyCollection
-```
 
 ---
 
@@ -140,28 +111,13 @@ php artisan make:resource PropertyCollection
 
 **Location**: No tests directory visible in standard location
 
-> **RESOLVED (Epoch 3)**: A massive architectural adoption of Pest testing has been built into the project, including strict `ArchTest.php` architecture mapping, comprehensive Feature API End-to-End endpoint checking, and Data Isolation validation.
-
-**Impact**: Risk of regressions
-
-**Recommendation**: Add comprehensive tests:
-- Unit tests for services
-- Feature tests for controllers
-- Integration tests for API endpoints
+> **RESOLVED (Epoch 3)**: Pest testing has been comprehensively adopted — 336 tests, 1133 assertions, 100% passing. Includes strict `ArchTest.php` architecture guardrails, Feature API end-to-end endpoint checking, and Data Isolation validation.
 
 ---
 
 ### 5. No API Versioning Middleware
 
-**Issue**: API routes don't have proper version isolation
-
-**Location**: `routes/api.php`
-
-**Current**: Both `/api/*` and `/api/v1/*` exist
-
-**Impact**: Potential confusion about which version to use
-
-**Recommendation**: Standardize on `/api/v1/` prefix and remove unversioned routes
+> **RESOLVED (Stabilization)**: All API routes are now exclusively served under `/api/v1/`. Unversioned `/api/*` routes have been removed from `routes/api.php`. All 21 Pest API test files have been updated to target `/api/v1/`. The mobile `EXPO_PUBLIC_API_URL` is configured to `http://{host}:8000/api/v1`.
 
 ---
 
@@ -276,14 +232,7 @@ $this->authorize('update', $property);
 
 ### 2. String-Based Role Checks
 
-**Pattern**: Role checks use string literals
-
-**Example**:
-```php
-if ($user->role === 'landlord') { ... }
-```
-
-**Recommendation**: Use enum constants
+> **RESOLVED (Phase 1 Port)**: All string role checks have been replaced with `App\Enums\Role` enum comparisons. The `User.role` column is cast to the enum. Policies, FormRequests, and Controllers use only enum constants.
 
 ---
 
@@ -293,9 +242,7 @@ if ($user->role === 'landlord') { ... }
 
 **Example**: In TenantController - direct model creation
 
-> **RESOLVED (Epoch 2)**: Controllers were entirely stripped of fat business logic. These logic mappings were successfully decoupled and abstracted entirely into the `/app/Services/*` namespace (e.g. `TenantService`, `OnboardingService`, `DashboardServices`).
-
-**Recommendation**: Move all business logic to service classes
+> **RESOLVED (Epoch 2)**: Controllers were entirely stripped of fat business logic, decoupled into the `/app/Services/*` namespace (`TenantService`, `OnboardingService`, `DashboardServices`, etc.).
 
 ---
 
@@ -323,9 +270,7 @@ if ($user->role === 'landlord') { ... }
 
 ### 3. Default Route Prefixes
 
-**Current**: Mixed use of `/api/` and `/api/v1/`
-
-**Future**: Will standardize on `/api/v1/` only
+> **RESOLVED (Stabilization)**: All API routes are now exclusively under `/api/v1/`. The `/api/*` unversioned routes have been removed.
 
 ---
 
@@ -428,11 +373,17 @@ None currently - all migrations have been applied.
 
 This document covers:
 
-1. **Known Issues**: Migration dates, duplicate docs, empty README
-2. **Technical Debt**: Hardcoded values, missing API resources, incomplete mobile app, missing tests, incomplete security logging
+1. **Known Issues**: Migration dates, duplicate docs
+2. **Technical Debt**: Incomplete mobile app, incomplete security event logging, missing DB indexes, API-mobile standardization (Utilities/Properties/Units pending)
 3. **Non-Obvious Behaviors**: Auto-username, unit status auto-update, session storage, rate limiting, 2FA flow
-4. **Deprecated Patterns**: Manual authorization, string roles, direct model manipulation
-5. **Breaking Changes**: API token expiration, session driver, route prefixes
+4. **Resolved Items**:
+   - Role enum implementation — `App\Enums\Role` is the canonical source of truth ✔
+   - API Resource classes — all endpoints wrapped in `*Resource.php` layer ✔
+   - Test coverage — 336 tests, 1133 assertions ✔
+   - API Versioning — exclusively `/api/v1/`, unversioned routes removed ✔
+   - String-based role checks — replaced with enum comparisons — no string literals ✔
+   - Service layer extraction — controllers delegating to service classes ✔
+5. **Breaking Changes**: API token expiration, session driver
 6. **Package Issues**: TailwindCSS 4, Zod 4, React 19 compatibility
 7. **Deviations**: Mixed controllers, no repository pattern, inconsistent transactions
 8. **Migration Notes**: Schema migration handling

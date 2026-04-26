@@ -2,29 +2,35 @@
 
 ### 1. Summary
 
-**Estate Practice** is a Laravel + Inertia + React/TypeScript application for property/tenant management, with role‑oriented dashboards (landlord, tenant), a mail view, and a modern glassmorphism UI.  
+**Estate Practice** is a Laravel + Inertia + React/TypeScript application for property/tenant management, with role‑oriented dashboards (admin, landlord, tenant), and a modern glassmorphism UI.
 It uses Laravel 12 on the backend with Fortify for session-based web auth and Sanctum for token-based API auth, with Inertia for the SPA layer, and a Vite + Tailwind + React 19 front‑end.
+
+The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the canonical source of truth for all role comparisons. All authorization boundaries (Policies, FormRequests, Controllers, Redirects) are built against this enum — string literals for roles do not exist anywhere in the active codebase.
 
 ---
 
 ### 2. Tech Stack 
 
 - **Backend**
-  - **Language**: PHP ^8.2
-  - **Framework**: Laravel ^12.0 (`laravel/framework`)
+  - **Language**: PHP ^8.5
+  - **Framework**: Laravel ^12.0 (`laravel/framework`) — currently 12.56.0
   - **SPA adapter**: `inertiajs/inertia-laravel` ^2.0
   - **Authentication & security**:
-    - `laravel/fortify` ^1.30 for web auth flows (registration, login, password reset, 2FA)
-    - `laravel/sanctum` ^4.0 for mobile API authentication (permanent tokens)
+    - `laravel/fortify` ^1.36 for web auth flows (registration, login, password reset, 2FA)
+    - `laravel/sanctum` ^4.3 for mobile API authentication (permanent tokens)
+    - `App\Enums\Role` — type-safe PHP 8.1 backed enum for all role authorization
+  - **Notification channels** *(Phase 2 — ported)*:
+    - `WhatsAppChannel` via `twilio/sdk` for WhatsApp delivery
+    - `ExpoPushChannel` for Expo mobile push notifications
   - **Routing & URLs**:
-    - `laravel/wayfinder` ^0.1.9
+    - `laravel/wayfinder` ^0.1.15
     - `tightenco/ziggy` ^2.6 (mirrored on the frontend with `ziggy-js`)
   - **Dev & tooling**:
     - `laravel/tinker` (REPL)
     - `laravel/pail` (log viewer)
     - `laravel/sail` (optional Docker dev env)
     - `laravel/pint` (PHP linter/formatter)
-    - `pestphp/pest` + `pestphp/pest-plugin-laravel` (testing)
+    - `pestphp/pest` ^4.4 + `pestphp/pest-plugin-laravel` (testing — 336 tests passing)
 
 - **Frontend**
   - **Language & runtime**:
@@ -233,32 +239,10 @@ It uses Laravel 12 on the backend with Fortify for session-based web auth and Sa
 
 #### `routes/`
 
-- **`web.php`**
-  - `/` → `welcome` Inertia page with `canRegister` flag (`home` route).
-  - `/landlorddashboard` → `landlordDashboard`.
-  - `/testdashboard` → `testDashboard`.
-  - `/mail` → `mail`.
-  - `/tenant/{id}` → `tenantDashboard`:
-    - Loads `Tenant::findOrFail($id)` and passes it as `tenant` prop.
-  - Authenticated & verified group:
-    - `/dashboard` → `dashboard`:
-      - Loads all tenants ordered by name and passes as `tenants`.
-  - Includes `settings.php`.
-
-- **`settings.php`**
-  - Authenticated group:
-    - Redirect `/settings` → `/settings/profile`.
-    - `GET /settings/profile` → `ProfileController@edit` (`profile.edit`).
-    - `PATCH /settings/profile` → `ProfileController@update` (`profile.update`).
-  - Authenticated & verified:
-    - `DELETE /settings/profile` → `ProfileController@destroy` (`profile.destroy`).
-    - `GET /settings/password` → `PasswordController@edit` (`user-password.edit`).
-    - `PUT /settings/password` → `PasswordController@update` (`user-password.update`) with throttling.
-    - `GET /settings/appearance` → Inertia `settings/appearance` (`appearance.edit`).
-    - `GET /settings/two-factor` → `TwoFactorAuthenticationController@show` (`two-factor.show`).
-
-- **`console.php`**
-  - Console/Artisan routes (currently default unless extended).
+- **`web.php`**: All web routes. Dashboard redirect enforced via `Role` enum (admin → `/admin/dashboard`, landlord → `/landlord/dashboard`, tenant → `/tenant/dashboard`). Debug routes (`/tests`, `/tests2`, `/mail`) have been **removed**.
+- **`api.php`**: Exclusively under `/api/v1/` prefix — **65 active routes**. Unversioned `/api/*` routes removed (strict versioning enforced). Groups: auth, landlord (dashboard, properties, units, tenants, payments, rent-bills, utility-bills, tenancy-utilities, notifications, profile), tenant (dashboard, payments, rent-bills, utilities, profile), users.
+- **`settings.php`**: Profile, password, appearance, 2FA settings routes.
+- **`console.php`**: Artisan console routes.
 
 #### `public/`
 
@@ -272,7 +256,7 @@ It uses Laravel 12 on the backend with Fortify for session-based web auth and Sa
 #### `tests/`
 
 - **`Feature/Admin`**: Admin portal access and actions
-- **`Feature/Api`**: Complete Mobile API tests (Landlord & Tenant endpoints, Data Isolation)
+- **`Feature/Api`**: Complete Mobile API tests (Landlord & Tenant endpoints, Data Isolation) — all target `/api/v1/` prefix
 - **`Feature/Auth`**: Authentication, verification, login flows
 - **`Feature/Landlord`**: Web Application controllers for Landlords
 - **`Feature/Models`**: Unit tests for eloquent model behaviors
@@ -280,52 +264,79 @@ It uses Laravel 12 on the backend with Fortify for session-based web auth and Sa
 - **`Feature/Tenant`**: Web Application controllers for Tenants
 - **`ArchTest.php`**: Architecture rules mapping rigid structures
 - **`Pest.php`, `TestCase.php`**: Pest bootstrap and base test case
+- **336 tests, 1133 assertions — 100% passing**
 
 ---
 
 ### 5. Current Functional State
 
 - **Authentication & user management**
-  - Fortify-based auth including registration, username-based login (for mobile), password reset, email verification, and 2FA.
-  - Profile editing and deletion, with dedicated form request validation.
-  - Password update flow with throttling and validation.
+  - Fortify-based web auth: registration, username-based login (for mobile), password reset, email verification, 2FA.
+  - Sanctum-based API auth for mobile clients (permanent tokens per device).
+  - Role-based post-login redirect via `Role` enum in `LoginResponse` and `/dashboard` route guard.
+  - Profile editing and deletion; password update with throttling.
 
-- **Tenants and dashboards**
-  - `Tenant` model and migration, with routes and pages for:
-    - Landlord dashboard (`/landlorddashboard`).
-    - Tenant dashboard (`/tenant/{id}`) with per-tenant data.
-    - Main authenticated dashboard (`/dashboard`) listing all tenants.
+- **Type-Safe Role Authorization (Enum Architecture)**
+  - `App\Enums\Role` is the **single source of truth** for all role-based logic.
+  - `User.role` column cast to `App\Enums\Role` in the User model.
+  - All Policies use `before()` admin bypass via enum check.
+  - All FormRequests use `Role::Landlord`, `Role::Tenant`, `Role::Admin` — no string literals.
+  - Property deletion restricted to Admin only.
+
+- **Communication & Notification Layer (Phase 2 — ported)**
+  - `WhatsAppChannel`: delivers notifications via Twilio to tenant/landlord WhatsApp.
+  - `ExpoPushChannel`: delivers push notifications to mobile Expo clients.
+  - `PaymentReceived`, `RentBillGenerated`, `RentBillOverdue` implement `ShouldQueue` and deliver via all three channels.
+
+- **Property, Unit, Tenant & Tenancy Management**
+  - Full CRUD for properties and units (admin/landlord, policy-enforced).
+  - Tenant creation with auto-generated credentials; self-registration on mobile.
+  - Unit status auto-updates on tenancy start/end.
+  - Tenancy state machine: pending → active → expired/ended.
+
+- **Payment & Billing**
+  - Landlord records and manages payments. Tenant makes payments via mobile.
+  - Payments link to `RentBill` or `UtilityBill` records.
+  - Monthly rent/utility bill generation via scheduled commands.
+  - Bills auto-marked overdue daily.
+
+- **API**
+  - All mobile API endpoints exclusively at `/api/v1/` — **65 active routes**.
+  - All responses use `{ data: ..., meta: ... }` wrapping via Eloquent Resources.
+  - Mobile `EXPO_PUBLIC_API_URL` configured to `http://{wifi-ip}:8000/api/v1`.
 
 - **Settings area**
-  - `/settings/profile`, `/settings/password`, `/settings/appearance`, `/settings/two-factor` implemented via controllers + Inertia pages.
-  - React layouts and components for a cohesive settings experience.
+  - `/settings/profile`, `/settings/password`, `/settings/appearance`, `/settings/two-factor`.
 
 - **UI/UX**
   - Modern glassmorphism UI built on Tailwind + shadcn-inspired components.
-  - App shell with sidebar/header/navigation, responsive behavior, and dark/light theming.
-  - Reusable components for tables, charts, cards, navigation, forms, and notifications.
+  - App shell with sidebar/header/navigation, responsive behavior, dark/light theming.
 
 - **Mobile App (React Native/Expo)**
-  - Cross-platform mobile application for iOS and Android.
-  - Role-based screens for both landlords and tenants.
-  - **Premium Onboarding**: Minimalistic custom splash screen with background loading to ensure a "zero-flicker" transition to the main app.
-  - **Rent Billing System**: Complete mobile integration with rent bill viewing, payment linking, and status tracking.
-    - Tenant: View rent bills, current month bill, make payments linked to specific bills.
-    - Landlord: Manage rent bills, view overdue/pending bills, waive bills.
-  - Dashboard enhancements showing rent bill statistics.
-  - **Sanctum Authentication**: Permanent API tokens for seamless mobile login once credentials reside on the device.
+  - Cross-platform iOS and Android. Role-based screens.
+  - Premium splash screen with background loading (zero-flicker transition).
+  - Rent Billing: view/pay rent bills, link payments to bills, waive bills.
+  - Sanctum authentication with permanent tokens.
 
 - **Quality & tooling**
-  - Linting and formatting set up for both PHP and JS/TS.
-  - Testing powered by Pest with robust boundaries around `ArchTest` architectural safeguarding, Service-layer direct tests, and comprehensive multi-tenant API Feature tests preventing cross-tenancy data spillage.
+  - Pest 4: **336 tests, 1133 assertions — 100% passing**.
+  - All API tests target `/api/v1/` prefix.
+  - `npm run build` verified clean.
 
-- **Architectural Scaling (Q2 2026)**
-  - **Service Pattern**: Migrated from Fat Controllers to lightweight Action endpoints calling dedicated Service classes (`TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`).
-  - **API Contract Standardization**: Implementation of standardized JSON response structures, ensuring all single-resource endpoints use a `'data'` wrapper and complex relationships (e.g., Tenancy → Unit) are flattened to match mobile TypeScript interfaces, preventing client-side crashes and reducing parsing overhead.
-  
-- **Landlord Workflow Refinements (Q2 2026)**
-  - **Add Tenant Flow**: Completely restructured mobile form with full-width vertical stacking for premium UX.
-  - **Unit Selection**: Real-time "available" unit filtering with card-based dropdown menus.
-  - **Tenant Details**: High-fidelity dashboard view with standardized and flattened data structures showing active tenancy, units, and billing history.
-  - **Crash Resilience**: Elimination of deeply nested API responses in favor of flattened structures, resolving persistent `TypeError` issues in the mobile app.
+- **Service Pattern**
+  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`.
 
+---
+
+### 6. Active Branch & Porting Status
+
+All active development on branch `port/payment-architecture`.
+
+| Phase | Description | Status | Commit |
+|-------|-------------|--------|--------|
+| Phase 1 | Role Enum, Policies, API Resources, RentBillService fix | ✅ Complete | `0ac0412` |
+| Phase 2 | WhatsApp/Expo Channels, ShouldQueue Notifications | ✅ Complete | `84615d2` |
+| Stabilization | Enum auth migration, dead code removal, strict API versioning | ✅ Complete | `c858dc6` |
+| Phase 3 | Payment Gateway, M-Pesa Webhook, Events, DB Migration | 🔜 Pending | — |
+| Phase 4 | ReceiptService, DomPDF, Receipt Endpoints | 🔜 Pending | — |
+| Phase 5 | Event Wiring, Status Derivation, Mobile Type Updates | 🔜 Pending | — |

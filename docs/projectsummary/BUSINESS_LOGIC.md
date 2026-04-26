@@ -19,21 +19,35 @@ graph TD
 
 | Role | Description | Scope |
 |------|-------------|-------|
-| **admin** | System Administrator | Full system access, can manage all properties and users |
-| **landlord** | Property Owner/Manager | Can manage their own properties, units, tenants |
-| **tenant** | Rental Occupant | Can only access personal data and make payments |
+| **Admin** | System Administrator | Full system access, can manage all properties and users |
+| **Landlord** | Property Owner/Manager | Can manage their own properties, units, tenants |
+| **Tenant** | Rental Occupant | Can only access personal data and make payments |
 
 ### Role Assignment
 
-Roles are stored in the `users.role` column as an ENUM:
+Roles are stored in the `users.role` column as a string backed by the PHP 8.1 enum `App\Enums\Role`:
 ```php
+namespace App\Enums;
+
 enum Role: string
 {
-    case ADMIN = 'admin';
-    case LANDLORD = 'landlord';
-    case TENANT = 'tenant';
+    case Admin = 'admin';
+    case Landlord = 'landlord';
+    case Tenant = 'tenant';
 }
 ```
+
+The `User` model casts the `role` column to `App\Enums\Role`:
+```php
+protected function casts(): array
+{
+    return [
+        'role' => \App\Enums\Role::class,
+    ];
+}
+```
+
+> **Architecture Rule**: No string role literals (e.g., `'admin'`, `'landlord'`, `'tenant'`) exist anywhere in the active codebase. All role comparisons use `App\Enums\Role::Admin`, `Role::Landlord`, `Role::Tenant`.
 
 ---
 
@@ -154,8 +168,14 @@ erDiagram
 // - Manage system settings
 // - View all payment data
 
-User::where('role', 'admin')->first();
-// Has access to everything via role check
+// All Policies have a before() hook for admin bypass:
+public function before(User $user, string $ability): ?bool
+{
+    if ($user->role === Role::Admin) {
+        return true;
+    }
+    return null;
+}
 ```
 
 #### 2. Landlord User
@@ -165,7 +185,7 @@ User::where('role', 'admin')->first();
 // - Manage units within their properties
 // - Create and manage tenants for their units
 
-$landlord = User::where('role', 'landlord')->first();
+$landlord = User::where('role', Role::Landlord)->first();
 $properties = $landlord->properties; // Their properties
 $tenants = $properties->units->tenancies->tenants; // Their tenants
 ```
@@ -245,7 +265,7 @@ POST /landlord/properties
 
 **Example**:
 ```php
-// Admin sees all
+// Admin sees all (handled by Policy before() hook)
 $properties = Property::all();
 
 // Landlord sees own
@@ -255,18 +275,15 @@ $properties = Property::where('owner_id', auth()->id())->paginate();
 #### Update Property
 **Who**: Admin, Owner Landlord
 
-**Example**:
+**Example** (now handled by `PropertyPolicy`):
 ```php
-// Update with ownership check
-$property = Property::findOrFail($id);
-if ($property->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
-    abort(403);
-}
+// Policy enforces ownership — no inline role checks needed
+$this->authorize('update', $property);
 $property->update($request->validated());
 ```
 
 #### Delete Property
-**Who**: Admin, Owner Landlord
+**Who**: Admin only (delete/restore/forceDelete restricted to Admin in PropertyPolicy)
 
 **Constraints**:
 - Cannot delete property with active tenancies
