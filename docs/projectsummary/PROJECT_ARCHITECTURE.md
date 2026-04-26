@@ -1,15 +1,17 @@
-# Project Architecture
-
 ## Overview
 This is a Laravel 12 + React 19 full-stack property management application called "Estate Practice". It provides a multi-tenant property management system with three user roles: Admin, Landlord, and Tenant.
+
+All role-based authorization is enforced through `App\Enums\Role` — a PHP 8.1 backed string enum. This enum is the single source of truth for all authorization decisions across Policies, FormRequests, Controllers, and redirect logic. No string role literals exist in the active codebase.
 
 ## Technology Stack
 
 ### Backend
-- **Framework**: Laravel 12.x
-- **PHP Version**: 8.2+
+- **Framework**: Laravel 12.x (12.56.0)
+- **PHP Version**: 8.5
 - **Authentication**: Laravel Fortify (web), Laravel Sanctum (API)
+- **Authorization**: `App\Enums\Role` — PHP 8.1 backed enum; Policies with `before()` admin bypass
 - **Server-Side Rendering**: Inertia.js with React 19
+- **Notification Channels**: `WhatsAppChannel` (Twilio), `ExpoPushChannel` (Expo Push Service)
 
 ### Frontend (Web)
 - **UI Framework**: React 19 with TypeScript
@@ -256,9 +258,11 @@ Located in `app/Http/Controllers/Api/`:
 
 ### 3. Business Logic Layer
 Located in:
-- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`).
-- **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, etc.)
+- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`, `RentBillService`, `NotificationService`).
+- **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, RentBill, etc.)
 - **Actions**: `app/Actions/Fortify/` (User creation, password validation)
+- **Channels**: `app/Channels/` (`WhatsAppChannel` via Twilio, `ExpoPushChannel` via Expo Push)
+- **Notifications**: `app/Notifications/` (`PaymentReceived`, `RentBillGenerated`, `RentBillOverdue` — all implement `ShouldQueue`)
 
 ### 4. Data Access Layer
 - **Eloquent Models**: `app/Models/`
@@ -368,12 +372,12 @@ sequenceDiagram
     participant Laravel
     participant Database
     
-    Mobile->>Laravel: POST /api/auth/login
+    Mobile->>Laravel: POST /api/v1/auth/login
     Laravel->>Database: Verify credentials
     Database->>Laravel: User data + generate Sanctum token
     Laravel->>Mobile: Plain text access token
     
-    Mobile->>Laravel: GET /api/tenant/dashboard (with Bearer token)
+    Mobile->>Laravel: GET /api/v1/tenant/dashboard (with Bearer token)
     Laravel->>Laravel: Validate via auth:sanctum
     Laravel->>Mobile: Dashboard data
 ```
@@ -423,27 +427,37 @@ sequenceDiagram
 /settings/password   -> PasswordController
 ```
 
-### API Routes (Token-based)
+### API Routes (Token-based, `/api/v1/` prefix — strictly versioned)
 ```
-/api/auth/login       -> AuthController@login
-/api/auth/logout      -> AuthController@logout
-/api/auth/me          -> AuthController@me
+/api/v1/auth/login       -> AuthController@login
+/api/v1/auth/logout      -> AuthController@logout
+/api/v1/auth/me          -> AuthController@me
+/api/v1/auth/register    -> AuthController@register
 
-/api/tenant/dashboard    -> Tenant\DashboardController
-/api/tenant/payments     -> Tenant\PaymentsController
-/api/tenant/utilities    -> Tenant\UtilitiesController
-/api/tenant/utility-bills -> Tenant\UtilitiesController (bills)
+/api/v1/tenant/dashboard    -> Tenant\DashboardController
+/api/v1/tenant/payments     -> Tenant\PaymentsController
+/api/v1/tenant/rent-bills   -> Tenant\RentBillController
+/api/v1/tenant/utilities    -> Tenant\UtilitiesController
+/api/v1/tenant/utility-bills -> Tenant\UtilitiesController (bills)
+/api/v1/tenant/profile      -> Tenant\ProfileController
+/api/v1/tenant/password     -> PasswordController
 
-/api/landlord/dashboard        -> Landlord\DashboardController
-/api/landlord/properties       -> Landlord\PropertyController
-/api/landlord/units            -> Landlord\UnitController
-/api/landlord/tenants         -> Landlord\TenantController
-/api/landlord/payments        -> Landlord\PaymentController
-/api/landlord/utility-types   -> Landlord\UtilityTypeController
-/api/landlord/tenancy-utilities -> Landlord\TenancyUtilityController
-/api/landlord/utility-bills   -> Landlord\UtilityBillController
-/api/landlord/notifications    -> Landlord\NotificationController
+/api/v1/landlord/dashboard        -> Landlord\DashboardController
+/api/v1/landlord/properties       -> Landlord\PropertyController
+/api/v1/landlord/units            -> Landlord\UnitController
+/api/v1/landlord/tenants          -> Landlord\TenantController
+/api/v1/landlord/payments         -> Landlord\PaymentController
+/api/v1/landlord/rent-bills       -> Landlord\RentBillController
+/api/v1/landlord/utility-types    -> Landlord\UtilityTypeController
+/api/v1/landlord/tenancy-utilities -> Landlord\TenancyUtilityController
+/api/v1/landlord/utility-bills    -> Landlord\UtilityBillController
+/api/v1/landlord/notifications    -> Landlord\NotificationController
+/api/v1/landlord/profile          -> Landlord\ProfileController
+/api/v1/landlord/password         -> PasswordController
+
+/api/v1/users  -> UserController (admin/landlord scoped)
 ```
+**Total: 65 active routes**. Unversioned `/api/*` routes have been removed.
 
 ## Middleware Stack
 
@@ -481,15 +495,19 @@ Laravel scheduler handles:
 
 ## Quality Assurance & Testing Architecture
 
-The project maintains a rigorous, phased testing approach powered by **Pest**. 
+The project maintains a rigorous, phased testing approach powered by **Pest 4**.
 The test footprints are completely isolated, ensuring reliable test environments, preventing data leaks across partitions, and validating correct API behavior via Sanctum.
 
+**Test count: 336 tests, 1133 assertions — 100% passing.**
+
+All API tests target the `/api/v1/` prefix exclusively.
+
 Testing is divided into core phases:
-1. **Core Service Testing**: Isolated behavior-driven tests validating business logic inside the `app/Services` directory (e.g. `RentBillService`, `PaymentService`).
-2. **Tenant Data Isolation**: Assertions guaranteeing that Tenant accounts cannot fetch data cross-tenancy on Web views.
-3. **API Contracts**: Exhaustive feature testing providing nearly 100% test density specifically targeting the Mobile API endpoints securely bridging `Sanctum::actingAs`.
-4. **Architectural Guardrails**: Enforcing global layout restrictions using `arch()` tests (e.g., prohibiting `dd()` traces, enforcing `FormRequest` extensions).
-5. **API Response Standardization**: A contract layer ensuring all single-resource API responses are wrapped in a `'data'` key and complex nested objects (e.g., `tenancy.unit.property`) are flattened to match mobile TypeScript interfaces, reducing client-side complexity and preventing crashes.
+1. **Core Service Testing**: Isolated behavior-driven tests validating business logic inside `app/Services/` (e.g. `RentBillService`, `PaymentService`).
+2. **Tenant Data Isolation**: Assertions guaranteeing cross-tenancy data is never accessible.
+3. **API Contracts**: Exhaustive feature testing targeting Mobile API endpoints via `Sanctum::actingAs`.
+4. **Architectural Guardrails**: `arch()` tests enforcing global layout restrictions (no `dd()`, FormRequest extensions, etc.).
+5. **API Response Standardization**: Contract layer ensuring all single-resource API responses are wrapped in a `'data'` key and complex nested objects are flattened.
 
 ## Summary
 
@@ -498,7 +516,9 @@ This architecture follows:
 - **Repository pattern** through Eloquent
 - **Service layer** for complex business logic
 - **Middleware pattern** for cross-cutting concerns
-- **Role-based access control** (RBAC)
+- **Policy-based RBAC** enforced via `App\Enums\Role`
 - **API-first design** supporting both web and mobile clients
-- **Test-Driven Architecture** supported by Pest
+- **Strict API versioning** — all endpoints exclusively under `/api/v1/`
+- **Test-Driven Architecture** supported by Pest 4
 - **Server-side rendering** with Inertia.js for optimal performance
+- **Queue-based notifications** via WhatsApp and Expo Push channels
