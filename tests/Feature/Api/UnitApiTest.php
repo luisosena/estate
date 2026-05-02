@@ -32,6 +32,7 @@ test('landlord can list their units with data wrapper and flattened fields', fun
                     'property_id',
                     'property_name',
                     'created_at',
+                    'updated_at',
                 ],
             ],
             'meta',
@@ -55,6 +56,7 @@ test('landlord can show a unit with data wrapper and flattened fields', function
                 'property_name',
                 'property_address',
                 'created_at',
+                'updated_at',
                 'tenancies',
             ],
         ]);
@@ -64,11 +66,11 @@ test('unit show tenancy dates use move_in_date and move_out_date field names', f
     $tenant = Tenant::factory()->create();
     $tenantUser = User::factory()->create(['role' => 'tenant', 'tenant_id' => $tenant->id]);
     $unit = Unit::factory()->create(['property_id' => $this->property->id, 'status' => 'occupied']);
-    \App\Models\Tenancy::factory()->create([
-        'unit_id'      => $unit->id,
-        'tenant_id'    => $tenant->id,
+    Tenancy::factory()->create([
+        'unit_id' => $unit->id,
+        'tenant_id' => $tenant->id,
         'move_in_date' => '2026-01-01',
-        'status'       => 'active',
+        'status' => 'active',
     ]);
 
     $response = $this->getJson("/api/v1/landlord/units/{$unit->id}");
@@ -100,6 +102,7 @@ test('landlord can store a unit with data wrapper', function () {
                 'status',
                 'property_id',
                 'created_at',
+                'updated_at',
             ],
         ]);
 });
@@ -121,6 +124,7 @@ test('landlord can update a unit with data wrapper', function () {
                 'unit_code',
                 'unit_name',
                 'status',
+                'created_at',
                 'updated_at',
             ],
         ]);

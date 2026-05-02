@@ -49,6 +49,7 @@ class TenancyUtilityController extends Controller
                 'status' => $utility->status,
                 'notes' => $utility->notes,
                 'created_at' => $utility->created_at,
+                'updated_at' => $utility->updated_at,
             ];
         });
 
@@ -119,7 +120,9 @@ class TenancyUtilityController extends Controller
                     ] : null,
                     'amount' => $tenancyUtility->amount,
                     'status' => $tenancyUtility->status,
+                    'notes' => $tenancyUtility->notes,
                     'created_at' => $tenancyUtility->created_at,
+                    'updated_at' => $tenancyUtility->updated_at,
                 ],
             ], 201);
         } catch (\Exception $e) {
@@ -172,6 +175,7 @@ class TenancyUtilityController extends Controller
                 'status' => $tenancyUtility->status,
                 'notes' => $tenancyUtility->notes,
                 'created_at' => $tenancyUtility->created_at,
+                'updated_at' => $tenancyUtility->updated_at,
             ],
         ]);
     }
@@ -228,6 +232,7 @@ class TenancyUtilityController extends Controller
                     'meter_number' => $tenancyUtility->meter_number,
                     'status' => $tenancyUtility->status,
                     'notes' => $tenancyUtility->notes,
+                    'created_at' => $tenancyUtility->created_at,
                     'updated_at' => $tenancyUtility->updated_at,
                 ],
             ]);
