@@ -55,7 +55,8 @@ class UnitController extends Controller
                 'status' => $unit->status,
                 'property_id' => $unit->property_id,
                 'property_name' => $unit->property->name,
-                'created_at' => $unit->created_at->format('Y-m-d H:i'),
+                'created_at' => $unit->created_at,
+                'updated_at' => $unit->updated_at,
             ];
         });
 
@@ -88,7 +89,7 @@ class UnitController extends Controller
             $query->where('owner_id', $landlord->id);
         })
             ->with(['property:id,name,address', 'tenancies' => function ($query) {
-                $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date')
+                $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date', 'monthly_rent', 'security_deposit')
                     ->with('tenant:id,full_name,email');
             }])
             ->findOrFail($unitId);
@@ -102,7 +103,8 @@ class UnitController extends Controller
                 'property_id' => $unit->property_id,
                 'property_name' => $unit->property->name,
                 'property_address' => $unit->property->address,
-                'created_at' => $unit->created_at->format('Y-m-d H:i'),
+                'created_at' => $unit->created_at,
+                'updated_at' => $unit->updated_at,
                 'tenancies' => $unit->tenancies->map(function ($tenancy) {
                     return [
                         'id' => $tenancy->id,
@@ -156,6 +158,7 @@ class UnitController extends Controller
                 'status' => $unit->status,
                 'property_id' => $unit->property_id,
                 'created_at' => $unit->created_at,
+                'updated_at' => $unit->updated_at,
             ],
         ], 201);
     }
@@ -187,6 +190,7 @@ class UnitController extends Controller
                 'unit_code' => $unit->unit_code,
                 'unit_name' => $unit->unit_name,
                 'status' => $unit->status,
+                'created_at' => $unit->created_at,
                 'updated_at' => $unit->updated_at,
             ],
         ]);

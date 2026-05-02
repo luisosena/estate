@@ -65,6 +65,7 @@ test('landlord can update a tenancy utility and receives full record', function 
                 'meter_number',
                 'status',
                 'notes',
+                'created_at',
                 'updated_at',
             ],
         ]);
