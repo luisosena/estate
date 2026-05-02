@@ -98,6 +98,7 @@
             background-color: #e6f4ea;
             color: #137333;
         }
+    {{-- Styles are intentionally inline: DomPDF renders inline CSS most reliably. --}}
     </style>
 </head>
 <body>
@@ -106,7 +107,7 @@
             <h1>Official Receipt</h1>
             <p>Estate Practice System</p>
             <p>Receipt #: {{ str_pad($payment->id, 8, '0', STR_PAD_LEFT) }}</p>
-            <p>Date: {{ $payment->paid_at ? \Carbon\Carbon::parse($payment->paid_at)->format('F j, Y g:i A') : $payment->created_at->format('F j, Y g:i A') }}</p>
+            <p>Date: {{ $payment->paid_at ? \Carbon\Carbon::parse($payment->paid_at)->format('F j, Y g:i A') : ($payment->created_at ? $payment->created_at->format('F j, Y g:i A') : 'N/A') }}</p>
         </div>
 
         <div class="details-section">

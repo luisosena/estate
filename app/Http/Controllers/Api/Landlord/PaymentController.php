@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\Api\Landlord;
 
+use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\ReceiptService;
 use App\Services\RentBillService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class PaymentController extends Controller
 {
+    use HandlesReceipts;
+
     protected RentBillService $rentBillService;
 
     public function __construct(RentBillService $rentBillService)
@@ -289,32 +291,6 @@ class PaymentController extends Controller
             ->with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
             ->findOrFail($paymentId);
 
-        if (! $payment->receipt_path) {
-            // Generate it on the fly if it doesn't exist yet but is paid
-            if ($payment->status === 'paid' || $payment->status === 'partial') {
-                try {
-                    $receiptService->generate($payment);
-                    $payment->refresh();
-                } catch (\Exception $e) {
-                    Log::error("Failed generating receipt on the fly for {$payment->id}: ".$e->getMessage());
-
-                    return response()->json(['message' => 'Failed to generate receipt.'], 500);
-                }
-            } else {
-                return response()->json(['message' => 'Receipt not available for unpaid payments.'], 400);
-            }
-        }
-
-        $url = $receiptService->getUrl($payment);
-
-        if (! $url) {
-            return response()->json(['message' => 'Unable to retrieve receipt url.'], 500);
-        }
-
-        return response()->json([
-            'data' => [
-                'url' => $url,
-            ],
-        ]);
+        return $this->buildReceiptResponse($payment, $receiptService);
     }
 }
