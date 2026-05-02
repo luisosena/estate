@@ -27,10 +27,11 @@ class PaymentResource extends JsonResource
             'reference_number' => $this->reference_number,
             'notes' => $this->notes,
             // Gateway tracking fields (Phase 3)
-            'receipt_path' => $this->receipt_path,
-            'gateway' => $this->gateway,
-            'gateway_status' => $this->gateway_status,
-            'gateway_reference' => $this->gateway_reference,
+            'receipt_path' => $this->receipt_path ?? null,
+            'gateway' => $this->gateway ?? null,
+            'gateway_status' => $this->gateway_status ?? null,
+            'gateway_reference' => $this->gateway_reference ?? null,
+            'gateway_confirmed_at' => $this->gateway_confirmed_at ?? null,
             // Relation-derived display fields (populated when relationships are loaded)
             'tenant_name' => $this->whenLoaded('tenant', fn () => $this->tenant?->full_name),
             'tenant_code' => $this->whenLoaded('tenant', fn () => $this->tenant?->tenant_code),

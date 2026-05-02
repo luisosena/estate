@@ -151,6 +151,9 @@ export const landlordApi = {
   getPayments: (page = 1): Promise<PaginatedResponse<Payment>> =>
     api.get<PaginatedResponse<Payment>>('/landlord/payments', { page }),
 
+  getPaymentReceipt: (paymentId: number): Promise<Blob> =>
+    api.get<Blob>(`/landlord/payments/${paymentId}/receipt`, { responseType: 'blob' }),
+
   // Notifications
   getNotifications: (): Promise<{ notifications: Notification[] }> =>
     api.get<{ notifications: Notification[] }>('/landlord/notifications'),

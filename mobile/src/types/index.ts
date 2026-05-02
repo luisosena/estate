@@ -119,6 +119,12 @@ export interface Payment {
   utility_bill?: UtilityBill | null;
   created_at?: string;
   updated_at?: string;
+  // Gateway fields (populated when payment goes through M-Pesa or other gateway)
+  gateway?: string | null;
+  gateway_status?: string | null;
+  gateway_reference?: string | null;
+  receipt_path?: string | null;
+  gateway_confirmed_at?: string | null;
 }
 
 // Pending amount - calculated from monthly rent minus payments made
