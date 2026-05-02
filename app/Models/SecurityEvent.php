@@ -39,6 +39,8 @@ class SecurityEvent extends Model
 
     public const EVENT_TOKEN_REVOKED = 'token_revoked';
 
+    public const EVENT_PROFILE_UPDATED = 'profile_updated';
+
     public const EVENT_SESSION_TERMINATED = 'session_terminated';
 
     public const EVENT_BIOMETRIC_ENABLED = 'biometric_enabled';
@@ -168,6 +170,7 @@ class SecurityEvent extends Model
             'UNUSUAL_LOCATION' => self::EVENT_UNUSUAL_LOCATION,
             'MULTIPLE_FAILED_ATTEMPTS' => self::EVENT_MULTIPLE_FAILED_ATTEMPTS,
             'TOKEN_REVOKED' => self::EVENT_TOKEN_REVOKED,
+            'PROFILE_UPDATED' => self::EVENT_PROFILE_UPDATED,
             'SESSION_TERMINATED' => self::EVENT_SESSION_TERMINATED,
             'BIOMETRIC_ENABLED' => self::EVENT_BIOMETRIC_ENABLED,
             'BIOMETRIC_DISABLED' => self::EVENT_BIOMETRIC_DISABLED,

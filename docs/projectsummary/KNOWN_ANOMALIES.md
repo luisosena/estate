@@ -340,6 +340,14 @@ $this->authorize('update', $property);
 
 ---
 
+### 4. Inline Ownership Checks in Controllers
+
+**Deviation**: Checking ownership inline `if ($unit->property->owner_id !== $user->id) { abort(403); }` is accepted.
+
+**Rationale**: While Policies are the Laravel standard, this direct approach is currently used to bypass deep eager loading overhead in simple data-fetching routes. It is an accepted architectural anomaly until Phase 4 (Authorization Refactor).
+
+---
+
 ## Migration Notes
 
 ### Pending Migrations
@@ -388,3 +396,4 @@ This document covers:
 7. **Deviations**: Mixed controllers, no repository pattern, inconsistent transactions
 8. **Migration Notes**: Schema migration handling
 9. **Configuration Notes**: Environment-specific behavior
+10. **Inline Ownership Checks**: Direct checks in controllers instead of Policies are an accepted anomaly.

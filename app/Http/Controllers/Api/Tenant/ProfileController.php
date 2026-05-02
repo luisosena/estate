@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Tenant;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UserProfileUpdateRequest;
+use App\Models\SecurityEvent;
 use Illuminate\Http\JsonResponse;
 
 class ProfileController extends Controller
@@ -60,6 +61,14 @@ class ProfileController extends Controller
             $user->tenant->update($tenantValidated);
             $user->load('tenant');
         }
+
+        SecurityEvent::log(
+            userId: $request->user()->id,
+            eventType: SecurityEvent::EVENT_PROFILE_UPDATED,
+            ipAddress: $request->ip(),
+            userAgent: $request->userAgent(),
+            severity: SecurityEvent::SEVERITY_LOW,
+        );
 
         return response()->json([
             'message' => 'Profile updated successfully',
