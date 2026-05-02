@@ -204,3 +204,40 @@ test('landlord cannot download receipt for another landlords payment', function 
     $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}/receipt")
         ->assertNotFound();
 });
+
+test('landlord receipt returns 400 for unpaid payment', function () {
+    $payment = Payment::create([
+        'tenant_id'      => $this->tenant->id,
+        'tenancy_id'     => $this->tenancy->id,
+        'amount'         => 5000,
+        'payment_type'   => 'rent',
+        'payment_method' => 'mobile_money',
+        'status'         => 'pending',
+        'paid_at'        => null,
+    ]);
+
+    $this->getJson("/api/v1/landlord/payments/{$payment->id}/receipt")
+        ->assertStatus(400)
+        ->assertJson(['message' => 'Receipt not available for unpaid payments.']);
+});
+
+test('landlord receipt returns 500 when generation fails', function () {
+    $payment = Payment::create([
+        'tenant_id'      => $this->tenant->id,
+        'tenancy_id'     => $this->tenancy->id,
+        'amount'         => 5000,
+        'payment_type'   => 'rent',
+        'payment_method' => 'mobile_money',
+        'status'         => 'paid',
+        'paid_at'        => now(),
+    ]);
+
+    $this->mock(\App\Services\ReceiptService::class, function ($mock) {
+        $mock->shouldReceive('generate')->andThrow(new \RuntimeException('PDF engine failure'));
+        $mock->shouldReceive('getUrl')->andReturn(null);
+    });
+
+    $this->getJson("/api/v1/landlord/payments/{$payment->id}/receipt")
+        ->assertStatus(500)
+        ->assertJson(['message' => 'Failed to generate receipt.']);
+});

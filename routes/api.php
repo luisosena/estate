@@ -96,6 +96,8 @@ $defineApiRoutes = function (): void {
             Route::put('tenants/{tenantIdentifier}', [TenantController::class, 'update']);
             Route::delete('tenants/{tenancyId}/remove', [TenantController::class, 'destroy']);
 
+            // Uses {paymentId} (integer) instead of implicit model binding {payment}
+            // to match controller method signatures. See docs/plans/receipt-generation-and-storage.md §6.
             Route::get('payments', [PaymentController::class, 'index']);
             Route::get('payments/{paymentId}', [PaymentController::class, 'show']);
             Route::post('payments', [PaymentController::class, 'store']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Tenant;
 
+use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenancy;
@@ -11,10 +12,11 @@ use App\Services\RentBillService;
 use App\Services\UtilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class PaymentsController extends Controller
 {
+    use HandlesReceipts;
+
     public function index(Request $request)
     {
         $user = $request->user();
@@ -319,39 +321,13 @@ class PaymentsController extends Controller
      */
     public function receipt(Request $request, int $paymentId, ReceiptService $receiptService)
     {
-        $user = $request->user();
+        $user   = $request->user();
         $tenant = $user->tenant;
 
         $payment = Payment::where('tenant_id', $tenant->id)
             ->with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
             ->findOrFail($paymentId);
 
-        if (! $payment->receipt_path) {
-            // Generate it on the fly if it doesn't exist yet but is paid
-            if ($payment->status === 'paid' || $payment->status === 'partial') {
-                try {
-                    $receiptService->generate($payment);
-                    $payment->refresh();
-                } catch (\Exception $e) {
-                    Log::error("Failed generating receipt on the fly for {$payment->id}: ".$e->getMessage());
-
-                    return response()->json(['message' => 'Failed to generate receipt.'], 500);
-                }
-            } else {
-                return response()->json(['message' => 'Receipt not available for unpaid payments.'], 400);
-            }
-        }
-
-        $url = $receiptService->getUrl($payment);
-
-        if (! $url) {
-            return response()->json(['message' => 'Unable to retrieve receipt url.'], 500);
-        }
-
-        return response()->json([
-            'data' => [
-                'url' => $url,
-            ],
-        ]);
+        return $this->buildReceiptResponse($payment, $receiptService);
     }
 }
