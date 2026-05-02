@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\PaymentConfirmed;
+use App\Listeners\ProcessPaymentConfirmed;
 use App\Policies\NotificationPolicy;
 use App\Services\DocSyncService;
 use Carbon\CarbonImmutable;
@@ -9,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -31,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Payment event wiring — activated when gateway is wired in Phase 3
+        Event::listen(PaymentConfirmed::class, ProcessPaymentConfirmed::class);
+
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }

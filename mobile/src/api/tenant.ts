@@ -63,6 +63,9 @@ export const tenantApi = {
   createPayment: (data: PaymentFormData): Promise<CreatePaymentResponse> =>
     api.post<CreatePaymentResponse>('/tenant/payments', data),
 
+  getPaymentReceipt: (paymentId: number): Promise<Blob> =>
+    api.get<Blob>(`/tenant/payments/${paymentId}/receipt`, { responseType: 'blob' }),
+
   /**
    * Fetches utilities for the authenticated tenant.
    * @returns Promise resolving to utilities array and tenancy info including monthly rent
