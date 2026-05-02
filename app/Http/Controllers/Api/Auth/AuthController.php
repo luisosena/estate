@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Http\Controllers\Controller;
+use App\Models\SecurityEvent;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,6 +55,14 @@ class AuthController extends Controller
 
         $user->forceFill(['last_login_at' => now()])->save();
 
+        SecurityEvent::log(
+            userId: $user->id,
+            eventType: SecurityEvent::EVENT_DEVICE_ADDED,
+            ipAddress: $request->ip(),
+            userAgent: $request->userAgent(),
+            severity: SecurityEvent::SEVERITY_MEDIUM,
+        );
+
         $user->loadMissing('tenant');
 
         return response()->json([
@@ -79,6 +88,14 @@ class AuthController extends Controller
 
         if ($user) {
             $user->currentAccessToken()->delete();
+
+            SecurityEvent::log(
+                userId: $request->user()->id,
+                eventType: SecurityEvent::EVENT_TOKEN_REVOKED,
+                ipAddress: $request->ip(),
+                userAgent: $request->userAgent(),
+                severity: SecurityEvent::SEVERITY_LOW,
+            );
 
             // Clear current authentication state for both guards to ensure test stability and session isolation
             if (method_exists(auth()->guard('sanctum'), 'forgetUser')) {

@@ -36,6 +36,12 @@ it('allows login via /api/v1/auth/login and authenticates subsequent requests wi
         'user' => ['id', 'name', 'email', 'role', 'tenant'],
     ]);
 
+    $this->assertDatabaseHas('security_events', [
+        'user_id' => $user->id,
+        'event_type' => \App\Models\SecurityEvent::EVENT_DEVICE_ADDED,
+        'severity' => \App\Models\SecurityEvent::SEVERITY_MEDIUM,
+    ]);
+
     $token = $loginResponse->json('token');
 
     // 2. Test /me endpoint
@@ -66,6 +72,12 @@ it('allows login via /api/v1/auth/login and authenticates subsequent requests wi
 
     // Verify token is revoked in database
     $this->assertDatabaseCount('personal_access_tokens', 0);
+
+    $this->assertDatabaseHas('security_events', [
+        'user_id' => $user->id,
+        'event_type' => \App\Models\SecurityEvent::EVENT_TOKEN_REVOKED,
+        'severity' => \App\Models\SecurityEvent::SEVERITY_LOW,
+    ]);
 
     // Verify subsequent request with same token fails (401)
     $this->withHeader('Authorization', "Bearer {$token}")
