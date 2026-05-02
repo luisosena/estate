@@ -107,8 +107,8 @@ class UnitController extends Controller
                     return [
                         'id' => $tenancy->id,
                         'status' => $tenancy->status,
-                        'start_date' => $tenancy->move_in_date,
-                        'end_date' => $tenancy->move_out_date,
+                        'move_in_date' => $tenancy->move_in_date,
+                        'move_out_date' => $tenancy->move_out_date,
                         'monthly_rent' => $tenancy->monthly_rent,
                         'security_deposit' => $tenancy->security_deposit,
                         'tenant_id' => $tenancy->tenant->id,
