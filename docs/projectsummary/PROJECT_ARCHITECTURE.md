@@ -273,7 +273,7 @@ Located in `app/Http/Controllers/Api/`:
 
 ### 3. Business Logic Layer
 Located in:
-- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`, `RentBillService`, `NotificationService`, `ReceiptService`).
+- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`, `RentBillService`, `NotificationService`, `ReceiptService`). **Note**: `ReceiptService` uses on-demand PDF streaming—receipts are generated dynamically and streamed directly to the browser without disk storage.
 - **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, RentBill, etc.)
 - **Actions**: `app/Actions/Fortify/` (User creation, password validation)
 - **Channels**: `app/Channels/` (`WhatsAppChannel` via Twilio, `ExpoPushChannel` via Expo Push)

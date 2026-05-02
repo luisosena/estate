@@ -57,7 +57,7 @@ $defineApiRoutes = function (): void {
             Route::middleware('throttle:10,1')->group(function () {
                 Route::post('payments', [PaymentsController::class, 'store']);
             });
-            Route::get('payments/{paymentId}/receipt', [PaymentsController::class, 'receipt']);
+            Route::middleware('throttle:10,1')->get('payments/{paymentId}/receipt', [PaymentsController::class, 'receipt']);
             Route::get('utilities', [TenantUtilitiesController::class, 'index']);
             Route::get('utility-bills', [TenantUtilitiesController::class, 'bills']);
 
@@ -103,7 +103,7 @@ $defineApiRoutes = function (): void {
             Route::post('payments', [PaymentController::class, 'store']);
             Route::put('payments/{paymentId}', [PaymentController::class, 'update']);
             Route::delete('payments/{paymentId}', [PaymentController::class, 'destroy']);
-            Route::get('payments/{paymentId}/receipt', [PaymentController::class, 'receipt']);
+            Route::middleware('throttle:10,1')->get('payments/{paymentId}/receipt', [PaymentController::class, 'receipt']);
 
             Route::get('notifications', [NotificationController::class, 'index']);
             Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']);

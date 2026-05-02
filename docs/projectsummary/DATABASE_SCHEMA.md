@@ -261,6 +261,7 @@ erDiagram
 - `database/migrations/2026_03_20_000004_add_utility_bill_id_to_payments_table.php` - Adds utility_bill_id for linkage to utility bills
 - `database/migrations/2026_03_20_000005_add_pending_status_to_payments_table.php` - Adds 'pending' status to payment status enum
 - `database/migrations/2026_03_21_000002_add_rent_bill_id_to_payments_table.php` - Adds rent_bill_id for linkage to rent bills
+- `database/migrations/2026_05_02_205519_remove_receipt_path_from_payments_table.php` - Removes receipt_path column (PDF receipt generation now uses on-demand streaming)
 
 **Attributes**:
 | Column | Type | Constraints | Description |
@@ -284,7 +285,6 @@ erDiagram
 | gateway_status | varchar(255) | nullable | Raw status string from the gateway |
 | gateway_metadata | json | nullable | Full gateway response payload |
 | gateway_confirmed_at | timestamp | nullable | When the gateway confirmed the payment |
-| receipt_path | varchar(255) | nullable | File path to the generated PDF receipt |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -740,6 +740,7 @@ erDiagram
         bigint tenancy_id FK
         bigint tenant_id FK
         bigint utility_bill_id FK
+        bigint rent_bill_id FK
         decimal amount
         enum payment_type
         enum payment_method
@@ -748,7 +749,6 @@ erDiagram
         string gateway
         string gateway_reference
         timestamp gateway_confirmed_at
-        string receipt_path
     }
     
     UTILITY_TYPE {

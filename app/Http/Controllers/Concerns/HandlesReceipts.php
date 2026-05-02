@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Concerns;
 use App\Models\Payment;
 use App\Services\ReceiptService;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 trait HandlesReceipts
 {
@@ -23,6 +24,14 @@ trait HandlesReceipts
             abort(400, 'Receipt not available for unpaid payments.');
         }
 
-        return $receiptService->stream($payment);
+        try {
+            return $receiptService->stream($payment);
+        } catch (\Exception $e) {
+            Log::error('Receipt generation failed', [
+                'payment_id' => $payment->id,
+                'error' => $e->getMessage(),
+            ]);
+            abort(500, 'Unable to generate receipt. Please try again.');
+        }
     }
 }

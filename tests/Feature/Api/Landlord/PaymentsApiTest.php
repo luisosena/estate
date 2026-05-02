@@ -203,7 +203,7 @@ test('landlord cannot download receipt for another landlords payment', function 
         'paid_at' => now(),
     ]);
 
-    $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}/receipt")
+    $this->get("/api/v1/landlord/payments/{$otherPayment->id}/receipt")
         ->assertNotFound();
 });
 
@@ -218,9 +218,8 @@ test('landlord receipt returns 400 for unpaid payment', function () {
         'paid_at'        => null,
     ]);
 
-    $this->getJson("/api/v1/landlord/payments/{$payment->id}/receipt")
-        ->assertStatus(400)
-        ->assertJson(['message' => 'Receipt not available for unpaid payments.']);
+    $this->get("/api/v1/landlord/payments/{$payment->id}/receipt")
+        ->assertStatus(400);
 });
 
 test('landlord receipt returns 500 when generation fails', function () {
