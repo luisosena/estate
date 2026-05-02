@@ -392,9 +392,12 @@ To remove: follow teardown in handoff_payment_scaffold.md."
 
 ---
 
-## 9. Teardown Inventory (Full Removal)
+## 9. Teardown Inventory (Reference Only — Do Not Execute)
 
-If the payment design changes and this scaffold needs to be completely removed, execute these steps in order:
+> [!CAUTION]
+> **This section is documentation for the future. The agent implementing the scaffold must NOT execute any step in this section.** These instructions exist so that when the user decides to remove the scaffold, the steps are already written and verified. Read it, understand it, then stop — do not run any of these commands.
+
+If the payment design changes and this scaffold needs to be completely removed, a future agent should execute these steps in order:
 
 ### Step 1 — Roll back the DB migration
 ```bash
