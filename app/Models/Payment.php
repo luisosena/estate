@@ -80,6 +80,13 @@ class Payment extends Model
         'due_date',
         'reference_number',
         'notes',
+        // SCAFFOLD: gateway fields — see PaymentGatewayInterface
+        'gateway',
+        'checkout_request_id',
+        'gateway_reference',
+        'gateway_status',
+        'gateway_metadata',
+        'gateway_confirmed_at',
     ];
 
     protected function casts(): array
@@ -89,6 +96,8 @@ class Payment extends Model
             'paid_at' => 'datetime',
             'due_date' => 'date',
             'deleted_at' => 'datetime',
+            'gateway_metadata' => 'array',
+            'gateway_confirmed_at' => 'datetime',
         ];
     }
 
