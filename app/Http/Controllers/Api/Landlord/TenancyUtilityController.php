@@ -154,23 +154,16 @@ class TenancyUtilityController extends Controller
             'data' => [
                 'id' => $tenancyUtility->id,
                 'tenancy_id' => $tenancyUtility->tenancy_id,
+                'unit_id' => $tenancyUtility->tenancy?->unit?->id,
+                'unit_code' => $tenancyUtility->tenancy?->unit?->unit_code,
+                'property_id' => $tenancyUtility->tenancy?->unit?->property?->id,
+                'property_name' => $tenancyUtility->tenancy?->unit?->property?->name,
                 'utility_type_id' => $tenancyUtility->utility_type_id,
                 'utility_type' => $tenancyUtility->utilityType ? [
                     'id' => $tenancyUtility->utilityType->id,
                     'name' => $tenancyUtility->utilityType->name,
                     'unit' => $tenancyUtility->utilityType->unit,
                 ] : null,
-                'tenancy' => [
-                    'id' => $tenancyUtility->tenancy->id,
-                    'unit' => [
-                        'id' => $tenancyUtility->tenancy->unit->id,
-                        'unit_code' => $tenancyUtility->tenancy->unit->unit_code,
-                        'property' => [
-                            'id' => $tenancyUtility->tenancy->unit->property->id,
-                            'name' => $tenancyUtility->tenancy->unit->property->name,
-                        ],
-                    ],
-                ],
                 'amount' => $tenancyUtility->amount,
                 'billing_cycle' => $tenancyUtility->billing_cycle,
                 'provider' => $tenancyUtility->provider,
@@ -215,12 +208,26 @@ class TenancyUtilityController extends Controller
                 'landlord_id' => $landlord->id,
             ]);
 
+            $tenancyUtility->load('utilityType');
+
             return response()->json([
                 'message' => 'Utility updated successfully',
                 'data' => [
                     'id' => $tenancyUtility->id,
-                    'status' => $tenancyUtility->status,
+                    'tenancy_id' => $tenancyUtility->tenancy_id,
+                    'utility_type_id' => $tenancyUtility->utility_type_id,
+                    'utility_type' => $tenancyUtility->utilityType ? [
+                        'id' => $tenancyUtility->utilityType->id,
+                        'name' => $tenancyUtility->utilityType->name,
+                        'unit' => $tenancyUtility->utilityType->unit,
+                    ] : null,
                     'amount' => $tenancyUtility->amount,
+                    'billing_cycle' => $tenancyUtility->billing_cycle,
+                    'provider' => $tenancyUtility->provider,
+                    'account_number' => $tenancyUtility->account_number,
+                    'meter_number' => $tenancyUtility->meter_number,
+                    'status' => $tenancyUtility->status,
+                    'notes' => $tenancyUtility->notes,
                     'updated_at' => $tenancyUtility->updated_at,
                 ],
             ]);
