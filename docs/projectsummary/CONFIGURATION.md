@@ -102,6 +102,37 @@ DB_PASSWORD=secret
 
 ---
 
+### Twilio Configuration (WhatsApp)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| TWILIO_SID | Yes | - | Twilio Account SID |
+| TWILIO_TOKEN | Yes | - | Twilio Auth Token |
+| TWILIO_WHATSAPP_FROM | Yes | - | WhatsApp sender number |
+
+---
+
+### Payment Gateway Configuration (`config/payments.php`)
+
+Controls the active payment gateway driver and M-Pesa credentials.
+
+> [!IMPORTANT]
+> This config is part of the Phase 3 scaffold. `PaymentGatewayServiceProvider` is
+> **not yet registered** in `bootstrap/providers.php`. The `default_gateway` setting
+> has no runtime effect until Phase 3 is activated. See `docs/plans/porting-plan.md`.
+
+| Key | `.env` Variable | Default | Description |
+|---|---|---|---|
+| `payments.default_gateway` | `PAYMENTS_DEFAULT_GATEWAY` | `manual` | Active gateway driver |
+| `payments.mpesa.consumer_key` | `MPESA_CONSUMER_KEY` | `null` | M-Pesa consumer key |
+| `payments.mpesa.consumer_secret` | `MPESA_CONSUMER_SECRET` | `null` | M-Pesa consumer secret |
+| `payments.mpesa.business_short_code` | `MPESA_BUSINESS_SHORT_CODE` | `null` | Paybill or till number |
+| `payments.mpesa.passkey` | `MPESA_PASSKEY` | `null` | STK push passkey |
+| `payments.mpesa.callback_url` | `MPESA_CALLBACK_URL` | `null` | Webhook callback URL |
+| `payments.mpesa.environment` | `MPESA_ENVIRONMENT` | `sandbox` | `sandbox` or `production` |
+
+---
+
 ### Mail Configuration
 
 | Variable | Required | Default | Description |

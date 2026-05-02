@@ -377,6 +377,19 @@ None currently - all migrations have been applied.
 
 ---
 
+### Anomaly: `PaymentGatewayServiceProvider` not registered
+
+**File**: `app/Providers/PaymentGatewayServiceProvider.php`
+**Status**: Accepted — intentional scaffold
+**Reason**: The payment gateway design is not yet finalized. The provider, gateway
+contracts, and drivers were ported as dead scaffold code to allow future activation
+without a full re-implementation. Zero runtime impact while unregistered.
+**To activate**: Add `App\Providers\PaymentGatewayServiceProvider::class` to
+`bootstrap/providers.php` and register `routes/webhooks.php` in `bootstrap/app.php`.
+**Reference**: `docs/plans/porting-plan.md`, `docs/plans/payment-scaffold-plan.md`
+
+---
+
 ## Summary
 
 This document covers:
@@ -387,10 +400,12 @@ This document covers:
 4. **Resolved Items**:
    - Role enum implementation — `App\Enums\Role` is the canonical source of truth ✔
    - API Resource classes — all endpoints wrapped in `*Resource.php` layer ✔
-   - Test coverage — 336 tests, 1133 assertions ✔
+   - Test coverage — 348 tests, 1133 assertions ✔
    - API Versioning — exclusively `/api/v1/`, unversioned routes removed ✔
    - String-based role checks — replaced with enum comparisons — no string literals ✔
    - Service layer extraction — controllers delegating to service classes ✔
+   - ReceiptService/DomPDF — PDF receipt generation ✔
+   - Payment gateway scaffold — contracts, drivers, events, listeners ✔
 5. **Breaking Changes**: API token expiration, session driver
 6. **Package Issues**: TailwindCSS 4, Zod 4, React 19 compatibility
 7. **Deviations**: Mixed controllers, no repository pattern, inconsistent transactions

@@ -22,6 +22,8 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - **Notification channels** *(Phase 2 — ported)*:
     - `WhatsAppChannel` via `twilio/sdk` for WhatsApp delivery
     - `ExpoPushChannel` for Expo mobile push notifications
+  - **PDF Generation** *(Phase 4 — ported)*:
+    - `barryvdh/laravel-dompdf` for receipt generation
   - **Routing & URLs**:
     - `laravel/wayfinder` ^0.1.15
     - `tightenco/ziggy` ^2.6 (mirrored on the frontend with `ziggy-js`)
@@ -30,7 +32,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
     - `laravel/pail` (log viewer)
     - `laravel/sail` (optional Docker dev env)
     - `laravel/pint` (PHP linter/formatter)
-    - `pestphp/pest` ^4.4 + `pestphp/pest-plugin-laravel` (testing — 336 tests passing)
+    - `pestphp/pest` ^4.4 + `pestphp/pest-plugin-laravel` (testing — 348 tests passing)
 
 - **Frontend**
   - **Language & runtime**:
@@ -288,6 +290,10 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - `ExpoPushChannel`: delivers push notifications to mobile Expo clients.
   - `PaymentReceived`, `RentBillGenerated`, `RentBillOverdue` implement `ShouldQueue` and deliver via all three channels.
 
+- **PDF Receipt Generation (Phase 4 — ported)**
+  - PDF receipt generation for all confirmed payments via `ReceiptService` and DomPDF.
+  - Endpoints: `GET /api/v1/landlord/payments/{id}/receipt` and `GET /api/v1/tenant/payments/{id}/receipt`.
+
 - **Property, Unit, Tenant & Tenancy Management**
   - Full CRUD for properties and units (admin/landlord, policy-enforced).
   - Tenant creation with auto-generated credentials; self-registration on mobile.
@@ -319,12 +325,12 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - Sanctum authentication with permanent tokens.
 
 - **Quality & tooling**
-  - Pest 4: **336 tests, 1133 assertions — 100% passing**.
+  - Pest 4: **348 tests, 1133 assertions — 100% passing**.
   - All API tests target `/api/v1/` prefix.
   - `npm run build` verified clean.
 
 - **Service Pattern**
-  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`.
+  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`, `ReceiptService`.
 
 ---
 
@@ -337,6 +343,6 @@ All active development on branch `port/payment-architecture`.
 | Phase 1 | Role Enum, Policies, API Resources, RentBillService fix | ✅ Complete | `0ac0412` |
 | Phase 2 | WhatsApp/Expo Channels, ShouldQueue Notifications | ✅ Complete | `84615d2` |
 | Stabilization | Enum auth migration, dead code removal, strict API versioning | ✅ Complete | `c858dc6` |
-| Phase 3 | Payment Gateway, M-Pesa Webhook, Events, DB Migration | 🔜 Pending | — |
-| Phase 4 | ReceiptService, DomPDF, Receipt Endpoints | 🔜 Pending | — |
-| Phase 5 | Event Wiring, Status Derivation, Mobile Type Updates | 🔜 Pending | — |
+| Phase 3 | Payment Gateway, M-Pesa Webhook, Events, DB Migration | ✅ Complete | — |
+| Phase 4 | ReceiptService, DomPDF, Receipt Endpoints | ✅ Complete | — |
+| Phase 5 | Event Wiring, Status Derivation, Mobile Type Updates | ✅ Complete | — |

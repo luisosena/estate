@@ -208,6 +208,21 @@ interface PaymentFormData {
   reference_number?: string;
   notes?: string;
 }
+
+// Payment with gateway fields (Phase 5)
+interface Payment {
+  id: number;
+  amount: number;
+  payment_type: 'rent' | 'utility' | 'deposit' | 'penalty' | 'other';
+  payment_method: 'cash' | 'bank_transfer' | 'mobile_money' | 'card' | 'other';
+  status: 'pending' | 'paid' | 'partial' | 'overdue' | 'cancelled';
+  gateway?: string | null;
+  gateway_status?: string | null;
+  gateway_reference?: string | null;
+  receipt_path?: string | null;
+  gateway_confirmed_at?: string | null;
+  // ... other fields
+}
 ```
 
 ## System Architecture Diagram
@@ -258,7 +273,7 @@ Located in `app/Http/Controllers/Api/`:
 
 ### 3. Business Logic Layer
 Located in:
-- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`, `RentBillService`, `NotificationService`).
+- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`, `RentBillService`, `NotificationService`, `ReceiptService`).
 - **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, RentBill, etc.)
 - **Actions**: `app/Actions/Fortify/` (User creation, password validation)
 - **Channels**: `app/Channels/` (`WhatsAppChannel` via Twilio, `ExpoPushChannel` via Expo Push)
@@ -344,6 +359,38 @@ app/Services/UtilityService.php
 app/Models/SecurityEvent.php
 ```
 - **Features**: Security event logging and auditing.
+
+---
+
+## Payment Gateway Scaffold (Phase 3 — Inactive)
+
+The following infrastructure exists on disk but is NOT wired into the application.
+`PaymentGatewayServiceProvider` is not registered in `bootstrap/providers.php`.
+
+| File | Purpose |
+|---|---|
+| `app/Contracts/PaymentGatewayInterface.php` | Gateway contract |
+| `app/PaymentGateways/ManualGateway.php` | Manual/cash gateway driver |
+| `app/PaymentGateways/MpesaGateway.php` | M-Pesa STK push driver |
+| `app/Providers/PaymentGatewayServiceProvider.php` | Binds contract to driver — NOT registered |
+| `app/Events/PaymentConfirmed.php` | Fired when gateway confirms a payment |
+| `app/Listeners/ProcessPaymentConfirmed.php` | Syncs bills, generates receipt, sends notification |
+
+To activate: register `PaymentGatewayServiceProvider` in `bootstrap/providers.php`
+and add `routes/webhooks.php` to `bootstrap/app.php`. See `docs/plans/porting-plan.md`.
+
+---
+
+## Event System
+
+| Event | Listener | Queue | Trigger |
+|---|---|---|---|
+| `PaymentConfirmed` | `ProcessPaymentConfirmed` | Yes (ShouldQueue) | Gateway webhook callback |
+
+Wired in `AppServiceProvider::boot()` via `Event::listen()`. The event is only fired
+by the gateway layer, which is currently inactive (Phase 3 scaffold).
+
+---
 
 ## Data Flow
 

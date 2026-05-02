@@ -783,6 +783,52 @@ Landlords can waive (forgive) a rent bill using the `/api/landlord/rent-bills/{i
 
 ---
 
+### Receipt Generation
+
+Triggered by two paths:
+1. **Direct request** — tenant or landlord calls `GET /payments/{id}/receipt`
+2. **Async confirmation** — `ProcessPaymentConfirmed` listener calls it after gateway confirms
+
+`ReceiptService::generate(Payment $payment)`:
+1. Loads the `Payment` model with relationships (`tenant`, `tenancy.unit.property`, `rentBill`)
+2. Renders `resources/views/receipts/payment.blade.php` via DomPDF
+3. Saves PDF to `storage/app/receipts/payment-{id}-{timestamp}.pdf`
+4. Updates `payments.receipt_path` with the stored path
+5. Returns the PDF binary for streaming to the client
+
+---
+
+### Security Event Logging
+
+`SecurityEvent` is a write-only audit log model. It records sensitive operations:
+
+| Event | Controller | Trigger |
+|---|---|---|
+| `login` | `AuthController@login` | Successful login |
+| `logout` | `AuthController@logout` | Token revocation |
+| `password_change` | `PasswordController@update` | Password changed |
+| `profile_update` | `Landlord\ProfileController@update` | Landlord profile updated |
+| `profile_update` | `Tenant\ProfileController@update` | Tenant profile updated |
+| `utility_update` | `TenancyUtilityController@update` | Utility record modified |
+
+---
+
+### Payment Event Chain (Async — Gateway-Dependent)
+
+> [!NOTE]
+> This chain is wired but only fires if the gateway layer is activated (Phase 3 scaffold).
+
+1. M-Pesa sends callback → `MpesaWebhookController` (route not yet registered)
+2. Controller fires `PaymentConfirmed` event
+3. `ProcessPaymentConfirmed` listener handles it asynchronously (queued):
+   - Sets `gateway_confirmed_at = now()`
+   - Calls `RentBillService::syncPaymentWithRentBill()` (has double-credit guard: skips if `status !== 'pending'`)
+   - Derives payment `status` from linked bill (`RentBill.status` or `UtilityBill.status`) — never hardcodes `'paid'`
+   - Calls `ReceiptService::generate()`
+   - Calls `NotificationService::sendPaymentReceivedNotification()`
+
+---
+
 ## State Machines
 
 ---

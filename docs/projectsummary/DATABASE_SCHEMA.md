@@ -278,6 +278,13 @@ erDiagram
 | due_date | DATE | NOT NULL | Date payment was due |
 | reference_number | VARCHAR(100) | NULLABLE | External payment reference |
 | notes | TEXT | NULLABLE | Payment notes |
+| gateway | varchar(255) | nullable | Payment gateway driver used (`manual`, `mpesa`) |
+| checkout_request_id | varchar(255) | nullable | M-Pesa STK push checkout request ID |
+| gateway_reference | varchar(255) | nullable | Gateway transaction reference |
+| gateway_status | varchar(255) | nullable | Raw status string from the gateway |
+| gateway_metadata | json | nullable | Full gateway response payload |
+| gateway_confirmed_at | timestamp | nullable | When the gateway confirmed the payment |
+| receipt_path | varchar(255) | nullable | File path to the generated PDF receipt |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -295,6 +302,20 @@ erDiagram
 - BelongsTo Tenant
 - BelongsTo UtilityBill (optional, for utility payments)
 - BelongsTo RentBill (optional, for rent payments)
+
+---
+
+### Performance Indexes
+
+The following indexes were added during the pre-Phase 3 stabilization to improve query performance:
+
+```
+payments:   status, paid_at, tenant_id, tenancy_id, rent_bill_id, utility_bill_id
+tenancies:  status
+rent_bills: status, due_date, billing_month
+```
+
+Migration file reference: `database/migrations/2026_05_02_080758_add_performance_indexes_to_core_tables.php`
 
 ---
 
@@ -724,6 +745,10 @@ erDiagram
         enum payment_method
         enum status
         timestamp paid_at
+        string gateway
+        string gateway_reference
+        timestamp gateway_confirmed_at
+        string receipt_path
     }
     
     UTILITY_TYPE {
