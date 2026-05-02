@@ -6,7 +6,6 @@ use App\Events\PaymentConfirmed;
 use App\Models\RentBill;
 use App\Models\UtilityBill;
 use App\Services\NotificationService;
-use App\Services\ReceiptService;
 use App\Services\RentBillService;
 use App\Services\UtilityService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,8 +29,7 @@ class ProcessPaymentConfirmed implements ShouldQueue
     public function __construct(
         protected RentBillService $rentBillService,
         protected UtilityService $utilityService,
-        protected NotificationService $notificationService,
-        protected ReceiptService $receiptService
+        protected NotificationService $notificationService
     ) {}
 
     /**
@@ -81,14 +79,6 @@ class ProcessPaymentConfirmed implements ShouldQueue
             // No linked bill — gateway confirms full payment
             $payment->status = 'paid';
             $payment->save();
-        }
-
-        // Generate the receipt for the formally confirmed payment
-        try {
-            $this->receiptService->generate($payment);
-            Log::info("Generated receipt for payment {$payment->id}");
-        } catch (\Exception $e) {
-            Log::error("Failed generating receipt for payment {$payment->id}: ".$e->getMessage());
         }
 
         // Notify the user via multi-channel notification abstraction

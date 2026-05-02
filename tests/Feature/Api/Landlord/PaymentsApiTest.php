@@ -179,10 +179,12 @@ test('landlord can download a payment receipt as PDF', function () {
         'paid_at' => now(),
     ]);
 
-    $response = $this->getJson("/api/v1/landlord/payments/{$payment->id}/receipt");
+    $response = $this->get("/api/v1/landlord/payments/{$payment->id}/receipt");
 
     $response->assertOk()
-        ->assertJsonStructure(['data' => ['url']]);
+        ->assertHeader('Content-Type', 'application/pdf');
+
+    expect($response->headers->get('Content-Disposition'))->toContain('receipt-');
 });
 
 test('landlord cannot download receipt for another landlords payment', function () {
@@ -233,11 +235,9 @@ test('landlord receipt returns 500 when generation fails', function () {
     ]);
 
     $this->mock(\App\Services\ReceiptService::class, function ($mock) {
-        $mock->shouldReceive('generate')->andThrow(new \RuntimeException('PDF engine failure'));
-        $mock->shouldReceive('getUrl')->andReturn(null);
+        $mock->shouldReceive('stream')->andThrow(new \RuntimeException('PDF engine failure'));
     });
 
-    $this->getJson("/api/v1/landlord/payments/{$payment->id}/receipt")
-        ->assertStatus(500)
-        ->assertJson(['message' => 'Failed to generate receipt.']);
+    $this->get("/api/v1/landlord/payments/{$payment->id}/receipt")
+        ->assertStatus(500);
 });
