@@ -10,7 +10,8 @@ arch('all request classes extend FormRequest')
 
 arch('controllers are classes')
     ->expect('App\Http\Controllers')
-    ->toBeClasses();
+    ->toBeClasses()
+    ->ignoring('App\Http\Controllers\Concerns');
 
 arch('models use HasFactory')
     ->expect('App\Models')

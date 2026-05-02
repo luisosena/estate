@@ -12,6 +12,7 @@ use App\Services\RentBillService;
 use App\Services\UtilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentsController extends Controller
 {
