@@ -7,20 +7,20 @@ export default function CtaSection() {
     const isInView = useInView(ref, { once: true, margin: '-80px' });
 
     return (
-        <section ref={ref} className="relative overflow-hidden bg-gradient-to-br from-[#D4A853] via-[#C4955A] to-[#C4775A] py-24 lg:py-32">
+        <section ref={ref} className="relative overflow-hidden bg-[#1A1A2E] py-24 lg:py-32">
             {/* Decorative elements */}
             <div className="absolute inset-0 opacity-10">
                 <div
                     className="h-full w-full"
                     style={{
                         backgroundImage:
-                            'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)',
+                            'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)',
                         backgroundSize: '48px 48px',
                     }}
                 />
             </div>
-            <div className="absolute -top-32 -right-32 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -top-32 -right-32 h-64 w-64 rounded-full bg-[#D4A853]/10 blur-3xl" />
+            <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-[#8BA888]/10 blur-3xl" />
 
             <div className="relative mx-auto max-w-4xl px-6 text-center lg:px-8">
                 <motion.div

@@ -2,12 +2,14 @@ import { Head } from '@inertiajs/react';
 
 import MarketingLayout from '@/layouts/marketing/marketing-layout';
 import CtaSection from '@/pages/website/components/cta-section';
-import FeaturesSection from '@/pages/website/components/features-section';
 import Footer from '@/pages/website/components/footer';
 import HeroSection from '@/pages/website/components/hero-section';
 import Navbar from '@/pages/website/components/navbar';
+import PainSolutionSection from '@/pages/website/components/pain-solution-section';
+import ProductPreviewSection from '@/pages/website/components/product-preview-section';
 import SocialProof from '@/pages/website/components/social-proof';
 import TestimonialsSection from '@/pages/website/components/testimonials-section';
+import TopBar from '@/pages/website/components/top-bar';
 import TrustSection from '@/pages/website/components/trust-section';
 import WorkflowSection from '@/pages/website/components/workflow-section';
 
@@ -27,10 +29,12 @@ export default function Home() {
                 />
             </Head>
 
+            <TopBar />
             <Navbar />
             <HeroSection />
             <SocialProof />
-            <FeaturesSection />
+            <PainSolutionSection />
+            <ProductPreviewSection />
             <WorkflowSection />
             <TestimonialsSection />
             <TrustSection />
