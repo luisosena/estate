@@ -133,7 +133,7 @@
                 <tr>
                     <th>Description</th>
                     <th>Type</th>
-                    <th class="amount-col">Amount Paid (KES)</th>
+                    <th class="amount-col">Amount Paid (TZS)</th>
                 </tr>
             </thead>
             <tbody>

@@ -325,9 +325,17 @@ class PaymentsController extends Controller
         $user   = $request->user();
         $tenant = $user->tenant;
 
+        if (! $tenant) {
+            abort(403, 'No tenant profile associated with this account.');
+        }
+
         $payment = Payment::where('tenant_id', $tenant->id)
             ->with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
-            ->findOrFail($paymentId);
+            ->find($paymentId);
+
+        if (! $payment) {
+            abort(404, 'Payment not found or does not belong to this tenant.');
+        }
 
         return $this->buildReceiptResponse($payment, $receiptService);
     }
