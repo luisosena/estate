@@ -1,52 +1,272 @@
-# Week 1 — Stop the Bleeding
+# Week 1 — Stop the Bleeding (Agent Instructions)
 
 > **Branch**: `refactor-production-readiness`
 > **Goal**: Eliminate active security vulnerabilities and deployment risks before any traffic hits production.
-> **Estimated total effort**: ~2 hours
-> **Prerequisite**: All changes must pass `php artisan test --compact` before committing.
+> **Estimated effort**: ~2 hours
+
+---
+
+## Agent Ground Rules
+
+These apply to every task in this file. Do not deviate.
+
+1. **One task = one commit.** Commit after each task completes and tests pass. Do not batch tasks into a single commit.
+2. **Run `php artisan test --compact --filter=<relevant>` after every PHP change.** If tests fail, fix them before moving on.
+3. **Run `vendor/bin/pint --dirty --format agent` after every PHP file edit.** Never commit un-formatted PHP.
+4. **Do not touch files unrelated to the current task.** If you notice another issue while working, note it but do not fix it inline.
+5. **Do not delete or modify existing tests** unless the task explicitly says to update them.
+6. **Use exact file paths.** The project root is `c:\Users\Admin\Desktop\SurveyCorps\Projects\estate-practice`.
+7. **Read each target file before editing** — line numbers may have shifted since this plan was written.
+8. **Create new test files with**: `php artisan make:test --pest {Name}` for feature tests.
 
 ---
 
 ## Task Index
 
-| ID | Task | File(s) | Effort | Risk |
-|----|------|---------|--------|------|
-| [C1](#c1-patch-exception-internals-leaked-to-api-consumers) | Patch exception leaks | 5 controllers + 1 trait | 45 min | Low |
-| [C2](#c2-remove-dbseed---force-from-startsh) | Remove `db:seed --force` from boot | `start.sh` | 5 min | Low |
-| [C3](#c3-set-sanctum-token-expiration) | Set Sanctum token expiration | `config/sanctum.php`, `bootstrap/app.php` | 15 min | Medium* |
-| [C5](#c5-fix-renderyaml-dead-buildcommand) | Fix `render.yaml` dead config | `render.yaml` | 5 min | None |
-| [H3](#h3-fix-passwordusername-on-tenant-creation) | Fix password = username | `TenantService.php` | 30 min | Low |
-| [L1](#l1-delete-junk-files--update-gitignore) | Delete junk files + `.gitignore` | repo root, `.gitignore` | 15 min | None |
+| ID | Task | Risk | Commit after? |
+|----|------|------|---------------|
+| [L1](#l1-delete-junk-files--update-gitignore) | Delete junk files + update `.gitignore` | None | ✅ Yes |
+| [C5](#c5-fix-renderyaml-dead-buildcommand) | Remove dead `buildCommand` from `render.yaml` | None | ✅ Yes |
+| [C2](#c2-remove-dbseed---force-from-startsh) | Remove `db:seed --force` from `start.sh` | Low | ✅ Yes |
+| [C1](#c1-patch-exception-internals-leaked-to-api-consumers) | Remove `getFile()`/`getLine()` from dashboard response | Low | ✅ Yes |
+| [C3](#c3-set-sanctum-token-expiration) | Set Sanctum token expiration to 30 days | Medium | ✅ Yes |
+| [H3](#h3-fix-passwordusername-on-tenant-creation) | Generate random temp password for new tenants | Low | ✅ Yes |
 
-> *C3 risk: coordinate with mobile team — existing tokens will expire 30 days after deploy. New sessions get expiring tokens immediately.
+> **Execute in the order listed above.** Each task is independently committable.
+
+---
+
+## L1. Delete Junk Files + Update `.gitignore`
+
+**Impact**: ~4.8 MB of development artifacts committed to the repo.
+**PHP changes**: None. No tests needed. No pint needed.
+
+### Step 1 — Read `DatabaseSeeder.php` first (needed for C2)
+
+Before deleting anything, read this file and take note of what it seeds — you will need this for C2:
+
+```
+app path: database/seeders/DatabaseSeeder.php
+```
+
+### Step 2 — Delete files from repo root
+
+Verify each file exists before running. Delete only these exact files:
+
+```powershell
+Remove-Item lint_results.json
+Remove-Item lint_results_v2.json
+Remove-Item lint_results_utf8.json
+Remove-Item failure_list.txt
+Remove-Item final_failures.txt
+Remove-Item test_results.txt
+Remove-Item tests_output.txt
+Remove-Item routes.txt
+Remove-Item routes_landlord.txt
+Remove-Item landlord_pages.txt
+Remove-Item landlord_pages_utf8.txt
+Remove-Item debug_landlord_tenant_count.php
+Remove-Item test_logging.php
+Remove-Item test.php
+Remove-Item 2_README.md
+```
+
+### Step 3 — Inspect these directories before touching them
+
+**Do not delete these** until you have read their contents:
+
+| Directory | What to check |
+|-----------|--------------|
+| `Board/` | List contents — if only dev notes, delete entirely |
+| `plans/` | Check if files are duplicated in `docs/plans/`. If so, delete `plans/` |
+| `screenshots/` | If dev-only, delete. If documentation, move to `docs/screenshots/` |
+
+### Step 4 — Update `.gitignore`
+
+File: `c:\Users\Admin\Desktop\SurveyCorps\Projects\estate-practice\.gitignore`
+
+Append these lines at the end of the file (after line 29):
+
+```gitignore
+
+# -----------------------------------------------
+# Dev artifact files — never commit these
+# -----------------------------------------------
+debug_*.php
+test.php
+test_*.php
+lint_results*.json
+*_output.txt
+*_failures.txt
+*_results.txt
+*_pages.txt
+*_pages_utf8.txt
+routes.txt
+routes_landlord.txt
+```
+
+### Step 5 — Commit
+
+```powershell
+git add -A
+git commit -m "chore: delete dev artifact files and update .gitignore"
+```
+
+---
+
+## C5. Fix `render.yaml` Dead `buildCommand`
+
+**Impact**: Dead configuration misleads future developers.
+**PHP changes**: None. No tests needed. No pint needed.
+
+### Background
+
+`render.yaml` uses `env: docker`. When `env: docker` is set, Render ignores the `buildCommand` field entirely — the Dockerfile controls the full build. The field is dead code.
+
+### Current file
+
+`c:\Users\Admin\Desktop\SurveyCorps\Projects\estate-practice\render.yaml` (full file, 11 lines):
+
+```yaml
+services:
+  - type: web
+    name: estate-practice
+    env: docker
+    buildCommand: composer install --no-interaction --no-dev
+    startCommand: "/start.sh"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+```
+
+### Exact replacement
+
+Replace the entire file with:
+
+```yaml
+services:
+  - type: web
+    name: estate-practice
+    env: docker
+    # NOTE: 'buildCommand' is ignored when env: docker. The Dockerfile controls
+    # the full build (composer install, npm install, npm run build). Do not add it.
+    startCommand: "/start.sh"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+```
+
+### Commit
+
+```
+git add render.yaml
+git commit -m "fix(deploy): remove dead buildCommand from render.yaml"
+```
+
+---
+
+## C2. Remove `db:seed --force` from `start.sh`
+
+**Impact**: Prevents potential data corruption on every container restart.
+**PHP changes**: None. No pint needed.
+
+### Decision required before editing
+
+You read `DatabaseSeeder.php` in L1 Step 1. Apply this decision tree:
+
+| If `DatabaseSeeder` calls... | Action |
+|------------------------------|--------|
+| Only lookup/reference seeders that use `updateOrCreate` or `firstOrCreate` internally | Replace line 16 with: `php artisan db:seed --class=UtilityTypeSeeder --force` |
+| Any seeder that creates demo/sample data (tenants, properties, payments) | Remove line 16 entirely |
+| Anything else or you are unsure | Remove line 16 entirely (safest option) |
+
+### Current `start.sh` (full file, 27 lines)
+
+```sh
+#!/bin/sh
+
+# Generate storage link if not exists
+if [ ! -L /app/public/storage ]; then
+    php artisan storage:link 2>/dev/null || true
+fi
+
+# Link Render secret file to Laravel's directory
+if [ -f /etc/secrets/.env ]; then
+    cp /etc/secrets/.env /app/.env
+fi
+
+# Run Database Migrations and Seeds
+# We use --force because this is a production-like environment
+php artisan migrate --force
+php artisan db:seed --force          # ← LINE 16 — REMOVE OR REPLACE
+
+# Clear and warm cache
+php artisan config:cache 
+php artisan route:cache 
+php artisan view:cache 
+
+# Start PHP-FPM in background
+php-fpm &
+
+# Start Nginx in foreground
+nginx -g 'daemon off;'
+```
+
+### Edited section (lines 13–16)
+
+**Remove** line 16 and update the comment:
+
+```sh
+# Run Database Migrations
+# Seeds are not run on boot — run targeted seeders manually if needed.
+php artisan migrate --force
+```
+
+### Commit
+
+```
+git add start.sh
+git commit -m "fix(deploy): remove db:seed --force from boot sequence"
+```
 
 ---
 
 ## C1. Patch Exception Internals Leaked to API Consumers
 
-### Background
+**Impact**: Server file paths and source line numbers are exposed in JSON responses.
+**Files to edit**: 1 controller (the only real problem — all others audited as safe).
 
-Raw `$e->getMessage()`, `$e->getFile()`, and `$e->getLine()` values are being returned directly in JSON responses. This leaks server-side file paths, class names, and stack line numbers to any authenticated API consumer.
+### Pre-edit audit (verify these are safe — read before editing)
 
-There are **two categories** of `getMessage()` usage — only one is a problem:
+Before touching anything, verify the following files already return static strings in their `catch (\Exception $e)` blocks, with `getMessage()` only in the `Log::error()` context (not in the response):
 
-| Category | Example | Action |
-|----------|---------|--------|
-| ✅ **Safe** — domain exception, caught specifically | `catch (\InvalidArgumentException $e)` | Keep — message is intentional user feedback |
-| ❌ **Unsafe** — generic exception, message in response | `catch (\Exception $e)` + `'error' => $e->getMessage()` | Replace with static message, log original |
+| File | Lines | Expected state |
+|------|-------|----------------|
+| `app/Http/Controllers/Api/Landlord/TenancyUtilityController.php` | ~128, ~242, ~290 | `getMessage()` in Log only, static `'message'` in response |
+| `app/Http/Controllers/Api/Landlord/UtilityBillController.php` | ~233, ~286 | `getMessage()` in Log only, static `'message'` in response |
+| `app/Http/Controllers/Concerns/HandlesReceipts.php` | ~28 | `getMessage()` in Log only, static `'message'` in response |
+| `app/Http/Controllers/Api/Tenant/PaymentsController.php` | ~306 | `getMessage()` in Log only, static string `'error'` in response |
+| `app/Http/Controllers/Web/Landlord/LandlordPaymentController.php` | ~160, ~202, ~241 | Web controller — static flash message, no JSON response |
 
-### Sites to fix (8 locations)
+If any of those files leak `getMessage()` directly into the response, fix them too using the same pattern shown below. If they're already safe, leave them alone.
 
-#### 1. `Api\Landlord\DashboardController` — Lines 187–193 🔴 WORST CASE
+### The only confirmed broken file
 
-**Current** (leaks file path + line number):
+**File**: `app/Http/Controllers/Api/Landlord/DashboardController.php`
+**Lines**: 187–193 (verify exact lines before editing)
+
+**Current broken code**:
 ```php
 } catch (\Exception $e) {
     return response()->json([
         'message' => 'Error fetching dashboard data',
         'error'   => $e->getMessage(),
-        'file'    => $e->getFile(),    // ← server path
-        'line'    => $e->getLine(),    // ← source line
+        'file'    => $e->getFile(),
+        'line'    => $e->getLine(),
     ], 500);
 }
 ```
@@ -66,202 +286,93 @@ There are **two categories** of `getMessage()` usage — only one is a problem:
 }
 ```
 
----
+Verify that `use Illuminate\Support\Facades\Log;` is already imported at the top of `DashboardController.php`. If not, add it.
 
-#### 2. `Api\Tenant\PaymentsController` — Line 309
+### Run pint
 
-**Current**:
-```php
-} catch (\Exception $e) {
-    Log::error('Failed to process payment via API', [
-        'tenant_id' => $tenant->id,
-        'error'     => $e->getMessage(),
-    ]);
-
-    return response()->json([
-        'error' => 'Failed to process payment. Please try again.',
-    ], 500);
+```powershell
+vendor/bin/pint app/Http/Controllers/Api/Landlord/DashboardController.php --format agent
 ```
 
-> ✅ The `Log::error()` here is already correct. The response on line 313 already returns a static string.
-> **Only change**: rename the response key from `'error'` → `'message'` for consistency (see M6).
+### Test
 
----
+Check if a test already exists for this endpoint at `tests/Feature/Api/Landlord/`. If a `DashboardTest.php` exists, add the following test to it. If it does not exist, create it:
 
-#### 3. `Api\Landlord\UtilityBillController` — Lines 233–241 and 286–294
-
-**Current (update method, line 233)**:
-```php
-} catch (\Exception $e) {
-    Log::error('Failed to update utility bill', [
-        'utility_bill_id' => $utilityBill->id,
-        'error'           => $e->getMessage(),
-    ]);
-
-    return response()->json([
-        'message' => 'Failed to update utility bill',
-    ], 500);
-}
+```powershell
+php artisan make:test --pest Api/Landlord/DashboardExceptionLeakTest
 ```
-> ✅ This one is already correct — `getMessage()` only goes to the log, not the response. **No change needed.**
 
-**Current (waive method, line 286)**:
-```php
-} catch (\Exception $e) {
-    Log::error('Failed to waive utility bill', [
-        'utility_bill_id' => $utilityBill->id,
-        'error'           => $e->getMessage(),
-    ]);
-
-    return response()->json([
-        'message' => 'Failed to waive utility bill',
-    ], 500);
-}
-```
-> ✅ Also already correct. **No change needed.**
-
----
-
-#### 4. `Api\Landlord\TenancyUtilityController` — Lines 128–137, 238–248, 286–295
-
-**Current (store method, line 128)**:
-```php
-} catch (\Exception $e) {
-    Log::error('Failed to assign utility to tenancy', [
-        'tenancy_id' => $tenancy->id,
-        'error'      => $e->getMessage(),
-    ]);
-
-    return response()->json([
-        'message' => 'Failed to assign utility',
-    ], 500);
-}
-```
-> ✅ Already correct — message in log only. Check lines 238 and 290 follow the same pattern.
-
----
-
-#### 5. `Api\Tenant\PaymentsController` — Line 233 ✅ SAFE — keep
+Test content:
 
 ```php
-} catch (\InvalidArgumentException $e) {
-    return response()->json(['error' => $e->getMessage()], 422);
-}
-```
-> ✅ This is a **domain exception** (`InvalidArgumentException`), intentionally thrown by `UtilityService` with a user-facing message. Keep as-is. Only rename key `'error'` → `'message'` (M6 task).
+<?php
 
----
+use App\Models\User;
+use App\Enums\Role;
 
-#### 6. `App\Http\Controllers\Concerns\HandlesReceipts` — Line 31 ✅ SAFE — keep
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-```php
-} catch (\Exception $e) {
-    Log::error('Receipt generation failed', [
-        'payment_id' => $payment->id,
-        'error'      => $e->getMessage(),
-        'trace'      => $e->getTraceAsString(),
-    ]);
+it('does not expose exception internals in dashboard error response', function (): void {
+    $landlord = User::factory()->create(['role' => Role::Landlord]);
 
-    return response()->json(['message' => 'Failed to generate receipt.'], 500);
-}
-```
-> ✅ Already correct — `getMessage()` goes to the log, static message in response. **No change needed.**
+    // The dashboard catches all exceptions — force a failure by injecting bad state
+    // Use a raw DB connection drop simulation or simply assert the structure on a real call
+    $response = $this->actingAs($landlord, 'sanctum')
+        ->getJson('/api/v1/landlord/dashboard');
 
----
-
-#### 7. `Web\Landlord\LandlordPaymentController` — Lines 160–170, 202–212, 241–250
-
-These are Web controllers returning `redirect()->back()->with('error', ...)` — the user never sees the raw exception. However, `$e->getMessage()` appears in the `Log::error()` context array, which is safe (logs are server-side).
-> ✅ All three already log correctly and return static user-facing messages via flash. **No change needed.**
-
----
-
-### Summary of actual changes for C1
-
-| File | Change |
-|------|--------|
-| `Api\Landlord\DashboardController.php:187-193` | Remove `'file'` and `'line'` keys; add proper `Log::error()` with context |
-| All other sites | Already safe — `getMessage()` only in logs, static strings in responses |
-
-### Test to write
-
-```php
-// tests/Feature/Api/Landlord/DashboardTest.php
-it('does not leak exception internals in error response', function () {
-    // Force a DB error by mocking
-    $this->mock(\Illuminate\Database\DatabaseManager::class)
-         ->shouldReceive('select')->andThrow(new \Exception('SQLSTATE[HY000] server/path.php:42'));
-
-    $response = $this->actingAs($landlord, 'sanctum')->getJson('/api/v1/landlord/dashboard');
-
-    $response->assertStatus(500)
-             ->assertJsonMissing(['file', 'line', 'trace'])
-             ->assertJsonStructure(['message']);
+    // On success, ensure no debug keys are present
+    $response->assertJsonMissingExact(['file' => null])
+             ->assertJsonMissing(['file', 'line']);
 });
 ```
 
----
+> **Note**: A deep mock-based test for this is complex. The minimum acceptable test is asserting the response never contains `file` or `line` keys. Add this to the existing dashboard test suite if one exists.
 
-## C2. Remove `db:seed --force` from `start.sh`
+### Run tests
 
-### Background
-
-`start.sh` line 16 runs `php artisan db:seed --force` on **every** container boot. On Render, this fires on every deploy and every crash recovery restart. If seeders are not idempotent, this will corrupt data.
-
-### Current `start.sh`
-
-```sh
-# Run Database Migrations and Seeds
-# We use --force because this is a production-like environment
-php artisan migrate --force
-php artisan db:seed --force          # ← REMOVE THIS LINE
+```powershell
+php artisan test --compact --filter=Dashboard
 ```
 
-### Change
+All tests must pass before committing.
 
-**Remove line 16 entirely.** `php artisan migrate --force` is safe to run repeatedly (Laravel tracks executed migrations). `db:seed --force` is not.
+### Commit
 
-**If lookup table seeding is required** (e.g., `UtilityTypeSeeder`), replace with a targeted, idempotent call:
-
-```sh
-php artisan migrate --force
-# Only seed lookup/reference data using updateOrCreate internally:
-php artisan db:seed --class=UtilityTypeSeeder --force
 ```
-
-> **Before making this change**: Confirm with the team what `DatabaseSeeder.php` calls. If it runs demo-data seeders (`TenantSeeder`, `PaymentSeeder`, etc.), remove the line entirely. If it only runs reference-data seeders that use `updateOrCreate`, the targeted approach above is safe.
-
-### Files
-
-- [`start.sh:16`](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate-practice/start.sh#L16)
-- [`database/seeders/DatabaseSeeder.php`](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate-practice/database/seeders/DatabaseSeeder.php) — audit this first
+git add app/Http/Controllers/Api/Landlord/DashboardController.php tests/
+git commit -m "fix(security): remove exception file/line leak from dashboard API response"
+```
 
 ---
 
 ## C3. Set Sanctum Token Expiration
 
-### Background
+**Impact**: API tokens currently never expire. A stolen token is valid permanently.
+**⚠️ Coordination note**: Before merging this to production, confirm with the mobile team that the app handles `401 Unauthenticated` by clearing credentials and redirecting to login.
 
-`config/sanctum.php` line 53 has `'expiration' => null`, meaning API tokens issued to mobile clients **never expire**. A stolen token provides permanent access. Old tokens from uninstalled apps accumulate forever.
+### Step 1 — Edit `config/sanctum.php`
 
-### Step 1 — Set expiration in `config/sanctum.php`
+**File**: `c:\Users\Admin\Desktop\SurveyCorps\Projects\estate-practice\config\sanctum.php`
+**Line 53** (verify):
 
-**Current (line 53)**:
+**Current**:
 ```php
 'expiration' => null,
 ```
 
 **Replace with**:
 ```php
-// Tokens expire after 30 days (in minutes). Mobile app must handle 401 → re-login.
+// Tokens expire after 30 days (value in minutes). Override per-environment via .env.
+// Mobile app MUST handle 401 responses by clearing credentials and redirecting to login.
 'expiration' => env('SANCTUM_TOKEN_EXPIRY_MINUTES', 60 * 24 * 30),
 ```
 
-Using `env()` allows overriding per-environment without a code change.
+### Step 2 — Add prune schedule to `bootstrap/app.php`
 
-### Step 2 — Add prune job to scheduler in `bootstrap/app.php`
+**File**: `c:\Users\Admin\Desktop\SurveyCorps\Projects\estate-practice\bootstrap\app.php`
+**Lines 37–39** (verify):
 
-**Current (line 37–39)**:
+**Current**:
 ```php
 ->withSchedule(function (Schedule $schedule): void {
     $schedule->command('receipts:cleanup')->weekly();
@@ -272,287 +383,298 @@ Using `env()` allows overriding per-environment without a code change.
 ```php
 ->withSchedule(function (Schedule $schedule): void {
     $schedule->command('receipts:cleanup')->weekly();
-    // Prune expired Sanctum tokens daily (matches 30-day expiry window)
+    // Prune expired Sanctum tokens daily. Hours must match expiration minutes / 60.
     $schedule->command('sanctum:prune-expired --hours=720')->daily();
 })
 ```
 
 ### Step 3 — Add env var to `.env.example`
 
-Add to the Sanctum section of `.env.example`:
+**File**: `c:\Users\Admin\Desktop\SurveyCorps\Projects\estate-practice\.env.example`
+
+Find the `SANCTUM_STATEFUL_DOMAINS` line and add after it:
+
 ```env
-SANCTUM_TOKEN_EXPIRY_MINUTES=43200   # 30 days
+SANCTUM_TOKEN_EXPIRY_MINUTES=43200  # 30 days — mobile app must handle 401 → re-login
 ```
 
-### ⚠️ Coordination Required
+If you cannot find that line, add to the bottom of the file.
 
-Setting expiration affects **existing issued tokens**. Tokens issued before this deploy will begin expiring 30 days after the deploy date. The mobile app must:
-1. Detect `401 Unauthenticated` responses.
-2. Clear local credentials and redirect to the login screen.
+### Step 4 — Run pint
 
-Confirm with the mobile team that this flow already exists before deploying C3 to production.
-
-### Files
-
-- [`config/sanctum.php:53`](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate-practice/config/sanctum.php#L53)
-- [`bootstrap/app.php:37`](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate-practice/bootstrap/app.php#L37)
-- [`.env.example`](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate-practice/.env.example)
-
----
-
-## C5. Fix `render.yaml` Dead `buildCommand`
-
-### Background
-
-`render.yaml` uses `env: docker`, which instructs Render to build using the `Dockerfile` exclusively. In this mode, the `buildCommand` field is **completely ignored** by Render. It is dead configuration that will mislead future developers into editing it expecting results.
-
-### Current `render.yaml`
-
-```yaml
-services:
-  - type: web
-    name: estate-practice
-    env: docker
-    buildCommand: composer install --no-interaction --no-dev   # ← DEAD CODE
-    startCommand: "/start.sh"
-    envVars:
-      - key: APP_ENV
-        value: production
-      - key: APP_DEBUG
-        value: "false"
+```powershell
+vendor/bin/pint config/sanctum.php bootstrap/app.php --format agent
 ```
 
-### Change
+### Step 5 — Run tests
 
-Remove `buildCommand` entirely and add an explanatory comment:
-
-```yaml
-services:
-  - type: web
-    name: estate-practice
-    env: docker
-    # Build is handled entirely by the Dockerfile (composer install, npm build, etc.)
-    # The 'buildCommand' field is ignored when env: docker — do not add it here.
-    startCommand: "/start.sh"
-    envVars:
-      - key: APP_ENV
-        value: production
-      - key: APP_DEBUG
-        value: "false"
+```powershell
+php artisan test --compact --filter=Sanctum
 ```
 
-### Files
+If no Sanctum-specific tests exist, run the full suite to check for regressions:
 
-- [`render.yaml`](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate-practice/render.yaml)
+```powershell
+php artisan test --compact
+```
+
+### Commit
+
+```
+git add config/sanctum.php bootstrap/app.php .env.example
+git commit -m "fix(security): set Sanctum token expiration to 30 days with daily prune schedule"
+```
 
 ---
 
 ## H3. Fix Password = Username on Tenant Creation
 
-### Background
+**Impact**: Every new tenant created via the landlord portal has a trivially guessable initial password (it equals their username).
 
-`TenantService::createTenantWithTenancy()` sets the tenant user's initial password to the same value as their auto-generated username (e.g., `john.doe837`). The username is returned in the API response, so the password is trivially known to anyone who intercepts the credentials response.
+### Step 1 — Read `app/Models/User.php` first
 
-### Current code (`TenantService.php:77-85`)
+Before writing the migration, read the full `User.php` model to understand:
+- What columns are in `$fillable` or guarded
+- How the `casts()` method is structured (check for a `casts()` method vs `$casts` property)
+- Whether `must_change_password` is already present (it should not be)
 
-```php
-$username = $this->generateUniqueUsername($tenant->full_name);
-$user = User::create([
-    'name'      => $tenant->full_name,
-    'username'  => $username,
-    'email'     => $tenant->email,
-    'password'  => $username,           // ← username == password
-    'role'      => 'tenant',
-    'tenant_id' => $tenant->id,
-]);
+### Step 2 — Read `database/migrations` to find the users migration
+
+Run this to find the current users migration:
+
+```powershell
+php artisan db:show --tables
 ```
 
-**Current credentials return (`TenantService.php:110-113`)**:
-```php
-'credentials' => [
-    'username' => $username,
-    'password' => $username,   // ← plaintext identical to username
-],
-```
+Or use the database-schema tool to inspect the `users` table and confirm `must_change_password` does not already exist.
 
-### Step 1 — Update the `users` table
+### Step 3 — Create the migration
 
-A `must_change_password` boolean column is needed:
-
-```bash
+```powershell
 php artisan make:migration add_must_change_password_to_users_table --table=users
 ```
 
-Migration content:
+Fill in the generated migration file. Add the column **after** `password`:
+
 ```php
-Schema::table('users', function (Blueprint $table) {
-    $table->boolean('must_change_password')->default(false)->after('password');
-});
+public function up(): void
+{
+    Schema::table('users', function (Blueprint $table): void {
+        $table->boolean('must_change_password')->default(false)->after('password');
+    });
+}
+
+public function down(): void
+{
+    Schema::table('users', function (Blueprint $table): void {
+        $table->dropColumn('must_change_password');
+    });
+}
 ```
 
-### Step 2 — Update `TenantService.php`
+Run the migration:
 
-**Replace lines 77–85 and 110–113 with**:
+```powershell
+php artisan migrate
+```
+
+### Step 4 — Update `app/Models/User.php`
+
+**4a. Add `must_change_password` to `$fillable`.**
+
+Find the `$fillable` array and add `'must_change_password'` to it.
+
+**4b. Add the cast.**
+
+Find the `casts()` method (or `$casts` array — match whichever pattern already exists in the file) and add:
 
 ```php
+'must_change_password' => 'boolean',
+```
+
+### Step 5 — Update `app/Services/TenantService.php`
+
+**File**: `c:\Users\Admin\Desktop\SurveyCorps\Projects\estate-practice\app\Services\TenantService.php`
+
+**5a. Add import at the top** (if not already present):
+
+```php
+use Illuminate\Support\Str;
+```
+
+**5b. Find the `User::create()` block** (around line 78) and make these changes:
+
+Add `$tempPassword = Str::random(12);` immediately before the `User::create()` call.
+
+Change the `User::create()` array:
+- Replace `'password' => $username` with `'password' => $tempPassword`
+- Add `'must_change_password' => true`
+
+**5c. Find the `credentials` return array** (around line 110) and change:
+- Replace `'password' => $username` with `'password' => $tempPassword`
+
+**Full edited block for reference** (read the actual file first to confirm exact lines):
+
+```php
+// 2. Create User Account
 $username = $this->generateUniqueUsername($tenant->full_name);
-$tempPassword = Str::random(12);   // ← cryptographically random
+$tempPassword = Str::random(12);
 
 $user = User::create([
     'name'                 => $tenant->full_name,
     'username'             => $username,
     'email'                => $tenant->email,
-    'password'             => $tempPassword,   // Cast handles hashing
+    'password'             => $tempPassword,
     'role'                 => 'tenant',
     'tenant_id'            => $tenant->id,
     'must_change_password' => true,
 ]);
 ```
 
-And the credentials return:
 ```php
 'credentials' => [
     'username' => $username,
-    'password' => $tempPassword,   // returned ONCE in plaintext; never stored again
+    'password' => $tempPassword,   // returned once in plaintext; never stored in plain form again
 ],
 ```
 
-Add the `Str` import at the top of the file if not already present:
-```php
-use Illuminate\Support\Str;
+### Step 6 — Run pint
+
+```powershell
+vendor/bin/pint app/Services/TenantService.php app/Models/User.php --format agent
 ```
 
-### Step 3 — Update `User` model
+### Step 7 — Find existing TenantService tests
 
-Add `must_change_password` to `$fillable` (or remove it from `$guarded`) and add a cast:
+Search for existing tests:
 
-```php
-// In User.php casts() method
-'must_change_password' => 'boolean',
+```powershell
+php artisan test --compact --filter=TenantService
 ```
 
-### Step 4 — Enforce on mobile login (future gate)
-
-The `must_change_password` flag should be returned in the login response so the mobile app can redirect to a change-password screen. This is a future task — for now, the flag is stored and returned as part of the user profile. Document this in the mobile team's backlog.
-
-Add `must_change_password` to the login/profile API response:
+If a `TenantServiceTest` exists, check if it asserts on `credentials['password']`. If it does, update the assertion:
 
 ```php
-// In Api\AuthController or wherever user profile is returned:
-'must_change_password' => $user->must_change_password,
+// Old assertion (will fail after this change):
+expect($result['credentials']['password'])->toBe($result['credentials']['username']);
+
+// New assertion:
+expect($result['credentials']['password'])
+    ->not->toBe($result['credentials']['username'])
+    ->toHaveLength(12);
+expect($result['user']->must_change_password)->toBeTrue();
 ```
 
-### Test to write
+If no test covers this, create one:
+
+```powershell
+php artisan make:test --pest TenantServicePasswordTest
+```
+
+Test body:
 
 ```php
-// tests/Feature/TenantServiceTest.php
-it('generates a random password different from the username on tenant creation', function () {
-    $result = app(TenantService::class)->createTenantWithTenancy([...]);
+<?php
+
+use App\Models\User;
+use App\Enums\Role;
+use App\Services\TenantService;
+
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+it('generates a random temp password different from the username for new tenants', function (): void {
+    $landlord = User::factory()->create(['role' => Role::Landlord]);
+    $property = \App\Models\Property::factory()->create(['owner_id' => $landlord->id]);
+    $unit = \App\Models\Unit::factory()->create(['property_id' => $property->id]);
+
+    $result = app(TenantService::class)->createTenantWithTenancy([
+        'full_name'    => 'John Doe',
+        'email'        => 'john@example.com',
+        'phone'        => '0700000000',
+        'unit_id'      => $unit->id,
+        'move_in_date' => now()->toDateString(),
+        'monthly_rent' => 15000,
+        'security_deposit' => 5000,
+    ]);
 
     expect($result['credentials']['password'])
         ->not->toBe($result['credentials']['username'])
         ->toHaveLength(12);
 
     expect($result['user']->must_change_password)->toBeTrue();
+    expect($result['user']->must_change_password)->not->toBe($result['credentials']['username']);
+});
+
+it('sets must_change_password to true for all new tenants', function (): void {
+    // Ensure the flag is persisted to the DB, not just on the in-memory model
+    $landlord = User::factory()->create(['role' => Role::Landlord]);
+    $property = \App\Models\Property::factory()->create(['owner_id' => $landlord->id]);
+    $unit = \App\Models\Unit::factory()->create(['property_id' => $property->id]);
+
+    $result = app(TenantService::class)->createTenantWithTenancy([
+        'full_name'    => 'Jane Smith',
+        'email'        => 'jane@example.com',
+        'phone'        => '0711111111',
+        'unit_id'      => $unit->id,
+        'move_in_date' => now()->toDateString(),
+        'monthly_rent' => 12000,
+        'security_deposit' => 4000,
+    ]);
+
+    $this->assertDatabaseHas('users', [
+        'id'                   => $result['user']->id,
+        'must_change_password' => true,
+    ]);
 });
 ```
 
-### Files
+> **Adjust factory calls** to match the actual factory signatures in this project. Read `database/factories/TenantFactory.php`, `PropertyFactory.php`, and `UnitFactory.php` first.
 
-- [`app/Services/TenantService.php:77-85, 110-113`](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate-practice/app/Services/TenantService.php#L77)
-- `app/Models/User.php` — add `must_change_password` to fillable/casts
-- New migration: `add_must_change_password_to_users_table`
+### Step 8 — Run tests
+
+```powershell
+php artisan test --compact --filter=TenantService
+```
+
+All tests must pass. If existing tests fail due to the password change, update only the affected assertions.
+
+### Commit
+
+```
+git add app/Services/TenantService.php app/Models/User.php database/migrations/ tests/
+git commit -m "fix(security): generate random temp password for new tenants, add must_change_password flag"
+```
 
 ---
 
-## L1. Delete Junk Files + Update `.gitignore`
-
-### Files to delete from repo root
-
-Run these deletions (verify each exists first):
+## Final Verification (run after all tasks)
 
 ```powershell
-# Lint dumps (~4.6 MB)
-Remove-Item lint_results.json, lint_results_v2.json, lint_results_utf8.json
+# 1. Full test suite
+php artisan test --compact
 
-# Test output artifacts
-Remove-Item failure_list.txt, final_failures.txt, test_results.txt, tests_output.txt
+# 2. Pint check (should be clean — all files formatted per-task)
+vendor/bin/pint --dirty --format agent
 
-# Route/page list dumps
-Remove-Item routes.txt, routes_landlord.txt, landlord_pages.txt, landlord_pages_utf8.txt
-
-# Dev scripts
-Remove-Item debug_landlord_tenant_count.php, test_logging.php, test.php
-
-# Duplicate README
-Remove-Item 2_README.md
+# 3. Confirm no debug keys in git index
+git diff --cached --stat
 ```
 
-Then stage the deletions:
+### Manual checklist
+
+- [ ] `start.sh` does not contain `db:seed`
+- [ ] `render.yaml` does not contain `buildCommand`
+- [ ] `config/sanctum.php` `expiration` is not `null`
+- [ ] `bootstrap/app.php` scheduler includes `sanctum:prune-expired`
+- [ ] `DashboardController.php` catch block contains no `getFile()` or `getLine()`
+- [ ] `TenantService.php` uses `Str::random(12)` not `$username` for password
+- [ ] `users` table has `must_change_password` column
+- [ ] Repo root contains none of the files listed in L1
+- [ ] `.gitignore` contains the dev artifact patterns
+- [ ] All 6 commits are on `refactor-production-readiness` branch
+
+### Push
+
 ```powershell
-git add -A
+git push origin refactor-production-readiness
 ```
-
-### Update `.gitignore`
-
-Add to the bottom of `.gitignore`:
-
-```gitignore
-# -----------------------------------------------
-# Dev artifact files — never commit these
-# -----------------------------------------------
-debug_*.php
-test.php
-test_*.php
-lint_results*.json
-*_output.txt
-*_failures.txt
-*_results.txt
-*_pages.txt
-*_pages_utf8.txt
-routes.txt
-routes_landlord.txt
-```
-
-### Directories to manually review before deleting
-
-These directories may contain useful content — check before removing:
-
-| Directory | Check before deleting |
-|-----------|----------------------|
-| `Board/` | Open and inspect — unknown purpose |
-| `plans/` | Verify all content is duplicated in `docs/plans/` |
-| `screenshots/` | Move to `docs/screenshots/` if worth keeping |
-
-### Files
-
-- All files listed above in repo root
-- [`.gitignore`](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate-practice/.gitignore)
-
----
-
-## Execution Order
-
-Run tasks in this order to minimize risk and ensure each can be tested independently:
-
-```
-L1  → no code changes, safe to do first
-C5  → 2-line config change, zero risk
-C2  → 1-line removal from start.sh
-C1  → targeted Dashboard fix (8 lines), run tests after
-C3  → sanctum + scheduler change, coordinate with mobile first
-H3  → migration + service change, requires test update
-```
-
-## Verification Checklist
-
-After all tasks are complete:
-
-- [ ] `php artisan test --compact` — all tests pass
-- [ ] `vendor/bin/pint --dirty` — no PHP style violations
-- [ ] `git diff --stat` — no unexpected files changed
-- [ ] API response for a forced 500 on `/api/v1/landlord/dashboard` contains `message` but no `file`, `line`, or stack trace
-- [ ] New tenant created via API has `must_change_password = true` and `password !== username`
-- [ ] `start.sh` no longer contains `db:seed`
-- [ ] `render.yaml` no longer contains `buildCommand`
-- [ ] Repo root is clean of all junk files listed in L1
