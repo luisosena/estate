@@ -10,10 +10,9 @@ if [ -f /etc/secrets/.env ]; then
     cp /etc/secrets/.env /app/.env
 fi
 
-# Run Database Migrations and Seeds
-# We use --force because this is a production-like environment
+# Run Database Migrations
+# Seeds are not run on boot — run targeted seeders manually if needed.
 php artisan migrate --force
-php artisan db:seed --force
 
 # Clear and warm cache
 php artisan config:cache 
