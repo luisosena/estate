@@ -61,7 +61,7 @@ class TenantService
     /**
      * Create a tenant, user account, and optional tenancy in one atomic action.
      */
-    public function createTenantWithTenancy(array $data, User $landlord): array
+    public function createTenantWithTenancy(array $data): array
     {
         return DB::transaction(function () use ($data) {
             // 1. Create Tenant

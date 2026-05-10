@@ -52,5 +52,6 @@ test('dashboard error response does not expose exception internals', function ()
     $response = $this->getJson('/api/v1/landlord/dashboard');
 
     // Ensure response never contains debug keys that could leak server internals
+    // This test runs on success path - the keys should never appear in any response
     $response->assertJsonMissing(['file', 'line', 'trace']);
 });
