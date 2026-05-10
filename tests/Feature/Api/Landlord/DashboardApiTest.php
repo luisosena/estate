@@ -47,3 +47,10 @@ test('unauthenticated request to landlord dashboard returns 401', function () {
     $this->getJson('/api/v1/landlord/dashboard', ['Authorization' => ''])
         ->assertUnauthorized();
 });
+
+test('dashboard error response does not expose exception internals', function () {
+    $response = $this->getJson('/api/v1/landlord/dashboard');
+
+    // Ensure response never contains debug keys that could leak server internals
+    $response->assertJsonMissing(['file', 'line', 'trace']);
+});

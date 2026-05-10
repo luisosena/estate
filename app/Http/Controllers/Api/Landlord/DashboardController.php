@@ -10,6 +10,7 @@ use App\Models\RentBill;
 use App\Models\Tenancy;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -185,11 +186,14 @@ class DashboardController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error fetching dashboard data',
+            Log::error('Dashboard data fetch failed', [
+                'landlord_id' => $request->user()?->id,
                 'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'message' => 'Unable to load dashboard data. Please try again.',
             ], 500);
         }
     }
