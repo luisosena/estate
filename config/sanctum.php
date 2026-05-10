@@ -50,7 +50,9 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Tokens expire after 30 days (value in minutes). Override per-environment via .env.
+    // Mobile app MUST handle 401 responses by clearing credentials and redirecting to login.
+    'expiration' => env('SANCTUM_TOKEN_EXPIRY_MINUTES', 60 * 24 * 30),
 
     /*
     |--------------------------------------------------------------------------

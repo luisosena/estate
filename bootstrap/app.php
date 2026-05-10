@@ -36,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('receipts:cleanup')->weekly();
+        // Prune expired Sanctum tokens daily. Hours must match expiration minutes / 60.
+        $schedule->command('sanctum:prune-expired --hours=720')->daily();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
