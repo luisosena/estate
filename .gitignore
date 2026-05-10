@@ -26,3 +26,18 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# -----------------------------------------------
+# Dev artifact files — never commit these
+# -----------------------------------------------
+debug_*.php
+test.php
+test_*.php
+lint_results*.json
+*_output.txt
+*_failures.txt
+*_results.txt
+*_pages.txt
+*_pages_utf8.txt
+routes.txt
+routes_landlord.txt
