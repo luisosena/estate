@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TenantService
 {
@@ -75,13 +76,16 @@ class TenantService
 
             // 2. Create User Account
             $username = $this->generateUniqueUsername($tenant->full_name);
+            $tempPassword = Str::random(12);
+
             $user = User::create([
                 'name' => $tenant->full_name,
                 'username' => $username,
                 'email' => $tenant->email,
-                'password' => $username, // Cast handles hashing
+                'password' => $tempPassword,
                 'role' => 'tenant',
                 'tenant_id' => $tenant->id,
+                'must_change_password' => true,
             ]);
 
             // 3. Handle Tenancy (if unit_id provided)
@@ -109,7 +113,7 @@ class TenantService
                 'user' => $user,
                 'credentials' => [
                     'username' => $username,
-                    'password' => $username,
+                    'password' => $tempPassword,
                 ],
             ];
         });
