@@ -18,13 +18,8 @@ class TenancyUtilityController extends Controller
      */
     public function index(Request $request, Tenancy $tenancy): JsonResponse
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this tenancy - with null safety checks
-        $property = $tenancy->unit?->property;
-        if (! $property || $property->owner_id !== $landlord->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('viewAny', TenancyUtility::class);
+        $this->authorize('view', $tenancy);
 
         $utilities = $tenancy->tenancyUtilities()
             ->with('utilityType')
@@ -64,13 +59,8 @@ class TenancyUtilityController extends Controller
      */
     public function store(Request $request, Tenancy $tenancy): JsonResponse
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this tenancy - with null safety checks
-        $property = $tenancy->unit?->property;
-        if (! $property || $property->owner_id !== $landlord->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('update', $tenancy); // landlord owns this tenancy
+        $this->authorize('create', TenancyUtility::class); // landlord role can create
 
         $validated = $request->validate([
             'utility_type_id' => [
@@ -104,7 +94,7 @@ class TenancyUtilityController extends Controller
                 'tenancy_utility_id' => $tenancyUtility->id,
                 'tenancy_id' => $tenancy->id,
                 'utility_type_id' => $validated['utility_type_id'],
-                'landlord_id' => $landlord->id,
+                'landlord_id' => $request->user()->id,
             ]);
 
             return response()->json([
@@ -143,13 +133,7 @@ class TenancyUtilityController extends Controller
      */
     public function show(Request $request, TenancyUtility $tenancyUtility): JsonResponse
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this tenancy utility - with null safety checks
-        $property = $tenancyUtility->tenancy?->unit?->property;
-        if (! $property || $property->owner_id !== $landlord->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('view', $tenancyUtility);
 
         $tenancyUtility->load(['utilityType', 'tenancy.unit.property']);
 
@@ -186,13 +170,7 @@ class TenancyUtilityController extends Controller
      */
     public function update(Request $request, TenancyUtility $tenancyUtility): JsonResponse
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this tenancy utility - with null safety checks
-        $property = $tenancyUtility->tenancy?->unit?->property;
-        if (! $property || $property->owner_id !== $landlord->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('update', $tenancyUtility);
 
         $validated = $request->validate([
             'amount' => 'sometimes|numeric|min:0',
@@ -209,7 +187,7 @@ class TenancyUtilityController extends Controller
 
             Log::info('Tenancy utility updated', [
                 'tenancy_utility_id' => $tenancyUtility->id,
-                'landlord_id' => $landlord->id,
+                'landlord_id' => $request->user()->id,
             ]);
 
             $tenancyUtility->load('utilityType');
@@ -254,13 +232,7 @@ class TenancyUtilityController extends Controller
      */
     public function destroy(Request $request, TenancyUtility $tenancyUtility): JsonResponse
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this tenancy utility - with null safety checks
-        $property = $tenancyUtility->tenancy?->unit?->property;
-        if (! $property || $property->owner_id !== $landlord->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('delete', $tenancyUtility);
 
         try {
             // Check for unpaid bills before deletion
@@ -278,7 +250,7 @@ class TenancyUtilityController extends Controller
 
             Log::info('Tenancy utility removed', [
                 'tenancy_utility_id' => $tenancyUtility->id,
-                'landlord_id' => $landlord->id,
+                'landlord_id' => $request->user()->id,
             ]);
 
             return response()->json([
