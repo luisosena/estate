@@ -56,12 +56,13 @@ class Tenant extends Model
         return 'tenant_code';
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($tenant) {
+        static::created(function (Tenant $tenant): void {
             if (! $tenant->tenant_code) {
-                $lastId = Tenant::withTrashed()->max('id') + 1;
-                $tenant->tenant_code = 'TEN-'.str_pad($lastId, 5, '0', STR_PAD_LEFT);
+                $tenant->updateQuietly([
+                    'tenant_code' => 'TEN-'.str_pad($tenant->id, 5, '0', STR_PAD_LEFT),
+                ]);
             }
         });
     }
