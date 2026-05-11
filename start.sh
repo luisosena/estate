@@ -22,5 +22,11 @@ php artisan view:cache
 # Start PHP-FPM in background
 php-fpm &
 
+# Start queue worker in background
+# --sleep=3: wait 3s between polls when no jobs
+# --tries=3: retry failed jobs up to 3 times
+# --max-time=3600: restart worker hourly (prevents memory leaks)
+php artisan queue:work --sleep=3 --tries=3 --max-time=3600 &
+
 # Start Nginx in foreground
 nginx -g 'daemon off;'
