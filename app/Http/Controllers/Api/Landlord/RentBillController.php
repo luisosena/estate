@@ -22,6 +22,8 @@ class RentBillController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', RentBill::class);
+
         $landlord = $request->user();
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
@@ -115,18 +117,14 @@ class RentBillController extends Controller
      */
     public function show(Request $request, int $id)
     {
-        $landlord = $request->user();
+        $rentBill = RentBill::with([
+            'tenancy.tenant:id,full_name,tenant_code,phone,email',
+            'tenancy.unit:id,unit_code,property_id',
+            'tenancy.unit.property:id,name',
+            'payments:id,rent_bill_id,amount,paid_at,status',
+        ])->findOrFail($id);
 
-        $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->with([
-                'tenancy.tenant:id,full_name,tenant_code,phone,email',
-                'tenancy.unit:id,unit_code,property_id',
-                'tenancy.unit.property:id,name',
-                'payments:id,rent_bill_id,amount,paid_at,status',
-            ])
-            ->findOrFail($id);
+        $this->authorize('view', $rentBill);
 
         return response()->json([
             'data' => $this->transformRentBill($rentBill),
@@ -139,6 +137,8 @@ class RentBillController extends Controller
      */
     public function overdue(Request $request)
     {
+        $this->authorize('viewAny', RentBill::class);
+
         $landlord = $request->user();
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
@@ -175,6 +175,8 @@ class RentBillController extends Controller
      */
     public function pending(Request $request)
     {
+        $this->authorize('viewAny', RentBill::class);
+
         $landlord = $request->user();
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
@@ -211,12 +213,8 @@ class RentBillController extends Controller
      */
     public function waive(Request $request, int $id)
     {
-        $landlord = $request->user();
-
-        $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->findOrFail($id);
+        $rentBill = RentBill::findOrFail($id);
+        $this->authorize('waive', $rentBill);
 
         // Check if already waived or paid
         if (in_array($rentBill->status, ['waived', 'paid'])) {
