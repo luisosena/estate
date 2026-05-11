@@ -15,6 +15,8 @@ class UnitController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Unit::class);
+
         $landlord = $request->user();
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
@@ -83,16 +85,12 @@ class UnitController extends Controller
      */
     public function show(Request $request, int $unitId)
     {
-        $landlord = $request->user();
+        $unit = Unit::with(['property:id,name,address', 'tenancies' => function ($query) {
+            $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date', 'monthly_rent', 'security_deposit')
+                ->with('tenant:id,full_name,email');
+        }])->findOrFail($unitId);
 
-        $unit = Unit::whereHas('property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->with(['property:id,name,address', 'tenancies' => function ($query) {
-                $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date', 'monthly_rent', 'security_deposit')
-                    ->with('tenant:id,full_name,email');
-            }])
-            ->findOrFail($unitId);
+        $this->authorize('view', $unit);
 
         return response()->json([
             'data' => [
@@ -128,6 +126,8 @@ class UnitController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Unit::class);
+
         $landlord = $request->user();
 
         $validated = $request->validate([
@@ -169,11 +169,8 @@ class UnitController extends Controller
      */
     public function update(Request $request, int $unitId)
     {
-        $landlord = $request->user();
-
-        $unit = Unit::whereHas('property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })->findOrFail($unitId);
+        $unit = Unit::findOrFail($unitId);
+        $this->authorize('update', $unit);
 
         $validated = $request->validate([
             'unit_code' => 'sometimes|string|max:50|unique:units,unit_code,'.$unitId,
@@ -202,11 +199,8 @@ class UnitController extends Controller
      */
     public function destroy(Request $request, int $unitId)
     {
-        $landlord = $request->user();
-
-        $unit = Unit::whereHas('property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })->findOrFail($unitId);
+        $unit = Unit::findOrFail($unitId);
+        $this->authorize('delete', $unit);
 
         // Check if unit has active tenancies
         if ($unit->tenancies()->where('status', 'active')->count() > 0) {
