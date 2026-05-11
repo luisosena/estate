@@ -22,6 +22,8 @@ class TenantController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Tenant::class);
+
         $landlord = $request->user();
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 15);
@@ -92,6 +94,8 @@ class TenantController extends Controller
      */
     public function store(StoreTenantWithTenancyRequest $request): JsonResponse
     {
+        $this->authorize('create', Tenant::class);
+
         $result = $this->tenantService->createTenantWithTenancy(
             $request->validated(),
             $request->user()
@@ -115,15 +119,7 @@ class TenantController extends Controller
     public function show(Request $request, string $identifier): JsonResponse
     {
         $tenant = $this->findTenantByIdentifier($identifier);
-
-        // Authorization check
-        $hasAccess = $tenant->tenancies()
-            ->whereHas('unit.property', fn ($q) => $q->where('owner_id', $request->user()->id))
-            ->exists();
-
-        if (! $hasAccess) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('view', $tenant);
 
         return response()->json([
             'data' => $this->tenantService->getTenantDashboardData($tenant),
@@ -136,6 +132,7 @@ class TenantController extends Controller
     public function update(Request $request, string $identifier): JsonResponse
     {
         $tenant = $this->findTenantByIdentifier($identifier);
+        $this->authorize('update', $tenant);
 
         $validated = $request->validate([
             'full_name' => 'sometimes|string|max:255',
@@ -159,8 +156,8 @@ class TenantController extends Controller
      */
     public function destroy(Request $request, int $tenancyId): JsonResponse
     {
-        $tenancy = Tenancy::whereHas('unit.property', fn ($q) => $q->where('owner_id', $request->user()->id))
-            ->findOrFail($tenancyId);
+        $tenancy = Tenancy::findOrFail($tenancyId);
+        $this->authorize('delete', $tenancy);
 
         $tenancy->update([
             'status' => 'ended',
