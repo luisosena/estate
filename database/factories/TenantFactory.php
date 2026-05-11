@@ -18,7 +18,6 @@ class TenantFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_code' => 'TEN-'.$this->faker->unique()->numberBetween(10000, 99999),
             'full_name' => $this->faker->name(),
             'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),
