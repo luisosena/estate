@@ -17,6 +17,8 @@ class UtilityBillController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', UtilityBill::class);
+
         $landlord = $request->user();
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
@@ -122,13 +124,7 @@ class UtilityBillController extends Controller
      */
     public function show(Request $request, UtilityBill $utilityBill): JsonResponse
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this utility bill - with null safety checks
-        $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (! $property || $property->owner_id !== $landlord->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('view', $utilityBill);
 
         $utilityBill->load([
             'tenancyUtility.utilityType',
@@ -195,13 +191,7 @@ class UtilityBillController extends Controller
      */
     public function update(Request $request, UtilityBill $utilityBill): JsonResponse
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this utility bill - with null safety checks
-        $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (! $property || $property->owner_id !== $landlord->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('update', $utilityBill);
 
         $validated = $request->validate([
             'amount_due' => 'sometimes|numeric|min:0',
@@ -216,7 +206,7 @@ class UtilityBillController extends Controller
 
             Log::info('Utility bill updated', [
                 'utility_bill_id' => $utilityBill->id,
-                'landlord_id' => $landlord->id,
+                'landlord_id' => $request->user()->id,
             ]);
 
             return response()->json([
@@ -248,13 +238,7 @@ class UtilityBillController extends Controller
      */
     public function waive(Request $request, UtilityBill $utilityBill): JsonResponse
     {
-        $landlord = $request->user();
-
-        // Verify landlord owns this utility bill - with null safety checks
-        $property = $utilityBill->tenancyUtility?->tenancy?->unit?->property;
-        if (! $property || $property->owner_id !== $landlord->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('waive', $utilityBill);
 
         try {
             // Check if already paid or waived
@@ -272,7 +256,7 @@ class UtilityBillController extends Controller
 
             Log::info('Utility bill waived', [
                 'utility_bill_id' => $utilityBill->id,
-                'landlord_id' => $landlord->id,
+                'landlord_id' => $request->user()->id,
             ]);
 
             return response()->json([
