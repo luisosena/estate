@@ -14,6 +14,8 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Property::class);
+
         $landlord = $request->user();
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
@@ -87,14 +89,13 @@ class PropertyController extends Controller
      */
     public function show(Request $request, int $propertyId)
     {
-        $landlord = $request->user();
-
-        $property = Property::where('owner_id', $landlord->id)
-            ->withCount(['units'])
+        $property = Property::withCount(['units'])
             ->with(['tenancies' => function ($query) {
                 $query->where('tenancies.status', '=', 'active');
             }])
             ->findOrFail($propertyId);
+
+        $this->authorize('view', $property);
 
         return response()->json([
             'data' => [
@@ -122,6 +123,8 @@ class PropertyController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Property::class);
+
         $landlord = $request->user();
 
         $validated = $request->validate([
@@ -160,10 +163,8 @@ class PropertyController extends Controller
      */
     public function update(Request $request, int $propertyId)
     {
-        $landlord = $request->user();
-
-        $property = Property::where('owner_id', $landlord->id)
-            ->findOrFail($propertyId);
+        $property = Property::findOrFail($propertyId);
+        $this->authorize('update', $property);
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -194,10 +195,8 @@ class PropertyController extends Controller
      */
     public function destroy(Request $request, int $propertyId)
     {
-        $landlord = $request->user();
-
-        $property = Property::where('owner_id', $landlord->id)
-            ->findOrFail($propertyId);
+        $property = Property::findOrFail($propertyId);
+        $this->authorize('delete', $property);
 
         // Check if property has units
         if ($property->units()->count() > 0) {
