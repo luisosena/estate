@@ -28,6 +28,8 @@ class PaymentController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Payment::class);
+
         $landlord = $request->user();
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
@@ -84,13 +86,8 @@ class PaymentController extends Controller
      */
     public function show(Request $request, int $paymentId)
     {
-        $landlord = $request->user();
-
-        $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->with(['tenant', 'tenancy.unit'])
-            ->findOrFail($paymentId);
+        $payment = Payment::with(['tenant', 'tenancy.unit'])->findOrFail($paymentId);
+        $this->authorize('view', $payment);
 
         return response()->json([
             'data' => [
@@ -116,6 +113,8 @@ class PaymentController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Payment::class);
+
         $landlord = $request->user();
 
         $validated = $request->validate([
@@ -226,12 +225,8 @@ class PaymentController extends Controller
      */
     public function update(Request $request, int $paymentId)
     {
-        $landlord = $request->user();
-
-        $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->findOrFail($paymentId);
+        $payment = Payment::with(['tenancy.unit.property'])->findOrFail($paymentId);
+        $this->authorize('update', $payment);
 
         $validated = $request->validate([
             'amount' => 'sometimes|numeric|min:0',
@@ -263,12 +258,8 @@ class PaymentController extends Controller
      */
     public function destroy(Request $request, int $paymentId)
     {
-        $landlord = $request->user();
-
-        $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->findOrFail($paymentId);
+        $payment = Payment::with(['tenancy.unit.property'])->findOrFail($paymentId);
+        $this->authorize('delete', $payment);
 
         $payment->delete();
 
@@ -283,13 +274,9 @@ class PaymentController extends Controller
      */
     public function receipt(Request $request, int $paymentId, ReceiptService $receiptService)
     {
-        $landlord = $request->user();
-
-        $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
+        $payment = Payment::with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
             ->findOrFail($paymentId);
+        $this->authorize('view', $payment);
 
         return $this->buildReceiptResponse($payment, $receiptService);
     }
