@@ -19,6 +19,8 @@ class PaymentsController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Payment::class);
+
         $user = $request->user();
         $tenant = $user->tenant;
 
@@ -101,6 +103,8 @@ class PaymentsController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Payment::class);
+
         $user = $request->user();
         $tenant = $user->tenant;
 
@@ -321,12 +325,9 @@ class PaymentsController extends Controller
      */
     public function receipt(Request $request, int $paymentId, ReceiptService $receiptService)
     {
-        $user   = $request->user();
-        $tenant = $user->tenant;
-
-        $payment = Payment::where('tenant_id', $tenant->id)
-            ->with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
+        $payment = Payment::with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
             ->findOrFail($paymentId);
+        $this->authorize('view', $payment);
 
         return $this->buildReceiptResponse($payment, $receiptService);
     }

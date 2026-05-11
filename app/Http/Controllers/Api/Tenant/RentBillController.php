@@ -15,6 +15,8 @@ class RentBillController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', RentBill::class);
+
         $user = $request->user();
         $tenant = $user->tenant;
 
@@ -104,6 +106,8 @@ class RentBillController extends Controller
      */
     public function current(Request $request)
     {
+        $this->authorize('viewAny', RentBill::class);
+
         $user = $request->user();
         $tenant = $user->tenant;
 
@@ -157,30 +161,9 @@ class RentBillController extends Controller
      */
     public function show(Request $request, int $id)
     {
-        $user = $request->user();
-        $tenant = $user->tenant;
-
-        // Get the active tenancy
-        $activeTenancy = $tenant->tenancies()
-            ->where('status', 'active')
-            ->first();
-
-        if (! $activeTenancy) {
-            return response()->json([
-                'message' => 'No active tenancy found.',
-            ], 404);
-        }
-
-        $rentBill = RentBill::where('id', $id)
-            ->where('tenancy_id', $activeTenancy->id)
-            ->with(['payments:id,amount,payment_method,paid_at,status', 'tenancy.unit', 'tenancy.unit.property'])
-            ->first();
-
-        if (! $rentBill) {
-            return response()->json([
-                'message' => 'Rent bill not found or does not belong to your active tenancy.',
-            ], 404);
-        }
+        $rentBill = RentBill::with(['payments:id,amount,payment_method,paid_at,status', 'tenancy.unit', 'tenancy.unit.property'])
+            ->findOrFail($id);
+        $this->authorize('view', $rentBill);
 
         return response()->json([
             'data' => array_merge($this->transformRentBill($rentBill), [

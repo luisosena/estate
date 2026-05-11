@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\TenancyUtility;
 use App\Models\UtilityBill;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,8 @@ class UtilitiesController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', TenancyUtility::class);
+
         $user = $request->user();
         $tenant = $user->tenant;
 
@@ -65,6 +68,8 @@ class UtilitiesController extends Controller
      */
     public function bills(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', UtilityBill::class);
+
         $user = $request->user();
         $tenant = $user->tenant;
 
