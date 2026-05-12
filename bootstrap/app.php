@@ -40,5 +40,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('sanctum:prune-expired --hours=720')->daily();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Report to Sentry — skips local/testing environments automatically
+        $exceptions->report(function (Throwable $e): void {
+            if (app()->bound('sentry') && app()->environment('production', 'staging')) {
+                app('sentry')->captureException($e);
+            }
+        });
     })->create();
