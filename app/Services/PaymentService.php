@@ -62,6 +62,12 @@ class PaymentService
     public function processPayment(array $validated, Tenancy $activeTenancy, ?Payment $existingPayment = null): array
     {
         return DB::transaction(function () use ($validated, $activeTenancy, $existingPayment) {
+            // Row-level locking to prevent race conditions
+            $lockedTenancy = Tenancy::lockForUpdate()->find($activeTenancy->id);
+            if (! $lockedTenancy) {
+                return ['error' => 'Transaction conflict. Please try again.'];
+            }
+
             // 1. Duplicate prevention
             if (! $existingPayment) {
                 $recentDuplicate = $activeTenancy->payments()
@@ -72,39 +78,68 @@ class PaymentService
                     ->exists();
 
                 if ($recentDuplicate) {
-                    return ['error' => 'A duplicate payment was recently submitted. Please wait a moment.'];
+                    return ['error' => 'A duplicate payment was recently submitted. Please wait a moment and try again.'];
                 }
             }
 
             $monthlyRent = $activeTenancy->monthly_rent ?? 0;
-            $status = 'partial';
+            $status = 'pending';
             $utilityBillId = $validated['utility_bill_id'] ?? null;
+            $rentBillId = null;
+            $rentBillError = null;
+            $excessAmount = 0;
 
-            // 2. Business Logic for Rent vs Utility
-            if ($validated['payment_type'] === 'utility' && $utilityBillId) {
-                $bill = UtilityBill::find($utilityBillId);
-                if ($bill) {
-                    $utilityService = app(UtilityService::class);
-                    $utilityService->processUtilityPayment($bill, $validated['amount']);
-                    $bill->refresh();
-                    $status = $bill->status;
-                }
-            } elseif ($validated['payment_type'] === 'rent') {
+            // Calculate excess amount for rent payments (overpayment handling)
+            if ($validated['payment_type'] === 'rent' && $monthlyRent > 0) {
                 $currentTotalPaid = $activeTenancy->payments()
                     ->whereIn('status', ['paid', 'partial'])
                     ->where('payment_type', 'rent')
                     ->when($existingPayment, fn ($q) => $q->where('id', '!=', $existingPayment->id))
                     ->sum('amount');
-
-                if ($currentTotalPaid + $validated['amount'] >= $monthlyRent) {
-                    $status = 'paid';
+                $remainingBalance = max(0, $monthlyRent - $currentTotalPaid);
+                if ($validated['amount'] > $remainingBalance) {
+                    $excessAmount = $validated['amount'] - $remainingBalance;
                 }
+            }
+
+            // 2. Business Logic for Rent vs Utility
+            if ($validated['payment_type'] === 'utility' && $utilityBillId) {
+                $bill = UtilityBill::with('tenancyUtility.tenancy.unit.property')->find($utilityBillId);
+                if (! $bill) {
+                    return ['error' => 'Utility bill not found.'];
+                }
+                if ($bill->tenancyUtility->tenancy_id !== $activeTenancy->id) {
+                    return ['error' => 'This utility bill does not belong to your active tenancy.'];
+                }
+                if (in_array($bill->status, ['paid', 'waived'])) {
+                    return ['error' => 'This utility bill has already been '.$bill->status.'.'];
+                }
+
+                $utilityService = $this->utilityService ?? app(UtilityService::class);
+                $utilityService->processUtilityPayment($bill, $validated['amount']);
+                $bill->refresh();
+                $status = $bill->status;
+
+                // Validate the synced status is allowed
+                if (! in_array($status, ['paid', 'partial', 'overdue', 'pending'])) {
+                    $status = 'partial'; // Safe fallback
+                }
+            } elseif ($validated['payment_type'] === 'rent') {
+                $rentBillService = $this->rentBillService ?? app(RentBillService::class);
+                $billLinkResult = $rentBillService->linkPaymentToBill(
+                    $activeTenancy->id,
+                    ! empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
+                    false // Not required - allows payments without bill
+                );
+                $rentBillId = $billLinkResult['rent_bill_id'];
+                $rentBillError = $billLinkResult['error'];
             }
 
             // 3. Create or update payment record
             $paymentData = [
                 'tenant_id' => $activeTenancy->tenant_id,
                 'tenancy_id' => $activeTenancy->id,
+                'rent_bill_id' => $rentBillId,
                 'utility_bill_id' => $utilityBillId,
                 'amount' => $validated['amount'],
                 'payment_type' => $validated['payment_type'],
@@ -115,14 +150,38 @@ class PaymentService
                 'notes' => $validated['notes'] ?? null,
             ];
 
-            if ($existingPayment) {
-                $existingPayment->update($paymentData);
-                $payment = $existingPayment;
+            $payment = null;
+            $rentBillWarning = null;
+
+            // Handle rent payments with rent bill processing
+            if ($validated['payment_type'] === 'rent' && $rentBillId) {
+                try {
+                    $rentBillService = $this->rentBillService ?? app(RentBillService::class);
+                    $payment = $rentBillService->createPaymentWithRentBill(
+                        $paymentData,
+                        $rentBillId,
+                        $validated['amount']
+                    );
+                } catch (\InvalidArgumentException $e) {
+                    $rentBillWarning = $e->getMessage();
+                    $payment = Payment::create($paymentData);
+                }
             } else {
-                $payment = Payment::create($paymentData);
+                if ($existingPayment) {
+                    $existingPayment->update($paymentData);
+                    $payment = $existingPayment;
+                } else {
+                    $payment = Payment::create($paymentData);
+                }
             }
 
-            return ['success' => true, 'payment' => $payment];
+            return [
+                'success' => true,
+                'payment' => $payment,
+                'excessAmount' => $excessAmount,
+                'warning' => $rentBillWarning,
+                'rentBillError' => $rentBillError,
+            ];
         });
     }
 
