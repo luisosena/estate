@@ -5,6 +5,11 @@ services:
     # NOTE: 'buildCommand' is ignored when env: docker. The Dockerfile controls
     # the full build (composer install, npm install, npm run build). Do not add it.
     startCommand: "/start.sh"
+    # Redis env vars must be set in the Render dashboard (not here, as values are secrets):
+    #   REDIS_URL         — Internal Redis URL from Render Redis add-on
+    #   SESSION_DRIVER    — redis
+    #   QUEUE_CONNECTION  — redis
+    #   CACHE_STORE       — redis
     envVars:
       - key: APP_ENV
         value: production
