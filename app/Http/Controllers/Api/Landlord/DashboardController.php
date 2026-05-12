@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Property;
 use App\Models\RentBill;
 use App\Models\Tenancy;
+use App\Models\Unit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +36,12 @@ class DashboardController extends Controller
                 ->with(['units', 'units.tenancies'])
                 ->get();
 
+            // Extract IDs once — used by all subsequent queries to avoid repeated correlated subqueries
+            $propertyIds = $properties->pluck('id');
+            $tenancyIds = Tenancy::whereIn('unit_id',
+                Unit::whereIn('property_id', $propertyIds)->pluck('id')
+            )->pluck('id');
+
             // Calculate summary statistics
             $totalProperties = $properties->count();
             $totalUnits = $properties->sum('units_count');
@@ -52,33 +59,25 @@ class DashboardController extends Controller
             $vacantUnits = $totalUnits - $occupiedUnits;
 
             // Get pending payments count (using 'overdue' as the pending/unpaid status)
-            $pendingPayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $pendingPayments = Payment::whereIn('tenancy_id', $tenancyIds)
                 ->where('status', 'pending')
                 ->count();
 
             // Get overdue payments count (separate from pending)
-            $overduePayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $overduePayments = Payment::whereIn('tenancy_id', $tenancyIds)
                 ->where('status', 'overdue')
                 ->count();
 
             // Get recent payments with tenant and unit info
             // Calculate revenue MTD (Month To Date)
-            $revenueMtd = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $revenueMtd = Payment::whereIn('tenancy_id', $tenancyIds)
                 ->where('status', 'paid')
                 ->whereMonth('paid_at', Carbon::now()->month)
                 ->whereYear('paid_at', Carbon::now()->year)
                 ->sum('amount');
 
             // Get recent payments with tenant and unit info
-            $recentPayments = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $recentPayments = Payment::whereIn('tenancy_id', $tenancyIds)
                 ->with(['tenant:id,full_name,tenant_code', 'tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_code,unit_name,property_id'])
                 ->orderBy('paid_at', 'desc')
                 ->take(5)
@@ -108,9 +107,7 @@ class DashboardController extends Controller
 
             // Get expiring leases (tenancies ending within 30 days)
             $thirtyDaysFromNow = Carbon::now()->addDays(30);
-            $expiringLeases = Tenancy::whereHas('unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $expiringLeases = Tenancy::whereIn('id', $tenancyIds)
                 ->where('status', 'active')
                 ->whereNotNull('move_out_date')
                 ->where('move_out_date', '<=', $thirtyDaysFromNow)
@@ -152,9 +149,7 @@ class DashboardController extends Controller
             $unreadNotificationsCount = $landlord->unreadNotifications()->count();
 
             // Get rent bill statistics (optimized single query with conditional aggregation)
-            $rentStats = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-                $query->where('owner_id', $landlord->id);
-            })
+            $rentStats = RentBill::whereIn('tenancy_id', $tenancyIds)
                 ->selectRaw('
                     SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
                     SUM(CASE WHEN status = "overdue" OR (status IN ("pending", "partial") AND due_date < ?) THEN 1 ELSE 0 END) as overdue_count,
