@@ -165,7 +165,7 @@ test('landlord cannot view another landlords payment', function () {
         'paid_at' => now(),
     ]);
 
-    $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}")->assertNotFound();
+    $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}")->assertForbidden();
 });
 
 test('landlord can download a payment receipt as PDF', function () {
@@ -202,7 +202,7 @@ test('landlord cannot download receipt for another landlords payment', function 
     ]);
 
     $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}/receipt")
-        ->assertNotFound();
+        ->assertForbidden();
 });
 
 test('landlord receipt returns 400 for unpaid payment', function () {

@@ -12,6 +12,7 @@ use App\Services\RentBillService;
 use App\Services\UtilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentsController extends Controller
 {
@@ -124,7 +125,7 @@ class PaymentsController extends Controller
 
         if (! $activeTenancy) {
             return response()->json([
-                'error' => 'No active tenancy found.',
+                'message' => 'No active tenancy found.',
             ], 422);
         }
 
@@ -211,20 +212,20 @@ class PaymentsController extends Controller
                     // Verify the bill exists and belongs to this tenant's tenancy
                     if (! $utilityBill) {
                         return response()->json([
-                            'error' => 'Utility bill not found.',
+                            'message' => 'Utility bill not found.',
                         ], 422);
                     }
 
                     if ($utilityBill->tenancyUtility->tenancy_id !== $activeTenancy->id) {
                         return response()->json([
-                            'error' => 'This utility bill does not belong to your active tenancy.',
+                            'message' => 'This utility bill does not belong to your active tenancy.',
                         ], 422);
                     }
 
                     // Verify the bill is payable (not already paid or waived)
                     if (in_array($utilityBill->status, ['paid', 'waived'])) {
                         return response()->json([
-                            'error' => 'This utility bill has already been '.$utilityBill->status.'.',
+                            'message' => 'This utility bill has already been '.$utilityBill->status.'.',
                         ], 422);
                     }
 
@@ -234,7 +235,7 @@ class PaymentsController extends Controller
                     try {
                         app(UtilityService::class)->processUtilityPayment($utilityBill, $validated['amount']);
                     } catch (\InvalidArgumentException $e) {
-                        return response()->json(['error' => $e->getMessage()], 422);
+                        return response()->json(['message' => $e->getMessage()], 422);
                     }
 
                     // Sync payment status with utility bill status
@@ -291,7 +292,7 @@ class PaymentsController extends Controller
             // Handle duplicate payment response
             if (isset($result['error'])) {
                 return response()->json([
-                    'error' => $result['error'],
+                    'message' => $result['error'],
                 ], 422);
             }
 
@@ -314,7 +315,7 @@ class PaymentsController extends Controller
             ]);
 
             return response()->json([
-                'error' => 'Failed to process payment. Please try again.',
+                'message' => 'Failed to process payment. Please try again.',
             ], 500);
         }
     }

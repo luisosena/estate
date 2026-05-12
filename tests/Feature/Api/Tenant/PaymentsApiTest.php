@@ -88,7 +88,7 @@ test('tenant cannot download another tenants receipt', function () {
     ]);
 
     $this->getJson("/api/v1/tenant/payments/{$otherPayment->id}/receipt")
-        ->assertNotFound();
+        ->assertForbidden();
 });
 
 test('tenant receipt returns 400 for unpaid payment', function () {
