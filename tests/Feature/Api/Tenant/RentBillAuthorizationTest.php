@@ -2,8 +2,8 @@
 
 use App\Models\Property;
 use App\Models\RentBill;
-use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,5 +33,5 @@ it('returns 403 when a tenant views another tenants rent bill', function (): voi
     Sanctum::actingAs($userA, ['*']);
 
     $this->getJson("/api/v1/tenant/rent-bills/{$rentBill->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });

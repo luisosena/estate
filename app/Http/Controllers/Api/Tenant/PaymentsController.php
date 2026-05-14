@@ -160,7 +160,8 @@ class PaymentsController extends Controller
      */
     public function receipt(Request $request, int $paymentId, ReceiptService $receiptService)
     {
-        $payment = Payment::with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
+        $payment = Payment::where('tenant_id', $request->user()->tenant_id)
+            ->with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
             ->findOrFail($paymentId);
         $this->authorize('view', $payment);
 

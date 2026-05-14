@@ -15,7 +15,7 @@ it('returns 403 when a landlord tries to view another landlords property', funct
     Sanctum::actingAs($owner, ['*']);
 
     $this->getJson("/api/v1/landlord/properties/{$property->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 it('returns 403 when a landlord tries to update another landlords property', function (): void {
@@ -27,7 +27,7 @@ it('returns 403 when a landlord tries to update another landlords property', fun
 
     $this->putJson("/api/v1/landlord/properties/{$property->id}", [
         'name' => 'Updated Name',
-    ])->assertForbidden();
+    ])->assertNotFound();
 });
 
 it('returns 403 when a landlord tries to delete another landlords property', function (): void {
@@ -38,7 +38,7 @@ it('returns 403 when a landlord tries to delete another landlords property', fun
     Sanctum::actingAs($owner, ['*']);
 
     $this->deleteJson("/api/v1/landlord/properties/{$property->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 it('allows landlord to view their own property', function (): void {

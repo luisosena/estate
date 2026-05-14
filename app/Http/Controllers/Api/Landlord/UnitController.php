@@ -85,7 +85,9 @@ class UnitController extends Controller
      */
     public function show(Request $request, int $unitId)
     {
-        $unit = Unit::with(['property:id,name,address', 'tenancies' => function ($query) {
+        $unit = Unit::whereHas('property', function ($query) use ($request) {
+            $query->where('owner_id', $request->user()->id);
+        })->with(['property:id,name,address', 'tenancies' => function ($query) {
             $query->select('id', 'unit_id', 'tenant_id', 'status', 'move_in_date', 'move_out_date', 'monthly_rent', 'security_deposit')
                 ->with('tenant:id,full_name,email');
         }])->findOrFail($unitId);
@@ -169,7 +171,9 @@ class UnitController extends Controller
      */
     public function update(Request $request, int $unitId)
     {
-        $unit = Unit::findOrFail($unitId);
+        $unit = Unit::whereHas('property', function ($query) use ($request) {
+            $query->where('owner_id', $request->user()->id);
+        })->findOrFail($unitId);
         $this->authorize('update', $unit);
 
         $validated = $request->validate([
@@ -199,8 +203,11 @@ class UnitController extends Controller
      */
     public function destroy(Request $request, int $unitId)
     {
-        $unit = Unit::findOrFail($unitId);
-        $this->authorize('delete', $unit);
+        $unit = Unit::where('id', $unitId)
+            ->whereHas('property', function ($query) use ($request) {
+                $query->where('owner_id', $request->user()->id);
+            })
+            ->firstOrFail();
 
         // Check if unit has active tenancies
         if ($unit->tenancies()->where('status', 'active')->count() > 0) {

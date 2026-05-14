@@ -18,7 +18,7 @@ it('returns 403 when a landlord views another landlords unit', function (): void
     Sanctum::actingAs($owner, ['*']);
 
     $this->getJson("/api/v1/landlord/units/{$unit->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 it('returns 403 when a landlord updates another landlords unit', function (): void {
@@ -31,7 +31,7 @@ it('returns 403 when a landlord updates another landlords unit', function (): vo
     Sanctum::actingAs($owner, ['*']);
 
     $this->putJson("/api/v1/landlord/units/{$unit->id}", ['unit_name' => 'Hacked'])
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 it('returns 403 when a landlord deletes another landlords unit', function (): void {
@@ -44,5 +44,5 @@ it('returns 403 when a landlord deletes another landlords unit', function (): vo
     Sanctum::actingAs($owner, ['*']);
 
     $this->deleteJson("/api/v1/landlord/units/{$unit->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });

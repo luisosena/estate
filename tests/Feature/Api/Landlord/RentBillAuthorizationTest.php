@@ -2,8 +2,8 @@
 
 use App\Models\Property;
 use App\Models\RentBill;
-use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,7 +28,7 @@ it('returns 403 when a landlord views another landlords rent bill', function ():
     Sanctum::actingAs($owner, ['*']);
 
     $this->getJson("/api/v1/landlord/rent-bills/{$rentBill->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 it('returns 403 when a landlord waives another landlords rent bill', function (): void {
@@ -48,5 +48,5 @@ it('returns 403 when a landlord waives another landlords rent bill', function ()
     Sanctum::actingAs($owner, ['*']);
 
     $this->postJson("/api/v1/landlord/rent-bills/{$rentBill->id}/waive")
-        ->assertForbidden();
+        ->assertNotFound();
 });

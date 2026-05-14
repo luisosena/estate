@@ -3,6 +3,7 @@
 use App\Models\Payment;
 use App\Models\Tenancy;
 use App\Models\Tenant;
+use App\Services\ReceiptService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -88,18 +89,18 @@ test('tenant cannot download another tenants receipt', function () {
     ]);
 
     $this->getJson("/api/v1/tenant/payments/{$otherPayment->id}/receipt")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 test('tenant receipt returns 400 for unpaid payment', function () {
     $payment = Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 5000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 5000,
+        'payment_type' => 'rent',
         'payment_method' => 'mobile_money',
-        'status'         => 'pending',
-        'paid_at'        => null,
+        'status' => 'pending',
+        'paid_at' => null,
     ]);
 
     $this->getJson("/api/v1/tenant/payments/{$payment->id}/receipt")
@@ -109,17 +110,17 @@ test('tenant receipt returns 400 for unpaid payment', function () {
 
 test('tenant receipt returns 500 when generation fails', function () {
     $payment = Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 5000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 5000,
+        'payment_type' => 'rent',
         'payment_method' => 'mobile_money',
-        'status'         => 'paid',
-        'paid_at'        => now(),
+        'status' => 'paid',
+        'paid_at' => now(),
     ]);
 
-    $this->mock(\App\Services\ReceiptService::class, function ($mock) {
-        $mock->shouldReceive('generate')->andThrow(new \RuntimeException('PDF engine failure'));
+    $this->mock(ReceiptService::class, function ($mock) {
+        $mock->shouldReceive('generate')->andThrow(new RuntimeException('PDF engine failure'));
         $mock->shouldReceive('getUrl')->andReturn(null);
     });
 

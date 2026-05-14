@@ -29,7 +29,9 @@ class PaymentPolicy
         }
 
         if ($user->role === Role::Landlord) {
-            return $payment->tenancy->unit->property->owner_id === $user->id;
+            return Payment::where('id', $payment->id)
+                ->whereHas('tenancy.unit.property', fn ($query) => $query->where('owner_id', $user->id))
+                ->exists();
         }
 
         return false;
@@ -43,7 +45,9 @@ class PaymentPolicy
     public function update(User $user, Payment $payment): bool
     {
         if ($user->role === Role::Landlord) {
-            return $payment->tenancy->unit->property->owner_id === $user->id;
+            return Payment::where('id', $payment->id)
+                ->whereHas('tenancy.unit.property', fn ($query) => $query->where('owner_id', $user->id))
+                ->exists();
         }
 
         return false;

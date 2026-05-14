@@ -10,6 +10,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\UtilityBill;
 use App\Models\UtilityType;
+use App\Services\ReceiptService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -165,7 +166,7 @@ test('landlord cannot view another landlords payment', function () {
         'paid_at' => now(),
     ]);
 
-    $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}")->assertForbidden();
+    $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}")->assertNotFound();
 });
 
 test('landlord can download a payment receipt as PDF', function () {
@@ -202,18 +203,18 @@ test('landlord cannot download receipt for another landlords payment', function 
     ]);
 
     $this->getJson("/api/v1/landlord/payments/{$otherPayment->id}/receipt")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 test('landlord receipt returns 400 for unpaid payment', function () {
     $payment = Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 5000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 5000,
+        'payment_type' => 'rent',
         'payment_method' => 'mobile_money',
-        'status'         => 'pending',
-        'paid_at'        => null,
+        'status' => 'pending',
+        'paid_at' => null,
     ]);
 
     $this->getJson("/api/v1/landlord/payments/{$payment->id}/receipt")
@@ -223,17 +224,17 @@ test('landlord receipt returns 400 for unpaid payment', function () {
 
 test('landlord receipt returns 500 when generation fails', function () {
     $payment = Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 5000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 5000,
+        'payment_type' => 'rent',
         'payment_method' => 'mobile_money',
-        'status'         => 'paid',
-        'paid_at'        => now(),
+        'status' => 'paid',
+        'paid_at' => now(),
     ]);
 
-    $this->mock(\App\Services\ReceiptService::class, function ($mock) {
-        $mock->shouldReceive('generate')->andThrow(new \RuntimeException('PDF engine failure'));
+    $this->mock(ReceiptService::class, function ($mock) {
+        $mock->shouldReceive('generate')->andThrow(new RuntimeException('PDF engine failure'));
         $mock->shouldReceive('getUrl')->andReturn(null);
     });
 

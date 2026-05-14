@@ -57,7 +57,7 @@ class RentBillController extends Controller
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get()
-            ->map(fn ($bill) => $this->transformRentBill($bill));
+            ->map(fn (RentBill $bill) => $this->transformRentBill($bill));
 
         $totalPages = ceil($totalItems / $perPage);
 
@@ -79,11 +79,11 @@ class RentBillController extends Controller
     {
         return [
             'id' => $bill->id,
-            'billing_month' => $bill->billing_month->format('Y-m'),
+            'billing_month' => $bill->billing_month?->format('Y-m'),
             'amount_due' => (float) $bill->amount_due,
             'amount_paid' => (float) $bill->amount_paid,
             'outstanding_amount' => (float) $bill->outstanding_amount,
-            'due_date' => $bill->due_date->format('Y-m-d'),
+            'due_date' => $bill->due_date?->format('Y-m-d'),
             'status' => $bill->status,
             'notes' => $bill->notes,
             'tenant' => $bill->tenancy?->tenant ? [
@@ -117,7 +117,9 @@ class RentBillController extends Controller
      */
     public function show(Request $request, int $id)
     {
-        $rentBill = RentBill::with([
+        $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($request) {
+            $query->where('owner_id', $request->user()->id);
+        })->with([
             'tenancy.tenant:id,full_name,tenant_code,phone,email',
             'tenancy.unit:id,unit_code,property_id',
             'tenancy.unit.property:id,name',
@@ -154,7 +156,7 @@ class RentBillController extends Controller
         $rentBills = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get()
-            ->map(fn ($bill) => $this->transformRentBill($bill));
+            ->map(fn (RentBill $bill) => $this->transformRentBill($bill));
 
         $totalPages = ceil($totalItems / $perPage);
 
@@ -192,7 +194,7 @@ class RentBillController extends Controller
         $rentBills = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get()
-            ->map(fn ($bill) => $this->transformRentBill($bill));
+            ->map(fn (RentBill $bill) => $this->transformRentBill($bill));
 
         $totalPages = ceil($totalItems / $perPage);
 
@@ -213,7 +215,9 @@ class RentBillController extends Controller
      */
     public function waive(Request $request, int $id)
     {
-        $rentBill = RentBill::findOrFail($id);
+        $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($request) {
+            $query->where('owner_id', $request->user()->id);
+        })->findOrFail($id);
         $this->authorize('waive', $rentBill);
 
         // Check if already waived or paid

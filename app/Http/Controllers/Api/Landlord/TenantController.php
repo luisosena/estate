@@ -97,8 +97,7 @@ class TenantController extends Controller
         $this->authorize('create', Tenant::class);
 
         $result = $this->tenantService->createTenantWithTenancy(
-            $request->validated(),
-            $request->user()
+            $request->validated()
         );
 
         return response()->json([
@@ -156,7 +155,9 @@ class TenantController extends Controller
      */
     public function destroy(Request $request, int $tenancyId): JsonResponse
     {
-        $tenancy = Tenancy::findOrFail($tenancyId);
+        $tenancy = Tenancy::whereHas('unit.property', function ($query) use ($request) {
+            $query->where('owner_id', $request->user()->id);
+        })->findOrFail($tenancyId);
         $this->authorize('delete', $tenancy);
 
         $tenancy->update([
@@ -174,10 +175,15 @@ class TenantController extends Controller
      */
     private function findTenantByIdentifier(string $identifier): Tenant
     {
+        $user = auth()->user();
+        $query = Tenant::whereHas('tenancies.unit.property', function ($q) use ($user) {
+            $q->where('owner_id', $user->id);
+        });
+
         if (preg_match('/^TEN-[A-Z0-9]{5,6}$/i', $identifier)) {
-            return Tenant::where('tenant_code', strtoupper($identifier))->firstOrFail();
+            return $query->where('tenant_code', strtoupper($identifier))->firstOrFail();
         }
 
-        return Tenant::findOrFail((int) $identifier);
+        return $query->findOrFail((int) $identifier);
     }
 }

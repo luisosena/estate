@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Property;
-use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,7 +26,7 @@ it('returns 403 when a landlord views another landlords tenant', function (): vo
     Sanctum::actingAs($owner, ['*']);
 
     $this->getJson("/api/v1/landlord/tenants/{$tenancy->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 it('returns 403 when a landlord updates another landlords tenant', function (): void {
@@ -45,5 +45,5 @@ it('returns 403 when a landlord updates another landlords tenant', function (): 
     Sanctum::actingAs($owner, ['*']);
 
     $this->putJson("/api/v1/landlord/tenants/{$tenancy->id}", ['rent_amount' => 9999])
-        ->assertForbidden();
+        ->assertNotFound();
 });

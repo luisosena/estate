@@ -89,11 +89,13 @@ class PropertyController extends Controller
      */
     public function show(Request $request, int $propertyId)
     {
-        $property = Property::withCount(['units'])
+        $property = Property::where('id', $propertyId)
+            ->where('owner_id', $request->user()->id)
+            ->withCount(['units'])
             ->with(['tenancies' => function ($query) {
                 $query->where('tenancies.status', '=', 'active');
             }])
-            ->findOrFail($propertyId);
+            ->firstOrFail();
 
         $this->authorize('view', $property);
 
@@ -163,7 +165,7 @@ class PropertyController extends Controller
      */
     public function update(Request $request, int $propertyId)
     {
-        $property = Property::findOrFail($propertyId);
+        $property = Property::where('owner_id', $request->user()->id)->findOrFail($propertyId);
         $this->authorize('update', $property);
 
         $validated = $request->validate([
@@ -195,8 +197,9 @@ class PropertyController extends Controller
      */
     public function destroy(Request $request, int $propertyId)
     {
-        $property = Property::findOrFail($propertyId);
-        $this->authorize('delete', $property);
+        $property = Property::where('id', $propertyId)
+            ->where('owner_id', $request->user()->id)
+            ->firstOrFail();
 
         // Check if property has units
         if ($property->units()->count() > 0) {

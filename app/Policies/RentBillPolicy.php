@@ -25,11 +25,15 @@ class RentBillPolicy
     public function view(User $user, RentBill $rentBill): bool
     {
         if ($user->role === Role::Tenant) {
-            return $rentBill->tenancy->tenant_id === $user->tenant_id;
+            return RentBill::where('id', $rentBill->id)
+                ->whereHas('tenancy', fn ($query) => $query->where('tenant_id', $user->tenant_id))
+                ->exists();
         }
 
         if ($user->role === Role::Landlord) {
-            return $rentBill->tenancy->unit->property->owner_id === $user->id;
+            return RentBill::where('id', $rentBill->id)
+                ->whereHas('tenancy.unit.property', fn ($query) => $query->where('owner_id', $user->id))
+                ->exists();
         }
 
         return false;
@@ -43,7 +47,9 @@ class RentBillPolicy
     public function update(User $user, RentBill $rentBill): bool
     {
         if ($user->role === Role::Landlord) {
-            return $rentBill->tenancy->unit->property->owner_id === $user->id;
+            return RentBill::where('id', $rentBill->id)
+                ->whereHas('tenancy.unit.property', fn ($query) => $query->where('owner_id', $user->id))
+                ->exists();
         }
 
         return false;
@@ -57,6 +63,6 @@ class RentBillPolicy
     /** Preserved from main — landlord-specific waiver action. */
     public function waive(User $user, RentBill $rentBill): bool
     {
-        return $rentBill->tenancy->unit->property->owner_id === $user->id;
+        return $this->update($user, $rentBill);
     }
 }

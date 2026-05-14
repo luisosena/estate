@@ -25,11 +25,15 @@ class UtilityBillPolicy
     public function view(User $user, UtilityBill $utilityBill): bool
     {
         if ($user->role === Role::Landlord) {
-            return $utilityBill->tenancyUtility->tenancy->unit->property->owner_id === $user->id;
+            return UtilityBill::where('id', $utilityBill->id)
+                ->whereHas('tenancyUtility.tenancy.unit.property', fn ($query) => $query->where('owner_id', $user->id))
+                ->exists();
         }
 
         if ($user->role === Role::Tenant) {
-            return $user->tenant_id === $utilityBill->tenancyUtility->tenancy->tenant_id;
+            return UtilityBill::where('id', $utilityBill->id)
+                ->whereHas('tenancyUtility.tenancy', fn ($query) => $query->where('tenant_id', $user->tenant_id))
+                ->exists();
         }
 
         return false;
@@ -37,6 +41,12 @@ class UtilityBillPolicy
 
     public function waive(User $user, UtilityBill $utilityBill): bool
     {
-        return $utilityBill->tenancyUtility->tenancy->unit->property->owner_id === $user->id;
+        if ($user->role === Role::Landlord) {
+            return UtilityBill::where('id', $utilityBill->id)
+                ->whereHas('tenancyUtility.tenancy.unit.property', fn ($query) => $query->where('owner_id', $user->id))
+                ->exists();
+        }
+
+        return false;
     }
 }

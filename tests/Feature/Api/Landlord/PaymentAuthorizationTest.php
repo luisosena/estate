@@ -2,8 +2,8 @@
 
 use App\Models\Payment;
 use App\Models\Property;
-use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,7 +28,7 @@ it('returns 403 when a landlord views another landlords payment', function (): v
     Sanctum::actingAs($owner, ['*']);
 
     $this->getJson("/api/v1/landlord/payments/{$payment->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 it('returns 403 when a landlord updates another landlords payment', function (): void {
@@ -48,7 +48,7 @@ it('returns 403 when a landlord updates another landlords payment', function ():
     Sanctum::actingAs($owner, ['*']);
 
     $this->putJson("/api/v1/landlord/payments/{$payment->id}", ['amount' => 9999])
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 it('returns 403 when a landlord deletes another landlords payment', function (): void {
@@ -68,5 +68,5 @@ it('returns 403 when a landlord deletes another landlords payment', function ():
     Sanctum::actingAs($owner, ['*']);
 
     $this->deleteJson("/api/v1/landlord/payments/{$payment->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });

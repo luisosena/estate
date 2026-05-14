@@ -53,7 +53,7 @@ class RentBillController extends Controller
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get()
-            ->map(fn ($bill) => $this->transformRentBill($bill));
+            ->map(fn (RentBill $bill) => $this->transformRentBill($bill));
 
         $totalPages = ceil($totalItems / $perPage);
 
@@ -161,8 +161,11 @@ class RentBillController extends Controller
      */
     public function show(Request $request, int $id)
     {
-        $rentBill = RentBill::with(['payments:id,amount,payment_method,paid_at,status', 'tenancy.unit', 'tenancy.unit.property'])
-            ->findOrFail($id);
+        $rentBill = RentBill::where('id', $id)
+            ->whereHas('tenancy', fn ($q) => $q->where('tenant_id', $request->user()->tenant_id))
+            ->with(['payments:id,amount,payment_method,paid_at,status', 'tenancy.unit', 'tenancy.unit.property'])
+            ->firstOrFail();
+
         $this->authorize('view', $rentBill);
 
         return response()->json([

@@ -30,7 +30,9 @@ class UnitPolicy
      */
     public function view(User $user, Unit $unit): bool
     {
-        return $unit->property->owner_id === $user->id;
+        return Unit::where('id', $unit->id)
+            ->whereHas('property', fn ($query) => $query->where('owner_id', $user->id))
+            ->exists();
     }
 
     /**
@@ -46,7 +48,7 @@ class UnitPolicy
      */
     public function update(User $user, Unit $unit): bool
     {
-        return $unit->property->owner_id === $user->id;
+        return $this->view($user, $unit);
     }
 
     /**
@@ -54,6 +56,6 @@ class UnitPolicy
      */
     public function delete(User $user, Unit $unit): bool
     {
-        return $unit->property->owner_id === $user->id;
+        return $this->view($user, $unit);
     }
 }
