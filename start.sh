@@ -11,8 +11,10 @@ if [ -f /etc/secrets/.env ]; then
 fi
 
 # Run Database Migrations
-# Seeds are not run on boot — run targeted seeders manually if needed.
 php artisan migrate --force
+
+# Seed required lookup data (idempotent — uses insertOrIgnore, safe on every boot)
+php artisan db:seed --class=UtilityTypeSeeder --force
 
 # Clear and warm cache
 php artisan config:cache 

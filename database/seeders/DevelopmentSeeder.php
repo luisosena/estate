@@ -23,26 +23,18 @@ class DevelopmentSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(TruncateTablesSeeder::class);
+        // =====================================================
+        // NOTE: This seeder is for development/staging only.
+        // It assumes a fresh (empty) database — run via:
+        //   php artisan migrate:fresh --seed
+        // Truncation is handled by migrate:fresh, not here.
+        // =====================================================
 
         // =====================================================
-        // 1. UTILITY TYPES
+        // 1. UTILITY TYPES (resolve from DB — seeded by UtilityTypeSeeder)
         // =====================================================
-        $utTypes = [
-            ['name' => 'Water',       'unit' => 'cubic metres', 'is_metered' => true,  'description' => 'Water consumption billed by meter reading'],
-            ['name' => 'Electricity', 'unit' => 'kWh',          'is_metered' => true,  'description' => 'Electricity consumption billed by meter reading'],
-            ['name' => 'Gas',         'unit' => 'cubic metres', 'is_metered' => true,  'description' => 'Gas consumption billed by meter reading'],
-            ['name' => 'Internet',    'unit' => 'flat rate',    'is_metered' => false, 'description' => 'Fixed monthly internet subscription'],
-            ['name' => 'Security',    'unit' => 'flat rate',    'is_metered' => false, 'description' => 'Monthly security/guard service fee'],
-            ['name' => 'Janitor',     'unit' => 'flat rate',    'is_metered' => false, 'description' => 'Monthly cleaning and maintenance fee'],
-            ['name' => 'Garbage',     'unit' => 'flat rate',    'is_metered' => false, 'description' => 'Monthly refuse collection fee'],
-            ['name' => 'Parking',     'unit' => 'flat rate',    'is_metered' => false, 'description' => 'Monthly parking fee'],
-        ];
-        $uTypes = [];
-        foreach ($utTypes as $t) {
-            $uTypes[$t['name']] = UtilityType::create(array_merge($t, ['is_active' => true]));
-        }
-        $this->command->info('Utility types seeded.');
+        $uTypes = UtilityType::pluck('id', 'name')->all();
+        $this->command->info('Utility types resolved.');
 
         // =====================================================
         // 2. ADMIN USER
@@ -311,7 +303,7 @@ class DevelopmentSeeder extends Seeder
         foreach ($utilityConfigs as [$ti, $uName, $amount, $provider, $meter]) {
             $tu = TenancyUtility::create([
                 'tenancy_id' => $tenancies[$ti]->id,
-                'utility_type_id' => $uTypes[$uName]->id,
+                'utility_type_id' => $uTypes[$uName],
                 'amount' => $amount,
                 'billing_cycle' => 'monthly',
                 'provider' => $provider,
