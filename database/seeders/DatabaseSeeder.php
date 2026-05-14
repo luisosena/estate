@@ -14,16 +14,12 @@ class DatabaseSeeder extends Seeder
      * - UtilityTypeSeeder: always runs — seeds required lookup data using
      *   insertOrIgnore, so it is safe to run on every boot or fresh migration.
      *
-     * - DevelopmentSeeder: only runs in local/staging — seeds demo landlords,
-     *   tenants, properties, payments, etc. for development and testing.
-     *   It first truncates all tables, so it must never run in production.
+     * - DevelopmentSeeder: always runs — seeds demo landlords, tenants,
+     *   properties, payments, etc. It handles its own idempotency checks.
      */
     public function run(): void
     {
         $this->call(UtilityTypeSeeder::class);
-
-        if (app()->isLocal() || app()->environment('staging')) {
-            $this->call(DevelopmentSeeder::class);
-        }
+        $this->call(DevelopmentSeeder::class);
     }
 }

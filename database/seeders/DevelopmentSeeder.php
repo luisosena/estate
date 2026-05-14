@@ -24,6 +24,17 @@ class DevelopmentSeeder extends Seeder
     public function run(): void
     {
         // =====================================================
+        // IDEMPOTENCY CHECK:
+        // Skip seeding if users already exist to avoid errors
+        // on subsequent boots in production.
+        // =====================================================
+        if (User::count() > 0) {
+            $this->command->info('Database already contains data. Skipping DevelopmentSeeder.');
+
+            return;
+        }
+
+        // =====================================================
         // NOTE: This seeder is for development/staging only.
         // It assumes a fresh (empty) database — run via:
         //   php artisan migrate:fresh --seed

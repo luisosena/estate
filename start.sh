@@ -13,8 +13,9 @@ fi
 # Run Database Migrations
 php artisan migrate --force
 
-# Seed required lookup data (idempotent — uses insertOrIgnore, safe on every boot)
-php artisan db:seed --class=UtilityTypeSeeder --force
+# Run database seeders (idempotent — safe on every boot)
+# Seeds UtilityTypeSeeder and DevelopmentSeeder (if database is empty).
+php artisan db:seed --force
 
 # Clear and warm cache
 php artisan config:cache 
