@@ -1,5 +1,11 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
+
+const stats = [
+    { value: '2,400+', label: 'Units Managed' },
+    { value: '99.4%', label: 'Uptime' },
+    { value: '4.8★', label: 'Average Rating' },
+];
 
 const testimonials = [
     {
@@ -28,16 +34,43 @@ const testimonials = [
 export default function TestimonialsSection() {
     const ref = useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: '-80px' });
-    const [active, setActive] = useState(0);
 
     return (
         <section ref={ref} className="relative bg-white py-24 lg:py-32">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                {/* Stats Strip */}
+                <motion.div
+                    className="mb-24 rounded-2xl border border-[#1A1A2E]/5 bg-[#FAF7F2] py-8 lg:py-10"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5 }}
+                >
+                    <div className="grid grid-cols-1 divide-y divide-[#1A1A2E]/5 sm:grid-cols-3 sm:divide-y-0 sm:divide-x">
+                        {stats.map((stat, i) => (
+                            <div key={i} className="flex flex-col items-center justify-center py-6 sm:py-0">
+                                <div
+                                    className="text-4xl font-normal text-[#1A1A2E] lg:text-5xl"
+                                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                                >
+                                    {stat.value}
+                                </div>
+                                <div
+                                    className="mt-2 text-sm font-medium tracking-wide text-[#1A1A2E]/50 uppercase"
+                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                >
+                                    {stat.label}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* Header */}
                 <motion.div
                     className="mx-auto max-w-2xl text-center"
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
                 >
                     <p
                         className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-[#D4A853]"
@@ -53,81 +86,55 @@ export default function TestimonialsSection() {
                     </h2>
                 </motion.div>
 
-                {/* Testimonial carousel */}
-                <div className="mt-16">
-                    <motion.div
-                        className="mx-auto max-w-3xl"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                    >
-                        <div className="relative rounded-2xl border border-[#1A1A2E]/5 bg-[#FAF7F2] p-8 lg:p-12">
+                {/* Testimonial Cards */}
+                <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {testimonials.map((testimonial, i) => (
+                        <motion.div
+                            key={i}
+                            className="relative flex flex-col rounded-2xl border border-[#1A1A2E]/5 bg-[#FAF7F2]/50 p-8"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={isInView ? { opacity: 1, y: 0 } : {}}
+                            transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+                        >
                             {/* Quote mark */}
                             <div
-                                className="absolute -top-4 left-8 text-6xl leading-none"
-                                style={{ color: testimonials[active].color, fontFamily: "'DM Serif Display', serif" }}
+                                className="mb-4 text-5xl leading-none opacity-40"
+                                style={{ color: testimonial.color, fontFamily: "'DM Serif Display', serif" }}
                             >
                                 &ldquo;
                             </div>
 
                             <p
-                                className="relative z-10 text-lg leading-relaxed text-[#1A1A2E]/70 lg:text-xl"
+                                className="flex-1 text-base leading-relaxed text-[#1A1A2E]/70"
                                 style={{ fontFamily: "'Outfit', sans-serif" }}
                             >
-                                {testimonials[active].quote}
+                                {testimonial.quote}
                             </p>
 
-                            <div className="mt-8 flex items-center gap-4">
+                            <div className="mt-8 flex items-center gap-4 border-t border-[#1A1A2E]/5 pt-6">
                                 <div
-                                    className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold text-white"
-                                    style={{ backgroundColor: testimonials[active].color, fontFamily: "'Outfit', sans-serif" }}
+                                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
+                                    style={{ backgroundColor: testimonial.color, fontFamily: "'Outfit', sans-serif" }}
                                 >
-                                    {testimonials[active].avatar}
+                                    {testimonial.avatar}
                                 </div>
                                 <div>
                                     <div
-                                        className="font-medium text-[#1A1A2E]"
+                                        className="font-semibold text-[#1A1A2E]"
                                         style={{ fontFamily: "'Outfit', sans-serif" }}
                                     >
-                                        {testimonials[active].name}
+                                        {testimonial.name}
                                     </div>
                                     <div
-                                        className="text-sm text-[#1A1A2E]/50"
+                                        className="text-xs text-[#1A1A2E]/50 mt-0.5"
                                         style={{ fontFamily: "'Outfit', sans-serif" }}
                                     >
-                                        {testimonials[active].role}
+                                        {testimonial.role}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Dots */}
-                        <div className="mt-8 flex items-center justify-center gap-3">
-                            {testimonials.map((_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setActive(i)}
-                                    className="group relative h-3 w-3 rounded-full transition-all duration-300"
-                                    style={{
-                                        backgroundColor:
-                                            active === i
-                                                ? testimonials[i].color
-                                                : 'rgba(26, 26, 46, 0.15)',
-                                    }}
-                                    aria-label={`Testimonial ${i + 1}`}
-                                >
-                                    {active === i && (
-                                        <motion.div
-                                            className="absolute inset-[-3px] rounded-full border-2"
-                                            style={{ borderColor: testimonials[i].color }}
-                                            layoutId="testimonial-ring"
-                                            transition={{ duration: 0.3 }}
-                                        />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
         </section>

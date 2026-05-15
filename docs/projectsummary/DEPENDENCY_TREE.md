@@ -19,6 +19,7 @@ This document provides a complete inventory of all dependencies, their exact ver
 | laravel/tinker | ^2.10.1 | REPL for Laravel |
 | laravel/wayfinder | ^0.1.15 | Routing helpers |
 | twilio/sdk | ^8.x | WhatsApp notification channel via Twilio API |
+| barryvdh/laravel-dompdf | ^3.x | PDF generation for payment receipts (DomPDF) |
 
 ### Server-Side Rendering
 

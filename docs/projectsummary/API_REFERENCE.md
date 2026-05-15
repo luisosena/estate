@@ -614,6 +614,16 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 
 **Note**: For utility payments, updating the status will also affect the linked utility bill's status.
 
+##### GET /api/landlord/payments/{paymentId}/receipt
+
+**Auth**: Bearer token (landlord role)
+**Description**: Generate and stream a PDF receipt for a payment belonging to this landlord's properties.
+**Response**:
+- `Content-Type: application/pdf` — binary PDF stream (HTTP 200)
+- HTTP 404 if the payment does not belong to this landlord
+
+> ⚠️ **Binary endpoint** — does not return JSON. Use `{ responseType: 'blob' }` in Axios or equivalent. Do not attempt JSON.parse on the response.
+
 ---
 
 #### Utility Types
@@ -1067,6 +1077,16 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 }
 ```
 
+##### GET /api/tenant/payments/{paymentId}/receipt
+
+**Auth**: Bearer token (tenant role)
+**Description**: Download the PDF receipt for one of the authenticated tenant's payments.
+**Response**:
+- `Content-Type: application/pdf` — binary PDF stream (HTTP 200)
+- HTTP 404 if the payment does not belong to this tenant
+
+> ⚠️ **Binary endpoint** — does not return JSON. Use `{ responseType: 'blob' }` in Axios or equivalent. Do not attempt JSON.parse on the response.
+
 ---
 
 #### Utilities
@@ -1476,3 +1496,20 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
   "notes": "January rent"
 }
 ```
+
+---
+
+## Webhooks
+
+### `POST /webhooks/mpesa/callback`
+
+> 🚧 **Inactive — scaffold only.** This route is defined in `routes/webhooks.php`
+> but the file is **not registered** in `bootstrap/app.php`. This route does NOT exist
+> at runtime. It will be activated when the M-Pesa gateway design is finalized and
+> `PaymentGatewayServiceProvider` is registered in `bootstrap/providers.php`.
+> See `docs/plans/porting-plan.md` for activation steps.
+
+**Auth**: None (M-Pesa callback — validated via HMAC signature inside the controller)
+**Controller**: `App\Http\Controllers\Webhook\MpesaWebhookController`
+**Description**: Receives the asynchronous payment confirmation from M-Pesa after an
+STK push completes. Fires `PaymentConfirmed` event → bill sync → receipt → notification.

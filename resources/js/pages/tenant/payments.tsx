@@ -5,6 +5,7 @@ import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
 import Pagination from '@/components/shared/Pagination';
+import { ReceiptDownloadButton } from '@/components/payments/ReceiptDownloadButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,7 @@ interface Payment {
   amount: number;
   payment_type: string;
   payment_method: string;
-  status: 'pending' | 'paid' | 'partial' | 'failed';
+  status: 'paid' | 'partial' | 'pending' | 'overdue' | 'cancelled';
   paid_at: string;
   reference_number: string;
   notes: string;
@@ -212,6 +213,9 @@ export default function TenantPayments({ tenant, tenancy, payments, pendingAmoun
                           <th className="h-12 px-6 text-left align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
                             Status
                           </th>
+                          <th className="h-12 px-6 text-left align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
+                            Receipt
+                          </th>
                           <th className="h-12 px-6 text-right align-middle font-black text-muted-foreground text-[10px] uppercase tracking-widest">
                             Actions
                           </th>
@@ -220,7 +224,7 @@ export default function TenantPayments({ tenant, tenancy, payments, pendingAmoun
                       <tbody className="divide-y divide-border/30">
                         {paymentList.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="p-16 text-center">
+                            <td colSpan={8} className="p-16 text-center">
                               <div className="flex flex-col items-center gap-2">
                                 <FileText className="h-10 w-10 text-muted-foreground/30 mb-2" />
                                 <span className="text-sm font-bold text-muted-foreground">No transactions found.</span>
@@ -266,6 +270,14 @@ export default function TenantPayments({ tenant, tenancy, payments, pendingAmoun
                               </td>
                               <td className="p-6 align-middle">
                                 {getStatusBadge(payment.status)}
+                              </td>
+                              <td className="p-6 align-middle">
+                                <ReceiptDownloadButton
+                                  paymentId={payment.id}
+                                  paymentStatus={payment.status}
+                                  size="sm"
+                                  variant="outline"
+                                />
                               </td>
                               <td className="p-6 align-middle text-right">
                                 <Button asChild variant="ghost" size="sm" className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-primary hover:bg-primary/5">

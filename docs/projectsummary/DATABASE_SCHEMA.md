@@ -261,6 +261,7 @@ erDiagram
 - `database/migrations/2026_03_20_000004_add_utility_bill_id_to_payments_table.php` - Adds utility_bill_id for linkage to utility bills
 - `database/migrations/2026_03_20_000005_add_pending_status_to_payments_table.php` - Adds 'pending' status to payment status enum
 - `database/migrations/2026_03_21_000002_add_rent_bill_id_to_payments_table.php` - Adds rent_bill_id for linkage to rent bills
+- `database/migrations/2026_05_02_205519_remove_receipt_path_from_payments_table.php` - Removes receipt_path column (PDF receipt generation now uses on-demand streaming)
 
 **Attributes**:
 | Column | Type | Constraints | Description |
@@ -278,6 +279,12 @@ erDiagram
 | due_date | DATE | NOT NULL | Date payment was due |
 | reference_number | VARCHAR(100) | NULLABLE | External payment reference |
 | notes | TEXT | NULLABLE | Payment notes |
+| gateway | varchar(255) | nullable | Payment gateway driver used (`manual`, `mpesa`) |
+| checkout_request_id | varchar(255) | nullable | M-Pesa STK push checkout request ID |
+| gateway_reference | varchar(255) | nullable | Gateway transaction reference |
+| gateway_status | varchar(255) | nullable | Raw status string from the gateway |
+| gateway_metadata | json | nullable | Full gateway response payload |
+| gateway_confirmed_at | timestamp | nullable | When the gateway confirmed the payment |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -295,6 +302,20 @@ erDiagram
 - BelongsTo Tenant
 - BelongsTo UtilityBill (optional, for utility payments)
 - BelongsTo RentBill (optional, for rent payments)
+
+---
+
+### Performance Indexes
+
+The following indexes were added during the pre-Phase 3 stabilization to improve query performance:
+
+```
+payments:   status, paid_at, tenant_id, tenancy_id, rent_bill_id, utility_bill_id
+tenancies:  status
+rent_bills: status, due_date, billing_month
+```
+
+Migration file reference: `database/migrations/2026_05_02_080758_add_performance_indexes_to_core_tables.php`
 
 ---
 
@@ -719,11 +740,15 @@ erDiagram
         bigint tenancy_id FK
         bigint tenant_id FK
         bigint utility_bill_id FK
+        bigint rent_bill_id FK
         decimal amount
         enum payment_type
         enum payment_method
         enum status
         timestamp paid_at
+        string gateway
+        string gateway_reference
+        timestamp gateway_confirmed_at
     }
     
     UTILITY_TYPE {

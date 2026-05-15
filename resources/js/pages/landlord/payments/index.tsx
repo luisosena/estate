@@ -4,6 +4,7 @@ import React from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
 import Pagination from '@/components/shared/Pagination';
+import { ReceiptDownloadButton } from '@/components/payments/ReceiptDownloadButton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -248,6 +249,9 @@ export default function PaymentsIndex({ payments, stats }: Props) {
                     <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       Status
                     </th>
+                    <th className="h-10 px-4 text-left align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                      Receipt
+                    </th>
                     <th className="h-10 px-4 text-right align-middle font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                       Actions
                     </th>
@@ -256,7 +260,7 @@ export default function PaymentsIndex({ payments, stats }: Props) {
                 <tbody className="[&_tr:last-child]:border-0">
                   {paymentList.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="p-12 text-center text-muted-foreground">
+                      <td colSpan={9} className="p-12 text-center text-muted-foreground">
                         No payment records found matching your filters.
                       </td>
                     </tr>
@@ -305,6 +309,14 @@ export default function PaymentsIndex({ payments, stats }: Props) {
                         </td>
                         <td className="p-4 align-middle">
                           {getStatusBadge(payment.status)}
+                        </td>
+                        <td className="p-4 align-middle">
+                          <ReceiptDownloadButton
+                            paymentId={payment.id}
+                            paymentStatus={payment.status}
+                            size="sm"
+                            variant="outline"
+                          />
                         </td>
                         <td className="p-4 align-middle text-right">
                           <DropdownMenu>
