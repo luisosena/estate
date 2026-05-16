@@ -2,6 +2,7 @@
 
 namespace App\Services\Tenant;
 
+use App\Http\Resources\DocumentResource;
 use App\Http\Resources\NotificationResource;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\RentBillResource;
@@ -62,6 +63,7 @@ class TenantDashboardService
                 ->get() ?? collect([])),
             'rent_bills' => $rentBills,
             'current_month_bill' => $currentMonthBill ?? ['data' => null],
+            'documents' => $activeTenancy ? DocumentResource::collection($activeTenancy->documents()->latest()->get()) : collect([]),
         ];
     }
 }

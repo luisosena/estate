@@ -13,6 +13,8 @@ import {
   Building2,
   ArrowRight,
   ChevronRight,
+  FileText,
+  Download,
 } from 'lucide-react';
 import React, { useMemo } from 'react';
 import { route } from 'ziggy-js';
@@ -78,6 +80,15 @@ interface RentBill {
   outstanding_amount: number;
 }
 
+interface Document {
+  id: number;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  category: string;
+  uploaded_at: string;
+}
+
 interface TenantDashboardProps {
   tenant: { data: Tenant };
   payments?: { data: Payment[] };
@@ -87,6 +98,7 @@ interface TenantDashboardProps {
   notifications?: { data: Notification[] };
   rent_bills?: { data: RentBill[] };
   current_month_bill?: { data: RentBill | null };
+  documents?: { data: Document[] };
 }
 
 
@@ -101,6 +113,7 @@ export default function TenantDashboard({
   notifications = { data: [] },
   rent_bills = { data: [] },
   current_month_bill = { data: null },
+  documents = { data: [] },
 }: TenantDashboardProps) {
   const { auth } = usePage<SharedData>().props;
   const tenantData = tenant.data;
@@ -333,6 +346,38 @@ export default function TenantDashboard({
                         <QuickAction label="Utilities" icon={Zap} href={route('tenant.utilities')} />
                         <QuickAction label="Messages" icon={MessageCircleMore} href="#" />
                     </div>
+                </div>
+
+                {/* Documents Section */}
+                <div className="flex flex-col gap-4">
+                    <h2 className="text-lg font-semibold tracking-tight">Documents</h2>
+                    <Card className="bg-card shadow-sm border-border/50">
+                        <CardContent className="px-5 py-4 flex flex-col gap-3">
+                            {documents.data.length > 0 ? (
+                                documents.data.map((doc) => (
+                                    <a
+                                        key={doc.id}
+                                        href={route('tenant.documents.download', { document: doc.id })}
+                                        className="flex items-center gap-3 p-3 rounded-lg border border-border/60 hover:bg-muted/50 transition-colors"
+                                    >
+                                        <FileText className="w-5 h-5 text-muted-foreground shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium truncate">{doc.file_name}</p>
+                                            <p className="text-xs text-muted-foreground capitalize">
+                                                {doc.category.replace('_', ' ')}
+                                            </p>
+                                        </div>
+                                        <Download className="w-4 h-4 text-muted-foreground shrink-0" />
+                                    </a>
+                                ))
+                            ) : (
+                                <div className="text-center py-4">
+                                    <FileText className="mx-auto h-8 w-8 text-muted-foreground/50" />
+                                    <p className="text-sm text-muted-foreground mt-2">No documents yet</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Notifications Hint if active alerts */}

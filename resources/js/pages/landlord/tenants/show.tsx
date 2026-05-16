@@ -1,5 +1,5 @@
-import { Link, router } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Edit, Home } from 'lucide-react';
+import { Link, router, useForm } from '@inertiajs/react';
+import { AlertCircle, ArrowLeft, Edit, FileText, Home, Loader2, Trash2, Download, Upload } from 'lucide-react';
 import React from 'react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
@@ -10,6 +10,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -69,6 +72,15 @@ interface TenancyHistory {
   property_name: string | null;
 }
 
+interface Document {
+  id: number;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  category: string;
+  uploaded_at: string;
+}
+
 interface Props {
   tenant: Tenant;
   tenancy?: Tenancy;
@@ -78,6 +90,7 @@ interface Props {
     data: Payment[];
   };
   tenancy_history: TenancyHistory[];
+  documents?: Document[];
   properties: any[];
   availableUnits: any[];
   outstandingRent: number;
@@ -92,6 +105,7 @@ export default function TenantShow({
   property,
   payments,
   tenancy_history,
+  documents = [],
   properties,
   availableUnits,
   outstandingRent,
@@ -113,6 +127,38 @@ export default function TenantShow({
     | 'move-tenant'
   >('personal');
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [showUploadForm, setShowUploadForm] = useState(false);
+
+  const { data: uploadData, setData: setUploadData, post: uploadPost, processing: uploadProcessing, reset: uploadReset } = useForm({
+    document: null as File | null,
+    category: 'tenancy_agreement',
+  });
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const handleUploadDocument = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tenancy || !uploadData.document) return;
+    uploadPost(route('landlord.tenancies.documents.store', { tenancy: tenancy.id }), {
+      onSuccess: () => {
+        uploadReset();
+        setShowUploadForm(false);
+      },
+    });
+  };
+
+  const handleDownloadDocument = (documentId: number) => {
+    window.location.href = route('landlord.documents.download', { document: documentId });
+  };
+
+  const handleDeleteDocument = (documentId: number) => {
+    if (!confirm('Are you sure you want to delete this document?')) return;
+    router.delete(route('landlord.documents.destroy', { document: documentId }));
+  };
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '—';
@@ -576,6 +622,137 @@ export default function TenantShow({
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Documents */}
+        {tenancy && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle className="text-lg font-medium">Documents</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">
+                  Tenancy agreement and related documents
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowUploadForm(!showUploadForm)}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {showUploadForm && (
+                <form onSubmit={handleUploadDocument} className="mb-6 p-4 bg-gray-50/5 rounded-lg space-y-4">
+                  <Field>
+                    <FieldLabel htmlFor="document">Document File</FieldLabel>
+                    <Input
+                      id="document"
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        if (file && file.size > 10 * 1024 * 1024) {
+                          alert('File size must be less than 10MB');
+                          e.target.value = '';
+                          return;
+                        }
+                        setUploadData('document', file);
+                      }}
+                    />
+                    <FieldDescription>PDF or Word document (max 10MB)</FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="category">Category</FieldLabel>
+                    <Select value={uploadData.category} onValueChange={(value) => setUploadData('category', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tenancy_agreement">Tenancy Agreement</SelectItem>
+                        <SelectItem value="inspection_photo">Inspection Photo</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={uploadProcessing || !uploadData.document}>
+                      {uploadProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Upload Document
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => { setShowUploadForm(false); uploadReset(); }}>
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {documents.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-gray-400">File Name</TableHead>
+                      <TableHead className="text-gray-400">Category</TableHead>
+                      <TableHead className="text-gray-400">Size</TableHead>
+                      <TableHead className="text-gray-400">Uploaded</TableHead>
+                      <TableHead className="text-gray-400">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {documents.map((doc) => (
+                      <TableRow key={doc.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-gray-400" />
+                            <span className="font-medium">{doc.file_name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {doc.category.replace('_', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-500">
+                          {formatFileSize(doc.file_size)}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-500">
+                          {formatDate(doc.uploaded_at)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownloadDocument(doc.id)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteDocument(doc.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-200">No documents</h3>
+                  <p className="mt-1 text-sm text-gray-400">
+                    Upload a tenancy agreement or related documents.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
