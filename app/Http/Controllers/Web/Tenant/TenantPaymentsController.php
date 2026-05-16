@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Tenant;
 
+use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\StorePaymentRequest;
 use App\Http\Resources\PaymentResource;
@@ -11,12 +12,16 @@ use App\Http\Resources\UtilityBillResource;
 use App\Models\Payment;
 use App\Models\UtilityBill;
 use App\Services\PaymentService;
+use App\Services\ReceiptService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TenantPaymentsController extends Controller
 {
+    use HandlesReceipts;
+
     protected $paymentService;
 
     public function __construct(PaymentService $paymentService)
@@ -35,8 +40,8 @@ class TenantPaymentsController extends Controller
             ->where('tenancies.status', 'active')
             ->first();
 
-        $payments = $activeTenancy 
-            ? $activeTenancy->payments()->orderByDesc('paid_at')->paginate(15) 
+        $payments = $activeTenancy
+            ? $activeTenancy->payments()->orderByDesc('paid_at')->paginate(15)
             : collect([]);
 
         return Inertia::render('tenant/payments', [
@@ -133,5 +138,19 @@ class TenantPaymentsController extends Controller
 
             return redirect()->back()->withInput()->with('error', 'Failed to process payment.');
         }
+    }
+
+    /**
+     * Stream a PDF receipt for a payment belonging to the tenant.
+     */
+    public function receipt(Request $request, int $paymentId, ReceiptService $receiptService): Response
+    {
+        $tenant = $request->user()->tenant;
+
+        $payment = Payment::whereHas('tenancy', function ($query) use ($tenant) {
+            $query->whereHas('tenant', fn ($q) => $q->where('tenants.id', $tenant->id));
+        })->findOrFail($paymentId);
+
+        return $this->buildReceiptResponse($payment, $receiptService);
     }
 }

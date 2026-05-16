@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Role;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Admin\AdminLandlordController;
 use App\Http\Controllers\Web\Admin\AdminPropertyController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Web\Tenant\TenantPaymentsController;
 use App\Http\Controllers\Web\Tenant\TenantRentBillController;
 use App\Http\Controllers\Web\Tenant\TenantUtilitiesController;
 use App\Models\Tenant;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -140,6 +142,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/landlord/payments/{payment}', [LandlordPaymentController::class, 'destroy'])
         ->name('landlord.payments.destroy');
 
+    Route::get('/landlord/payments/{paymentId}/receipt', [LandlordPaymentController::class, 'receipt'])
+        ->name('landlord.payments.receipt')
+        ->middleware('throttle:10,1');
+
     // Unit Management Routes
     Route::get('/landlord/units/create', [LandlordUnitController::class, 'create'])
         ->name('landlord.units.create');
@@ -242,6 +248,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('tenant.payments.update')
         ->middleware('throttle:5,1');
 
+    Route::get('/tenant/payments/{paymentId}/receipt', [TenantPaymentsController::class, 'receipt'])
+        ->name('tenant.payments.receipt')
+        ->middleware('throttle:10,1');
+
     Route::get('/tenant/utilities', [TenantUtilitiesController::class, 'index'])
         ->name('tenant.utilities');
 
@@ -278,18 +288,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tenant/notifications/recent', [TenantNotificationController::class, 'recent'])
         ->name('tenant.notifications.recent');
 
-    Route::get('/dashboard', function (Illuminate\Http\Request $request) {
+    Route::get('/dashboard', function (Request $request) {
         $user = $request->user();
 
-        if ($user->role === \App\Enums\Role::Admin) {
+        if ($user->role === Role::Admin) {
             return redirect()->route('admin.dashboard');
-        } elseif ($user->role === \App\Enums\Role::Landlord) {
+        } elseif ($user->role === Role::Landlord) {
             return redirect()->route('landlord.dashboard');
         } else {
             return redirect()->route('tenant.dashboard');
         }
     })->name('dashboard');
 });
-
 
 require __DIR__.'/settings.php';

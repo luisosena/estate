@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Landlord;
 
+use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\PaymentStoreRequest;
 use App\Http\Requests\Landlord\PaymentUpdateRequest;
@@ -10,16 +11,20 @@ use App\Models\Payment;
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\UtilityBill;
+use App\Services\ReceiptService;
 use App\Services\RentBillService;
 use App\Services\UtilityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 
 class LandlordPaymentController extends Controller
 {
+    use HandlesReceipts;
+
     protected RentBillService $rentBillService;
 
     protected UtilityService $utilityService;
@@ -36,7 +41,7 @@ class LandlordPaymentController extends Controller
      *
      * @return Response
      */
-    public function index(Request $request)
+    public function index(Request $request): InertiaResponse
     {
         $this->authorize('viewAny', Payment::class);
 
@@ -248,5 +253,19 @@ class LandlordPaymentController extends Controller
                 ->back()
                 ->with('error', 'Failed to delete payment record. Please try again.');
         }
+    }
+
+    /**
+     * Stream a PDF receipt for a payment owned by the landlord.
+     */
+    public function receipt(Request $request, int $paymentId, ReceiptService $receiptService): Response
+    {
+        $landlord = $request->user();
+
+        $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
+            $query->where('owner_id', $landlord->id);
+        })->findOrFail($paymentId);
+
+        return $this->buildReceiptResponse($payment, $receiptService);
     }
 }

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
 
 interface ReceiptDownloadButtonProps {
   paymentId: number;
@@ -33,50 +32,45 @@ export function ReceiptDownloadButton({
     setIsLoading(true);
 
     try {
-      // Determine endpoint based on user role
+      // Use web routes (session-authenticated) instead of api routes,
+      // which avoids Sanctum stateful domain matching issues in production.
       const isTenant = window.location.pathname.startsWith('/tenant');
       const endpoint = isTenant
-        ? `/api/v1/tenant/payments/${paymentId}/receipt`
-        : `/api/v1/landlord/payments/${paymentId}/receipt`;
+        ? `/tenant/payments/${paymentId}/receipt`
+        : `/landlord/payments/${paymentId}/receipt`;
 
-      // Fetch PDF as blob using axios to ensure proper session/CSRF handling
-      const response = await axios.get(endpoint, {
-        responseType: 'blob',
-        withCredentials: true,
+      const response = await fetch(endpoint, {
+        credentials: 'same-origin',
         headers: {
-          'Accept': 'application/pdf, application/json',
-          'X-Requested-With': 'XMLHttpRequest',
+          Accept: 'application/pdf, application/json',
         },
       });
 
-      // Verify we got a PDF, not HTML error page
-      const contentType = response.headers['content-type'] || response.headers['Content-Type'];
-      if (contentType && !contentType.includes('application/pdf')) {
-        const text = await response.data.text();
-        console.error('Unexpected content type:', contentType, 'Response:', text.substring(0, 500));
-        throw new Error('Server returned an error page instead of PDF. Please check authentication.');
+      if (!response.ok) {
+        let errorMessage = 'Failed to download receipt';
+        try {
+          const data = await response.json();
+          errorMessage = data.message || data.error || errorMessage;
+        } catch {
+          errorMessage = `Error ${response.status}: Failed to download receipt`;
+        }
+        throw new Error(errorMessage);
       }
 
-      // Get filename from Content-Disposition header
-      const contentDisposition = response.headers['content-disposition'] || response.headers['Content-Disposition'];
+      const contentType = response.headers.get('Content-Type');
+      if (contentType && !contentType.includes('application/pdf')) {
+        const text = await response.text();
+        console.error('Unexpected content type:', contentType, text.substring(0, 500));
+        throw new Error('Server returned unexpected content instead of PDF.');
+      }
+
+      const contentDisposition = response.headers.get('Content-Disposition');
       const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
       const filename = filenameMatch?.[1] || `receipt-${paymentId}.pdf`;
 
-      const blob = response.data;
-      
-      // Verify blob is actually a PDF (check magic bytes)
-      const arrayBuffer = await blob.slice(0, 5).arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      const isPdf = bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46; // %PDF
-      
-      if (!isPdf) {
-        // Try to read as text for debugging
-        const textBlob = await blob.text();
-        console.error('Response is not a valid PDF. First 500 chars:', textBlob.substring(0, 500));
-        throw new Error('Downloaded file is not a valid PDF. The server may have returned an error page.');
-      }
+      const blob = await response.blob();
 
-      // Create download link
+      // Trigger download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -87,26 +81,9 @@ export function ReceiptDownloadButton({
       window.URL.revokeObjectURL(url);
 
       toast.success('Receipt downloaded successfully');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Receipt download failed:', error);
-      
-      let errorMessage = 'Failed to download receipt';
-      if (error.response?.data instanceof Blob) {
-        // Try to read the blob as text for error message
-        try {
-          const text = await error.response.data.text();
-          const json = JSON.parse(text);
-          errorMessage = json.message || json.error || errorMessage;
-        } catch (e) {
-          errorMessage = error.message;
-        }
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      toast.error(errorMessage);
+      toast.error(error instanceof Error ? error.message : 'Failed to download receipt');
     } finally {
       setIsLoading(false);
     }
