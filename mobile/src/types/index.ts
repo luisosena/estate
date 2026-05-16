@@ -403,3 +403,20 @@ export interface PaginatedResponse<T> {
   per_page?: number;
   total?: number;
 }
+
+// ──────────────────────────────────────────
+// Document Types
+// ──────────────────────────────────────────
+
+export type DocumentCategory = 'tenancy_agreement' | 'inspection_photo' | 'other';
+
+export interface Document {
+  id: number;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  category: DocumentCategory;
+  uploaded_at: string;
+  documentable_type?: string;
+  documentable_id?: number;
+}

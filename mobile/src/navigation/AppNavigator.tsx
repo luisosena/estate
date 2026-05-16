@@ -39,6 +39,8 @@ import { TenantRentBillDetailsScreen } from '../screens/tenant/RentBillDetailsSc
 import { TenantRentBillsScreen } from '../screens/tenant/RentBillsScreen';
 import { TenantUtilitiesScreen } from '../screens/tenant/UtilitiesScreen';
 import { TenantUtilityBillsScreen } from '../screens/tenant/UtilityBillsScreen';
+import { TenantDocumentsScreen } from '../screens/tenant/DocumentsScreen';
+import { LandlordDocumentsScreen } from '../screens/landlord/DocumentsScreen';
 
 // Landlord Screens
 
@@ -58,6 +60,7 @@ export type TenantTabParamList = {
   Dashboard: undefined;
   Payments: undefined;
   Utilities: undefined;
+  Documents: undefined;
   Profile: undefined;
 };
 
@@ -88,6 +91,22 @@ export type TenantPaymentsStackParamList = {
   MakePayment: { monthlyRent?: number; pendingAmount?: number; rentBillId?: number };
   RentBills: undefined;
   RentBillDetails: { billId: number };
+  Documents: undefined;
+};
+
+export type TenantDocumentsStackParamList = {
+  DocumentsList: undefined;
+};
+
+export type LandlordPaymentsStackParamList = {
+  PaymentsList: undefined;
+  UtilityBills: undefined;
+  RentBills: undefined;
+  RentBillDetails: { billId: number };
+};
+
+export type LandlordDocumentsStackParamList = {
+  LandlordDocuments: { tenancyId: number };
 };
 
 export type LandlordTabParamList = {
@@ -130,13 +149,7 @@ export type LandlordTenantsStackParamList = {
   AddTenant: { unitId?: number };
   TenantDetails: { tenantCode: string };
   TenancyUtilities: { tenancyId: number; tenantName: string };
-};
-
-export type LandlordPaymentsStackParamList = {
-  PaymentsList: undefined;
-  UtilityBills: undefined;
-  RentBills: undefined;
-  RentBillDetails: { billId: number };
+  LandlordDocuments: { tenancyId: number };
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -146,6 +159,8 @@ const LandlordTab = createBottomTabNavigator<LandlordTabParamList>();
 
 const TenantPaymentsStack = createNativeStackNavigator<TenantPaymentsStackParamList>();
 const TenantUtilitiesStack = createNativeStackNavigator<TenantUtilitiesStackParamList>();
+const TenantDocumentsStack = createNativeStackNavigator<TenantDocumentsStackParamList>();
+const LandlordDocumentsStack = createNativeStackNavigator<LandlordDocumentsStackParamList>();
 
 const PropertiesStack = createNativeStackNavigator<LandlordPropertiesStackParamList>();
 const TenantsStack = createNativeStackNavigator<LandlordTenantsStackParamList>();
@@ -179,6 +194,14 @@ function TenantUtilitiesNavigator() {
   );
 }
 
+function TenantDocumentsNavigator() {
+  return (
+    <TenantDocumentsStack.Navigator screenOptions={nativeHeaderOptions}>
+      <TenantDocumentsStack.Screen name="DocumentsList" component={TenantDocumentsScreen} />
+    </TenantDocumentsStack.Navigator>
+  );
+}
+
 function TenantNavigator() {
   return (
     <TenantTab.Navigator screenOptions={tabBarScreenOptions}>
@@ -207,6 +230,15 @@ function TenantNavigator() {
         options={{
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'flash' : 'flash-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <TenantTab.Screen 
+        name="Documents" 
+        component={TenantDocumentsNavigator}
+        options={{
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'document' : 'document-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -243,6 +275,7 @@ function LandlordTenantsNavigator() {
       <TenantsStack.Screen name="AddTenant" component={AddTenantScreen} options={{ title: 'Add Tenant' }} />
       <TenantsStack.Screen name="TenantDetails" component={TenantDetailsScreen} options={{ title: 'Tenant Details' }} />
       <TenantsStack.Screen name="TenancyUtilities" component={TenancyUtilitiesScreen} options={{ title: 'Utilities' }} />
+      <TenantsStack.Screen name="LandlordDocuments" component={LandlordDocumentsScreen} options={{ title: 'Documents' }} />
     </TenantsStack.Navigator>
   );
 }

@@ -11,6 +11,7 @@ import type {
   UserProfile,
   TenantProfileUpdateData,
   PasswordUpdateData,
+  Document,
 } from '../types';
 
 import api from './client';
@@ -124,6 +125,13 @@ export const tenantApi = {
 
   getRentBill: (rentBillId: number): Promise<{ data: RentBill }> =>
     api.get<{ data: RentBill }>(`/tenant/rent-bills/${rentBillId}`),
+
+  // Documents
+  getDocuments: (): Promise<{ data: Document[] }> =>
+    api.get<{ data: Document[] }>('/tenant/documents'),
+
+  downloadDocument: (documentId: number): Promise<Blob> =>
+    api.get<Blob>(`/tenant/documents/${documentId}/download`, { responseType: 'blob' }),
 };
 
 export default tenantApi;

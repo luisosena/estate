@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
@@ -83,8 +83,8 @@ class ApiClient {
     return response.data;
   }
 
-  async post<T>(url: string, data?: object): Promise<T> {
-    const response = await this.client.post<T>(url, data);
+  async post<T>(url: string, data?: object, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.client.post<T>(url, data, config);
     return response.data;
   }
 

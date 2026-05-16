@@ -15,6 +15,7 @@ import type {
   UserProfile,
   LandlordProfileUpdateData,
   PasswordUpdateData,
+  Document,
 } from '../types';
 
 import api from './client';
@@ -277,6 +278,21 @@ export const landlordApi = {
   // Password Update
   updatePassword: (data: PasswordUpdateData): Promise<{ message: string }> =>
     api.put<{ message: string }>('/landlord/password', data),
+
+  // Documents
+  getDocuments: (tenancyId: number): Promise<{ data: Document[] }> =>
+    api.get<{ data: Document[] }>(`/landlord/tenancies/${tenancyId}/documents`),
+
+  uploadDocument: (tenancyId: number, formData: FormData): Promise<{ message: string; data: Document }> =>
+    api.post<{ message: string; data: Document }>(`/landlord/tenancies/${tenancyId}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  downloadDocument: (documentId: number): Promise<Blob> =>
+    api.get<Blob>(`/landlord/documents/${documentId}/download`, { responseType: 'blob' }),
+
+  deleteDocument: (documentId: number): Promise<void> =>
+    api.delete(`/landlord/documents/${documentId}`),
 };
 
 export default landlordApi;
