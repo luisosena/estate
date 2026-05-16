@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Tenant;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DocumentResource;
 use App\Models\Document;
@@ -16,8 +17,20 @@ class DocumentController extends Controller
     {
     }
 
-    public function index(Request $request, Tenancy $tenancy): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $user = $request->user();
+
+        if ($user->role !== Role::Tenant) {
+            abort(403, 'Access denied.');
+        }
+
+        $tenancy = $user->tenant?->tenancies()->where('status', 'active')->first();
+
+        if (! $tenancy) {
+            return response()->json(['data' => []]);
+        }
+
         $this->authorize('view', $tenancy);
 
         $documents = $this->documentService->listFor($tenancy);

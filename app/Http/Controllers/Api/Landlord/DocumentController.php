@@ -32,6 +32,17 @@ class DocumentController extends Controller
         ], 201);
     }
 
+    public function index(Request $request, Tenancy $tenancy): JsonResponse
+    {
+        $this->authorize('viewAny', [Document::class, $tenancy]);
+
+        $documents = $this->documentService->listFor($tenancy);
+
+        return response()->json([
+            'data' => DocumentResource::collection($documents),
+        ]);
+    }
+
     public function download(Request $request, Document $document)
     {
         $this->authorize('download', $document);

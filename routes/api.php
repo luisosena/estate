@@ -73,7 +73,7 @@ $defineApiRoutes = function (): void {
             Route::put('profile', [TenantProfileController::class, 'update']);
 
             // Tenant Document Management
-            Route::get('tenancies/{tenancy}/documents', [TenantDocumentController::class, 'index']);
+            Route::get('documents', [TenantDocumentController::class, 'index']);
             Route::get('documents/{document}/download', [TenantDocumentController::class, 'download']);
 
             // Password Update (with rate limiting: 5 attempts per minute)
@@ -143,6 +143,7 @@ $defineApiRoutes = function (): void {
             Route::put('profile', [LandlordProfileController::class, 'update']);
 
             // Landlord Document Management
+            Route::get('tenancies/{tenancy}/documents', [LandlordDocumentController::class, 'index']);
             Route::post('tenancies/{tenancy}/documents', [LandlordDocumentController::class, 'store']);
             Route::get('documents/{document}/download', [LandlordDocumentController::class, 'download']);
             Route::delete('documents/{document}', [LandlordDocumentController::class, 'destroy']);

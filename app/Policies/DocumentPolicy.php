@@ -28,6 +28,15 @@ class DocumentPolicy
         return false;
     }
 
+    public function viewAny(User $user, Tenancy $tenancy): bool
+    {
+        if ($user->role === Role::Landlord) {
+            return $this->tenancyOwnedByLandlord($tenancy->id, $user->id);
+        }
+
+        return false;
+    }
+
     public function view(User $user, Document $document): bool
     {
         $documentable = $document->documentable;
