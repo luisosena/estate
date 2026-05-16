@@ -5,13 +5,16 @@ namespace App\Services\Landlord;
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\Unit;
+use App\Services\DocumentService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class OnboardingService
 {
-    /**
-     * Handle the onboarding of a new tenant and creation of their tenancy.
-     */
+    public function __construct(protected DocumentService $documentService)
+    {
+    }
+
     public function onboard(array $data): array
     {
         return DB::transaction(function () use ($data) {
@@ -20,8 +23,6 @@ class OnboardingService
                 ['email' => $data['email'], 'phone' => $data['phone']],
                 [
                     'full_name' => $data['full_name'],
-                    // tenant_code is handled by the model's booted method,
-                    // but we ensure it's provided if for some reason we need a custom one.
                 ]
             );
 
@@ -37,6 +38,16 @@ class OnboardingService
 
             // 3. Mark unit as occupied
             Unit::where('id', $data['unit_id'])->update(['status' => 'occupied']);
+
+            // 4. Handle tenancy agreement upload if present
+            if (isset($data['tenancy_agreement']) && $data['tenancy_agreement'] instanceof UploadedFile) {
+                $this->documentService->upload(
+                    $data['tenancy_agreement'],
+                    $tenancy,
+                    'tenancy_agreement',
+                    auth()->user()
+                );
+            }
 
             return [
                 'tenant' => $tenant,

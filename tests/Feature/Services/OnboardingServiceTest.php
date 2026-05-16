@@ -4,6 +4,7 @@ use App\Models\Tenant;
 use App\Models\Tenancy;
 use App\Models\Unit;
 use App\Models\Property;
+use App\Services\DocumentService;
 use App\Services\Landlord\OnboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -26,7 +27,7 @@ it('onboards a new tenant and relates them to an occupied unit', function () {
         'security_deposit' => 3000,
     ];
 
-    $service = new OnboardingService();
+    $service = app(OnboardingService::class);
     $result = $service->onboard($data);
 
     // Assertions
@@ -55,7 +56,7 @@ it('finds existing tenant by email/phone during onboarding', function () {
         'monthly_rent' => 1000,
     ];
 
-    $service = new OnboardingService();
+    $service = app(OnboardingService::class);
     $service->onboard($data);
 
     expect(Tenant::count())->toBe(1); // Should not create a second tenant record

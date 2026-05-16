@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Landlord;
 
 use App\Enums\Role;
-
 use Illuminate\Foundation\Http\FormRequest;
 
 class OnboardTenantRequest extends FormRequest
@@ -40,6 +39,9 @@ class OnboardTenantRequest extends FormRequest
             'emergency_contact_name' => 'required|string|max:255',
             'emergency_contact_phone' => 'required|string|max:20',
             'emergency_contact_relation' => 'required|string|max:100',
+
+            // Tenancy Agreement (Optional)
+            'tenancy_agreement' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ];
     }
 

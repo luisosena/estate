@@ -2,15 +2,21 @@
 
 namespace App\Services;
 
+use App\Enums\Role;
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class TenantService
 {
+    public function __construct(protected DocumentService $documentService)
+    {
+    }
+
     /**
      * Get dashboard data for a specific tenant.
      */
@@ -83,7 +89,7 @@ class TenantService
                 'username' => $username,
                 'email' => $tenant->email,
                 'password' => $tempPassword,
-                'role' => 'tenant',
+                'role' => Role::Tenant->value,
                 'tenant_id' => $tenant->id,
                 'must_change_password' => true,
             ]);
@@ -102,7 +108,17 @@ class TenantService
                 ]);
 
                 // Update unit status
-                Unit::find($data['unit_id'])->update(['status' => 'occupied']);
+                Unit::where('id', $data['unit_id'])->update(['status' => 'occupied']);
+
+                // Handle tenancy agreement upload if present
+                if (isset($data['tenancy_agreement']) && $data['tenancy_agreement'] instanceof UploadedFile) {
+                    $this->documentService->upload(
+                        $data['tenancy_agreement'],
+                        $tenancy,
+                        'tenancy_agreement',
+                        auth()->user()
+                    );
+                }
 
                 $tenancy->load('tenant');
             }

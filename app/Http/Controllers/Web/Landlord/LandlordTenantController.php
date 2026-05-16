@@ -99,6 +99,10 @@ class LandlordTenantController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $documents = $activeTenancy
+            ? $activeTenancy->documents()->orderByDesc('uploaded_at')->get()
+            : collect();
+
         return Inertia::render('landlord/tenants/show', [
             'tenant' => new TenantResource($tenant),
             'tenancy' => $activeTenancy ? new TenancyResource($activeTenancy) : null,
@@ -106,6 +110,7 @@ class LandlordTenantController extends Controller
             'property' => $activeTenancy?->unit?->property ? new PropertyResource($activeTenancy->unit->property) : null,
             'payments' => PaymentResource::collection($payments),
             'tenancy_history' => TenancyResource::collection($tenancyHistory),
+            'documents' => $documents,
             'outstandingRent' => 0, // Placeholder for logic
             'outstandingUtilities' => 0, // Placeholder
         ]);
