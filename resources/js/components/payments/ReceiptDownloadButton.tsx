@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import axios from 'axios';
 
 interface ReceiptDownloadButtonProps {
   paymentId: number;
@@ -38,51 +39,30 @@ export function ReceiptDownloadButton({
         ? `/api/v1/tenant/payments/${paymentId}/receipt`
         : `/api/v1/landlord/payments/${paymentId}/receipt`;
 
-      // Fetch PDF as blob
-      const response = await fetch(endpoint, {
-        credentials: 'include',
+      // Fetch PDF as blob using axios to ensure proper session/CSRF handling
+      const response = await axios.get(endpoint, {
+        responseType: 'blob',
+        withCredentials: true,
         headers: {
           'Accept': 'application/pdf, application/json',
           'X-Requested-With': 'XMLHttpRequest',
         },
       });
 
-      // Check if response is actually a PDF or an error page
-      const contentType = response.headers.get('Content-Type');
-      
-      if (!response.ok) {
-        // Try to parse error as JSON, fallback to text
-        let errorMessage = 'Failed to download receipt';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || `Error ${response.status}: Failed to download receipt`;
-        } catch {
-          // Not JSON, try text
-          try {
-            const errorText = await response.text();
-            errorMessage = errorText.substring(0, 200) || `Error ${response.status}: Failed to download receipt`;
-          } catch {
-            errorMessage = `Error ${response.status}: Failed to download receipt`;
-          }
-        }
-        throw new Error(errorMessage);
-      }
-
       // Verify we got a PDF, not HTML error page
+      const contentType = response.headers['content-type'] || response.headers['Content-Type'];
       if (contentType && !contentType.includes('application/pdf')) {
-        // Likely got an error page instead of PDF
-        const text = await response.text();
+        const text = await response.data.text();
         console.error('Unexpected content type:', contentType, 'Response:', text.substring(0, 500));
         throw new Error('Server returned an error page instead of PDF. Please check authentication.');
       }
 
       // Get filename from Content-Disposition header
-      const contentDisposition = response.headers.get('Content-Disposition');
+      const contentDisposition = response.headers['content-disposition'] || response.headers['Content-Disposition'];
       const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
       const filename = filenameMatch?.[1] || `receipt-${paymentId}.pdf`;
 
-      // Convert response to blob
-      const blob = await response.blob();
+      const blob = response.data;
       
       // Verify blob is actually a PDF (check magic bytes)
       const arrayBuffer = await blob.slice(0, 5).arrayBuffer();
@@ -91,7 +71,7 @@ export function ReceiptDownloadButton({
       
       if (!isPdf) {
         // Try to read as text for debugging
-        const textBlob = await response.text();
+        const textBlob = await blob.text();
         console.error('Response is not a valid PDF. First 500 chars:', textBlob.substring(0, 500));
         throw new Error('Downloaded file is not a valid PDF. The server may have returned an error page.');
       }
@@ -107,9 +87,26 @@ export function ReceiptDownloadButton({
       window.URL.revokeObjectURL(url);
 
       toast.success('Receipt downloaded successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Receipt download failed:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to download receipt');
+      
+      let errorMessage = 'Failed to download receipt';
+      if (error.response?.data instanceof Blob) {
+        // Try to read the blob as text for error message
+        try {
+          const text = await error.response.data.text();
+          const json = JSON.parse(text);
+          errorMessage = json.message || json.error || errorMessage;
+        } catch (e) {
+          errorMessage = error.message;
+        }
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
