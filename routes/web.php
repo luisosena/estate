@@ -4,6 +4,7 @@ use App\Enums\Role;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Admin\AdminLandlordController;
 use App\Http\Controllers\Web\Admin\AdminPropertyController;
+use App\Http\Controllers\Web\Landlord\DocumentController as LandlordDocumentController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
 use App\Http\Controllers\Web\Landlord\LandlordPaymentController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Web\Landlord\LandlordTenantController;
 use App\Http\Controllers\Web\Landlord\LandlordUnitController;
 use App\Http\Controllers\Web\Landlord\LandlordUtilityBillController;
 use App\Http\Controllers\Web\Landlord\LandlordUtilityController;
+use App\Http\Controllers\Web\Tenant\DocumentController as TenantDocumentController;
 use App\Http\Controllers\Web\Tenant\TenantDashboardController;
 use App\Http\Controllers\Web\Tenant\TenantNotificationController;
 use App\Http\Controllers\Web\Tenant\TenantPaymentsController;
@@ -128,6 +130,14 @@ Route::middleware(['auth'])->group(function () {
 
     Route::put('/landlord/tenancies/{tenancy}/end', [LandlordTenantController::class, 'endTenancy'])
         ->name('landlord.tenancies.end');
+
+    // Landlord Document Management Routes
+    Route::post('/landlord/tenancies/{tenancy}/documents', [LandlordDocumentController::class, 'store'])
+        ->name('landlord.tenancies.documents.store');
+    Route::get('/landlord/documents/{document}/download', [LandlordDocumentController::class, 'download'])
+        ->name('landlord.documents.download');
+    Route::delete('/landlord/documents/{document}', [LandlordDocumentController::class, 'destroy'])
+        ->name('landlord.documents.destroy');
 
     // Payment Management Routes
     Route::get('/landlord/payments', [LandlordPaymentController::class, 'index'])
@@ -264,6 +274,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/tenant/rent-bills/{rentBill}', [TenantRentBillController::class, 'show'])
         ->name('tenant.rent-bills.show');
+
+    // Tenant Document Routes
+    Route::get('/tenant/tenancies/{tenancy}/documents', [TenantDocumentController::class, 'index'])
+        ->name('tenant.tenancies.documents.index');
+    Route::get('/tenant/documents/{document}/download', [TenantDocumentController::class, 'download'])
+        ->name('tenant.documents.download');
 
     // Tenant Notification Management Routes
     Route::get('/tenant/notifications', [TenantNotificationController::class, 'index'])

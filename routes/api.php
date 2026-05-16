@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Landlord\DashboardController as LandlordDashboardController;
+use App\Http\Controllers\Api\Landlord\DocumentController as LandlordDocumentController;
 use App\Http\Controllers\Api\Landlord\NotificationController;
 use App\Http\Controllers\Api\Landlord\PaymentController;
 use App\Http\Controllers\Api\Landlord\ProfileController as LandlordProfileController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Api\Landlord\UtilityBillController;
 use App\Http\Controllers\Api\Landlord\UtilityTypeController;
 use App\Http\Controllers\Api\PasswordController;
 use App\Http\Controllers\Api\Tenant\DashboardController;
+use App\Http\Controllers\Api\Tenant\DocumentController as TenantDocumentController;
 use App\Http\Controllers\Api\Tenant\PaymentsController;
 use App\Http\Controllers\Api\Tenant\ProfileController as TenantProfileController;
 use App\Http\Controllers\Api\Tenant\RentBillController as TenantRentBillController;
@@ -69,6 +71,10 @@ $defineApiRoutes = function (): void {
             // Tenant Profile Management
             Route::get('profile', [TenantProfileController::class, 'show']);
             Route::put('profile', [TenantProfileController::class, 'update']);
+
+            // Tenant Document Management
+            Route::get('tenancies/{tenancy}/documents', [TenantDocumentController::class, 'index']);
+            Route::get('documents/{document}/download', [TenantDocumentController::class, 'download']);
 
             // Password Update (with rate limiting: 5 attempts per minute)
             Route::put('password', [PasswordController::class, 'update'])->middleware('throttle:5,1');
@@ -135,6 +141,11 @@ $defineApiRoutes = function (): void {
             // Landlord Profile Management
             Route::get('profile', [LandlordProfileController::class, 'show']);
             Route::put('profile', [LandlordProfileController::class, 'update']);
+
+            // Landlord Document Management
+            Route::post('tenancies/{tenancy}/documents', [LandlordDocumentController::class, 'store']);
+            Route::get('documents/{document}/download', [LandlordDocumentController::class, 'download']);
+            Route::delete('documents/{document}', [LandlordDocumentController::class, 'destroy']);
 
             // Password Update (with rate limiting: 5 attempts per minute)
             Route::put('password', [PasswordController::class, 'update'])->middleware('throttle:5,1');
