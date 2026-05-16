@@ -76,7 +76,6 @@ class Payment extends Model
         'payment_method',
         'status',
         'paid_at',
-        'receipt_path',
         'due_date',
         'reference_number',
         'notes',

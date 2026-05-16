@@ -54,11 +54,23 @@ class PaymentController extends Controller
                     'paid_at' => $payment->paid_at,
                     'due_date' => $payment->due_date,
                     'created_at' => $payment->created_at,
-                    'tenant_name' => $payment->tenant?->full_name,
-                    'tenant_code' => $payment->tenant?->tenant_code,
-                    'unit_number' => $payment->tenancy?->unit?->unit_code,
-                    'property_name' => $payment->tenancy?->unit?->property?->name,
                     'rent_bill_id' => $payment->rent_bill_id,
+                    'tenant' => $payment->tenant ? [
+                        'id' => $payment->tenant->id,
+                        'full_name' => $payment->tenant->full_name,
+                        'tenant_code' => $payment->tenant->tenant_code,
+                    ] : null,
+                    'tenancy' => $payment->tenancy ? [
+                        'id' => $payment->tenancy->id,
+                        'unit' => $payment->tenancy->unit ? [
+                            'id' => $payment->tenancy->unit->id,
+                            'unit_code' => $payment->tenancy->unit->unit_code,
+                            'property' => $payment->tenancy->unit->property ? [
+                                'id' => $payment->tenancy->unit->property->id,
+                                'name' => $payment->tenancy->unit->property->name,
+                            ] : null,
+                        ] : null,
+                    ] : null,
                     'rent_bill' => $payment->rentBill ? [
                         'id' => $payment->rentBill->id,
                         'billing_month' => $payment->rentBill->billing_month->format('Y-m'),
