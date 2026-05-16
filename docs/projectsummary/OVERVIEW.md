@@ -1,4 +1,6 @@
-## Estate Practice – Project Overview
+## Estate Practice – Technical Overview
+
+> **What exists now.** For product vision, goals, and roadmap, see [`docs/vision/`](../vision/vision.md).
 
 ### 1. Summary
 
