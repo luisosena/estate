@@ -7,11 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TenancyResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
@@ -33,6 +28,18 @@ class TenancyResource extends JsonResource
             'tenant' => TenantResource::make($this->whenLoaded('tenant')),
             'rent_bills' => RentBillResource::collection($this->whenLoaded('rent_bills')),
             'tenancy_utilities' => TenancyUtilityResource::collection($this->whenLoaded('tenancyUtilities')),
+            'documents' => DocumentResource::collection($this->whenLoaded('documents')),
+            'tenancy_agreement' => $this->when(
+                $this->relationLoaded('documents'),
+                function () {
+                    $agreement = $this->documents
+                        ->where('category', 'tenancy_agreement')
+                        ->sortByDesc('uploaded_at')
+                        ->first();
+
+                    return $agreement ? new DocumentResource($agreement) : null;
+                }
+            ),
         ];
     }
 }
