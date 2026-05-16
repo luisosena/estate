@@ -276,8 +276,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('tenant.rent-bills.show');
 
     // Tenant Document Routes
-    Route::get('/tenant/tenancies/{tenancy}/documents', [TenantDocumentController::class, 'index'])
-        ->name('tenant.tenancies.documents.index');
+    Route::get('/tenant/documents', [TenantDocumentController::class, 'index'])
+        ->name('tenant.documents.index');
     Route::get('/tenant/documents/{document}/download', [TenantDocumentController::class, 'download'])
         ->name('tenant.documents.download');
 
