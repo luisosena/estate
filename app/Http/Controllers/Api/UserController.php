@@ -142,6 +142,44 @@ class UserController extends Controller
     }
 
     /**
+     * POST /api/v1/users/push-token - Register device push token
+     */
+    public function registerPushToken(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'token' => ['required', 'string'],
+            'platform' => ['sometimes', 'string', 'in:ios,android'],
+        ]);
+
+        $user = $request->user();
+        $updateData = [
+            'expo_push_token' => $validated['token'],
+            'expo_push_token_updated_at' => now(),
+        ];
+
+        if (! empty($validated['platform'])) {
+            $updateData['push_platform'] = $validated['platform'];
+        }
+
+        $user->update($updateData);
+
+        return response()->json(['message' => 'Push token registered']);
+    }
+
+    /**
+     * DELETE /api/v1/users/push-token - Remove device push token
+     */
+    public function removePushToken(Request $request): JsonResponse
+    {
+        $request->user()->update([
+            'expo_push_token' => null,
+            'expo_push_token_updated_at' => null,
+        ]);
+
+        return response()->json(['message' => 'Push token removed']);
+    }
+
+    /**
      * DELETE /api/users/{id} - Delete user
      * Role required: admin only
      */
