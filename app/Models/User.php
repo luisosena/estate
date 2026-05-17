@@ -31,6 +31,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'must_change_password',
         'role',
         'tenant_id',
+        'phone',
+        'expo_push_token',
+        'expo_push_token_updated_at',
+        'push_platform',
     ];
 
     protected $hidden = [
