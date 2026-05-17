@@ -941,6 +941,82 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 
 ---
 
+#### Documents
+
+##### GET /api/v1/landlord/tenancies/{tenancy}/documents
+**Description**: List all documents for a tenancy
+**Auth Required**: Yes (landlord who owns the property or admin)
+
+**Response** (200):
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "file_name": "lease_agreement.pdf",
+      "file_type": "application/pdf",
+      "file_size": 245760,
+      "category": "tenancy_agreement",
+      "download_url": "/api/v1/landlord/documents/1/download",
+      "uploaded_at": "2026-05-16T10:30:00Z",
+      "uploaded_by": {
+        "id": 1,
+        "name": "John Landlord"
+      }
+    }
+  ]
+}
+```
+
+##### POST /api/v1/landlord/tenancies/{tenancy}/documents
+**Description**: Upload a document to a tenancy
+**Auth Required**: Yes (landlord who owns the property or admin)
+
+**Request** (multipart/form-data):
+```
+document: <file>
+category: tenancy_agreement
+```
+
+**Validation**:
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| document | file | Yes | PDF, DOC, or DOCX (max 10MB) |
+| category | string | Yes | tenancy_agreement, receipt, inspection_photo, id_document, other |
+
+**Response** (201):
+```json
+{
+  "data": {
+    "id": 2,
+    "file_name": "inspection_photo.jpg",
+    "file_type": "image/jpeg",
+    "file_size": 1048576,
+    "category": "inspection_photo",
+    "uploaded_at": "2026-05-17T14:00:00Z"
+  }
+}
+```
+
+##### GET /api/v1/landlord/documents/{document}/download
+**Description**: Download a document (streamed binary)
+**Auth Required**: Yes (landlord who owns the property or admin)
+
+> ⚠️ **Binary endpoint** — does not return JSON. Use `{ responseType: 'blob' }` in Axios.
+
+##### DELETE /api/v1/landlord/documents/{document}
+**Description**: Soft-delete a document
+**Auth Required**: Yes (landlord who owns the property or admin)
+
+**Response** (200):
+```json
+{
+  "message": "Document deleted successfully"
+}
+```
+
+---
+
 #### Profile & Settings
 
 ##### GET /api/landlord/profile
@@ -1309,6 +1385,53 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
 
 ---
 
+#### Documents
+
+##### GET /api/v1/tenant/documents
+**Description**: List documents for tenant's active tenancy
+**Auth Required**: Yes (tenant role)
+
+**Response** (200):
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "file_name": "lease_agreement.pdf",
+      "file_type": "application/pdf",
+      "file_size": 245760,
+      "category": "tenancy_agreement",
+      "download_url": "/api/v1/tenant/documents/1/download",
+      "uploaded_at": "2026-05-16T10:30:00Z",
+      "uploaded_by": {
+        "id": 1,
+        "name": "John Landlord"
+      }
+    }
+  ]
+}
+```
+
+**Response Fields**:
+| Field | Type | Description |
+|-------|------|-------------|
+| id | int | Document ID |
+| file_name | string | Original filename |
+| file_type | string | MIME type |
+| file_size | int | Size in bytes |
+| category | string | Document category |
+| download_url | string | Conditional download URL |
+| uploaded_at | string | ISO 8601 timestamp |
+| uploaded_by | object | User who uploaded (when loaded) |
+
+##### GET /api/v1/tenant/documents/{document}/download
+**Description**: Download a document (streamed binary)
+**Auth Required**: Yes (tenant role, must be on the tenancy)
+
+> ⚠️ **Binary endpoint** — does not return JSON. Use `{ responseType: 'blob' }` in Axios.
+
+---
+
 ## Web Routes (Inertia/Session-Based)
 
 The web application uses Inertia.js for server-side rendering. Routes return full HTML pages.
@@ -1377,6 +1500,9 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
 | GET | /landlord/rent-bills/{id} | LandlordRentBillController | View rent bill |
 | POST | /landlord/rent-bills/{id}/waive | LandlordRentBillController | Waive rent bill |
 | GET | /landlord/notifications | LandlordNotificationController | Notifications |
+| POST | /landlord/tenancies/{tenancy}/documents | LandlordDocumentController | Upload document |
+| GET | /landlord/documents/{document}/download | LandlordDocumentController | Download document |
+| DELETE | /landlord/documents/{document} | LandlordDocumentController | Delete document |
 
 ### Tenant Routes
 | Method | Path | Controller | Description |
@@ -1388,6 +1514,8 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
 | GET | /tenant/utilities | TenantUtilitiesController | Utility list |
 | GET | /tenant/utilities/bills | TenantUtilitiesController | Utility bills |
 | GET | /tenant/notifications | TenantNotificationController | Notifications |
+| GET | /tenant/documents | TenantDocumentController | List documents |
+| GET | /tenant/documents/{document}/download | TenantDocumentController | Download document |
 
 ### Settings Routes
 | Method | Path | Controller | Description |
@@ -1494,6 +1622,23 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
   "due_date": "2024-01-01",
   "reference_number": "TXN123456",
   "notes": "January rent"
+}
+```
+
+### Document Object
+```json
+{
+  "id": 1,
+  "file_name": "lease_agreement.pdf",
+  "file_type": "application/pdf",
+  "file_size": 245760,
+  "category": "tenancy_agreement",
+  "download_url": "/api/v1/tenant/documents/1/download",
+  "uploaded_at": "2026-05-16T10:30:00Z",
+  "uploaded_by": {
+    "id": 1,
+    "name": "John Landlord"
+  }
 }
 ```
 

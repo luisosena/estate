@@ -26,6 +26,9 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
     - `ExpoPushChannel` for Expo mobile push notifications
   - **PDF Generation** *(Phase 4 — ported)*:
     - `barryvdh/laravel-dompdf` for receipt generation
+  - **Document Storage** *(Phase 6 — complete)*:
+    - Polymorphic document attachment system (tenancies, payments, properties)
+    - UUID-based file paths, MIME validation, role-based access control, soft deletes
   - **Routing & URLs**:
     - `laravel/wayfinder` ^0.1.15
     - `tightenco/ziggy` ^2.6 (mirrored on the frontend with `ziggy-js`)
@@ -34,7 +37,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
     - `laravel/pail` (log viewer)
     - `laravel/sail` (optional Docker dev env)
     - `laravel/pint` (PHP linter/formatter)
-    - `pestphp/pest` ^4.4 + `pestphp/pest-plugin-laravel` (testing — 348 tests passing)
+    - `pestphp/pest` ^4.4 + `pestphp/pest-plugin-laravel` (testing — 457 tests passing)
 
 - **Frontend**
   - **Language & runtime**:
@@ -140,9 +143,11 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - `TenancyUtility.php`: links tenancies to utility types with billing amounts.
   - `UtilityBill.php`: monthly charge records for utilities.
   - `Payment.php`: tracks all payments including utility payments.
+  - `Document.php`: polymorphic document attachment model with soft deletes.
 
 - **`Services`**
   - `UtilityService.php`: service for managing utility connections (legacy system).
+  - `DocumentService.php`: service for document upload, download, listing, and deletion with validation and authorization.
 
 - **`Rules`**
   - `UtilityBillBelongsToTenancy.php`: validation rule ensuring utility bills belong to the correct tenancy.
@@ -174,6 +179,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - `2026_03_20_000002_create_tenancy_utilities_table.php`: tenancy utility assignments.
   - `2026_03_20_000003_create_utility_bills_table.php`: monthly utility bills.
   - `2026_03_20_000004_add_utility_bill_id_to_payments_table.php`: links payments to utility bills.
+  - `2026_05_16_000001_create_documents_table.php`: polymorphic document storage with soft deletes.
 - **`factories/UserFactory.php`**: user factory.
 - **`seeders/DatabaseSeeder.php`**: database seeding entrypoint.
 - **`seeders/UtilityTypeSeeder.php`**: seeds default utility types (Water, Electricity, Gas, Internet, Security, Janitor, Garbage, Parking).
@@ -268,7 +274,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 - **`Feature/Tenant`**: Web Application controllers for Tenants
 - **`ArchTest.php`**: Architecture rules mapping rigid structures
 - **`Pest.php`, `TestCase.php`**: Pest bootstrap and base test case
-- **336 tests, 1133 assertions — 100% passing**
+- **457 tests, 1354 assertions — 100% passing**
 
 ---
 
@@ -295,6 +301,14 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 - **PDF Receipt Generation (Phase 4 — ported)**
   - PDF receipt generation for all confirmed payments via `ReceiptService` and DomPDF.
   - Endpoints: `GET /api/v1/landlord/payments/{id}/receipt` and `GET /api/v1/tenant/payments/{id}/receipt`.
+
+- **Document Storage System (Phase 6 — complete)**
+  - Polymorphic document attachment to tenancies, payments, and properties via `documentable` morph relationship.
+  - `DocumentService` handles upload (with MIME + size validation), download (streamed), listing, and soft-delete.
+  - `DocumentPolicy` enforces role-based access: landlords own property documents, tenants view their tenancy documents, admins bypass all.
+  - Web UI: landlord tenant show page has upload/list/delete; tenant has dedicated `/tenant/documents` page and dashboard section.
+  - Mobile: dedicated Documents screens for both tenant (read-only + download) and landlord (full CRUD with `expo-document-picker`).
+  - Artisan command `php artisan documents:backfill` migrates legacy `tenancy_agreement_path` records.
 - **Property, Unit, Tenant & Tenancy Management**
   - Full CRUD for properties and units (admin/landlord, policy-enforced).
   - Tenant creation with auto-generated credentials; self-registration on mobile.
@@ -308,7 +322,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - Bills auto-marked overdue daily.
 
 - **API**
-  - All mobile API endpoints exclusively at `/api/v1/` — **65 active routes**.
+  - All mobile API endpoints exclusively at `/api/v1/` — **77 active routes**.
   - All responses use `{ data: ..., meta: ... }` wrapping via Eloquent Resources.
   - Mobile `EXPO_PUBLIC_API_URL` configured to `http://{wifi-ip}:8000/api/v1`.
 
@@ -326,12 +340,12 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - Sanctum authentication with permanent tokens.
 
 - **Quality & tooling**
-  - Pest 4: **348 tests, 1133 assertions — 100% passing**.
+  - Pest 4: **457 tests, 1354 assertions — 100% passing**.
   - All API tests target `/api/v1/` prefix.
   - `npm run build` verified clean.
 
 - **Service Pattern**
-  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`, `ReceiptService`.
+  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`, `ReceiptService`, `DocumentService`.
 
 ---
 
@@ -347,3 +361,4 @@ All active development on branch `port/payment-architecture`.
 | Phase 3 | Payment Gateway, M-Pesa Webhook, Events, DB Migration | ✅ Complete | — |
 | Phase 4 | ReceiptService, DomPDF, Receipt Endpoints | ✅ Complete | — |
 | Phase 5 | Event Wiring, Status Derivation, Mobile Type Updates | ✅ Complete | — |
+| Phase 6 | Document Storage System (DB, Models, Services, Controllers, Policies, Web UI, Mobile, Tests) | ✅ Complete | `c76b70e` |

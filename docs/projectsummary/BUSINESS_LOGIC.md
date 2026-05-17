@@ -90,6 +90,11 @@ protected function casts(): array
 | **Notification Management** |
 | Send notifications | ✅ | ✅ | ❌ |
 | View notifications | All | Own | Own |
+| **Document Management** |
+| Upload documents | ✅ | Own properties | ❌ |
+| View documents | ✅ | Own properties | Own tenancy |
+| Download documents | ✅ | Own properties | Own tenancy |
+| Delete documents | ✅ | Own properties | ❌ |
 | **Settings** |
 | Profile settings | Own | Own | Own |
 | Password change | Own | Own | Own |
@@ -798,6 +803,94 @@ Triggered by two paths:
 
 ---
 
+### Document Management
+
+The document storage system provides polymorphic file attachment to tenancies, payments, and properties.
+
+#### Document Categories
+
+| Category | Description | Typical Use |
+|----------|-------------|-------------|
+| `tenancy_agreement` | Signed lease agreement | Uploaded during onboarding |
+| `receipt` | Payment receipt | Auto-generated or manually uploaded |
+| `inspection_photo` | Property/unit inspection photos | Move-in/move-out inspections |
+| `id_document` | Tenant identification | KYC compliance |
+| `other` | Miscellaneous documents | Any other file |
+
+#### Upload Document
+**Who**: Admin, Landlord (owns property containing the tenancy)
+
+**Validation** (`StoreDocumentRequest`):
+```php
+'document' => 'required|file|mimes:pdf,doc,docx|max:10240',  // 10MB max
+'category' => 'required|in:tenancy_agreement,receipt,inspection_photo,id_document,other',
+```
+
+**Flow**:
+```mermaid
+sequenceDiagram
+    participant Landlord
+    participant Controller
+    participant Request as StoreDocumentRequest
+    participant DocumentService
+    participant Storage
+    participant DB as Database
+    
+    Landlord->>Controller: POST /landlord/tenancies/{id}/documents
+    Controller->>Request: Validate file + category
+    Request->>Controller: Valid
+    Controller->>DocumentService: upload(file, tenancy, category, user)
+    DocumentService->>DocumentService: Check MIME + size against config
+    DocumentService->>Storage: Store file at UUID path
+    DocumentService->>DB: Create Document record
+    DB->>DocumentService: Document created
+    Controller->>Landlord: Redirect with success
+```
+
+**File Path Structure**: `storage/app/documents/{category}/{ModelType}/{model_id}/{uuid}.{ext}`
+
+#### Download Document
+**Who**: Admin, Landlord (owns property), Tenant (on the tenancy)
+
+**Flow**:
+1. Authorization check via `DocumentPolicy`
+2. File existence check on storage disk
+3. Streamed response with proper `Content-Type` and `Content-Disposition` headers
+
+#### Delete Document
+**Who**: Admin, Landlord (owns property)
+
+**Flow**:
+1. Authorization check via `DocumentPolicy`
+2. File deleted from storage disk
+3. Document record soft-deleted (recoverable)
+
+#### Document Authorization (DocumentPolicy)
+
+| Ability | Admin | Landlord | Tenant |
+|---------|-------|----------|--------|
+| `upload` | ✅ (via `before()`) | Owns property containing tenancy | ❌ |
+| `viewAny` | ✅ (via `before()`) | Owns property | ❌ |
+| `view` | ✅ (via `before()`) | Owns property | Is tenant on tenancy |
+| `download` | ✅ (via `before()`) | Owns property | Is tenant on tenancy |
+| `delete` | ✅ (via `before()`) | Owns property | ❌ |
+
+**N+1 Prevention**: Policy uses a single `DB::table()` join query (`tenancies → units → properties`) instead of lazy-loading relationships for ownership checks.
+
+#### Integration with Onboarding
+
+- `OnboardingService` injects `DocumentService` — after tenancy creation, checks for `tenancy_agreement` file in request and uploads within the database transaction.
+- `TenantService.createTenantWithTenancy()` similarly handles optional `tenancy_agreement` file upload within the transaction.
+
+#### Data Migration
+
+```bash
+php artisan documents:backfill          # Migrates existing tenancy_agreement_path records
+php artisan documents:backfill --dry-run # Preview without migrating
+```
+
+---
+
 ### Security Event Logging
 
 `SecurityEvent` is a write-only audit log model. It records sensitive operations:
@@ -1064,6 +1157,39 @@ flowchart TD
 
 ---
 
+### 4. Document Management Workflow
+
+```mermaid
+flowchart TD
+    A[Landlord opens tenant page] --> B[View existing documents]
+    B --> C{Action?}
+    C -->|Upload| D[Select file + category]
+    C -->|Download| E[Stream file to browser]
+    C -->|Delete| F[Confirm deletion]
+    D --> G[Validate MIME + size]
+    G --> H{Valid?}
+    H -->|No| I[Show validation error]
+    I --> D
+    H -->|Yes| J[Generate UUID path]
+    J --> K[Store file on disk]
+    K --> L[Create Document record]
+    L --> M[Refresh page with new document]
+    F --> N[Soft-delete record + remove file]
+    N --> O[Refresh page]
+    E --> B
+```
+
+**Steps**:
+1. Landlord navigates to tenant show page
+2. Documents card shows existing files with category badges, sizes, and dates
+3. Upload form accepts file + category selection
+4. Server validates file type against `config('documents.allowed_mimes')` and size against `config('documents.max_size')`
+5. File stored at `storage/app/documents/{category}/{ModelType}/{model_id}/{uuid}.{ext}`
+6. Document record created with polymorphic relationship to tenancy
+7. Tenants can view and download their own tenancy documents via `/tenant/documents`
+
+---
+
 ## Role Interaction Examples
 
 ### Example 1: Landlord Creating a Tenant
@@ -1258,6 +1384,22 @@ php artisan utility-bills:generate-monthly
 - Sets billing_month to current month, due_date to end of month
 - Status defaults to 'pending'
 
+### 5. BackfillDocuments
+```bash
+# Migrate legacy tenancy_agreement_path records to new document system
+php artisan documents:backfill
+# Preview without making changes
+php artisan documents:backfill --dry-run
+```
+
+**Functionality**:
+- Finds all tenancies with non-null `tenancy_agreement_path`
+- Creates Document records with category `tenancy_agreement`
+- Copies files from old locations to new storage structure
+- Skips tenancies that already have document records
+- Progress bar with error tracking
+- Eager loads `tenant` relationship to prevent N+1 queries
+
 ---
 
 ## Summary
@@ -1270,7 +1412,8 @@ This business logic documentation covers:
 4. **CRUD operations**: With validation, ownership checks, and examples
 5. **State machines**: For tenancies and units
 6. **Business validation rules**: Domain-specific validation beyond simple field validation
-7. **Workflows**: Onboarding tenants, processing payments, ending tenancies
-8. **Security events**: Audit logging for security-sensitive actions
-9. **Notifications**: Automated notifications for tenancy lifecycle
-10. **Scheduled commands**: Automated background tasks
+7. **Workflows**: Onboarding tenants, processing payments, ending tenancies, document management
+8. **Document management**: Polymorphic file attachment, categories, authorization, onboarding integration
+9. **Security events**: Audit logging for security-sensitive actions
+10. **Notifications**: Automated notifications for tenancy lifecycle
+11. **Scheduled commands**: Automated background tasks

@@ -182,6 +182,7 @@ This document provides a complete inventory of all dependencies, their exact ver
 | react-native-safe-area-context | ^4.14.0 | Safe area |
 | axios | ^1.7.9 | HTTP client |
 | expo-secure-store | ~14.0.0 | Secure storage |
+| expo-document-picker | ~13.0.0 | File picker for document uploads |
 | @react-native-async-storage/async-storage | ^2.1.0 | Async storage |
 
 #### Mobile Testing (Development)

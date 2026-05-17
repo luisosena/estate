@@ -22,8 +22,10 @@ erDiagram
     USER ||--o{ NOTIFICATION : "receives"
     USER ||--o{ PERSONAL_ACCESS_TOKEN : "has"
     USER ||--o{ SECURITY_EVENT : "generates"
+    USER ||--o{ DOCUMENT : "uploads"
     TENANT ||--o{ TENANT_IDENTIFICATION : "has"
     TENANT ||--o{ MESSAGE : "sends/receives"
+    TENANCY ||--o{ DOCUMENT : "has documents"
     
     RENT_BILL {
         bigint id PK
@@ -486,7 +488,45 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 
 ---
 
-### 11. tenant_identifications
+### 11. documents
+
+**Purpose**: Polymorphic document storage for tenancy agreements, receipts, inspection photos, ID documents, and other file attachments.
+
+**Migration**: `database/migrations/2026_05_16_000001_create_documents_table.php`
+
+**Attributes**:
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
+| user_id | BIGINT | FOREIGN KEY (nullable, users.id) | User who uploaded the document |
+| documentable_type | VARCHAR(255) | NOT NULL | Polymorphic model type (Tenancy, Payment, Property) |
+| documentable_id | BIGINT | NOT NULL | Polymorphic model ID |
+| file_path | VARCHAR(500) | NOT NULL | Storage path within documents disk |
+| file_name | VARCHAR(255) | NOT NULL | Original filename |
+| file_type | VARCHAR(50) | NOT NULL | MIME type of the file |
+| file_size | BIGINT | NOT NULL | File size in bytes |
+| category | ENUM | NOT NULL | tenancy_agreement, receipt, inspection_photo, id_document, other |
+| uploaded_at | TIMESTAMP | NOT NULL | Upload timestamp |
+| deleted_at | TIMESTAMP | NULLABLE | Soft delete timestamp |
+| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
+| updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
+
+**Indexes**:
+- PRIMARY KEY (id)
+- INDEX on user_id
+- COMPOSITE INDEX on (documentable_type, documentable_id, category)
+- COMPOSITE INDEX on (documentable_type, documentable_id, uploaded_at)
+- INDEX on deleted_at
+
+**Relationships**:
+- BelongsTo User (uploader)
+- MorphTo documentable (Tenancy, Payment, Property)
+
+**File Structure**: `storage/app/documents/{category}/{ModelType}/{model_id}/{uuid}.{ext}`
+
+---
+
+### 12. tenant_identifications
 
 **Purpose**: Stores tenant identification documents.
 
@@ -515,7 +555,7 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 
 ---
 
-### 12. notifications
+### 13. notifications
 
 **Purpose**: In-app notifications for users.
 
@@ -543,7 +583,7 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 
 ---
 
-### 13. messages
+### 14. messages
 
 **Purpose**: Internal messaging between users.
 
@@ -572,7 +612,7 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 
 ---
 
-### 14. personal_access_tokens (Sanctum)
+### 15. personal_access_tokens (Sanctum)
 
 **Purpose**: API authentication tokens for mobile/web API access using Laravel Sanctum.
 
@@ -601,7 +641,7 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 - MorphTo User (tokenable)
 ---
 
-### 15. security_events
+### 16. security_events
 
 **Purpose**: Audit log for security-related events.
 
@@ -644,7 +684,7 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 
 ---
 
-### 16. Laravel System Tables
+### 17. Laravel System Tables
 
 The following tables are created by Laravel framework:
 
@@ -810,12 +850,27 @@ erDiagram
         enum severity
     }
     
+    DOCUMENT {
+        bigint id PK
+        bigint user_id FK
+        string documentable_type
+        bigint documentable_id
+        string file_path
+        string file_name
+        string file_type
+        bigint file_size
+        enum category
+        timestamp uploaded_at
+    }
+    
     USER ||--o| TENANT : "tenant role"
     USER ||--o{ PROPERTY : "landlord role"
     USER ||--o{ PERSONAL_ACCESS_TOKEN : "has"
     USER ||--o{ SECURITY_EVENT : "generates"
+    USER ||--o{ DOCUMENT : "uploads"
     TENANT ||--o{ TENANCY : "has"
     TENANT ||--o{ TENANT_IDENTIFICATION : "has"
+    TENANCY ||--o{ DOCUMENT : "has documents"
     PROPERTY ||--o{ UNIT : "contains"
     UNIT ||--o{ TENANCY : "has"
     TENANCY ||--o{ PAYMENT : "tracks"

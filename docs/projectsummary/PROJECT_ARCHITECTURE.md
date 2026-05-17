@@ -41,6 +41,7 @@ mobile/src/screens/tenant/
 ├── RentBillDetailsScreen.tsx   # View rent bill details with payment history (NEW)
 ├── ProfileScreen.tsx          # Tenant profile management
 ├── EditProfileScreen.tsx      # Tenant profile and password update (NEW)
+├── DocumentsScreen.tsx        # Tenant documents (read-only, download) (NEW)
 └── LoginScreen.tsx            # Authentication
 ```
 
@@ -61,6 +62,7 @@ mobile/src/screens/landlord/
 ├── AddTenantScreen.tsx        # Handle complex tenant creation
 ├── ProfileScreen.tsx         # Landlord profile management
 ├── EditProfileScreen.tsx     # Landlord profile and password update (NEW)
+├── DocumentsScreen.tsx       # Landlord documents (upload, list, download, delete) (NEW)
 └── LoginScreen.tsx           # Authentication
 ```
 
@@ -111,6 +113,8 @@ mobile/src/
 - `GET /tenant/profile` - Get authenticated tenant profile
 - `PUT /tenant/profile` - Update profile particulars
 - `PUT /password` - Update password (Shared Universal Controller)
+- `GET /tenant/documents` - List documents for tenant's active tenancy (NEW)
+- `GET /tenant/documents/{id}/download` - Download a document (NEW)
 
 **Landlord API** (`/api/landlord/*`):
 - `GET /landlord/dashboard` - Dashboard metrics with rent bill stats
@@ -130,6 +134,10 @@ mobile/src/
 - `GET /landlord/profile` - Get authenticated landlord profile
 - `PUT /landlord/profile` - Update landlord details
 - `PUT /password` - Update password (Shared Universal Controller)
+- `GET /landlord/tenancies/{id}/documents` - List documents for a tenancy (NEW)
+- `POST /landlord/tenancies/{id}/documents` - Upload document to a tenancy (NEW)
+- `GET /landlord/documents/{id}/download` - Download a document (NEW)
+- `DELETE /landlord/documents/{id}` - Soft-delete a document (NEW)
 
 ### Mobile TypeScript Types
 
@@ -273,8 +281,8 @@ Located in `app/Http/Controllers/Api/`:
 
 ### 3. Business Logic Layer
 Located in:
-- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`, `RentBillService`, `NotificationService`, `ReceiptService`). **Note**: `ReceiptService` uses storage-based PDF generation—receipts are generated and stored on disk with URL caching.
-- **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, RentBill, etc.)
+- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`, `RentBillService`, `NotificationService`, `ReceiptService`, `DocumentService`). **Note**: `ReceiptService` uses storage-based PDF generation—receipts are generated and stored on disk with URL caching. `DocumentService` handles polymorphic document upload/download/listing/deletion with MIME validation, size limits, and UUID-based file paths.
+- **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, RentBill, Document, etc.)
 - **Actions**: `app/Actions/Fortify/` (User creation, password validation)
 - **Channels**: `app/Channels/` (`WhatsAppChannel` via Twilio, `ExpoPushChannel` via Expo Push)
 - **Notifications**: `app/Notifications/` (`PaymentReceived`, `RentBillGenerated`, `RentBillOverdue` — all implement `ShouldQueue`)
@@ -359,6 +367,30 @@ app/Services/UtilityService.php
 app/Models/SecurityEvent.php
 ```
 - **Features**: Security event logging and auditing.
+
+### Document Storage Module
+```
+app/Models/Document.php
+app/Services/DocumentService.php
+app/Http/Controllers/Web/Landlord/DocumentController.php
+app/Http/Controllers/Web/Tenant/DocumentController.php
+app/Http/Controllers/Api/Landlord/DocumentController.php
+app/Http/Controllers/Api/Tenant/DocumentController.php
+app/Policies/DocumentPolicy.php
+app/Http/Requests/StoreDocumentRequest.php
+app/Http/Resources/DocumentResource.php
+app/Console/Commands/BackfillDocuments.php
+config/documents.php
+database/factories/DocumentFactory.php
+```
+- **Features**: Polymorphic document attachment to tenancies, payments, and properties
+- **Categories**: tenancy_agreement, receipt, inspection_photo, id_document, other
+- **Storage**: `documents` disk (local/S3-ready) with UUID-based file paths
+- **Validation**: MIME type + file size checks via `config/documents.php`
+- **Authorization**: `DocumentPolicy` — landlords own property documents, tenants view their tenancy documents, admins bypass all
+- **Web UI**: landlord tenant show page (upload/list/delete), tenant `/tenant/documents` page (read-only), tenant dashboard document section
+- **Mobile**: tenant DocumentsScreen (read-only + download), landlord DocumentsScreen (full CRUD with `expo-document-picker`)
+- **Migration**: `php artisan documents:backfill` migrates legacy `tenancy_agreement_path` records
 
 ---
 
@@ -463,12 +495,17 @@ sequenceDiagram
 /landlord/utilities      -> LandlordUtilityController
 /landlord/utility-bills  -> LandlordUtilityBillController
 /landlord/notifications  -> LandlordNotificationController
+/landlord/tenancies/{tenancy}/documents -> LandlordDocumentController@store
+/landlord/documents/{document}/download -> LandlordDocumentController@download
+/landlord/documents/{document}          -> LandlordDocumentController@destroy
 
 /tenant/dashboard      -> TenantDashboardController
 /tenant/payments      -> TenantPaymentsController
 /tenant/utilities     -> TenantUtilitiesController
 /tenant/utilities/bills -> TenantUtilitiesController (bills)
 /tenant/notifications  -> TenantNotificationController
+/tenant/documents      -> TenantDocumentController@index
+/tenant/documents/{document}/download -> TenantDocumentController@download
 
 /settings/profile     -> ProfileController
 /settings/password   -> PasswordController
@@ -501,10 +538,16 @@ sequenceDiagram
 /api/v1/landlord/notifications    -> Landlord\NotificationController
 /api/v1/landlord/profile          -> Landlord\ProfileController
 /api/v1/landlord/password         -> PasswordController
+/api/v1/landlord/tenancies/{id}/documents  -> Landlord\DocumentController@index,store
+/api/v1/landlord/documents/{id}/download   -> Landlord\DocumentController@download
+/api/v1/landlord/documents/{id}            -> Landlord\DocumentController@destroy
+
+/api/v1/tenant/documents                   -> Tenant\DocumentController@index
+/api/v1/tenant/documents/{id}/download     -> Tenant\DocumentController@download
 
 /api/v1/users  -> UserController (admin/landlord scoped)
 ```
-**Total: 65 active routes**. Unversioned `/api/*` routes have been removed.
+**Total: 77 active routes**. Unversioned `/api/*` routes have been removed.
 
 ## Middleware Stack
 
@@ -545,7 +588,7 @@ Laravel scheduler handles:
 The project maintains a rigorous, phased testing approach powered by **Pest 4**.
 The test footprints are completely isolated, ensuring reliable test environments, preventing data leaks across partitions, and validating correct API behavior via Sanctum.
 
-**Test count: 336 tests, 1133 assertions — 100% passing.**
+**Test count: 457 tests, 1354 assertions — 100% passing.**
 
 All API tests target the `/api/v1/` prefix exclusively.
 

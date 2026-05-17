@@ -139,14 +139,7 @@ This document comprehensively documents all known issues, deprecated package ver
 
 ### 7. Missing Indexes
 
-**Issue**: Some database queries may be slow due to missing indexes
-
-**Potential Missing Indexes**:
-- `tenancies.status` (if querying by status frequently)
-- `payments.status` (payment filtering)
-- `tenancies.start_date` and `tenancies.end_date` (date range queries)
-
-**Recommendation**: Add indexes for frequently queried columns
+> **RESOLVED (Pre-Phase 3 + Phase 6)**: Performance indexes have been added to core tables including `payments.status`, `payments.paid_at`, `payments.tenant_id`, `payments.tenancy_id`, `payments.rent_bill_id`, `payments.utility_bill_id`, `tenancies.status`, `rent_bills.status`, `rent_bills.due_date`, `rent_bills.billing_month`. Additionally, the `documents` table includes composite indexes on `(documentable_type, documentable_id, category)` and `(documentable_type, documentable_id, uploaded_at)` for efficient polymorphic querying.
 
 ---
 
@@ -395,17 +388,19 @@ without a full re-implementation. Zero runtime impact while unregistered.
 This document covers:
 
 1. **Known Issues**: Migration dates, duplicate docs
-2. **Technical Debt**: Incomplete mobile app, incomplete security event logging, missing DB indexes, API-mobile standardization (Utilities/Properties/Units pending)
+2. **Technical Debt**: Incomplete mobile app, incomplete security event logging, API-mobile standardization (Utilities/Properties/Units pending)
 3. **Non-Obvious Behaviors**: Auto-username, unit status auto-update, session storage, rate limiting, 2FA flow
 4. **Resolved Items**:
    - Role enum implementation — `App\Enums\Role` is the canonical source of truth ✔
    - API Resource classes — all endpoints wrapped in `*Resource.php` layer ✔
-   - Test coverage — 348 tests, 1133 assertions ✔
+   - Test coverage — 457 tests, 1354 assertions ✔
    - API Versioning — exclusively `/api/v1/`, unversioned routes removed ✔
    - String-based role checks — replaced with enum comparisons — no string literals ✔
    - Service layer extraction — controllers delegating to service classes ✔
    - ReceiptService/DomPDF — PDF receipt generation ✔
    - Payment gateway scaffold — contracts, drivers, events, listeners ✔
+   - Document Storage System — polymorphic file attachment, validation, authorization, web + mobile UI ✔
+   - Performance indexes — added to payments, tenancies, rent_bills, documents tables ✔
 5. **Breaking Changes**: API token expiration, session driver
 6. **Package Issues**: TailwindCSS 4, Zod 4, React 19 compatibility
 7. **Deviations**: Mixed controllers, no repository pattern, inconsistent transactions

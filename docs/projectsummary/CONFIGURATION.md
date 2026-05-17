@@ -157,6 +157,29 @@ Controls the active payment gateway driver and M-Pesa credentials.
 
 ---
 
+### Document Storage Configuration (`config/documents.php`)
+
+Controls document upload constraints. Read via `config()` helper (not `env()`) to work correctly with config caching.
+
+| Key | `.env` Variable | Default | Description |
+|---|---|---|---|
+| `documents.max_size` | `DOCUMENT_MAX_SIZE` | `10485760` (10MB) | Maximum file size in bytes |
+| `documents.allowed_mimes` | `DOCUMENT_ALLOWED_TYPES` | `pdf,doc,docx` | Comma-separated list of allowed file extensions |
+| `documents.disk` | `DOCUMENT_DISK` | `local` | Storage disk to use (`local` or `s3`) |
+
+**Environment Variables (`.env.example`)**:
+```
+DOCUMENT_DISK=local
+DOCUMENT_MAX_SIZE=10485760
+DOCUMENT_ALLOWED_TYPES=pdf,doc,docx,jpg,jpeg,png
+```
+
+**File Storage Structure**: `storage/app/documents/{category}/{ModelType}/{model_id}/{uuid}.{ext}`
+
+**S3 Migration**: To switch to cloud storage, set `DOCUMENT_DISK=s3` in `.env`, configure AWS credentials in `config/filesystems.php`, and ensure the `documents` disk driver is set to `s3`.
+
+---
+
 ### Authentication Configuration
 
 | Variable | Required | Default | Description |

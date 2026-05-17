@@ -495,6 +495,7 @@ Add to crontab:
 | `tenancies:test-notifications` | On demand | Test notification system |
 | `utility-bills:mark-overdue` | Daily (see Kernel.php) | Mark pending/partial bills as overdue |
 | `utility-bills:generate-monthly` | 1st of every month at 00:01 | Generate monthly utility bills |
+| `documents:backfill` | On demand | Migrate legacy tenancy_agreement_path records to new document system |
 
 ---
 

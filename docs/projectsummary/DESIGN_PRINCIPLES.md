@@ -327,6 +327,7 @@ Business logic is encapsulated in services:
 - `PaymentService`: Payment processing logic
 - `TenantService`: Tenant management operations
 - `UtilityService`: Utility tracking operations
+- `DocumentService`: Document upload, download, listing, deletion with MIME validation and authorization
 
 ### 5. Form Request Validation
 All form submissions use Laravel Form Requests:
