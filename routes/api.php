@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Landlord\DashboardController as LandlordDashboardController;
 use App\Http\Controllers\Api\Landlord\DocumentController as LandlordDocumentController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Api\Landlord\UtilityTypeController;
 use App\Http\Controllers\Api\PasswordController;
 use App\Http\Controllers\Api\Tenant\DashboardController;
 use App\Http\Controllers\Api\Tenant\DocumentController as TenantDocumentController;
+use App\Http\Controllers\Api\Tenant\NotificationController as TenantNotificationController;
 use App\Http\Controllers\Api\Tenant\PaymentsController;
 use App\Http\Controllers\Api\Tenant\ProfileController as TenantProfileController;
 use App\Http\Controllers\Api\Tenant\RentBillController as TenantRentBillController;
@@ -52,6 +54,10 @@ $defineApiRoutes = function (): void {
             Route::delete('/{id}', [UserController::class, 'destroy']);
         });
 
+        // Push Token Management (authenticated users)
+        Route::post('users/push-token', [UserController::class, 'registerPushToken']);
+        Route::delete('users/push-token', [UserController::class, 'removePushToken']);
+
         // Tenant routes
         Route::prefix('tenant')->group(function () {
             Route::get('dashboard', [DashboardController::class, 'index']);
@@ -75,6 +81,12 @@ $defineApiRoutes = function (): void {
             // Tenant Document Management
             Route::get('documents', [TenantDocumentController::class, 'index']);
             Route::get('documents/{document}/download', [TenantDocumentController::class, 'download']);
+
+            // Tenant Notifications
+            Route::get('notifications', [TenantNotificationController::class, 'index']);
+            Route::put('notifications/{id}/read', [TenantNotificationController::class, 'markAsRead']);
+            Route::put('notifications/read-all', [TenantNotificationController::class, 'markAllAsRead']);
+            Route::delete('notifications/{id}', [TenantNotificationController::class, 'destroy']);
 
             // Password Update (with rate limiting: 5 attempts per minute)
             Route::put('password', [PasswordController::class, 'update'])->middleware('throttle:5,1');
@@ -150,6 +162,14 @@ $defineApiRoutes = function (): void {
 
             // Password Update (with rate limiting: 5 attempts per minute)
             Route::put('password', [PasswordController::class, 'update'])->middleware('throttle:5,1');
+        });
+
+        // Admin routes
+        Route::prefix('admin')->group(function () {
+            Route::get('notifications', [AdminNotificationController::class, 'index']);
+            Route::put('notifications/{id}/read', [AdminNotificationController::class, 'markAsRead']);
+            Route::put('notifications/read-all', [AdminNotificationController::class, 'markAllAsRead']);
+            Route::delete('notifications/{id}', [AdminNotificationController::class, 'destroy']);
         });
     });
 

@@ -3,6 +3,7 @@
 use App\Enums\Role;
 use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Admin\AdminLandlordController;
+use App\Http\Controllers\Web\Admin\AdminNotificationController;
 use App\Http\Controllers\Web\Admin\AdminPropertyController;
 use App\Http\Controllers\Web\Landlord\DocumentController as LandlordDocumentController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
@@ -42,8 +43,26 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
 
-    Route::get('/admin/notifications', [AdminDashboardController::class, 'notifications'])
+    Route::get('/admin/notifications', [AdminNotificationController::class, 'index'])
         ->name('admin.notifications.index');
+
+    Route::put('/admin/notifications/{notification}/read', [AdminNotificationController::class, 'markAsRead'])
+        ->name('admin.notifications.read');
+
+    Route::put('/admin/notifications/{notification}/unread', [AdminNotificationController::class, 'markAsUnread'])
+        ->name('admin.notifications.unread');
+
+    Route::put('/admin/notifications/read-all', [AdminNotificationController::class, 'markAllAsRead'])
+        ->name('admin.notifications.read-all');
+
+    Route::delete('/admin/notifications/{notification}', [AdminNotificationController::class, 'destroy'])
+        ->name('admin.notifications.destroy');
+
+    Route::get('/admin/notifications/unread-count', [AdminNotificationController::class, 'unreadCount'])
+        ->name('admin.notifications.unread-count');
+
+    Route::get('/admin/notifications/recent', [AdminNotificationController::class, 'recent'])
+        ->name('admin.notifications.recent');
 
     // Admin Property Management Routes
     Route::get('/admin/properties', [AdminPropertyController::class, 'index'])
