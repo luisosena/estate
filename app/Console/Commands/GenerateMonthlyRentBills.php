@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\RentBill;
 use App\Models\Tenancy;
+use App\Services\NotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -26,7 +27,7 @@ class GenerateMonthlyRentBills extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(NotificationService $notificationService): int
     {
         $this->info('Generating monthly rent bills...');
 
@@ -75,6 +76,17 @@ class GenerateMonthlyRentBills extends Command
                     $tenantName = $tenancy->tenant?->full_name ?? 'Unknown Tenant';
                     $unitCode = $tenancy->unit?->unit_code ?? 'Unknown Unit';
                     $this->line("Created rent bill for {$tenantName} - Unit {$unitCode}");
+
+                    if ($tenancy->tenant?->user) {
+                        try {
+                            $notificationService->sendRentBillGeneratedNotification($tenancy->tenant->user, $bill);
+                        } catch (\Exception $e) {
+                            Log::error('Failed to send rent bill generated notification', [
+                                'bill_id' => $bill->id,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
                 }
 
                 $progressBar->advance();

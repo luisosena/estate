@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\RentBill;
+use App\Services\NotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -25,16 +26,36 @@ class MarkOverdueRentBills extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(NotificationService $notificationService): int
     {
         $this->info('Marking overdue rent bills...');
 
         try {
-            $count = RentBill::whereIn('status', ['pending', 'partial'])
+            $overdueBills = RentBill::whereIn('status', ['pending', 'partial'])
                 ->where('due_date', '<', today())
-                ->update(['status' => 'overdue']);
+                ->with(['tenancy.tenant.user'])
+                ->get();
+
+            $count = $overdueBills->count();
+
+            if ($count > 0) {
+                RentBill::whereIn('id', $overdueBills->pluck('id'))->update(['status' => 'overdue']);
+            }
 
             $this->info("Marked {$count} rent bill(s) as overdue.");
+
+            foreach ($overdueBills as $bill) {
+                if ($bill->tenancy?->tenant?->user) {
+                    try {
+                        $notificationService->sendRentBillOverdueNotification($bill->tenancy->tenant->user, $bill);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send rent bill overdue notification', [
+                            'bill_id' => $bill->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+            }
 
             Log::info("MarkOverdueRentBills: Marked {$count} rent bills as overdue", [
                 'count' => $count,
