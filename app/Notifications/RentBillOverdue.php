@@ -30,7 +30,7 @@ class RentBillOverdue extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject('Overdue Rent Reminder')
-            ->greeting("Hello {$notifiable->first_name},")
+            ->greeting("Hello {$notifiable->name},")
             ->line("This is a gentle reminder that your rent bill for {$month} is overdue.")
             ->line("Outstanding Balance: {$this->rentBill->balance}")
             ->action('Pay Now', url(config('app.url')))
@@ -41,7 +41,7 @@ class RentBillOverdue extends Notification implements ShouldQueue
     {
         $month = $this->rentBill->billing_month ? $this->rentBill->billing_month->format('F Y') : 'the previous month';
 
-        return "Hello {$notifiable->first_name}, your rent bill for {$month} is overdue with an outstanding balance of {$this->rentBill->balance}. Please arrange payment soon. - Estate Practice";
+        return "Hello {$notifiable->name}, your rent bill for {$month} is overdue with an outstanding balance of {$this->rentBill->balance}. Please arrange payment soon. - Estate Practice";
     }
 
     public function toExpoPush(object $notifiable): array

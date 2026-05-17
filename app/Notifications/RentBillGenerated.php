@@ -30,7 +30,7 @@ class RentBillGenerated extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject("New Rent Bill: {$month}")
-            ->greeting("Hello {$notifiable->first_name},")
+            ->greeting("Hello {$notifiable->name},")
             ->line("Your rent bill for {$month} has been generated.")
             ->line("Amount Due: {$this->rentBill->amount_due}")
             ->action('Pay Now', url(config('app.url')))
@@ -41,7 +41,7 @@ class RentBillGenerated extends Notification implements ShouldQueue
     {
         $month = $this->rentBill->billing_month ? $this->rentBill->billing_month->format('F Y') : 'this month';
 
-        return "Hello {$notifiable->first_name}, your rent bill for {$month} is ready. Amount due: {$this->rentBill->amount_due}. Please login to pay. - Estate Practice";
+        return "Hello {$notifiable->name}, your rent bill for {$month} is ready. Amount due: {$this->rentBill->amount_due}. Please login to pay. - Estate Practice";
     }
 
     public function toExpoPush(object $notifiable): array

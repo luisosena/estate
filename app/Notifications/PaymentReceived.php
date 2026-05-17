@@ -36,7 +36,7 @@ class PaymentReceived extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject('Receipt: Payment Received')
-            ->greeting("Hello {$notifiable->first_name},")
+            ->greeting("Hello {$notifiable->name},")
             ->line("We have received a payment of {$this->payment->amount} for your tenancy.")
             ->line("Payment Type: {$this->payment->payment_type}")
             ->line("Status: {$this->payment->status}")
@@ -46,7 +46,7 @@ class PaymentReceived extends Notification implements ShouldQueue
 
     public function toWhatsApp(object $notifiable): string
     {
-        return "Hello {$notifiable->first_name}, we've received your payment of {$this->payment->amount} for {$this->payment->payment_type}. Status: {$this->payment->status}. Thank you! - Estate Practice";
+        return "Hello {$notifiable->name}, we've received your payment of {$this->payment->amount} for {$this->payment->payment_type}. Status: {$this->payment->status}. Thank you! - Estate Practice";
     }
 
     public function toExpoPush(object $notifiable): array
