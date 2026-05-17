@@ -119,6 +119,7 @@ const TENANT_NAV: NavGroup[] = [
         items: [
             { label: 'Utilities', icon: Zap, route: 'tenant.utilities' },
             { label: 'Utility Bills', icon: FileText, route: 'tenant.utilities.bills' },
+            { label: 'Documents', icon: FileText, route: 'tenant.documents.index' },
         ],
     },
 ];
