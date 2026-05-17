@@ -12,6 +12,75 @@ This report documents the comprehensive overhaul of the notification and messagi
 
 ---
 
+## Administrative Overview
+
+### What It Does
+
+The system automatically alerts users (Tenants, Landlords, Admins) about important events in the property management platform through multiple delivery methods.
+
+### Who Gets Notified About What
+
+| Event | Tenant | Landlord | Admin |
+|-------|--------|----------|-------|
+| Lease expiring soon (10 days out) | ✅ | ✅ | — |
+| Lease expiring soon (3 days out) | ✅ | ✅ | — |
+| Lease ended automatically | ✅ | ✅ | — |
+| Lease ended with unpaid balance | — | ✅ | — |
+| New rent bill generated | ✅ | — | — |
+| Rent bill overdue | ✅ | — | — |
+| Payment received | ✅ | — | — |
+| New landlord registers | — | — | ✅ |
+| Landlord account verified | — | — | ✅ |
+| Daily tenancy summary | — | — | ✅ |
+| System errors | — | — | ✅ |
+
+### Delivery Channels
+
+| Channel | Status | Description |
+|---------|--------|-------------|
+| **In-App Inbox** | ✅ Active | Every notification is stored in the database. Users view it in their notifications page. |
+| **Email** | ⚠️ Config needed | Currently logs emails instead of sending. Needs SMTP credentials in production. |
+| **WhatsApp** | ⚠️ Config needed | Uses Twilio. Needs Twilio account credentials to activate. |
+| **Mobile Push** | ⚠️ Config needed | Uses Expo Push. Needs mobile app build + token provisioning to activate. |
+| **Real-Time (Web)** | ⚠️ Config needed | WebSocket server (Reverb) installed but not started. Needs environment setup. |
+
+### How Users Interact With Notifications
+
+- **View** a paginated list with filters (read/unread, by category)
+- **Mark as read/unread** individually or all at once
+- **Delete** individual notifications
+- **See unread count** badge (updates on page load; real-time pending WebSocket activation)
+
+### What's Working Now
+
+- All notification classes are written and tested for syntax correctness
+- All routes (web + API) are registered for all three roles
+- Database channel stores every notification
+- Rent bill generation command sends notifications to tenants
+- Overdue bill marking command sends notifications to tenants
+- Admin gets notified when landlords register
+- Admin gets daily tenancy expiry summaries
+- Frontend pages exist for all three roles
+
+### What Needs Activation Before Going Live
+
+1. **Run database migrations** — adds push token columns and drops unused tables
+2. **Configure email** — set SMTP credentials in `.env`
+3. **Configure Twilio** — add Twilio SID, token, and WhatsApp number
+4. **Start Reverb server** — `php artisan reverb:start` for real-time web notifications
+5. **Start queue worker** — `php artisan queue:work` to process queued notifications
+6. **Build mobile app** — push notifications require a production build, not Expo Go
+
+### Remaining Gaps
+
+- Users cannot customize which notifications they receive (no preferences/settings page)
+- The `LandlordVerified` notification class exists but isn't wired to an event yet
+- The `SystemError` notification class exists but isn't automatically triggered
+- No automatic cleanup of old notifications (table grows indefinitely)
+- No alerting when queued notifications fail repeatedly
+
+---
+
 ## Phase 1: Dead Code Cleanup
 
 ### 1.1 Orphaned Models Deleted
