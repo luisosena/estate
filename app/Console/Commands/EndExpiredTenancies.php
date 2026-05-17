@@ -2,10 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Role;
 use App\Models\Tenancy;
+use App\Models\User;
 use App\Notifications\TenancyEndedNotification;
 use App\Notifications\TenancyEndedWithBalance;
 use App\Notifications\TenancyExpiringNotification;
+use App\Notifications\TenancyMassExpiry;
 use App\Services\RentBillService;
 use App\Services\UtilityService;
 use Illuminate\Console\Command;
@@ -19,6 +22,9 @@ class EndExpiredTenancies extends Command
      * @var string
      */
     protected $signature = 'tenancy:end-expired {--dry-run : Show what would be done without making changes}';
+
+    protected int $expiredCount = 0;
+    protected int $expiringCount = 0;
 
     /**
      * The console command description.
@@ -49,6 +55,9 @@ class EndExpiredTenancies extends Command
         // Check for expired tenancies (move_out_date is today or in the past)
         $this->checkExpiredTenancies($dryRun, $rentBillService, $utilityService);
 
+        // Send summary notification to admins
+        $this->notifyAdmins();
+
         $this->info('Expired tenancy check completed.');
     }
 
@@ -75,6 +84,7 @@ class EndExpiredTenancies extends Command
         foreach ($upcomingTenancies as $tenancy) {
             /** @var Tenancy $tenancy */
             $this->line("- {$tenancy->tenant->full_name} ({$tenancy->tenant->tenant_code}) - Unit: {$tenancy->unit->unit_name} - Ends: {$tenancy->move_out_date}");
+            $this->expiringCount++;
 
             // Send notification to tenant
             try {
@@ -145,6 +155,8 @@ class EndExpiredTenancies extends Command
                     'final_meter_readings' => 'Automatically ended - no readings recorded',
                 ]);
 
+                $this->expiredCount++;
+
                 // Update unit status to available
                 $tenancy->unit->update(['status' => 'available']);
 
@@ -192,6 +204,33 @@ class EndExpiredTenancies extends Command
                 $this->error("  ✗ Failed to end tenancy: {$e->getMessage()}");
                 Log::error('Failed to automatically end tenancy', [
                     'tenancy_id' => $tenancy->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Send summary notification to all admins.
+     */
+    private function notifyAdmins(): void
+    {
+        if ($this->expiredCount === 0 && $this->expiringCount === 0) {
+            return;
+        }
+
+        $admins = User::where('role', Role::Admin)->get();
+
+        if ($admins->isEmpty()) {
+            return;
+        }
+
+        foreach ($admins as $admin) {
+            try {
+                $admin->notify(new TenancyMassExpiry($this->expiredCount, $this->expiringCount));
+            } catch (\Exception $e) {
+                Log::error('Failed to send tenancy mass expiry notification to admin', [
+                    'admin_id' => $admin->id,
                     'error' => $e->getMessage(),
                 ]);
             }

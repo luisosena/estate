@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Events\PaymentConfirmed;
+use App\Listeners\NotifyAdminsOfNewLandlord;
 use App\Listeners\ProcessPaymentConfirmed;
 use App\Policies\NotificationPolicy;
 use App\Services\DocSyncService;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Registered as RegisteredEvent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Date;
@@ -36,6 +38,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Payment event wiring — activated when gateway is wired in Phase 3
         Event::listen(PaymentConfirmed::class, ProcessPaymentConfirmed::class);
+
+        // Notify admins when a new landlord registers
+        Event::listen(RegisteredEvent::class, NotifyAdminsOfNewLandlord::class);
 
         if (app()->environment('production')) {
             URL::forceScheme('https');
