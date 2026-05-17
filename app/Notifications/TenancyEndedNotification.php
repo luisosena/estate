@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Channels\BroadcastChannel;
 use App\Models\Tenancy;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -27,7 +28,7 @@ class TenancyEndedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', BroadcastChannel::class];
     }
 
     /**

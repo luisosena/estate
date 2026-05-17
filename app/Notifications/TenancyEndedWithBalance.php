@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Channels\BroadcastChannel;
 use App\Models\Tenancy;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,8 +27,7 @@ class TenancyEndedWithBalance extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        // Only sending to database for now as per user request
-        return ['database'];
+        return ['database', BroadcastChannel::class];
     }
 
     /**
