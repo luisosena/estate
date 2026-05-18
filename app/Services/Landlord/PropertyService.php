@@ -37,9 +37,11 @@ class PropertyService
     {
         $totalUnits = $landlord->properties()->sum('total_units');
 
-        $totalOccupiedUnits = Tenancy::whereHas('unit.property', function ($q) use ($landlord) {
+        $totalOccupiedUnits = Unit::whereHas('property', function ($q) use ($landlord) {
             $q->where('owner_id', $landlord->id);
-        })->where('status', 'active')->count();
+        })->whereHas('tenancies', function ($q) {
+            $q->where('status', 'active');
+        })->distinct('units.id')->count();
 
         $totalAvailableUnits = max(0, $totalUnits - $totalOccupiedUnits);
 
