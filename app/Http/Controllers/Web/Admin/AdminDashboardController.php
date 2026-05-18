@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Enums\Role;
-
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
+use App\Models\Property;
+use App\Models\Tenancy;
+use App\Models\User;
 use App\Services\Admin\AdminDashboardService;
 use App\Services\Landlord\RevenueAnalyticsService;
 use Illuminate\Http\Request;
@@ -37,22 +40,22 @@ class AdminDashboardController extends Controller
             return redirect()->route('login')->with('error', 'Access denied.');
         }
 
-        $recentLandlords = \App\Models\User::where('role', 'landlord')
+        $recentLandlords = User::where('role', 'landlord')
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get(['id', 'name', 'email', 'role', 'email_verified_at', 'created_at']);
 
-        $recentProperties = \App\Models\Property::with('landlord:id,name')
+        $recentProperties = Property::with('landlord:id,name')
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get(['id', 'name', 'address', 'status', 'owner_id', 'created_at']);
 
-        $recentTenancies = \App\Models\Tenancy::with(['tenant:id,full_name', 'unit:id,unit_code'])
+        $recentTenancies = Tenancy::with(['tenant:id,full_name', 'unit:id,unit_code'])
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get(['id', 'tenant_id', 'unit_id', 'status', 'monthly_rent', 'created_at']);
 
-        $recentPayments = \App\Models\Payment::with(['tenant:id,full_name', 'tenancy.unit:id,unit_code'])
+        $recentPayments = Payment::with(['tenant:id,full_name', 'tenancy.unit:id,unit_code'])
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get(['id', 'tenant_id', 'tenancy_id', 'amount', 'status', 'payment_type', 'created_at']);

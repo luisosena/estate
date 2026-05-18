@@ -33,6 +33,7 @@ class NotificationController extends Controller
             ->get()
             ->map(function ($notification) {
                 $data = $notification->data;
+
                 return [
                     'id' => $notification->id,
                     'type' => $notification->type,
@@ -76,6 +77,7 @@ class NotificationController extends Controller
     {
         $tenant = $request->user();
         $tenant->unreadNotifications()->update(['read_at' => now()]);
+
         return response()->json(['message' => 'All notifications marked as read']);
     }
 
@@ -84,6 +86,7 @@ class NotificationController extends Controller
         $tenant = $request->user();
         $notification = $tenant->notifications()->where('id', $id)->firstOrFail();
         $notification->delete();
+
         return response()->json(['message' => 'Notification deleted']);
     }
 }

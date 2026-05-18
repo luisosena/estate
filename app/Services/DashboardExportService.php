@@ -10,7 +10,6 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\View;
 
 class DashboardExportService
 {
@@ -81,7 +80,7 @@ class DashboardExportService
             ->limit(10)
             ->get();
 
-        $rentStats = (new RentBillService())->getRentStatistics($landlord);
+        $rentStats = (new RentBillService)->getRentStatistics($landlord);
 
         $pdf = Pdf::loadView('exports.landlord-dashboard-pdf', [
             'landlord' => $landlord,

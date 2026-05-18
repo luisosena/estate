@@ -26,10 +26,10 @@ class AdminDashboardService
         ")->first();
 
         $landlordStats = User::where('role', 'landlord')
-            ->selectRaw("
+            ->selectRaw('
                 COUNT(*) as total_landlords,
                 SUM(CASE WHEN email_verified_at IS NULL THEN 1 ELSE 0 END) as pending_landlords
-            ")->first();
+            ')->first();
 
         return [
             'total_properties' => (int) ($propertyStats?->total_properties ?? 0),

@@ -22,6 +22,7 @@ abstract class TestCase extends BaseTestCase
             DB::statement('PRAGMA foreign_keys = ON');
         }
     }
+
     /**
      * Create a landlord user with a full property → unit chain.
      * Returns ['user', 'property', 'unit'].
@@ -34,7 +35,7 @@ abstract class TestCase extends BaseTestCase
         $property = Property::factory()->create(['owner_id' => $user->id]);
         $unit = Unit::factory()->create([
             'property_id' => $property->id,
-            'status'      => 'available',
+            'status' => 'available',
         ]);
 
         Sanctum::actingAs($user, ['*']);
@@ -55,19 +56,19 @@ abstract class TestCase extends BaseTestCase
         $property = Property::factory()->create(['owner_id' => $landlord->id]);
         $unit = Unit::factory()->create([
             'property_id' => $property->id,
-            'status'      => 'occupied',
+            'status' => 'occupied',
         ]);
 
         $tenant = Tenant::factory()->create();
         $user = User::factory()->create([
-            'role'      => 'tenant',
+            'role' => 'tenant',
             'tenant_id' => $tenant->id,
         ]);
 
         $tenancy = Tenancy::factory()->create([
-            'tenant_id'    => $tenant->id,
-            'unit_id'      => $unit->id,
-            'status'       => 'active',
+            'tenant_id' => $tenant->id,
+            'unit_id' => $unit->id,
+            'status' => 'active',
             'monthly_rent' => 15000,
         ]);
 

@@ -51,11 +51,11 @@ beforeEach(function () {
 // --- Admin bypass ---
 
 test('admin can upload', function () {
-    expect($this->admin->can('upload', [\App\Models\Document::class, $this->tenancy]))->toBeTrue();
+    expect($this->admin->can('upload', [Document::class, $this->tenancy]))->toBeTrue();
 });
 
 test('admin can view any', function () {
-    expect($this->admin->can('viewAny', [\App\Models\Document::class, $this->tenancy]))->toBeTrue();
+    expect($this->admin->can('viewAny', [Document::class, $this->tenancy]))->toBeTrue();
 });
 
 test('admin can view', function () {
@@ -73,11 +73,11 @@ test('admin can delete', function () {
 // --- Landlord who owns property ---
 
 test('landlord who owns property can upload', function () {
-    expect($this->landlord->can('upload', [\App\Models\Document::class, $this->tenancy]))->toBeTrue();
+    expect($this->landlord->can('upload', [Document::class, $this->tenancy]))->toBeTrue();
 });
 
 test('landlord who owns property can view any', function () {
-    expect($this->landlord->can('viewAny', [\App\Models\Document::class, $this->tenancy]))->toBeTrue();
+    expect($this->landlord->can('viewAny', [Document::class, $this->tenancy]))->toBeTrue();
 });
 
 test('landlord who owns property can view', function () {
@@ -95,11 +95,11 @@ test('landlord who owns property can delete', function () {
 // --- Landlord who does not own property ---
 
 test('landlord who does not own property cannot upload', function () {
-    expect($this->otherLandlord->can('upload', [\App\Models\Document::class, $this->tenancy]))->toBeFalse();
+    expect($this->otherLandlord->can('upload', [Document::class, $this->tenancy]))->toBeFalse();
 });
 
 test('landlord who does not own property cannot view any', function () {
-    expect($this->otherLandlord->can('viewAny', [\App\Models\Document::class, $this->tenancy]))->toBeFalse();
+    expect($this->otherLandlord->can('viewAny', [Document::class, $this->tenancy]))->toBeFalse();
 });
 
 test('landlord who does not own property cannot view', function () {
@@ -117,11 +117,11 @@ test('landlord who does not own property cannot delete', function () {
 // --- Tenant ---
 
 test('tenant cannot upload', function () {
-    expect($this->tenantUser->can('upload', [\App\Models\Document::class, $this->tenancy]))->toBeFalse();
+    expect($this->tenantUser->can('upload', [Document::class, $this->tenancy]))->toBeFalse();
 });
 
 test('tenant cannot view any', function () {
-    expect($this->tenantUser->can('viewAny', [\App\Models\Document::class, $this->tenancy]))->toBeFalse();
+    expect($this->tenantUser->can('viewAny', [Document::class, $this->tenancy]))->toBeFalse();
 });
 
 test('tenant on tenancy can view', function () {

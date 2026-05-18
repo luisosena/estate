@@ -4,6 +4,7 @@ namespace App\Services\Landlord;
 
 use App\Models\Tenancy;
 use App\Models\Tenant;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -59,7 +60,7 @@ class TenantService
     protected function calculateStats(User $landlord): array
     {
         $totalUnits = $landlord->properties()->sum('total_units');
-        
+
         $occupiedUnits = Tenancy::where('tenancies.status', 'active')
             ->whereHas('unit.property', fn ($q) => $q->where('owner_id', $landlord->id))
             ->count();
@@ -87,7 +88,7 @@ class TenantService
             $tenancy->update(['unit_id' => $newUnitId]);
 
             // 3. Mark new unit as occupied
-            \App\Models\Unit::where('id', $newUnitId)->update(['status' => 'occupied']);
+            Unit::where('id', $newUnitId)->update(['status' => 'occupied']);
         });
     }
 }

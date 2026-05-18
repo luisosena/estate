@@ -3,15 +3,15 @@
 namespace App\Services\Landlord;
 
 use App\Http\Resources\PropertyResource;
-use App\Models\RentBill;
 use App\Models\Tenancy;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\RentBillService;
 
 class LandlordDashboardService
 {
     public function __construct(
-        protected \App\Services\RentBillService $rentBillService
+        protected RentBillService $rentBillService
     ) {}
 
     public function getDashboardData(User $landlord): array

@@ -96,6 +96,7 @@ class RevenueAnalyticsService
                 'payment_count' => 0,
             ]);
         }
+
         return $result;
     }
 
@@ -115,6 +116,7 @@ class RevenueAnalyticsService
                 'total' => 0,
             ]);
         }
+
         return $result;
     }
 

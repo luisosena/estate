@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Tenant;
 
 use App\Enums\Role;
-
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 

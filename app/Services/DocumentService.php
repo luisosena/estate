@@ -3,15 +3,19 @@
 namespace App\Services;
 
 use App\Models\Document;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentService
 {
     protected int $maxSize;
+
     protected array $allowedMimes;
 
     public function __construct()
@@ -20,7 +24,7 @@ class DocumentService
         $this->allowedMimes = array_map('trim', explode(',', config('documents.allowed_mimes', 'pdf,doc,docx')));
     }
 
-    public function upload(UploadedFile $file, Model $documentable, string $category, ?\App\Models\User $uploader = null): Document
+    public function upload(UploadedFile $file, Model $documentable, string $category, ?User $uploader = null): Document
     {
         $this->validateFile($file);
 
@@ -59,7 +63,7 @@ class DocumentService
         return Storage::disk('documents')->download($document->file_path, $document->file_name);
     }
 
-    public function listFor(Model $documentable): \Illuminate\Support\Collection
+    public function listFor(Model $documentable): Collection
     {
         return Document::where('documentable_type', $documentable->getMorphClass())
             ->where('documentable_id', $documentable->id)
@@ -79,14 +83,14 @@ class DocumentService
     protected function validateFile(UploadedFile $file): void
     {
         if ($file->getSize() > $this->maxSize) {
-            throw new \Illuminate\Validation\ValidationException(
+            throw new ValidationException(
                 validator([], ['document' => 'The file size exceeds the maximum allowed size.'])
             );
         }
 
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: '');
         if (! in_array($extension, $this->allowedMimes, true)) {
-            throw new \Illuminate\Validation\ValidationException(
+            throw new ValidationException(
                 validator([], ['document' => 'The file type is not allowed. Allowed types: '.implode(', ', $this->allowedMimes).'.'])
             );
         }

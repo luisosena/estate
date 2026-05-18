@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     ArrowRight,
@@ -25,7 +25,6 @@ import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -99,7 +98,6 @@ const getFormattedDate = () => {
 export default function Dashboard({
     properties,
     stats,
-    unreadNotificationsCount = 0,
     revenueTrend = [],
     collectionTrend = [],
 }: LandlordDashboardProps) {

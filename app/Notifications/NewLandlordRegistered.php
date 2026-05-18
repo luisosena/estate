@@ -28,7 +28,7 @@ class NewLandlordRegistered extends Notification implements ShouldQueue
             ->line('A new landlord has registered on the platform.')
             ->line("**Name:** {$this->landlord->name}")
             ->line("**Email:** {$this->landlord->email}")
-            ->line("**Status:** ".($this->landlord->email_verified_at ? 'Verified' : 'Pending Verification'))
+            ->line('**Status:** '.($this->landlord->email_verified_at ? 'Verified' : 'Pending Verification'))
             ->action('View Landlord', url('/admin/landlords'))
             ->line('Please review and verify this account if needed.');
     }

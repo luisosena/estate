@@ -2,26 +2,27 @@
 
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Str;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenant::factory()->create();
-    $this->user   = User::factory()->create(['role' => 'tenant', 'tenant_id' => $this->tenant->id]);
+    $this->user = User::factory()->create(['role' => 'tenant', 'tenant_id' => $this->tenant->id]);
 });
 
 /** Helper to insert a DB notification directly. */
 function makeNotification(User $user, bool $read = false): DatabaseNotification
 {
     return DatabaseNotification::create([
-        'id'              => Str::uuid(),
-        'type'            => 'App\\Notifications\\TestNotification',
+        'id' => Str::uuid(),
+        'type' => 'App\\Notifications\\TestNotification',
         'notifiable_type' => User::class,
-        'notifiable_id'   => $user->id,
-        'data'            => json_encode(['message' => 'Test notification']),
-        'read_at'         => $read ? now() : null,
+        'notifiable_id' => $user->id,
+        'data' => json_encode(['message' => 'Test notification']),
+        'read_at' => $read ? now() : null,
     ]);
 }
 
@@ -54,7 +55,7 @@ test('tenant can delete own notification', function () {
 
 test('tenant cannot delete another tenants notification', function () {
     $otherTenant = Tenant::factory()->create();
-    $otherUser   = User::factory()->create(['role' => 'tenant', 'tenant_id' => $otherTenant->id]);
+    $otherUser = User::factory()->create(['role' => 'tenant', 'tenant_id' => $otherTenant->id]);
     $notification = makeNotification($otherUser);
 
     $this->actingAs($this->user)

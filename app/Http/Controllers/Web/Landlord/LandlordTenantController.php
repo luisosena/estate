@@ -161,9 +161,9 @@ class LandlordTenantController extends Controller
         $availableUnits = Unit::whereHas('property', function ($query) use ($request) {
             $query->where('owner_id', $request->user()->id);
         })
-        ->where('status', 'available')
-        ->with('property:id,name,address')
-        ->get();
+            ->where('status', 'available')
+            ->with('property:id,name,address')
+            ->get();
 
         return Inertia::render('landlord/tenants/create', [
             'availableUnits' => $availableUnits,

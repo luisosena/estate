@@ -13,9 +13,7 @@ use Illuminate\Support\Str;
 
 class TenantService
 {
-    public function __construct(protected DocumentService $documentService)
-    {
-    }
+    public function __construct(protected DocumentService $documentService) {}
 
     /**
      * Get dashboard data for a specific tenant.

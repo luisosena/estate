@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\SecurityEvent;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,8 +39,8 @@ it('allows login via /api/v1/auth/login and authenticates subsequent requests wi
 
     $this->assertDatabaseHas('security_events', [
         'user_id' => $user->id,
-        'event_type' => \App\Models\SecurityEvent::EVENT_DEVICE_ADDED,
-        'severity' => \App\Models\SecurityEvent::SEVERITY_MEDIUM,
+        'event_type' => SecurityEvent::EVENT_DEVICE_ADDED,
+        'severity' => SecurityEvent::SEVERITY_MEDIUM,
     ]);
 
     $token = $loginResponse->json('token');
@@ -75,8 +76,8 @@ it('allows login via /api/v1/auth/login and authenticates subsequent requests wi
 
     $this->assertDatabaseHas('security_events', [
         'user_id' => $user->id,
-        'event_type' => \App\Models\SecurityEvent::EVENT_TOKEN_REVOKED,
-        'severity' => \App\Models\SecurityEvent::SEVERITY_LOW,
+        'event_type' => SecurityEvent::EVENT_TOKEN_REVOKED,
+        'severity' => SecurityEvent::SEVERITY_LOW,
     ]);
 
     // Verify subsequent request with same token fails (401)

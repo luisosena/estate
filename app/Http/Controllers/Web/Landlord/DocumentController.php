@@ -12,9 +12,7 @@ use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
-    public function __construct(protected DocumentService $documentService)
-    {
-    }
+    public function __construct(protected DocumentService $documentService) {}
 
     public function store(StoreDocumentRequest $request, Tenancy $tenancy): RedirectResponse
     {

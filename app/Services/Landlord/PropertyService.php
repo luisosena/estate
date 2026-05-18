@@ -2,7 +2,7 @@
 
 namespace App\Services\Landlord;
 
-use App\Models\Tenancy;
+use App\Models\Unit;
 use App\Models\User;
 
 class PropertyService

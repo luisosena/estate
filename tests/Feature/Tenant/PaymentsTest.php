@@ -18,7 +18,7 @@ class PaymentsTest extends TestCase
         $this->tenant = Tenant::factory()->create();
         $this->user = User::factory()->create([
             'role' => 'tenant',
-            'tenant_id' => $this->tenant->id
+            'tenant_id' => $this->tenant->id,
         ]);
     }
 

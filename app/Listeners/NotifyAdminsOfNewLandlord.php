@@ -26,6 +26,7 @@ class NotifyAdminsOfNewLandlord implements ShouldQueue
 
         if ($admins->isEmpty()) {
             Log::debug('No admins found to notify of new landlord registration');
+
             return;
         }
 

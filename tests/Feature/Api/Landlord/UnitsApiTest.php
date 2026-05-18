@@ -1,8 +1,6 @@
 <?php
 
 use App\Models\Property;
-use App\Models\Tenancy;
-use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,9 +21,9 @@ test('landlord can list units', function () {
 test('landlord can create a unit for own property', function () {
     $this->postJson('/api/v1/landlord/units', [
         'property_id' => $this->property->id,
-        'unit_code'   => 'A101',
-        'unit_name'   => 'A101',
-        'floor'       => 1,
+        'unit_code' => 'A101',
+        'unit_name' => 'A101',
+        'floor' => 1,
     ])->assertCreated();
 
     $this->assertDatabaseHas('units', ['unit_code' => 'A101', 'property_id' => $this->property->id]);
@@ -52,12 +50,12 @@ test('landlord can delete a vacant unit', function () {
 });
 
 test('landlord cannot see units from another landlords property', function () {
-    $other     = User::factory()->create(['role' => 'landlord']);
+    $other = User::factory()->create(['role' => 'landlord']);
     $otherProp = Property::factory()->create(['owner_id' => $other->id]);
     $otherUnit = Unit::factory()->create(['property_id' => $otherProp->id]);
 
     $response = $this->getJson('/api/v1/landlord/units')->assertOk();
-    $ids      = collect($response->json('data'))->pluck('id');
+    $ids = collect($response->json('data'))->pluck('id');
 
     expect($ids->contains($otherUnit->id))->toBeFalse();
 });

@@ -1,8 +1,11 @@
 <?php
 
+use App\Models\Tenancy;
 use App\Models\Tenant;
+use App\Models\Unit;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('tenant_code is auto-generated on creation', function () {
     $tenant = Tenant::factory()->create();
@@ -32,10 +35,10 @@ test('tenant has email and phone fields', function () {
 
 test('tenant can have many tenancies', function () {
     $tenant = Tenant::factory()->create();
-    $units  = \App\Models\Unit::factory()->count(2)->create();
+    $units = Unit::factory()->count(2)->create();
 
-    \App\Models\Tenancy::factory()->create(['tenant_id' => $tenant->id, 'unit_id' => $units[0]->id, 'status' => 'ended']);
-    \App\Models\Tenancy::factory()->create(['tenant_id' => $tenant->id, 'unit_id' => $units[1]->id, 'status' => 'active']);
+    Tenancy::factory()->create(['tenant_id' => $tenant->id, 'unit_id' => $units[0]->id, 'status' => 'ended']);
+    Tenancy::factory()->create(['tenant_id' => $tenant->id, 'unit_id' => $units[1]->id, 'status' => 'active']);
 
     expect($tenant->tenancies()->count())->toBe(2);
 });

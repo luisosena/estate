@@ -1,8 +1,6 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
-    Activity,
     Building2,
-    CalendarDays,
     CheckCircle,
     CreditCard,
     ShieldCheck,
@@ -23,7 +21,6 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { type SharedData } from '@/types';
 
 interface AuditLandlord {
     id: number;
@@ -109,8 +106,6 @@ export default function AuditReports({
     recentTenancies,
     recentPayments,
 }: AuditReportsProps) {
-    const { auth } = usePage<SharedData>().props;
-
     return (
         <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
             <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">

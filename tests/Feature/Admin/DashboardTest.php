@@ -1,11 +1,12 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->admin    = User::factory()->create(['role' => 'admin']);
+    $this->admin = User::factory()->create(['role' => 'admin']);
     $this->landlord = User::factory()->create(['role' => 'landlord']);
 });
 

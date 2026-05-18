@@ -10,6 +10,8 @@ use App\Services\DocumentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 uses(RefreshDatabase::class);
 
@@ -24,7 +26,7 @@ beforeEach(function () {
         'status' => 'active',
         'monthly_rent' => 20000,
     ]);
-    $this->service = new DocumentService();
+    $this->service = new DocumentService;
     Storage::fake('documents');
 });
 
@@ -55,14 +57,14 @@ it('rejects file exceeding max size', function () {
     $file = UploadedFile::fake()->create('large.pdf', $maxSize + 1, 'application/pdf');
 
     expect(fn () => $this->service->upload($file, $this->tenancy, 'tenancy_agreement'))
-        ->toThrow(\Illuminate\Validation\ValidationException::class);
+        ->toThrow(ValidationException::class);
 });
 
 it('rejects disallowed file type', function () {
     $file = UploadedFile::fake()->create('image.jpg', 100, 'image/jpeg');
 
     expect(fn () => $this->service->upload($file, $this->tenancy, 'inspection_photo'))
-        ->toThrow(\Illuminate\Validation\ValidationException::class);
+        ->toThrow(ValidationException::class);
 });
 
 it('lists documents for a documentable model', function () {
@@ -106,7 +108,7 @@ it('aborts when downloading non-existent document', function () {
         'uploaded_at' => now(),
     ]);
 
-    expect(fn () => $this->service->download($document))->toThrow(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+    expect(fn () => $this->service->download($document))->toThrow(HttpException::class);
 });
 
 it('deletes a document and its file', function () {

@@ -1,15 +1,11 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import {
-    Activity,
     ArrowRight,
     Building2,
-    CalendarDays,
     ChevronRight,
-    Home,
     Plus,
     ShieldCheck,
     Users,
-    Building
 } from 'lucide-react';
 import React from 'react';
 import { route } from 'ziggy-js';
@@ -21,11 +17,9 @@ import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { type SharedData } from '@/types';
 
 /* ─── Interfaces ─────────────────────────────────────────────────── */
@@ -82,8 +76,7 @@ const ActivityIcon = ({ type }: { type: string }) => {
 /* ─── Main Component ─────────────────────────────────────────────── */
 
 export default function Dashboard({ stats, activity = [], revenueTrend = [] }: AdminDashboardProps) {
-    const { auth } = usePage<SharedData>().props;
-    const adminName = auth?.user?.name ?? 'Admin';
+    const adminName = usePage<SharedData>().props.auth?.user?.name ?? 'Admin';
 
     return (
         <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12 text-balance">

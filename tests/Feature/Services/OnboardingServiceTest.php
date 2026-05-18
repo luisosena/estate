@@ -1,10 +1,9 @@
 <?php
 
-use App\Models\Tenant;
-use App\Models\Tenancy;
-use App\Models\Unit;
 use App\Models\Property;
-use App\Services\DocumentService;
+use App\Models\Tenancy;
+use App\Models\Tenant;
+use App\Models\Unit;
 use App\Services\Landlord\OnboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -14,7 +13,7 @@ it('onboards a new tenant and relates them to an occupied unit', function () {
     $property = Property::factory()->create(['total_units' => 1]);
     $unit = Unit::factory()->create([
         'property_id' => $property->id,
-        'status' => 'available'
+        'status' => 'available',
     ]);
 
     $data = [
@@ -41,7 +40,7 @@ it('onboards a new tenant and relates them to an occupied unit', function () {
 it('finds existing tenant by email/phone during onboarding', function () {
     $existingTenant = Tenant::factory()->create([
         'email' => 'existing@example.com',
-        'phone' => '0987654321'
+        'phone' => '0987654321',
     ]);
 
     $property = Property::factory()->create();

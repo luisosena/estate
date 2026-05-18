@@ -9,22 +9,23 @@ use App\Models\User;
 use App\Models\UtilityBill;
 use App\Models\UtilityType;
 use App\Services\UtilityService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service      = new UtilityService();
-    $this->landlord     = User::factory()->create(['role' => 'landlord']);
-    $this->property     = Property::factory()->create(['owner_id' => $this->landlord->id]);
-    $this->unit         = Unit::factory()->create(['property_id' => $this->property->id, 'status' => 'occupied']);
-    $this->tenant       = Tenant::factory()->create();
-    $this->tenancy      = Tenancy::factory()->create([
-        'tenant_id'    => $this->tenant->id,
-        'unit_id'      => $this->unit->id,
-        'status'       => 'active',
+    $this->service = new UtilityService;
+    $this->landlord = User::factory()->create(['role' => 'landlord']);
+    $this->property = Property::factory()->create(['owner_id' => $this->landlord->id]);
+    $this->unit = Unit::factory()->create(['property_id' => $this->property->id, 'status' => 'occupied']);
+    $this->tenant = Tenant::factory()->create();
+    $this->tenancy = Tenancy::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'unit_id' => $this->unit->id,
+        'status' => 'active',
         'monthly_rent' => 15000,
     ]);
-    $this->utilityType  = UtilityType::factory()->create(['is_active' => true]);
+    $this->utilityType = UtilityType::factory()->create(['is_active' => true]);
 });
 
 // --- assignUtilityToTenancy ---
@@ -32,8 +33,8 @@ beforeEach(function () {
 test('assignUtilityToTenancy creates a TenancyUtility record', function () {
     $tenancyUtility = $this->service->assignUtilityToTenancy($this->tenancy, [
         'utility_type_id' => $this->utilityType->id,
-        'amount'          => 2500,
-        'billing_cycle'   => 'monthly',
+        'amount' => 2500,
+        'billing_cycle' => 'monthly',
     ]);
 
     expect($tenancyUtility->id)->not->toBeNull()
@@ -46,7 +47,7 @@ test('assignUtilityToTenancy creates a TenancyUtility record', function () {
 test('assignUtilityToTenancy defaults billing_cycle to monthly when omitted', function () {
     $tenancyUtility = $this->service->assignUtilityToTenancy($this->tenancy, [
         'utility_type_id' => $this->utilityType->id,
-        'amount'          => 1000,
+        'amount' => 1000,
     ]);
 
     expect($tenancyUtility->billing_cycle)->toBe('monthly');
@@ -56,7 +57,7 @@ test('assignUtilityToTenancy defaults billing_cycle to monthly when omitted', fu
 
 test('removeUtilityFromTenancy deletes record when no unpaid bills exist', function () {
     $tenancyUtility = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
 
@@ -67,12 +68,12 @@ test('removeUtilityFromTenancy deletes record when no unpaid bills exist', funct
 
 test('removeUtilityFromTenancy throws RuntimeException when pending bills exist', function () {
     $tenancyUtility = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
     UtilityBill::factory()->create([
         'tenancy_utility_id' => $tenancyUtility->id,
-        'status'             => 'pending',
+        'status' => 'pending',
     ]);
 
     expect(fn () => $this->service->removeUtilityFromTenancy($tenancyUtility))
@@ -81,12 +82,12 @@ test('removeUtilityFromTenancy throws RuntimeException when pending bills exist'
 
 test('removeUtilityFromTenancy throws RuntimeException when partial bills exist', function () {
     $tenancyUtility = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
     UtilityBill::factory()->create([
         'tenancy_utility_id' => $tenancyUtility->id,
-        'status'             => 'partial',
+        'status' => 'partial',
     ]);
 
     expect(fn () => $this->service->removeUtilityFromTenancy($tenancyUtility))
@@ -97,16 +98,16 @@ test('removeUtilityFromTenancy throws RuntimeException when partial bills exist'
 
 test('getPendingBillsForTenant returns pending bills for tenant with active tenancy', function () {
     $tenancyUtility = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
     UtilityBill::factory()->create([
         'tenancy_utility_id' => $tenancyUtility->id,
-        'status'             => 'pending',
+        'status' => 'pending',
     ]);
     UtilityBill::factory()->create([
         'tenancy_utility_id' => $tenancyUtility->id,
-        'status'             => 'paid',
+        'status' => 'paid',
     ]);
 
     $bills = $this->service->getPendingBillsForTenant($this->tenant);
@@ -116,8 +117,8 @@ test('getPendingBillsForTenant returns pending bills for tenant with active tena
 });
 
 test('getPendingBillsForTenant returns empty collection when no active tenancy', function () {
-    $tenant            = Tenant::factory()->create();
-    $endedTenancy      = Tenancy::factory()->create(['tenant_id' => $tenant->id, 'status' => 'ended']);
+    $tenant = Tenant::factory()->create();
+    $endedTenancy = Tenancy::factory()->create(['tenant_id' => $tenant->id, 'status' => 'ended']);
 
     $bills = $this->service->getPendingBillsForTenant($tenant);
 
@@ -128,18 +129,18 @@ test('getPendingBillsForTenant returns empty collection when no active tenancy',
 
 test('calculateTotalMonthlyUtilities sums only active monthly utilities', function () {
     TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
-        'amount'          => 1000,
-        'billing_cycle'   => 'monthly',
-        'status'          => 'active',
+        'amount' => 1000,
+        'billing_cycle' => 'monthly',
+        'status' => 'active',
     ]);
     TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => UtilityType::factory()->create(['is_active' => true])->id,
-        'amount'          => 5000,
-        'billing_cycle'   => 'monthly',
-        'status'          => 'suspended',
+        'amount' => 5000,
+        'billing_cycle' => 'monthly',
+        'status' => 'suspended',
     ]);
 
     $total = $this->service->calculateTotalMonthlyUtilities($this->tenancy);
@@ -149,11 +150,11 @@ test('calculateTotalMonthlyUtilities sums only active monthly utilities', functi
 
 test('calculateTotalMonthlyUtilities excludes quarterly and annual billing cycles', function () {
     TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
-        'amount'          => 3000,
-        'billing_cycle'   => 'quarterly',
-        'status'          => 'active',
+        'amount' => 3000,
+        'billing_cycle' => 'quarterly',
+        'status' => 'active',
     ]);
 
     $total = $this->service->calculateTotalMonthlyUtilities($this->tenancy);
@@ -165,11 +166,11 @@ test('calculateTotalMonthlyUtilities excludes quarterly and annual billing cycle
 
 test('getUtilitiesSummary normalises quarterly bills to monthly equivalent', function () {
     TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
-        'amount'          => 3000,
-        'billing_cycle'   => 'quarterly',
-        'status'          => 'active',
+        'amount' => 3000,
+        'billing_cycle' => 'quarterly',
+        'status' => 'active',
     ]);
 
     $summary = $this->service->getUtilitiesSummary($this->tenancy);
@@ -192,7 +193,7 @@ test('getBillsForTenant returns empty stats when no active tenancy', function ()
 
 test('getBillsForTenant filters by status', function () {
     $tenancyUtility = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
     UtilityBill::factory()->create(['tenancy_utility_id' => $tenancyUtility->id, 'status' => 'paid', 'amount_due' => 1000, 'amount_paid' => 1000]);
@@ -208,14 +209,14 @@ test('getBillsForTenant filters by status', function () {
 
 test('processUtilityPayment marks utility bill as paid on full payment', function () {
     $tenancyUtility = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
     $bill = UtilityBill::factory()->create([
         'tenancy_utility_id' => $tenancyUtility->id,
-        'amount_due'         => 2000,
-        'amount_paid'        => 0,
-        'status'             => 'pending',
+        'amount_due' => 2000,
+        'amount_paid' => 0,
+        'status' => 'pending',
     ]);
 
     $this->service->processUtilityPayment($bill, 2000);
@@ -225,14 +226,14 @@ test('processUtilityPayment marks utility bill as paid on full payment', functio
 
 test('processUtilityPayment marks utility bill as partial on underpayment', function () {
     $tenancyUtility = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
     $bill = UtilityBill::factory()->create([
         'tenancy_utility_id' => $tenancyUtility->id,
-        'amount_due'         => 2000,
-        'amount_paid'        => 0,
-        'status'             => 'pending',
+        'amount_due' => 2000,
+        'amount_paid' => 0,
+        'status' => 'pending',
     ]);
 
     $this->service->processUtilityPayment($bill, 1000);

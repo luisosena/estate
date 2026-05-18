@@ -15,15 +15,15 @@ it('calculates global unit metrics correctly', function () {
 
     Unit::factory()->count(2)->create([
         'property_id' => $property->id,
-        'status' => 'occupied'
+        'status' => 'occupied',
     ]);
     Unit::factory()->count(3)->create([
         'property_id' => $property->id,
-        'status' => 'available'
+        'status' => 'available',
     ]);
 
-    $service = new UnitService();
-    $request = new Request();
+    $service = new UnitService;
+    $request = new Request;
     $result = $service->getUnitList($landlord, $request);
 
     expect($result['metrics']['total_units'])->toBe(5)
@@ -40,7 +40,7 @@ it('filters units and calculates property-specific metrics', function () {
     Unit::factory()->count(2)->create(['property_id' => $propertyA->id, 'status' => 'occupied']);
     Unit::factory()->count(3)->create(['property_id' => $propertyB->id, 'status' => 'available']);
 
-    $service = new UnitService();
+    $service = new UnitService;
     $request = new Request(['property' => $propertyA->id]);
     $result = $service->getUnitList($landlord, $request);
 

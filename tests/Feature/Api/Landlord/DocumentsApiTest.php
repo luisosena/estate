@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 uses(RefreshDatabase::class);
 
@@ -143,7 +144,7 @@ test('tenant cannot access landlord document endpoints', function () {
 });
 
 test('unauthenticated user cannot access document endpoints', function () {
-    $this->withoutMiddleware(\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class);
+    $this->withoutMiddleware(EnsureFrontendRequestsAreStateful::class);
     $this->app['auth']->forgetGuards();
 
     $this->getJson("/api/v1/landlord/tenancies/{$this->tenancy->id}/documents", ['Authorization' => ''])

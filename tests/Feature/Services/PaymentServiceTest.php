@@ -7,21 +7,22 @@ use App\Models\Tenancy;
 use App\Models\TenancyUtility;
 use App\Models\Tenant;
 use App\Models\Unit;
-use App\Models\UtilityBill;
 use App\Models\User;
+use App\Models\UtilityBill;
 use App\Models\UtilityType;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->landlord = User::factory()->create(['role' => 'landlord']);
     $this->property = Property::factory()->create(['owner_id' => $this->landlord->id]);
-    $this->unit     = Unit::factory()->create(['property_id' => $this->property->id]);
-    $this->tenant   = Tenant::factory()->create();
-    $this->tenancy  = Tenancy::factory()->create([
-        'tenant_id'    => $this->tenant->id,
-        'unit_id'      => $this->unit->id,
-        'status'       => 'active',
+    $this->unit = Unit::factory()->create(['property_id' => $this->property->id]);
+    $this->tenant = Tenant::factory()->create();
+    $this->tenancy = Tenancy::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'unit_id' => $this->unit->id,
+        'status' => 'active',
         'monthly_rent' => 20000,
     ]);
 });
@@ -30,39 +31,39 @@ beforeEach(function () {
 
 test('Payment model boot rejects utility_bill_id belonging to a different tenancy', function () {
     $otherTenancy = Tenancy::factory()->create();
-    $utilityType  = UtilityType::factory()->create(['is_active' => true]);
-    $tu           = TenancyUtility::factory()->create(['tenancy_id' => $otherTenancy->id, 'utility_type_id' => $utilityType->id]);
-    $bill         = UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id]);
+    $utilityType = UtilityType::factory()->create(['is_active' => true]);
+    $tu = TenancyUtility::factory()->create(['tenancy_id' => $otherTenancy->id, 'utility_type_id' => $utilityType->id]);
+    $bill = UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id]);
 
     expect(fn () => Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_bill_id' => $bill->id,
-        'amount'         => 500,
-        'payment_type'   => 'utility',
+        'amount' => 500,
+        'payment_type' => 'utility',
         'payment_method' => 'mobile_money',
-        'status'         => 'pending',
-        'paid_at'        => now(),
+        'status' => 'pending',
+        'paid_at' => now(),
     ]))->toThrow(InvalidArgumentException::class);
 });
 
 test('Payment model boot rejects rent_bill_id belonging to a different tenancy', function () {
     $otherTenancy = Tenancy::factory()->create();
-    $rentBill     = RentBill::factory()->create([
-        'tenancy_id'    => $otherTenancy->id,
+    $rentBill = RentBill::factory()->create([
+        'tenancy_id' => $otherTenancy->id,
         'billing_month' => now()->startOfMonth(),
-        'due_date'      => now()->endOfMonth(),
+        'due_date' => now()->endOfMonth(),
     ]);
 
     expect(fn () => Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'rent_bill_id'   => $rentBill->id,
-        'amount'         => 1000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'rent_bill_id' => $rentBill->id,
+        'amount' => 1000,
+        'payment_type' => 'rent',
         'payment_method' => 'bank_transfer',
-        'status'         => 'pending',
-        'paid_at'        => now(),
+        'status' => 'pending',
+        'paid_at' => now(),
     ]))->toThrow(InvalidArgumentException::class);
 });
 
@@ -70,13 +71,13 @@ test('Payment model boot rejects rent_bill_id belonging to a different tenancy',
 
 test('calculateStatus returns paid when total equals monthly rent', function () {
     $payment = Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 20000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 20000,
+        'payment_type' => 'rent',
         'payment_method' => 'bank_transfer',
-        'status'         => 'paid',
-        'paid_at'        => now(),
+        'status' => 'paid',
+        'paid_at' => now(),
     ]);
 
     expect($payment->calculateStatus($this->tenancy))->toBe('paid');
@@ -84,13 +85,13 @@ test('calculateStatus returns paid when total equals monthly rent', function () 
 
 test('calculateStatus returns partial when total is less than monthly rent', function () {
     Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 10000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 10000,
+        'payment_type' => 'rent',
         'payment_method' => 'bank_transfer',
-        'status'         => 'partial',
-        'paid_at'        => now(),
+        'status' => 'partial',
+        'paid_at' => now(),
     ]);
 
     $payment = Payment::where('tenancy_id', $this->tenancy->id)->first();
@@ -99,13 +100,13 @@ test('calculateStatus returns partial when total is less than monthly rent', fun
 
 test('calculateStatus returns pending when no payments recorded', function () {
     $payment = Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 1,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 1,
+        'payment_type' => 'rent',
         'payment_method' => 'mobile_money',
-        'status'         => 'pending',
-        'paid_at'        => now(),
+        'status' => 'pending',
+        'paid_at' => now(),
     ]);
 
     // A fresh tenancy with no paid/partial payments returns pending
@@ -117,13 +118,13 @@ test('calculateStatus returns pending when no payments recorded', function () {
 
 test('calculatePendingAmount returns remaining balance after payments', function () {
     Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 8000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 8000,
+        'payment_type' => 'rent',
         'payment_method' => 'mobile_money',
-        'status'         => 'partial',
-        'paid_at'        => now(),
+        'status' => 'partial',
+        'paid_at' => now(),
     ]);
 
     $pending = Payment::calculatePendingAmount($this->tenancy);
@@ -133,13 +134,13 @@ test('calculatePendingAmount returns remaining balance after payments', function
 
 test('calculatePendingAmount returns zero when fully paid', function () {
     Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 20000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 20000,
+        'payment_type' => 'rent',
         'payment_method' => 'bank_transfer',
-        'status'         => 'paid',
-        'paid_at'        => now(),
+        'status' => 'paid',
+        'paid_at' => now(),
     ]);
 
     expect(Payment::calculatePendingAmount($this->tenancy))->toBe(0.0);
@@ -149,13 +150,13 @@ test('calculatePendingAmount returns zero when fully paid', function () {
 
 test('soft-deleted payment is not returned in regular queries', function () {
     $payment = Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 5000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 5000,
+        'payment_type' => 'rent',
         'payment_method' => 'mobile_money',
-        'status'         => 'paid',
-        'paid_at'        => now(),
+        'status' => 'paid',
+        'paid_at' => now(),
     ]);
 
     $payment->delete();
@@ -168,13 +169,13 @@ test('soft-deleted payment is not returned in regular queries', function () {
 
 test('tenant_code attribute resolves correctly from tenant relationship', function () {
     $payment = Payment::create([
-        'tenant_id'      => $this->tenant->id,
-        'tenancy_id'     => $this->tenancy->id,
-        'amount'         => 5000,
-        'payment_type'   => 'rent',
+        'tenant_id' => $this->tenant->id,
+        'tenancy_id' => $this->tenancy->id,
+        'amount' => 5000,
+        'payment_type' => 'rent',
         'payment_method' => 'mobile_money',
-        'status'         => 'paid',
-        'paid_at'        => now(),
+        'status' => 'paid',
+        'paid_at' => now(),
     ]);
 
     $payment->load('tenant');

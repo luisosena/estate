@@ -1,9 +1,9 @@
 <?php
 
 use App\Models\Property;
-use App\Models\Tenant;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
+use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

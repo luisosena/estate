@@ -11,18 +11,18 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     [
-        'user'    => $this->user,
-        'tenant'  => $this->tenant,
+        'user' => $this->user,
+        'tenant' => $this->tenant,
         'tenancy' => $this->tenancy,
     ] = $this->createApiTenant();
 
     $this->bill = RentBill::factory()->create([
-        'tenancy_id'    => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'billing_month' => now()->startOfMonth(),
-        'due_date'      => now()->endOfMonth(),
-        'amount_due'    => 15000,
-        'amount_paid'   => 0,
-        'status'        => 'pending',
+        'due_date' => now()->endOfMonth(),
+        'amount_due' => 15000,
+        'amount_paid' => 0,
+        'status' => 'pending',
     ]);
 });
 
@@ -54,18 +54,18 @@ test('tenant can view single own rent bill', function () {
 });
 
 test('tenant cannot view another tenants rent bill', function () {
-    $otherTenant  = Tenant::factory()->create();
-    $otherUser    = User::factory()->create(['role' => 'tenant', 'tenant_id' => $otherTenant->id]);
-    $otherUnit    = Unit::factory()->create(['status' => 'occupied']);
+    $otherTenant = Tenant::factory()->create();
+    $otherUser = User::factory()->create(['role' => 'tenant', 'tenant_id' => $otherTenant->id]);
+    $otherUnit = Unit::factory()->create(['status' => 'occupied']);
     $otherTenancy = Tenancy::factory()->create([
         'tenant_id' => $otherTenant->id,
-        'unit_id'   => $otherUnit->id,
-        'status'    => 'active',
+        'unit_id' => $otherUnit->id,
+        'status' => 'active',
     ]);
     $otherBill = RentBill::factory()->create([
-        'tenancy_id'    => $otherTenancy->id,
+        'tenancy_id' => $otherTenancy->id,
         'billing_month' => now()->startOfMonth(),
-        'due_date'      => now()->endOfMonth(),
+        'due_date' => now()->endOfMonth(),
     ]);
 
     $this->getJson("/api/v1/tenant/rent-bills/{$otherBill->id}")->assertNotFound();
