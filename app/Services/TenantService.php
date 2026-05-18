@@ -34,12 +34,10 @@ class TenantService
                 'monthly_rent' => $activeTenancy->monthly_rent,
                 'security_deposit' => $activeTenancy->security_deposit,
             ] : null,
-            'payments' => $activeTenancy?->payments
-                ->sortByDesc(function ($payment) {
-                    return $payment->paid_at ?? $payment->created_at;
-                })
-                ->take(5)
-                ->values()
+            'payments' => $activeTenancy?->payments()
+                ->orderByDesc('paid_at')
+                ->limit(5)
+                ->get()
                 ->toArray() ?? [],
             'utilities' => $activeTenancy?->tenancyUtilities
                 ? $activeTenancy->tenancyUtilities->toArray()
