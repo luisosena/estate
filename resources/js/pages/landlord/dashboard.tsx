@@ -18,6 +18,8 @@ import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard, QuickAction } from '@/components/shared/DashboardComponents';
+import { PaymentCollectionChart } from '@/components/shared/payment-collection-chart';
+import { RevenueTrendChart } from '@/components/shared/revenue-trend-chart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -56,6 +58,22 @@ interface LandlordDashboardProps {
     };
     stats: Stats;
     unreadNotificationsCount?: number;
+    revenueTrend?: {
+        month: string;
+        label: string;
+        total_revenue: number;
+        payment_count: number;
+    }[];
+    collectionTrend?: {
+        month: string;
+        label: string;
+        paid: number;
+        pending: number;
+        overdue: number;
+        partial: number;
+        waived: number;
+        total: number;
+    }[];
 }
 
 /* ─── Formatting Helpers ─────────────────────────────────────────── */
@@ -82,6 +100,8 @@ export default function Dashboard({
     properties,
     stats,
     unreadNotificationsCount = 0,
+    revenueTrend = [],
+    collectionTrend = [],
 }: LandlordDashboardProps) {
     const propertiesList = properties.data || [];
     const { auth } = usePage<SharedData>().props;
@@ -155,6 +175,12 @@ export default function Dashboard({
                             icon={Home}
                             description={`${stats.total_tenants} of ${stats.total_units} units filled`}
                         />
+                    </section>
+
+                    {/* Charts Section */}
+                    <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <RevenueTrendChart data={revenueTrend} />
+                        <PaymentCollectionChart data={collectionTrend} />
                     </section>
 
                     {/* Main Split Grid */}

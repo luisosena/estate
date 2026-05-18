@@ -16,6 +16,7 @@ import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard, QuickAction } from '@/components/shared/DashboardComponents';
+import { RevenueTrendChart } from '@/components/shared/revenue-trend-chart';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -48,6 +49,12 @@ interface AdminDashboardProps {
         maintenance_properties: number;
     };
     activity?: ActivityItem[];
+    revenueTrend?: {
+        month: string;
+        label: string;
+        total_revenue: number;
+        payment_count: number;
+    }[];
 }
 
 /* ─── Formatting Helpers ─────────────────────────────────────────── */
@@ -74,7 +81,7 @@ const ActivityIcon = ({ type }: { type: string }) => {
 
 /* ─── Main Component ─────────────────────────────────────────────── */
 
-export default function Dashboard({ stats, activity = [] }: AdminDashboardProps) {
+export default function Dashboard({ stats, activity = [], revenueTrend = [] }: AdminDashboardProps) {
     const { auth } = usePage<SharedData>().props;
     const adminName = auth?.user?.name ?? 'Admin';
 
@@ -126,6 +133,13 @@ export default function Dashboard({ stats, activity = [] }: AdminDashboardProps)
                     description="Landlords requiring verification"
                     alert={(stats?.pending_landlords || 0) > 0}
                 />
+            </section>
+
+            <Separator className="opacity-50" />
+
+            {/* Revenue Chart */}
+            <section>
+                <RevenueTrendChart data={revenueTrend} title="System Revenue Trend" />
             </section>
 
             {/* Bottom Section: Quick Actions & Activity */}
