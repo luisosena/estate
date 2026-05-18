@@ -8,6 +8,7 @@ use App\Models\RentBill;
 use App\Models\Tenancy;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\RentBillService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -55,7 +56,7 @@ class ApiDashboardService
         return Property::where('owner_id', $landlord->id)
             ->withCount(['units'])
             ->withCount(['tenancies as active_tenants_count' => function ($query) {
-                $query->where('status', 'active');
+                $query->where('tenancies.status', 'active');
             }])
             ->get();
     }
@@ -64,7 +65,7 @@ class ApiDashboardService
     {
         $occupiedUnits = Unit::whereIn('id', $unitIds)
             ->whereHas('tenancies', function ($query) {
-                $query->where('status', 'active');
+                $query->where('tenancies.status', 'active');
             })
             ->count();
 

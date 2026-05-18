@@ -52,10 +52,10 @@ class TenantDashboardService
             'tenant' => new TenantResource($tenant),
             'unit' => $activeTenancy ? new UnitResource($activeTenancy->unit) : null,
             'tenancy' => $activeTenancy ? new TenancyResource($activeTenancy) : null,
-            'payments' => PaymentResource::collection($activeTenancy?->payments()
-                ->orderByDesc('paid_at')
-                ->limit(5)
-                ->get() ?? collect([])),
+            'payments' => PaymentResource::collection($activeTenancy?->payments
+                ->sortByDesc(fn ($p) => $p->paid_at ?? $p->created_at)
+                ->take(5)
+                ->values() ?? collect([])),
             'utilities' => TenancyUtilityResource::collection($activeTenancy?->tenancyUtilities ?? collect([])),
             'notifications' => NotificationResource::collection($tenant->user?->notifications()
                 ->latest()
