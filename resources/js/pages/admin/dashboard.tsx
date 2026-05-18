@@ -206,7 +206,7 @@ export default function Dashboard({ stats, activity = [], revenueTrend = [] }: A
                             label="Audit Reports"
                             icon={Activity}
                             className="bg-secondary/5 border-secondary/20 hover:bg-secondary/10"
-                            disabled
+                            href={route('admin.audit-reports')}
                         />
                     </div>
 

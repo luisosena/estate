@@ -171,6 +171,16 @@ export default function TenantDashboard({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+                <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                    <a href={route('tenant.dashboard.export.csv')}>
+                        Export CSV
+                    </a>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                    <a href={route('tenant.dashboard.export.pdf')}>
+                        Export PDF
+                    </a>
+                </Button>
                 <Button asChild variant="outline" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
                     <Link href={route('tenant.payments')}>
                         <CreditCard className="w-4 h-4 mr-2 text-muted-foreground" />

@@ -142,6 +142,16 @@ export default function Dashboard({
                                     Tenants
                                 </Link>
                             </Button>
+                            <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                                <a href={route('landlord.dashboard.export.csv')}>
+                                    Export CSV
+                                </a>
+                            </Button>
+                            <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                                <a href={route('landlord.dashboard.export.pdf')}>
+                                    Export PDF
+                                </a>
+                            </Button>
                             <Button onClick={handleAddTenant} className="shadow-sm">
                                 <Plus className="w-4 h-4 mr-2" />
                                 Add Tenant
