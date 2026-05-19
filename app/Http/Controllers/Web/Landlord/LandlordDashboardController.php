@@ -20,7 +20,7 @@ class LandlordDashboardController extends Controller
     {
         $this->authorize('viewAny', Property::class);
 
-        $months = (int) $request->get('months', 6);
+        $months = min(max((int) $request->get('months', 6), 1), 24);
 
         return Inertia::render('landlord/dashboard', [
             ...$this->dashboardService->getDashboardData($request->user()),

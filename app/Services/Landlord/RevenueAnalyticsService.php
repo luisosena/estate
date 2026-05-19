@@ -4,19 +4,15 @@ namespace App\Services\Landlord;
 
 use App\Models\Payment;
 use App\Models\RentBill;
-use App\Models\Tenancy;
-use App\Models\Unit;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class RevenueAnalyticsService
 {
     public function getMonthlyRevenueTrend(User $landlord, int $months = 12): Collection
     {
-        $propertyIds = $landlord->properties()->pluck('id');
-        $unitIds = Unit::whereIn('property_id', $propertyIds)->pluck('id');
-        $tenancyIds = Tenancy::whereIn('unit_id', $unitIds)->pluck('id');
+        $tenancyIds = $landlord->getTenancyIds();
 
         if ($tenancyIds->isEmpty()) {
             return $this->emptyTrend($months);
@@ -25,24 +21,17 @@ class RevenueAnalyticsService
         $payments = Payment::whereIn('tenancy_id', $tenancyIds)
             ->where('status', 'paid')
             ->where('paid_at', '>=', now()->subMonths($months)->startOfMonth())
-            ->get(['amount', 'paid_at']);
+            ->selectRaw($this->dateGroupSelect('paid_at', 'SUM(amount) as total_revenue, COUNT(*) as payment_count'))
+            ->groupByRaw($this->dateGroupBy('paid_at'))
+            ->get()
+            ->keyBy('month');
 
-        $grouped = $payments->groupBy(fn ($p) => Carbon::parse($p->paid_at)->format('Y-m'))
-            ->map(fn ($items, $month) => [
-                'month' => $month,
-                'label' => Carbon::parse($month.'-01')->format('M Y'),
-                'total_revenue' => (float) $items->sum('amount'),
-                'payment_count' => $items->count(),
-            ]);
-
-        return $this->fillMissingMonths($grouped, $months);
+        return $this->fillMissingMonths($payments, $months);
     }
 
     public function getPaymentCollectionTrend(User $landlord, int $months = 12): Collection
     {
-        $propertyIds = $landlord->properties()->pluck('id');
-        $unitIds = Unit::whereIn('property_id', $propertyIds)->pluck('id');
-        $tenancyIds = Tenancy::whereIn('unit_id', $unitIds)->pluck('id');
+        $tenancyIds = $landlord->getTenancyIds();
 
         if ($tenancyIds->isEmpty()) {
             return $this->emptyCollectionTrend($months);
@@ -50,38 +39,52 @@ class RevenueAnalyticsService
 
         $bills = RentBill::whereIn('tenancy_id', $tenancyIds)
             ->where('billing_month', '>=', now()->subMonths($months)->startOfMonth())
-            ->get(['status', 'billing_month']);
+            ->selectRaw($this->dateGroupSelect('billing_month', "
+                SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) as overdue,
+                SUM(CASE WHEN status = 'partial' THEN 1 ELSE 0 END) as partial,
+                SUM(CASE WHEN status = 'waived' THEN 1 ELSE 0 END) as waived,
+                COUNT(*) as total"))
+            ->groupByRaw($this->dateGroupBy('billing_month'))
+            ->get()
+            ->keyBy('month');
 
-        $grouped = $bills->groupBy(fn ($b) => Carbon::parse($b->billing_month)->format('Y-m'))
-            ->map(fn ($items, $month) => [
-                'month' => $month,
-                'label' => Carbon::parse($month.'-01')->format('M Y'),
-                'paid' => $items->where('status', 'paid')->count(),
-                'pending' => $items->where('status', 'pending')->count(),
-                'overdue' => $items->where('status', 'overdue')->count(),
-                'partial' => $items->where('status', 'partial')->count(),
-                'waived' => $items->where('status', 'waived')->count(),
-                'total' => $items->count(),
-            ]);
-
-        return $this->fillMissingCollectionMonths($grouped, $months);
+        return $this->fillMissingCollectionMonths($bills, $months);
     }
 
     public function getSystemRevenueTrend(int $months = 12): Collection
     {
         $payments = Payment::where('status', 'paid')
             ->where('paid_at', '>=', now()->subMonths($months)->startOfMonth())
-            ->get(['amount', 'paid_at']);
+            ->selectRaw($this->dateGroupSelect('paid_at', 'SUM(amount) as total_revenue, COUNT(*) as payment_count'))
+            ->groupByRaw($this->dateGroupBy('paid_at'))
+            ->get()
+            ->keyBy('month');
 
-        $grouped = $payments->groupBy(fn ($p) => Carbon::parse($p->paid_at)->format('Y-m'))
-            ->map(fn ($items, $month) => [
-                'month' => $month,
-                'label' => Carbon::parse($month.'-01')->format('M Y'),
-                'total_revenue' => (float) $items->sum('amount'),
-                'payment_count' => $items->count(),
-            ]);
+        return $this->fillMissingMonths($payments, $months);
+    }
 
-        return $this->fillMissingMonths($grouped, $months);
+    protected function dateGroupSelect(string $column, string $aggregates): string
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            return "strftime('%Y-%m', {$column}) as month, {$aggregates}";
+        }
+
+        return "DATE_FORMAT({$column}, '%Y-%m') as month, {$aggregates}";
+    }
+
+    protected function dateGroupBy(string $column): string
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            return "strftime('%Y-%m', {$column})";
+        }
+
+        return "DATE_FORMAT({$column}, '%Y-%m')";
     }
 
     protected function emptyTrend(int $months): Collection
@@ -120,44 +123,44 @@ class RevenueAnalyticsService
         return $result;
     }
 
-    protected function fillMissingMonths(Collection $grouped, int $months): Collection
+    protected function fillMissingMonths(Collection $dbResults, int $months): Collection
     {
         $result = collect();
 
         for ($i = $months - 1; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $key = $date->format('Y-m');
-            $existing = $grouped->get($key);
+            $existing = $dbResults->get($key);
 
             $result->push([
                 'month' => $key,
                 'label' => $date->format('M Y'),
-                'total_revenue' => (float) ($existing['total_revenue'] ?? 0),
-                'payment_count' => (int) ($existing['payment_count'] ?? 0),
+                'total_revenue' => (float) ($existing?->total_revenue ?? 0),
+                'payment_count' => (int) ($existing?->payment_count ?? 0),
             ]);
         }
 
         return $result;
     }
 
-    protected function fillMissingCollectionMonths(Collection $grouped, int $months): Collection
+    protected function fillMissingCollectionMonths(Collection $dbResults, int $months): Collection
     {
         $result = collect();
 
         for ($i = $months - 1; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $key = $date->format('Y-m');
-            $existing = $grouped->get($key);
+            $existing = $dbResults->get($key);
 
             $result->push([
                 'month' => $key,
                 'label' => $date->format('M Y'),
-                'paid' => (int) ($existing['paid'] ?? 0),
-                'pending' => (int) ($existing['pending'] ?? 0),
-                'overdue' => (int) ($existing['overdue'] ?? 0),
-                'partial' => (int) ($existing['partial'] ?? 0),
-                'waived' => (int) ($existing['waived'] ?? 0),
-                'total' => (int) ($existing['total'] ?? 0),
+                'paid' => (int) ($existing?->paid ?? 0),
+                'pending' => (int) ($existing?->pending ?? 0),
+                'overdue' => (int) ($existing?->overdue ?? 0),
+                'partial' => (int) ($existing?->partial ?? 0),
+                'waived' => (int) ($existing?->waived ?? 0),
+                'total' => (int) ($existing?->total ?? 0),
             ]);
         }
 

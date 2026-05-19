@@ -16,12 +16,28 @@ test('admin can access the admin dashboard', function () {
         ->assertOk();
 });
 
-test('landlord is redirected from admin dashboard', function () {
+test('landlord is forbidden from admin dashboard', function () {
     $this->actingAs($this->landlord)
         ->get('/admin/dashboard')
-        ->assertRedirect();
+        ->assertForbidden();
 });
 
 test('guest is redirected from admin dashboard', function () {
     $this->get('/admin/dashboard')->assertRedirect();
+});
+
+test('admin can access audit reports page', function () {
+    $this->actingAs($this->admin)
+        ->get('/admin/audit-reports')
+        ->assertOk();
+});
+
+test('landlord is forbidden from audit reports', function () {
+    $this->actingAs($this->landlord)
+        ->get('/admin/audit-reports')
+        ->assertForbidden();
+});
+
+test('guest is redirected from audit reports', function () {
+    $this->get('/admin/audit-reports')->assertRedirect();
 });

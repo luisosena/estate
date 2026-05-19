@@ -18,9 +18,10 @@ class ApiDashboardService
 
     public function getDashboardData(User $landlord): array
     {
-        $propertyIds = $landlord->properties()->pluck('id');
-        $unitIds = Unit::whereIn('property_id', $propertyIds)->pluck('id');
-        $tenancyIds = Tenancy::whereIn('unit_id', $unitIds)->pluck('id');
+        $tenancyIds = $landlord->getTenancyIds();
+        $unitIds = Unit::whereIn('property_id',
+            $landlord->properties()->select('id')
+        )->pluck('id');
 
         $properties = $this->getPropertiesWithCounts($landlord);
         $unitStats = $this->getUnitStats($unitIds);

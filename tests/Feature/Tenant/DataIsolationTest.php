@@ -87,7 +87,7 @@ test('tenant payments page renders scoped to own tenancy', function () {
 test('tenant cannot access admin routes', function () {
     $response = $this->actingAs($this->userA)->get('/admin/dashboard');
 
-    $response->assertRedirect(); // redirects away from admin
+    $response->assertForbidden(); // denied by role gate
 });
 
 test('tenant cannot access landlord routes', function () {

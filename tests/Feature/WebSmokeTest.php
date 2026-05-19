@@ -175,7 +175,7 @@ it('prevents a tenant from accessing landlord routes', function (): void {
 it('prevents a landlord from accessing admin routes', function (): void {
     $landlord = User::factory()->create(['role' => Role::Landlord]);
 
-    $this->actingAs($landlord)->get('/admin/dashboard')->assertRedirect();
+    $this->actingAs($landlord)->get('/admin/dashboard')->assertForbidden();
 });
 
 it('redirects unauthenticated users to login', function (): void {

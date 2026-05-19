@@ -31,6 +31,10 @@ const chartConfig = {
     label: "Partial",
     color: "hsl(217, 91%, 60%)",
   },
+  waived: {
+    label: "Waived",
+    color: "hsl(0, 0%, 65%)",
+  },
 } satisfies ChartConfig
 
 interface PaymentCollectionChartProps {
@@ -89,6 +93,7 @@ export function PaymentCollectionChart({ data, title = "Payment Collection" }: P
             <Bar dataKey="pending" fill="var(--color-pending)" radius={[4, 4, 0, 0]} stackId="a" />
             <Bar dataKey="overdue" fill="var(--color-overdue)" radius={[4, 4, 0, 0]} stackId="a" />
             <Bar dataKey="partial" fill="var(--color-partial)" radius={[4, 4, 0, 0]} stackId="a" />
+            <Bar dataKey="waived" fill="var(--color-waived)" radius={[4, 4, 0, 0]} stackId="a" />
           </BarChart>
         </ChartContainer>
       </CardContent>

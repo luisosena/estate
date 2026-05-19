@@ -43,6 +43,7 @@ interface Property {
 
 interface Stats {
     total_tenants: number;
+    occupied_units: number;
     total_properties: number;
     total_units: number;
     monthly_revenue: number;
@@ -110,7 +111,7 @@ export default function Dashboard({
 
     const occupancyRate =
         stats.total_units > 0
-            ? Math.round((stats.total_tenants / stats.total_units) * 100)
+            ? Math.round((stats.occupied_units / stats.total_units) * 100)
             : 0;
 
     return (
@@ -181,7 +182,7 @@ export default function Dashboard({
                             title="Occupancy Rate"
                             value={`${occupancyRate}%`}
                             icon={Home}
-                            description={`${stats.total_tenants} of ${stats.total_units} units filled`}
+                            description={`${stats.occupied_units} of ${stats.total_units} units filled`}
                         />
                     </section>
 
@@ -337,6 +338,18 @@ export default function Dashboard({
                             <QuickAction label="Rent Bills" icon={Receipt} href={route('landlord.rent-bills.index')} />
                             <QuickAction label="Utilities" icon={Zap} href={route('landlord.utilities.index')} />
                             <QuickAction label="All Tenants" icon={Users} href={route('landlord.tenants.index')} />
+                        </div>
+                        <div className="flex items-center gap-2 sm:hidden">
+                            <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent flex-1">
+                                <a href={route('landlord.dashboard.export.csv')}>
+                                    Export CSV
+                                </a>
+                            </Button>
+                            <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent flex-1">
+                                <a href={route('landlord.dashboard.export.pdf')}>
+                                    Export PDF
+                                </a>
+                            </Button>
                         </div>
                     </section>
 

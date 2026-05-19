@@ -8,8 +8,8 @@
         h1 { font-size: 20px; margin-bottom: 4px; }
         h2 { font-size: 14px; margin-top: 20px; margin-bottom: 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
         .meta { color: #6b7280; font-size: 10px; margin-bottom: 16px; }
-        .info-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
-        .info-item { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px; min-width: 140px; }
+        .info-grid { margin-bottom: 16px; }
+        .info-item { display: inline-block; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px; min-width: 140px; margin: 0 8px 8px 0; vertical-align: top; }
         .info-label { font-size: 9px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; }
         .info-value { font-size: 14px; font-weight: 600; margin-top: 2px; }
         table { width: 100%; border-collapse: collapse; margin-top: 8px; }

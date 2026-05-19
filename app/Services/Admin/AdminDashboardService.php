@@ -3,10 +3,12 @@
 namespace App\Services\Admin;
 
 use App\Http\Resources\ActivityResource;
+use App\Models\Payment;
 use App\Models\Property;
 use App\Models\Tenancy;
 use App\Models\Unit;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 class AdminDashboardService
 {
@@ -15,6 +17,16 @@ class AdminDashboardService
         return [
             'stats' => $this->getGlobalStats(),
             'activity' => $this->getRecentActivity(),
+        ];
+    }
+
+    public function getAuditReportData(): array
+    {
+        return [
+            'recentLandlords' => $this->getRecentLandlords(),
+            'recentProperties' => $this->getRecentProperties(),
+            'recentTenancies' => $this->getRecentTenancies(),
+            'recentPayments' => $this->getRecentPayments(),
         ];
     }
 
@@ -59,5 +71,37 @@ class AdminDashboardService
             ->values();
 
         return ActivityResource::collection($activity)->resolve();
+    }
+
+    protected function getRecentLandlords(): Collection
+    {
+        return User::where('role', 'landlord')
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get(['id', 'name', 'email', 'role', 'email_verified_at', 'created_at']);
+    }
+
+    protected function getRecentProperties(): Collection
+    {
+        return Property::with('landlord:id,name')
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get(['id', 'name', 'address', 'status', 'owner_id', 'created_at']);
+    }
+
+    protected function getRecentTenancies(): Collection
+    {
+        return Tenancy::with(['tenant:id,full_name', 'unit:id,unit_code'])
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get(['id', 'tenant_id', 'unit_id', 'status', 'monthly_rent', 'created_at']);
+    }
+
+    protected function getRecentPayments(): Collection
+    {
+        return Payment::with(['tenant:id,full_name', 'tenancy.unit:id,unit_code'])
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get(['id', 'tenant_id', 'tenancy_id', 'amount', 'status', 'payment_type', 'created_at']);
     }
 }

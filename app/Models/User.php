@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -71,6 +72,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function getTenancyIds(): Collection
+    {
+        return Tenancy::whereIn('unit_id',
+            Unit::whereIn('property_id',
+                $this->properties()->select('id')
+            )->select('id')
+        )->pluck('id');
     }
 
     public function getTenantCodeAttribute()

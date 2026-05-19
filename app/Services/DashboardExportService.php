@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Payment;
 use App\Models\RentBill;
 use App\Models\Tenancy;
+use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -13,15 +14,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DashboardExportService
 {
+    protected const EXPORT_LIMIT = 50;
+
     public function __construct(
         protected RentBillService $rentBillService
     ) {}
 
     public function exportLandlordDashboardCsv(User $landlord): Response
     {
-        $propertyIds = $landlord->properties()->pluck('id');
-        $unitIds = Unit::whereIn('property_id', $propertyIds)->pluck('id');
-        $tenancyIds = Tenancy::whereIn('unit_id', $unitIds)->pluck('id');
+        $tenancyIds = $landlord->getTenancyIds();
+        $unitIds = Unit::whereIn('property_id',
+            $landlord->properties()->select('id')
+        )->pluck('id');
 
         $properties = $landlord->properties()
             ->withCount(['units'])
@@ -34,13 +38,13 @@ class DashboardExportService
             ->where('status', 'paid')
             ->with(['tenant', 'tenancy.unit'])
             ->orderByDesc('paid_at')
-            ->limit(100)
+            ->limit(self::EXPORT_LIMIT)
             ->get();
 
         $rentBills = RentBill::whereIn('tenancy_id', $tenancyIds)
             ->with(['tenancy.tenant', 'tenancy.unit'])
             ->orderByDesc('billing_month')
-            ->limit(100)
+            ->limit(self::EXPORT_LIMIT)
             ->get();
 
         $csvData = $this->buildLandlordCsvData($landlord, $properties, $payments, $rentBills);
@@ -56,9 +60,10 @@ class DashboardExportService
 
     public function exportLandlordDashboardPdf(User $landlord): Response
     {
-        $propertyIds = $landlord->properties()->pluck('id');
-        $unitIds = Unit::whereIn('property_id', $propertyIds)->pluck('id');
-        $tenancyIds = Tenancy::whereIn('unit_id', $unitIds)->pluck('id');
+        $tenancyIds = $landlord->getTenancyIds();
+        $unitIds = Unit::whereIn('property_id',
+            $landlord->properties()->select('id')
+        )->pluck('id');
 
         $properties = $landlord->properties()
             ->withCount(['units'])
@@ -81,7 +86,7 @@ class DashboardExportService
             ->where('status', 'paid')
             ->with(['tenant', 'tenancy.unit'])
             ->orderByDesc('paid_at')
-            ->limit(10)
+            ->limit(self::EXPORT_LIMIT)
             ->get();
 
         $rentStats = $this->rentBillService->getRentStatistics($landlord);
@@ -154,8 +159,8 @@ class DashboardExportService
             'tenant' => $tenant,
             'tenancy' => $activeTenancy,
             'unit' => $activeTenancy->unit,
-            'payments' => $activeTenancy->payments->sortByDesc(fn ($p) => $p->paid_at ?? $p->created_at)->take(10),
-            'rentBills' => $activeTenancy->rentBills->sortByDesc('billing_month')->take(10),
+            'payments' => $activeTenancy->payments->sortByDesc(fn ($p) => $p->paid_at ?? $p->created_at)->take(self::EXPORT_LIMIT),
+            'rentBills' => $activeTenancy->rentBills->sortByDesc('billing_month')->take(self::EXPORT_LIMIT),
             'exportedAt' => now(),
         ]);
 
@@ -218,7 +223,7 @@ class DashboardExportService
         return $rows;
     }
 
-    protected function buildTenantCsvData($tenant, $tenancy): array
+    protected function buildTenantCsvData(Tenant $tenant, Tenancy $tenancy): array
     {
         $rows = [];
 
@@ -237,7 +242,7 @@ class DashboardExportService
 
         $rows[] = ['PAYMENT HISTORY'];
         $rows[] = ['Date', 'Amount', 'Type', 'Method', 'Status'];
-        foreach ($tenancy->payments->sortByDesc(fn ($p) => $p->paid_at ?? $p->created_at)->take(20) as $payment) {
+        foreach ($tenancy->payments->sortByDesc(fn ($p) => $p->paid_at ?? $p->created_at)->take(self::EXPORT_LIMIT) as $payment) {
             $rows[] = [
                 $payment->paid_at?->format('Y-m-d') ?? '',
                 $payment->amount,
@@ -250,7 +255,7 @@ class DashboardExportService
 
         $rows[] = ['RENT BILLS'];
         $rows[] = ['Billing Month', 'Amount Due', 'Amount Paid', 'Status'];
-        foreach ($tenancy->rentBills->sortByDesc('billing_month')->take(20) as $bill) {
+        foreach ($tenancy->rentBills->sortByDesc('billing_month')->take(self::EXPORT_LIMIT) as $bill) {
             $rows[] = [
                 $bill->billing_month?->format('Y-m') ?? '',
                 $bill->amount_due,
