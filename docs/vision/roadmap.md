@@ -7,8 +7,8 @@
 
 ## Current Status
 
-**Active branch:** `port/payment-architecture`
-**Last updated:** 2026-05-17
+**Active branch:** `message-and-notification`
+**Last updated:** 2026-05-19
 
 ### Milestone Completion Overview
 
@@ -17,11 +17,14 @@
 | Core authentication & role-based access | ✅ Complete | Fortify + Sanctum, `Role` enum, Policies |
 | Property, unit, tenant, tenancy CRUD | ✅ Complete | Full lifecycle management |
 | Automated billing (rent + utilities) | ✅ Complete | Scheduled commands, status tracking |
-| Payment recording & receipt generation | ✅ Complete | DomPDF, multi-channel notifications |
+| Payment recording & receipt generation | ✅ Complete | On-demand PDF streaming, multi-channel notifications |
 | Document storage system | ✅ Complete | Polymorphic attachments, web + mobile UI, 49 tests, soft deletes |
-| Mobile app (React Native/Expo) | ✅ Complete | Landlord + tenant screens + document support |
+| Mobile app (React Native/Expo) | ✅ Complete | Landlord + tenant screens + document support + push notifications |
 | API strict versioning (`/api/v1/`) | ✅ Complete | Unversioned routes removed |
-| Test suite | ✅ Complete | 457 tests, 1354 assertions |
+| Test suite | ✅ Complete | 483 tests, 1428 assertions |
+| Notification system | ✅ Complete | 10 notification types, 5 channels (database, mail, WhatsApp, Expo push, WebSocket broadcast), admin notifications, real-time toast, push token management |
+| Analytics & reporting | ✅ Complete | Revenue charts, payment collection charts, CSV/PDF exports, admin audit reports |
+| Landing page | ✅ Complete | 9-section editorial redesign with bento grid, animations, responsive |
 | Payment gateway layer | ⚠️ Scaffolded | Wired but not activated |
 
 ---
@@ -52,7 +55,9 @@
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Design and implement landing page (`/`) | ✅ Complete | 9-section page with animations, responsive design |
+| Design and implement landing page (`/`) | ✅ Complete | 9-section page with bento grid pain-solution, animations, responsive design |
+| Bento grid refactor | ✅ Complete | Shared token model (`accentColor`, `size`), `sizeClasses` map, hover radial gradients |
+| Welcome page removal | ✅ Complete | Old animated splash replaced with `home.tsx`, Wayfinder routes updated |
 | Landlord onboarding flow (create account → add first property → add first unit) | ⬜ | |
 | Tenant self-registration flow (mobile) — refine existing | ⬜ | |
 | Email verification on registration | ⬜ | Fortify supports this, needs enabling |
@@ -127,14 +132,29 @@
 
 | Task | Status | Notes |
 |------|--------|-------|
+| Core notification system (10 types, 5 channels) | ✅ Complete | Database, mail, WhatsApp, Expo push, WebSocket broadcast |
+| Admin notification system | ✅ Complete | New landlords, verifications, tenancy summaries, system errors |
+| Real-time toast notifications (Reverb) | ✅ Complete | `use-real-time-notifications` hook, Echo integration |
+| Push token management API | ✅ Complete | Register/remove endpoints, token auto-clear on DeviceNotRegistered |
+| In-app notification inbox (all 3 roles) | ✅ Complete | Web + API, pagination, filters, mark read/unread |
 | Notification preferences per user (channel opt-in/out) | ⬜ | |
 | Notification template system (bill reminders, payment confirmations, etc.) | ⬜ | |
 | Delivery status tracking (sent, delivered, read) | ⬜ | |
-| In-app notification inbox with mark-as-read | ⬜ | |
 | Scheduled digest emails/WhatsApp summaries | ⬜ | Weekly or monthly |
 | Landlord-to-tenant broadcast messages | ⬜ | Property-wide or tenancy-specific |
 
-**Definition of done:** Users can control which channels they receive notifications on, view all notifications in-app, and landlords can send broadcast messages to their tenants.
+**Definition of done:** ~~Users can control which channels they receive notifications on, view all notifications in-app, and landlords can send broadcast messages to their tenants.~~ ✅ Core system complete. Remaining: preferences, templates, broadcast messages.
+
+**Implementation details:** See [`docs/reports/notification-messaging-implementation.md`](../reports/notification-messaging-implementation.md)
+
+**Code review fixes applied (May 2026):**
+- Push token fields added to `User::$hidden` to prevent API leakage
+- `title`/`priority` keys added to all notification `toArray()` methods
+- Route ordering fixed for push-token endpoints
+- `markAsUnread` API routes added for web/mobile parity
+- `ManagesNotifications` trait extracted to eliminate controller duplication (3 → 1)
+- Laravel paginator replaces manual skip/take in API controllers
+- 10 feature tests added for notification endpoints
 
 ---
 
@@ -144,13 +164,26 @@
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Occupancy rate over time | ⬜ | |
-| Revenue collected vs. expected (monthly) | ⬜ | |
+| Revenue trend charts (Recharts AreaChart) | ✅ Complete | `RevenueAnalyticsService`, 12-month rolling, cross-database compatible |
+| Payment collection breakdown (stacked BarChart) | ✅ Complete | Paid/pending/overdue/partial/waived status breakdown |
+| Occupancy rate standardization | ✅ Complete | Unified formula across all services (distinct units with active tenancies) |
 | Overdue bills aging report | ⬜ | |
 | Tenant payment reliability score | ⬜ | |
-| Export reports (CSV/PDF) | ⬜ | |
+| Export reports (CSV/PDF) | ✅ Complete | Streamed CSV, DomPDF templates, role-gated, unified 50-record limit |
+| Admin audit reports page | ✅ Complete | 4-section grid: registrations, properties, tenancies, payments |
 
-**Definition of done:** Landlord dashboard shows charts for occupancy, revenue, and overdue bills with date range filters.
+**Definition of done:** ~~Landlord dashboard shows charts for occupancy, revenue, and overdue bills with date range filters.~~ ✅ Charts, exports, and audit reports complete. Remaining: aging report, reliability score.
+
+**Implementation details:** See [`docs/reports/analytics-and-reporting-implementation.md`](../reports/analytics-and-reporting-implementation.md)
+
+**Code review fixes applied (May 2026):**
+- 3-query ID-gather pattern extracted to `User::getTenancyIds()` with subquery chaining
+- In-memory aggregation pushed to database with `selectRaw()` + `groupByRaw()`
+- `occupied_units` computed and used in frontend occupancy formula
+- Audit queries moved from controller to `AdminDashboardService`
+- `waived` bills added to PaymentCollectionChart
+- CSV/PDF export limits unified to 50 records
+- 10 new tests added across 2 test files
 
 ---
 
@@ -158,7 +191,6 @@
 
 These are validated ideas that have not been assigned to a phase.
 
-- [ ] Automated reminders and escalation for overdue bills (SMS/WhatsApp)
 - [ ] Lease renewal workflows with automated reminders
 - [ ] Expense tracking for landlords (repairs, utilities, taxes)
 - [ ] Tenant screening and application pipeline
@@ -168,6 +200,11 @@ These are validated ideas that have not been assigned to a phase.
 - [ ] Bulk operations (bill generation, payment recording)
 - [ ] API rate limiting per tenant/landlord
 - [ ] Security event dashboard for admins
+- [ ] Notification retention policy (auto-cleanup old notifications)
+- [ ] Failed job alerting for queued notifications
+- [ ] `LandlordVerified` event wiring
+- [ ] `SystemError` automatic trigger from exception handler
+- [ ] PDF receipt merge audit fix (restore streaming version from `landing-page` branch)
 
 ---
 
@@ -178,24 +215,24 @@ These are validated ideas that have not been assigned to a phase.
 | Area | Completion | Notes |
 |------|-----------|-------|
 | Authentication & Authorization | 95% | 2FA, role enum, policies done. Session management could improve. |
-| Property & Unit Management | 90% | CRUD complete. Analytics pending. |
+| Property & Unit Management | 95% | CRUD complete. Analytics and charts integrated. |
 | Tenant & Tenancy Management | 90% | CRUD complete. Onboarding flow pending. |
-| Billing (Rent + Utilities) | 85% | Auto-generation works. Gateway integration pending. |
-| Payments | 70% | Recording works. Gateway activation pending. |
-| Notifications | 80% | Channels ported. Event wiring needs testing. |
-| Receipts | 90% | Generation works. Storage optimization possible. |
-| Mobile App | 80% | Core screens + document support done. Payment gateway integration pending. |
-| Testing | 90% | 457 tests passing. Gateway flow tests pending. |
-| Documentation | 75% | Technical docs solid. Vision/roadmap now added. |
-| Landing & Onboarding | 30% | Full landing page implemented. Footer links, pricing, and onboarding flows pending. |
-| Document Storage | 90% | Core system complete (DB, services, policies, web + mobile UI, 49 tests). S3 integration and enhancements pending. |
+| Billing (Rent + Utilities) | 90% | Auto-generation works, notifications wired. Gateway integration pending. |
+| Payments | 70% | Recording works, receipt streaming works. Gateway activation pending. |
+| Notifications | 95% | Full system complete (10 types, 5 channels, real-time). Preferences and templates pending. |
+| Receipts | 95% | On-demand streaming works. |
+| Mobile App | 85% | Core screens + document support + push notifications done. Payment gateway integration pending. |
+| Testing | 95% | 483 tests passing. Gateway flow tests pending. |
+| Documentation | 85% | Technical docs, vision/roadmap, implementation reports all current. |
+| Landing & Onboarding | 60% | Full landing page with bento grid implemented. Footer links, pricing, onboarding flows pending. |
+| Document Storage | 90% | Core system complete. S3 integration and enhancements pending. |
+| Analytics & Reporting | 80% | Charts, exports, audit reports complete. Aging report and reliability score pending. |
 | Maintenance Requests | 0% | Not started. |
-| Analytics & Reporting | 10% | Dashboard cards exist. Charts are placeholder data. |
 
 ### Overall Project Completion
 
 ```
-[██████████████████████░░░░░░░░] ~70%
+[█████████████████████████░░░] ~82%
 ```
 
 ---
@@ -211,6 +248,12 @@ These are validated ideas that have not been assigned to a phase.
 | 2026-04-14 | Rent billing system complete |
 | 2026-04-25 | Payment gateway scaffold (Phase 3) complete |
 | 2026-05-10 | Receipt generation (Phase 4) complete |
+| 2026-05-12 | Week 2 structural safety review (policies, FK constraints) |
 | 2026-05-15 | Event wiring and mobile types updated (Phase 5) |
 | 2026-05-16 | Vision and roadmap documentation created |
 | 2026-05-17 | Document storage system complete (Phase 6) — 39 files, 49 tests, web + mobile UI |
+| 2026-05-17 | Notification system overhaul — 10 notification types, 5 channels, admin notifications, Reverb real-time, push tokens |
+| 2026-05-17 | Landing page editorial redesign — 9-section page with bento grid pain-solution section |
+| 2026-05-17 | Post-merge audit: PDF receipt refactor lost during conflict resolution (documented, pending fix) |
+| 2026-05-19 | Analytics & reporting complete — revenue charts, payment collection charts, CSV/PDF exports, admin audit reports |
+| 2026-05-19 | Notification system code review fixes — trait extraction, paginator, push token hiding, markAsUnread, 10 new tests |

@@ -61,7 +61,7 @@ The end state is a **self-operating property management tool** where bills gener
 | **Data overload** | "Less chaos. More control. All in one place." | Investor-grade dashboards + clean data visualizations |
 | **Workload anxiety** | "Your business, on autopilot." | Automated workflows + intelligent task scheduling |
 | **Financial leakage** | "Every tenant, every unit, every cent — finally under control." | Integrated mobile payment gateways + automated bank reconciliation + professional financial reports |
-| **Communication chaos** | "No more missed messages." | Centralized multi-channel hub (in-app, push notifications, email logs) |
+| **Communication chaos** | "No more missed messages." | Centralized multi-channel hub (in-app, push notifications, email, WhatsApp, real-time WebSocket) |
 | **Maintenance reporting and management** | "Report it. Track it. Fix it." | Photo-verified tenant reporting + automated vendor dispatch + asset lifecycle tracking |
 | **Transition and onboarding friction** | "Switch in minutes. Not months." | One-click Excel migration + automated data mapping + instant portfolio import |
 
@@ -74,20 +74,28 @@ The end state is a **self-operating property management tool** where bills gener
 - [x] Property, unit, tenant, and tenancy CRUD
 - [x] Automated rent and utility bill generation
 - [x] Payment recording and status tracking
-- [x] Multi-channel notifications (WhatsApp, Expo push)
-- [x] PDF receipt generation
+- [x] Multi-channel notifications (WhatsApp, Expo push, email, database, WebSocket broadcast)
+- [x] PDF receipt generation (on-demand streaming)
 - [x] Mobile app with landlord and tenant screens
 - [x] API strict versioning (`/api/v1/`)
-- [x] Comprehensive test suite (348+ tests)
+- [x] Comprehensive test suite (483+ tests)
+- [x] Document storage (polymorphic attachments, web + mobile UI)
+- [x] Dashboard analytics with real-time charts (RevenueAnalyticsService)
+- [x] CSV/PDF dashboard exports for landlords and tenants
+- [x] Admin audit reports page
+- [x] Public-facing landing page with bento grid pain-solution section
+- [x] Real-time in-app notifications via Laravel Reverb
+- [x] Admin notification system (new landlords, verifications, tenancy summaries, system errors)
 
 ### Mid-Term
 - [ ] Activate payment gateway layer (M-Pesa STK push + manual gateway)
-- [ ] Landing page and public-facing marketing site
 - [ ] Tenant and landlord onboarding flows
-- [ ] Document storage (leases, receipts, inspection photos)
 - [ ] Maintenance request workflow
 - [ ] Automated reminders and escalation for overdue bills
-- [ ] Dashboard analytics and reporting
+- [ ] Notification preferences per user (channel opt-in/out)
+- [ ] Notification template system
+- [ ] Scheduled digest emails/WhatsApp summaries
+- [ ] Landlord-to-tenant broadcast messages
 
 ### Long-Term
 - [ ] Multi-property portfolio management with aggregated metrics
