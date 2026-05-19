@@ -1,7 +1,9 @@
 import { usePage } from '@inertiajs/react';
 import {
+    Activity,
     ArrowRight,
     Building2,
+    CalendarDays,
     ChevronRight,
     Plus,
     ShieldCheck,
@@ -17,9 +19,11 @@ import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
+    CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { type SharedData } from '@/types';
 
 /* ─── Interfaces ─────────────────────────────────────────────────── */

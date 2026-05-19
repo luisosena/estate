@@ -13,6 +13,10 @@ use Illuminate\Support\Collection;
 
 class DashboardExportService
 {
+    public function __construct(
+        protected RentBillService $rentBillService
+    ) {}
+
     public function exportLandlordDashboardCsv(User $landlord): Response
     {
         $propertyIds = $landlord->properties()->pluck('id');
@@ -80,7 +84,7 @@ class DashboardExportService
             ->limit(10)
             ->get();
 
-        $rentStats = (new RentBillService)->getRentStatistics($landlord);
+        $rentStats = $this->rentBillService->getRentStatistics($landlord);
 
         $pdf = Pdf::loadView('exports.landlord-dashboard-pdf', [
             'landlord' => $landlord,
