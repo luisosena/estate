@@ -18,12 +18,13 @@ import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard, QuickAction } from '@/components/shared/DashboardComponents';
+import { PaymentCollectionChart } from '@/components/shared/payment-collection-chart';
+import { RevenueTrendChart } from '@/components/shared/revenue-trend-chart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -56,6 +57,22 @@ interface LandlordDashboardProps {
     };
     stats: Stats;
     unreadNotificationsCount?: number;
+    revenueTrend?: {
+        month: string;
+        label: string;
+        total_revenue: number;
+        payment_count: number;
+    }[];
+    collectionTrend?: {
+        month: string;
+        label: string;
+        paid: number;
+        pending: number;
+        overdue: number;
+        partial: number;
+        waived: number;
+        total: number;
+    }[];
 }
 
 /* ─── Formatting Helpers ─────────────────────────────────────────── */
@@ -81,7 +98,8 @@ const getFormattedDate = () => {
 export default function Dashboard({
     properties,
     stats,
-    unreadNotificationsCount = 0,
+    revenueTrend = [],
+    collectionTrend = [],
 }: LandlordDashboardProps) {
     const propertiesList = properties.data || [];
     const { auth } = usePage<SharedData>().props;
@@ -122,6 +140,16 @@ export default function Dashboard({
                                     Tenants
                                 </Link>
                             </Button>
+                            <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                                <a href={route('landlord.dashboard.export.csv')}>
+                                    Export CSV
+                                </a>
+                            </Button>
+                            <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                                <a href={route('landlord.dashboard.export.pdf')}>
+                                    Export PDF
+                                </a>
+                            </Button>
                             <Button onClick={handleAddTenant} className="shadow-sm">
                                 <Plus className="w-4 h-4 mr-2" />
                                 Add Tenant
@@ -155,6 +183,12 @@ export default function Dashboard({
                             icon={Home}
                             description={`${stats.total_tenants} of ${stats.total_units} units filled`}
                         />
+                    </section>
+
+                    {/* Charts Section */}
+                    <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <RevenueTrendChart data={revenueTrend} />
+                        <PaymentCollectionChart data={collectionTrend} />
                     </section>
 
                     {/* Main Split Grid */}

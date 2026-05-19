@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Tenant;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -23,5 +24,5 @@ it('cannot create two tenants with the same tenant_code', function (): void {
     Tenant::factory()->create(['tenant_code' => 'TEN-TEST01', 'email' => 'test3@example.com']);
 
     expect(fn () => Tenant::factory()->create(['tenant_code' => 'TEN-TEST01', 'email' => 'test4@example.com']))
-        ->toThrow(\Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });

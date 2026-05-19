@@ -6,6 +6,7 @@ use App\Models\Property;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UnitService
 {
@@ -55,13 +56,13 @@ class UnitService
     /**
      * Create a new unit for a property.
      */
-    public function createUnit(\App\Models\User $landlord, array $data): \App\Models\Unit
+    public function createUnit(User $landlord, array $data): Unit
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($landlord, $data) {
-            $property = \App\Models\Property::where('owner_id', $landlord->id)
+        return DB::transaction(function () use ($landlord, $data) {
+            $property = Property::where('owner_id', $landlord->id)
                 ->findOrFail($data['property_id']);
 
-            $unit = \App\Models\Unit::create([
+            $unit = Unit::create([
                 'property_id' => $property->id,
                 'unit_code' => $data['unit_code'],
                 'unit_name' => $data['unit_name'],

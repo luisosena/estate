@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Str;
@@ -10,15 +11,15 @@ beforeEach(function () {
     ['user' => $this->landlord] = $this->createApiLandlord();
 });
 
-function makeLandlordNotification(\App\Models\User $user, bool $read = false): DatabaseNotification
+function makeLandlordNotification(User $user, bool $read = false): DatabaseNotification
 {
     return DatabaseNotification::create([
-        'id'              => Str::uuid(),
-        'type'            => 'App\\Notifications\\TestNotification',
-        'notifiable_type' => \App\Models\User::class,
-        'notifiable_id'   => $user->id,
-        'data'            => json_encode(['message' => 'Hello landlord']),
-        'read_at'         => $read ? now() : null,
+        'id' => Str::uuid(),
+        'type' => 'App\\Notifications\\TestNotification',
+        'notifiable_type' => User::class,
+        'notifiable_id' => $user->id,
+        'data' => json_encode(['message' => 'Hello landlord']),
+        'read_at' => $read ? now() : null,
     ]);
 }
 
@@ -48,7 +49,7 @@ test('landlord can delete own notification', function () {
 });
 
 test('landlord cannot delete another users notification', function () {
-    $other             = \App\Models\User::factory()->create(['role' => 'landlord']);
+    $other = User::factory()->create(['role' => 'landlord']);
     $otherNotification = makeLandlordNotification($other);
 
     $this->deleteJson("/api/v1/landlord/notifications/{$otherNotification->id}")

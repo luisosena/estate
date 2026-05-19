@@ -3,16 +3,17 @@
 use App\Models\TenancyUtility;
 use App\Models\UtilityBill;
 use App\Models\UtilityType;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tu   = TenancyUtility::factory()->create(['status' => 'active']);
+    $this->tu = TenancyUtility::factory()->create(['status' => 'active']);
     $this->bill = UtilityBill::factory()->create([
         'tenancy_utility_id' => $this->tu->id,
-        'amount_due'         => 3000,
-        'amount_paid'        => 0,
-        'status'             => 'pending',
+        'amount_due' => 3000,
+        'amount_paid' => 0,
+        'status' => 'pending',
     ]);
 });
 

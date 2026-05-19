@@ -1,27 +1,28 @@
 <?php
 
+use App\Models\Property;
 use App\Models\RentBill;
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\Unit;
-use App\Models\Property;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $landlord      = User::factory()->create(['role' => 'landlord']);
-    $property      = Property::factory()->create(['owner_id' => $landlord->id]);
-    $unit          = Unit::factory()->create(['property_id' => $property->id]);
-    $tenant        = Tenant::factory()->create();
+    $landlord = User::factory()->create(['role' => 'landlord']);
+    $property = Property::factory()->create(['owner_id' => $landlord->id]);
+    $unit = Unit::factory()->create(['property_id' => $property->id]);
+    $tenant = Tenant::factory()->create();
     $this->tenancy = Tenancy::factory()->create(['tenant_id' => $tenant->id, 'unit_id' => $unit->id, 'monthly_rent' => 10000]);
-    $this->bill    = RentBill::factory()->create([
-        'tenancy_id'    => $this->tenancy->id,
+    $this->bill = RentBill::factory()->create([
+        'tenancy_id' => $this->tenancy->id,
         'billing_month' => now()->startOfMonth(),
-        'due_date'      => now()->addDays(10),
-        'amount_due'    => 10000,
-        'amount_paid'   => 0,
-        'status'        => 'pending',
+        'due_date' => now()->addDays(10),
+        'amount_due' => 10000,
+        'amount_paid' => 0,
+        'status' => 'pending',
     ]);
 });
 
@@ -60,10 +61,10 @@ test('outstanding_amount never goes below zero', function () {
 
 test('scopePending returns only pending bills', function () {
     RentBill::factory()->create([
-        'tenancy_id'    => $this->tenancy->id,
-        'status'        => 'paid',
+        'tenancy_id' => $this->tenancy->id,
+        'status' => 'paid',
         'billing_month' => now()->subMonth()->startOfMonth(),
-        'due_date'      => now()->subMonth()->endOfMonth(),
+        'due_date' => now()->subMonth()->endOfMonth(),
     ]);
 
     $pending = RentBill::pending()->get();
@@ -73,12 +74,12 @@ test('scopePending returns only pending bills', function () {
 
 test('scopeOverdue includes past-due pending and partial bills', function () {
     RentBill::factory()->create([
-        'tenancy_id'    => $this->tenancy->id,
-        'status'        => 'pending',
+        'tenancy_id' => $this->tenancy->id,
+        'status' => 'pending',
         'billing_month' => now()->subMonths(2)->startOfMonth(),
-        'due_date'      => now()->subMonth(), // past due
-        'amount_due'    => 10000,
-        'amount_paid'   => 0,
+        'due_date' => now()->subMonth(), // past due
+        'amount_due' => 10000,
+        'amount_paid' => 0,
     ]);
 
     $overdue = RentBill::overdue()->get();

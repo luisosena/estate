@@ -91,8 +91,7 @@ class DashboardController extends Controller
             \Log::error('Api DashboardController error: '.$e->getMessage());
 
             return response()->json([
-                'tenant' => ['id' => 0, 'full_name' => 'Error'],
-                'payments' => [],
+                'message' => 'Unable to load dashboard data. Please try again.',
             ], 500);
         }
     }

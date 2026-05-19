@@ -2,6 +2,7 @@
 
 namespace App\Responses;
 
+use App\Enums\Role;
 use App\Helpers\RoleRedirects;
 use Laravel\Fortify\Http\Responses\LoginResponse as FortifyLoginResponse;
 
@@ -12,7 +13,7 @@ class LoginResponse extends FortifyLoginResponse
         $user = $request->user();
 
         // Debug: Log the user role and redirect URL
-        $roleValue = $user->role instanceof \App\Enums\Role ? $user->role->value : $user->role;
+        $roleValue = $user->role instanceof Role ? $user->role->value : $user->role;
         \Log::info('LoginResponse called for user: '.$user->email.' with role: '.$roleValue);
 
         $redirectUrl = RoleRedirects::urlByRole($user->role);

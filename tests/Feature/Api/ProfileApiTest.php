@@ -20,7 +20,7 @@ test('landlord can get their profile with data wrapper', function () {
                 'name',
                 'email',
                 'role',
-            ]
+            ],
         ]);
 });
 
@@ -28,7 +28,7 @@ test('tenant can get their profile with data wrapper', function () {
     $tenant = Tenant::factory()->create();
     $tenantUser = User::factory()->create([
         'role' => 'tenant',
-        'tenant_id' => $tenant->id
+        'tenant_id' => $tenant->id,
     ]);
     Sanctum::actingAs($tenantUser);
 
@@ -43,8 +43,8 @@ test('tenant can get their profile with data wrapper', function () {
                 'tenant' => [
                     'id',
                     'tenant_code',
-                ]
-            ]
+                ],
+            ],
         ]);
 });
 
@@ -54,7 +54,7 @@ test('landlord can update their profile with data wrapper', function () {
 
     $data = [
         'name' => 'Updated Name',
-        'email' => 'updated@example.com'
+        'email' => 'updated@example.com',
     ];
 
     $response = $this->putJson('/api/v1/landlord/profile', $data);
@@ -66,6 +66,6 @@ test('landlord can update their profile with data wrapper', function () {
                 'id',
                 'name',
                 'email',
-            ]
+            ],
         ]);
 });

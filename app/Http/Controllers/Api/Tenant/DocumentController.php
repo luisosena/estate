@@ -6,16 +6,13 @@ use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DocumentResource;
 use App\Models\Document;
-use App\Models\Tenancy;
 use App\Services\DocumentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
-    public function __construct(protected DocumentService $documentService)
-    {
-    }
+    public function __construct(protected DocumentService $documentService) {}
 
     public function index(Request $request): JsonResponse
     {

@@ -1,7 +1,6 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
   CalendarDays,
-  CheckCircle2,
   Clock,
   House,
   MessageCircleMore,
@@ -9,10 +8,7 @@ import {
   Receipt,
   AlertCircle,
   CreditCard,
-  Users,
-  Building2,
   ArrowRight,
-  ChevronRight,
   FileText,
   Download,
 } from 'lucide-react';
@@ -31,12 +27,10 @@ import {
 } from '@/components/shared/tenant/utilities-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
 import { formatCurrency, formatDate, getFormattedDate } from '@/lib/formatters';
-import { type SharedData } from '@/types';
+import { cn } from '@/lib/utils';
 
 /* ─── Interfaces ─────────────────────────────────────────────────── */
 
@@ -59,27 +53,6 @@ interface Tenancy {
   status: string;
 }
 
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  priority: 'high' | 'medium' | 'low';
-  read_at: string | null;
-  created_at: string;
-  data: any;
-}
-
-interface RentBill {
-  id: number;
-  billing_month: string;
-  amount_due: number;
-  amount_paid: number;
-  due_date: string;
-  status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
-  outstanding_amount: number;
-}
-
 interface Document {
   id: number;
   file_name: string;
@@ -95,8 +68,7 @@ interface TenantDashboardProps {
   unit?: Unit | null;
   tenancy?: Tenancy | null;
   utilities?: { data: Utility[] };
-  notifications?: { data: Notification[] };
-  rent_bills?: { data: RentBill[] };
+  notifications?: { data: { id: string; type: string; title: string; message: string; priority: 'high' | 'medium' | 'low'; read_at: string | null; created_at: string; data: Record<string, unknown> }[] };
   current_month_bill?: { data: RentBill | null };
   documents?: { data: Document[] };
 }
@@ -111,11 +83,9 @@ export default function TenantDashboard({
   tenancy = null,
   utilities = { data: [] },
   notifications = { data: [] },
-  rent_bills = { data: [] },
   current_month_bill = { data: null },
   documents = { data: [] },
 }: TenantDashboardProps) {
-  const { auth } = usePage<SharedData>().props;
   const tenantData = tenant.data;
   const paymentList = payments.data;
   const utilityList = utilities.data;
@@ -126,9 +96,8 @@ export default function TenantDashboard({
 
   const totalUtilityBalance = useMemo(() => 
     utilityList.reduce((sum, u) => {
-      // Use the calculated balance if available, otherwise fallback to amount
-      const balance = (u as any).pending_balance ?? u.amount;
-      const status = (u as any).calculated_status ?? u.status ?? 'pending';
+      const balance = (u as Record<string, unknown>).pending_balance ?? u.amount;
+      const status = (u as Record<string, unknown>).calculated_status ?? u.status ?? 'pending';
       if (status.toLowerCase() !== 'paid') return sum + balance;
       return sum;
     }, 0),
@@ -137,7 +106,7 @@ export default function TenantDashboard({
 
   const pendingUtilities = useMemo(() => 
     utilityList.filter(
-      (u) => (((u as any).calculated_status ?? u.status) ?? 'pending').toLowerCase() !== 'paid',
+      (u) => (((u as Record<string, unknown>).calculated_status ?? u.status) ?? 'pending').toLowerCase() !== 'paid',
     ).length,
     [utilityList]
   );
@@ -171,6 +140,16 @@ export default function TenantDashboard({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+                <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                    <a href={route('tenant.dashboard.export.csv')}>
+                        Export CSV
+                    </a>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
+                    <a href={route('tenant.dashboard.export.pdf')}>
+                        Export PDF
+                    </a>
+                </Button>
                 <Button asChild variant="outline" className="bg-card border-border/50 shadow-sm hover:bg-accent hidden sm:flex">
                     <Link href={route('tenant.payments')}>
                         <CreditCard className="w-4 h-4 mr-2 text-muted-foreground" />

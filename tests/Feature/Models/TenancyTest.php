@@ -3,16 +3,17 @@
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\Unit;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->tenant  = Tenant::factory()->create();
-    $this->unit    = Unit::factory()->create();
+    $this->tenant = Tenant::factory()->create();
+    $this->unit = Unit::factory()->create();
     $this->tenancy = Tenancy::factory()->create([
-        'tenant_id'    => $this->tenant->id,
-        'unit_id'      => $this->unit->id,
-        'status'       => 'active',
+        'tenant_id' => $this->tenant->id,
+        'unit_id' => $this->unit->id,
+        'status' => 'active',
         'monthly_rent' => 12000,
     ]);
 });

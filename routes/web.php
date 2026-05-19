@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\Admin\AdminDashboardController;
 use App\Http\Controllers\Web\Admin\AdminLandlordController;
 use App\Http\Controllers\Web\Admin\AdminNotificationController;
 use App\Http\Controllers\Web\Admin\AdminPropertyController;
+use App\Http\Controllers\Web\DashboardExportController;
 use App\Http\Controllers\Web\Landlord\DocumentController as LandlordDocumentController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
@@ -34,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
     // Admin Routes
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
+
+    Route::get('/admin/audit-reports', [AdminDashboardController::class, 'auditReports'])
+        ->name('admin.audit-reports');
 
     Route::get('/admin/notifications', [AdminNotificationController::class, 'index'])
         ->name('admin.notifications.index');
@@ -109,6 +113,12 @@ Route::middleware(['auth'])->group(function () {
     // Landlord Routes
     Route::get('/landlord/dashboard', [LandlordDashboardController::class, 'index'])
         ->name('landlord.dashboard');
+
+    Route::get('/landlord/dashboard/export/csv', [DashboardExportController::class, 'landlordCsv'])
+        ->name('landlord.dashboard.export.csv');
+
+    Route::get('/landlord/dashboard/export/pdf', [DashboardExportController::class, 'landlordPdf'])
+        ->name('landlord.dashboard.export.pdf');
 
     Route::get('/landlord/properties', [LandlordPropertyController::class, 'index'])
         ->name('landlord.properties.index');
@@ -254,6 +264,12 @@ Route::middleware(['auth'])->group(function () {
     // Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
         ->name('tenant.dashboard');
+
+    Route::get('/tenant/dashboard/export/csv', [DashboardExportController::class, 'tenantCsv'])
+        ->name('tenant.dashboard.export.csv');
+
+    Route::get('/tenant/dashboard/export/pdf', [DashboardExportController::class, 'tenantPdf'])
+        ->name('tenant.dashboard.export.pdf');
 
     Route::get('/tenant/payments', [TenantPaymentsController::class, 'index'])
         ->name('tenant.payments');

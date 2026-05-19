@@ -14,21 +14,21 @@ beforeEach(function () {
     ['user' => $this->landlord, 'property' => $this->property, 'unit' => $this->unit]
         = $this->createApiLandlord();
 
-    $this->tenant  = Tenant::factory()->create();
+    $this->tenant = Tenant::factory()->create();
     $this->unit->update(['status' => 'occupied']);
     $this->tenancy = Tenancy::factory()->create([
-        'tenant_id'    => $this->tenant->id,
-        'unit_id'      => $this->unit->id,
-        'status'       => 'active',
+        'tenant_id' => $this->tenant->id,
+        'unit_id' => $this->unit->id,
+        'status' => 'active',
         'monthly_rent' => 15000,
     ]);
     $this->bill = RentBill::factory()->create([
-        'tenancy_id'    => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'billing_month' => now()->startOfMonth(),
-        'due_date'      => now()->endOfMonth(),
-        'amount_due'    => 15000,
-        'amount_paid'   => 0,
-        'status'        => 'pending',
+        'due_date' => now()->endOfMonth(),
+        'amount_due' => 15000,
+        'amount_paid' => 0,
+        'status' => 'pending',
     ]);
 });
 
@@ -80,15 +80,15 @@ test('landlord cannot waive an already paid bill via API', function () {
 });
 
 test('landlord cannot access another landlords rent bill', function () {
-    $other        = User::factory()->create(['role' => 'landlord']);
-    $otherProp    = Property::factory()->create(['owner_id' => $other->id]);
-    $otherUnit    = Unit::factory()->create(['property_id' => $otherProp->id, 'status' => 'occupied']);
-    $otherTenant  = Tenant::factory()->create();
+    $other = User::factory()->create(['role' => 'landlord']);
+    $otherProp = Property::factory()->create(['owner_id' => $other->id]);
+    $otherUnit = Unit::factory()->create(['property_id' => $otherProp->id, 'status' => 'occupied']);
+    $otherTenant = Tenant::factory()->create();
     $otherTenancy = Tenancy::factory()->create(['tenant_id' => $otherTenant->id, 'unit_id' => $otherUnit->id, 'status' => 'active']);
-    $otherBill    = RentBill::factory()->create([
-        'tenancy_id'    => $otherTenancy->id,
+    $otherBill = RentBill::factory()->create([
+        'tenancy_id' => $otherTenancy->id,
         'billing_month' => now()->startOfMonth(),
-        'due_date'      => now()->endOfMonth(),
+        'due_date' => now()->endOfMonth(),
     ]);
 
     $this->getJson("/api/v1/landlord/rent-bills/{$otherBill->id}")->assertNotFound();

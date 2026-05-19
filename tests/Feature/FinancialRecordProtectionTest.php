@@ -3,12 +3,12 @@
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\RentBill;
-use App\Models\Tenant;
 use App\Models\Tenancy;
+use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
@@ -67,7 +67,7 @@ it('prevents deleting a tenancy that has rent bill records', function (): void {
 it('allows deleting a tenant with no financial records', function (): void {
     $tenant = Tenant::factory()->create();
 
-    expect(fn () => $tenant->delete())->not->toThrow(\Exception::class);
+    expect(fn () => $tenant->delete())->not->toThrow(Exception::class);
     expect(Tenant::find($tenant->id))->toBeNull();
 });
 
@@ -78,6 +78,6 @@ it('allows deleting a tenancy with no financial records', function (): void {
     $tenant = Tenant::factory()->create();
     $tenancy = Tenancy::factory()->for($tenant)->for($unit)->create();
 
-    expect(fn () => $tenancy->delete())->not->toThrow(\Exception::class);
+    expect(fn () => $tenancy->delete())->not->toThrow(Exception::class);
     expect(Tenancy::find($tenancy->id))->toBeNull();
 });

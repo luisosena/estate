@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Landlord;
 
 use App\Enums\Role;
-
 use Illuminate\Foundation\Http\FormRequest;
 
 class WaiveBillRequest extends FormRequest

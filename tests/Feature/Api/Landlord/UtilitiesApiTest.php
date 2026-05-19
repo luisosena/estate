@@ -1,10 +1,8 @@
 <?php
 
-use App\Models\Property;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
 use App\Models\Tenant;
-use App\Models\Unit;
 use App\Models\UtilityBill;
 use App\Models\UtilityType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,12 +13,12 @@ beforeEach(function () {
     ['user' => $this->landlord, 'property' => $this->property, 'unit' => $this->unit]
         = $this->createApiLandlord();
 
-    $this->tenant      = Tenant::factory()->create();
+    $this->tenant = Tenant::factory()->create();
     $this->unit->update(['status' => 'occupied']);
-    $this->tenancy     = Tenancy::factory()->create([
+    $this->tenancy = Tenancy::factory()->create([
         'tenant_id' => $this->tenant->id,
-        'unit_id'   => $this->unit->id,
-        'status'    => 'active',
+        'unit_id' => $this->unit->id,
+        'status' => 'active',
     ]);
     $this->utilityType = UtilityType::factory()->create(['is_active' => true]);
 });
@@ -38,22 +36,22 @@ test('landlord can list utility types', function () {
 test('landlord can assign utility to tenancy', function () {
     $this->postJson("/api/v1/landlord/tenancies/{$this->tenancy->id}/utilities", [
         'utility_type_id' => $this->utilityType->id,
-        'amount'          => 2500,
-        'billing_cycle'   => 'monthly',
-        'status'          => 'active',
+        'amount' => 2500,
+        'billing_cycle' => 'monthly',
+        'status' => 'active',
     ])->assertCreated();
 
     $this->assertDatabaseHas('tenancy_utilities', [
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
 });
 
 test('landlord can update a tenancy utility', function () {
     $tu = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
-        'amount'          => 1000,
+        'amount' => 1000,
     ]);
 
     $this->putJson("/api/v1/landlord/tenancy-utilities/{$tu->id}", ['amount' => 2000])
@@ -64,7 +62,7 @@ test('landlord can update a tenancy utility', function () {
 
 test('landlord can remove utility with no unpaid bills', function () {
     $tu = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
 
@@ -74,7 +72,7 @@ test('landlord can remove utility with no unpaid bills', function () {
 
 test('landlord cannot remove utility with unpaid bills', function () {
     $tu = TenancyUtility::factory()->create([
-        'tenancy_id'      => $this->tenancy->id,
+        'tenancy_id' => $this->tenancy->id,
         'utility_type_id' => $this->utilityType->id,
     ]);
     UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id, 'status' => 'pending']);
@@ -91,7 +89,7 @@ test('landlord can list utility bills', function () {
 });
 
 test('landlord can view a single utility bill', function () {
-    $tu   = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
+    $tu = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
     $bill = UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id, 'status' => 'pending']);
 
     $this->getJson("/api/v1/landlord/utility-bills/{$bill->id}")
@@ -100,7 +98,7 @@ test('landlord can view a single utility bill', function () {
 });
 
 test('landlord can waive a pending utility bill', function () {
-    $tu   = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
+    $tu = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
     $bill = UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id, 'status' => 'pending', 'amount_due' => 1500, 'amount_paid' => 0]);
 
     $this->postJson("/api/v1/landlord/utility-bills/{$bill->id}/waive", ['notes' => 'Waiver reason'])
@@ -110,7 +108,7 @@ test('landlord can waive a pending utility bill', function () {
 });
 
 test('landlord cannot waive an already paid utility bill', function () {
-    $tu   = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
+    $tu = TenancyUtility::factory()->create(['tenancy_id' => $this->tenancy->id, 'utility_type_id' => $this->utilityType->id]);
     $bill = UtilityBill::factory()->create(['tenancy_utility_id' => $tu->id, 'status' => 'paid', 'amount_due' => 1500, 'amount_paid' => 1500]);
 
     $this->postJson("/api/v1/landlord/utility-bills/{$bill->id}/waive")->assertUnprocessable();

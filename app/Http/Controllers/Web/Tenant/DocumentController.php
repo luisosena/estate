@@ -12,9 +12,7 @@ use Inertia\Response;
 
 class DocumentController extends Controller
 {
-    public function __construct(protected DocumentService $documentService)
-    {
-    }
+    public function __construct(protected DocumentService $documentService) {}
 
     public function index(Request $request): Response
     {

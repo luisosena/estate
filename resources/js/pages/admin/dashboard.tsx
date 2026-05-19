@@ -1,21 +1,20 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import {
     Activity,
     ArrowRight,
     Building2,
     CalendarDays,
     ChevronRight,
-    Home,
     Plus,
     ShieldCheck,
     Users,
-    Building
 } from 'lucide-react';
 import React from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { MetricCard, QuickAction } from '@/components/shared/DashboardComponents';
+import { RevenueTrendChart } from '@/components/shared/revenue-trend-chart';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -48,6 +47,12 @@ interface AdminDashboardProps {
         maintenance_properties: number;
     };
     activity?: ActivityItem[];
+    revenueTrend?: {
+        month: string;
+        label: string;
+        total_revenue: number;
+        payment_count: number;
+    }[];
 }
 
 /* ─── Formatting Helpers ─────────────────────────────────────────── */
@@ -74,9 +79,8 @@ const ActivityIcon = ({ type }: { type: string }) => {
 
 /* ─── Main Component ─────────────────────────────────────────────── */
 
-export default function Dashboard({ stats, activity = [] }: AdminDashboardProps) {
-    const { auth } = usePage<SharedData>().props;
-    const adminName = auth?.user?.name ?? 'Admin';
+export default function Dashboard({ stats, activity = [], revenueTrend = [] }: AdminDashboardProps) {
+    const adminName = usePage<SharedData>().props.auth?.user?.name ?? 'Admin';
 
     return (
         <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12 text-balance">
@@ -126,6 +130,13 @@ export default function Dashboard({ stats, activity = [] }: AdminDashboardProps)
                     description="Landlords requiring verification"
                     alert={(stats?.pending_landlords || 0) > 0}
                 />
+            </section>
+
+            <Separator className="opacity-50" />
+
+            {/* Revenue Chart */}
+            <section>
+                <RevenueTrendChart data={revenueTrend} title="System Revenue Trend" />
             </section>
 
             {/* Bottom Section: Quick Actions & Activity */}
@@ -192,7 +203,7 @@ export default function Dashboard({ stats, activity = [] }: AdminDashboardProps)
                             label="Audit Reports"
                             icon={Activity}
                             className="bg-secondary/5 border-secondary/20 hover:bg-secondary/10"
-                            disabled
+                            href={route('admin.audit-reports')}
                         />
                     </div>
 

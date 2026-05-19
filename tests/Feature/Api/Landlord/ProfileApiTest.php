@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\SecurityEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -22,29 +23,29 @@ test('landlord can update profile name', function () {
 
     $this->assertDatabaseHas('security_events', [
         'user_id' => $this->landlord->id,
-        'event_type' => \App\Models\SecurityEvent::EVENT_PROFILE_UPDATED,
-        'severity' => \App\Models\SecurityEvent::SEVERITY_LOW,
+        'event_type' => SecurityEvent::EVENT_PROFILE_UPDATED,
+        'severity' => SecurityEvent::SEVERITY_LOW,
     ]);
 });
 
 test('landlord can change password via API', function () {
     $this->putJson('/api/v1/landlord/password', [
-        'current_password'      => 'password',
-        'password'              => 'NewSecure@123',
+        'current_password' => 'password',
+        'password' => 'NewSecure@123',
         'password_confirmation' => 'NewSecure@123',
     ])->assertOk();
 
     $this->assertDatabaseHas('security_events', [
         'user_id' => $this->landlord->id,
-        'event_type' => \App\Models\SecurityEvent::EVENT_PASSWORD_CHANGED,
-        'severity' => \App\Models\SecurityEvent::SEVERITY_MEDIUM,
+        'event_type' => SecurityEvent::EVENT_PASSWORD_CHANGED,
+        'severity' => SecurityEvent::SEVERITY_MEDIUM,
     ]);
 });
 
 test('password change fails with wrong current password', function () {
     $this->putJson('/api/v1/landlord/password', [
-        'current_password'      => 'wrong_password',
-        'password'              => 'NewSecure@123',
+        'current_password' => 'wrong_password',
+        'password' => 'NewSecure@123',
         'password_confirmation' => 'NewSecure@123',
     ])->assertUnprocessable();
 });

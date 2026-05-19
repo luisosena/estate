@@ -10,7 +10,6 @@ use App\Models\Property;
 use App\Models\Unit;
 use App\Services\Landlord\UnitService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class LandlordUnitController extends Controller

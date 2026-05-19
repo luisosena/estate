@@ -27,10 +27,10 @@ test('landlord can list their properties with data wrapper', function () {
                     'property_type',
                     'total_units',
                     'created_at',
-                ]
+                ],
             ],
             'meta',
-            'stats'
+            'stats',
         ]);
 });
 
@@ -48,7 +48,7 @@ test('landlord can show a property with data wrapper', function () {
                 'property_type',
                 'total_units',
                 'created_at',
-            ]
+            ],
         ]);
 });
 
@@ -57,7 +57,7 @@ test('landlord can store a property with data wrapper', function () {
         'name' => 'New Property',
         'address' => '123 Test St',
         'property_type' => 'apartment',
-        'description' => 'A test property'
+        'description' => 'A test property',
     ];
 
     $response = $this->postJson('/api/v1/landlord/properties', $data);
@@ -72,7 +72,7 @@ test('landlord can store a property with data wrapper', function () {
                 'property_type',
                 'total_units',
                 'created_at',
-            ]
+            ],
         ]);
 });
 
@@ -80,7 +80,7 @@ test('landlord can update a property with data wrapper', function () {
     $property = Property::factory()->create(['owner_id' => $this->landlord->id]);
 
     $data = [
-        'name' => 'Updated Property'
+        'name' => 'Updated Property',
     ];
 
     $response = $this->putJson("/api/v1/landlord/properties/{$property->id}", $data);
@@ -93,6 +93,6 @@ test('landlord can update a property with data wrapper', function () {
                 'name',
                 'address',
                 'updated_at',
-            ]
+            ],
         ]);
 });

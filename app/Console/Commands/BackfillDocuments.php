@@ -27,6 +27,7 @@ class BackfillDocuments extends Command
 
         if ($count === 0) {
             $this->info('No tenancies with agreement paths found. Nothing to backfill.');
+
             return Command::SUCCESS;
         }
 
@@ -42,6 +43,7 @@ class BackfillDocuments extends Command
                     $t->tenancy_agreement_path,
                 ])->toArray()
             );
+
             return Command::SUCCESS;
         }
 
@@ -63,6 +65,7 @@ class BackfillDocuments extends Command
                 if ($existing) {
                     $skipped++;
                     $bar->advance();
+
                     continue;
                 }
 
@@ -110,7 +113,7 @@ class BackfillDocuments extends Command
 
         $bar->finish();
         $this->newLine(2);
-        $this->info("Backfill complete:");
+        $this->info('Backfill complete:');
         $this->table(
             ['Created', 'Skipped', 'Errors'],
             [[$created, $skipped, $errors]]

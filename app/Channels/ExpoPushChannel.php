@@ -29,6 +29,7 @@ class ExpoPushChannel
 
         if (! $expoPushToken) {
             Log::debug('Expo Push skipped: no token', ['notifiable' => get_class($notifiable), 'id' => $notifiable->id]);
+
             return;
         }
 
@@ -54,6 +55,7 @@ class ExpoPushChannel
 
                     if ($attempt < $retries) {
                         sleep(2);
+
                         continue;
                     }
 
@@ -94,6 +96,7 @@ class ExpoPushChannel
 
                 if ($attempt < $retries) {
                     sleep(2);
+
                     continue;
                 }
             }

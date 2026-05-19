@@ -24,6 +24,7 @@ class EndExpiredTenancies extends Command
     protected $signature = 'tenancy:end-expired {--dry-run : Show what would be done without making changes}';
 
     protected int $expiredCount = 0;
+
     protected int $expiringCount = 0;
 
     /**

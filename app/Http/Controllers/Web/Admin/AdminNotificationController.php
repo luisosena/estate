@@ -70,6 +70,7 @@ class AdminNotificationController extends Controller
     {
         $admin = $request->user();
         $admin->unreadNotifications()->update(['read_at' => now()]);
+
         return back()->with('success', 'All notifications marked as read.');
     }
 
@@ -77,12 +78,14 @@ class AdminNotificationController extends Controller
     {
         $this->authorize('delete', $notification);
         $notification->delete();
+
         return back()->with('success', 'Notification deleted.');
     }
 
     public function unreadCount(Request $request)
     {
         $admin = $request->user();
+
         return response()->json(['count' => $admin->unreadNotifications()->count()]);
     }
 

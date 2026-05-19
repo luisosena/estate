@@ -7,13 +7,9 @@ use App\Models\Property;
 use App\Models\Tenancy;
 use App\Models\Unit;
 use App\Models\User;
-// use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AdminDashboardService
 {
-    /**
-     * Get consolidated data for the admin dashboard.
-     */
     public function getDashboardData(): array
     {
         return [
@@ -22,24 +18,29 @@ class AdminDashboardService
         ];
     }
 
-    /**
-     * Get global statistics.
-     */
     protected function getGlobalStats(): array
     {
+        $propertyStats = Property::selectRaw("
+            COUNT(*) as total_properties,
+            SUM(CASE WHEN status = 'maintenance' THEN 1 ELSE 0 END) as maintenance_properties
+        ")->first();
+
+        $landlordStats = User::where('role', 'landlord')
+            ->selectRaw('
+                COUNT(*) as total_landlords,
+                SUM(CASE WHEN email_verified_at IS NULL THEN 1 ELSE 0 END) as pending_landlords
+            ')->first();
+
         return [
-            'total_properties' => Property::count(),
+            'total_properties' => (int) ($propertyStats?->total_properties ?? 0),
             'total_units' => Unit::count(),
             'active_tenancies' => Tenancy::active()->count(),
-            'total_landlords' => User::where('role', 'landlord')->count(),
-            'pending_landlords' => User::where('role', 'landlord')->whereNull('email_verified_at')->count(),
-            'maintenance_properties' => Property::where('status', 'maintenance')->count(),
+            'total_landlords' => (int) ($landlordStats?->total_landlords ?? 0),
+            'pending_landlords' => (int) ($landlordStats?->pending_landlords ?? 0),
+            'maintenance_properties' => (int) ($propertyStats?->maintenance_properties ?? 0),
         ];
     }
 
-    /**
-     * Get recent activity feed.
-     */
     protected function getRecentActivity(): array
     {
         $recentLandlords = User::where('role', 'landlord')

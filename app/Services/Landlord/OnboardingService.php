@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class OnboardingService
 {
-    public function __construct(protected DocumentService $documentService)
-    {
-    }
+    public function __construct(protected DocumentService $documentService) {}
 
     public function onboard(array $data): array
     {

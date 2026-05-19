@@ -2,7 +2,6 @@
 
 use App\Models\Property;
 use App\Models\Tenancy;
-use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use App\Services\Landlord\PropertyService;
@@ -36,7 +35,7 @@ it('calculates global property statistics correctly', function () {
     Tenancy::factory()->create(['unit_id' => $unitB3->id, 'status' => 'active']);
 
     // Total occupied = 5. Total config units = 10. Available = 5, Rate = 50%
-    $service = new PropertyService();
+    $service = new PropertyService;
     $result = $service->getPropertyList($landlord);
 
     expect($result['stats'])->toBeArray()
@@ -54,7 +53,7 @@ it('lists only properties belonging to the landlord', function () {
     Property::factory()->count(3)->create(['owner_id' => $landlord->id]);
     Property::factory()->count(2)->create(['owner_id' => $otherLandlord->id]);
 
-    $service = new PropertyService();
+    $service = new PropertyService;
     $result = $service->getPropertyList($landlord);
 
     expect($result['properties']->total())->toBe(3);
