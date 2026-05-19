@@ -9,7 +9,6 @@ import PainSolutionSection from '@/pages/website/components/pain-solution-sectio
 import ProductPreviewSection from '@/pages/website/components/product-preview-section';
 import SocialProof from '@/pages/website/components/social-proof';
 import TestimonialsSection from '@/pages/website/components/testimonials-section';
-import TopBar from '@/pages/website/components/top-bar';
 import TrustSection from '@/pages/website/components/trust-section';
 import WorkflowSection from '@/pages/website/components/workflow-section';
 
@@ -29,7 +28,6 @@ export default function Home() {
                 />
             </Head>
 
-            <TopBar />
             <Navbar />
             <HeroSection />
             <SocialProof />

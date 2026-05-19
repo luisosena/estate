@@ -25,18 +25,10 @@ use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
 Route::get('/', function () {
     return Inertia::render('website/home');
 })->name('home');
-
-// Keep welcome as a fallback route for now
-Route::get('/welcome', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
-})->name('welcome');
 
 Route::middleware(['auth'])->group(function () {
     // Admin Routes

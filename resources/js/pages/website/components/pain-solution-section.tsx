@@ -1,74 +1,78 @@
 import { motion, useInView } from 'framer-motion';
+import {
+    BarChart3,
+    Clock,
+    Wallet,
+    MessageSquareOff,
+    Wrench,
+    Upload,
+    ArrowRight,
+} from 'lucide-react';
 import { useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 const cards = [
     {
         pain: 'Data Overload',
-        headline: 'Less chaos. More control. All in one place.',
+        headline: 'One dashboard. Total portfolio control.',
+        description: 'Stop juggling spreadsheets and scattered notes. See every property, tenant, and payment in a single unified view.',
         solutions: ['Investor-Grade Dashboards', 'Clean Data Visualizations'],
-        style: 'bg-white border-l-4 border-[#D4A853] shadow-sm',
-        textStyle: 'text-[#1A1A2E]',
-        pillStyle: 'bg-[#1A1A2E]/5 text-[#1A1A2E]/60',
-        featurePillStyle: 'bg-[#D4A853]/10 text-[#D4A853]',
+        icon: BarChart3,
+        accentColor: '#D4A853',
+        size: 'large',
     },
     {
         pain: 'Workload Anxiety',
-        headline: 'Your business, on autopilot.',
+        headline: 'Automate the busywork. Focus on growth.',
+        description: 'Repetitive tasks drain your time. Estate handles scheduling, reminders, and follow-ups so you can think strategically.',
         solutions: ['Automated Workflows', 'Intelligent Task Scheduling'],
-        style: 'bg-[#1A1A2E]/[0.03] border border-transparent shadow-none',
-        textStyle: 'text-[#1A1A2E]',
-        pillStyle: 'bg-white text-[#1A1A2E]/60',
-        featurePillStyle: 'bg-[#1A1A2E]/10 text-[#1A1A2E]/70',
+        icon: Clock,
+        accentColor: '#C4775A',
+        size: 'medium',
     },
     {
         pain: 'Financial Leakage',
-        headline: 'Every tenant, every unit, every cent — finally under control.',
+        headline: 'Track every cent. Close every gap.',
+        description: 'Missed payments and untracked expenses add up fast. Get real-time financial visibility across your entire portfolio.',
         solutions: ['Mobile Payment Gateways', 'Bank Reconciliation', 'Financial Reports'],
-        style: 'bg-[#D4A853]/[0.08] border border-transparent relative overflow-hidden',
-        textStyle: 'text-[#1A1A2E]',
-        pillStyle: 'bg-white/60 text-[#1A1A2E]/60',
-        featurePillStyle: 'bg-white text-[#D4A853]',
-        accent: (
-            <svg className="absolute -right-4 -top-4 h-24 w-24 text-[#D4A853] opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-        ),
+        icon: Wallet,
+        accentColor: '#D4A853',
+        size: 'medium',
     },
     {
         pain: 'Communication Chaos',
-        headline: 'No more missed messages.',
+        headline: 'Every conversation, logged and tracked.',
+        description: 'No more lost emails or forgotten requests. Keep every landlord-tenant interaction organized and searchable.',
         solutions: ['In-App Messaging', 'Push Notifications', 'Email Logs'],
-        style: 'bg-white border border-[#C4775A]/20 shadow-sm',
-        textStyle: 'text-[#1A1A2E]',
-        pillStyle: 'bg-[#C4775A]/10 text-[#C4775A]',
-        featurePillStyle: 'bg-[#C4775A]/10 text-[#C4775A]',
+        icon: MessageSquareOff,
+        accentColor: '#C4775A',
+        size: 'small',
     },
     {
         pain: 'Maintenance Tracking',
         headline: 'Report it. Track it. Fix it.',
+        description: 'Tenants report issues with photos. You assign vendors and track progress. Every repair logged to the right property.',
         solutions: ['Photo-Verified Reporting', 'Vendor Dispatch', 'Asset Lifecycle'],
-        style: 'bg-[#8BA888]/[0.08] border border-transparent relative overflow-hidden',
-        textStyle: 'text-[#1A1A2E]',
-        pillStyle: 'bg-white/60 text-[#1A1A2E]/60',
-        featurePillStyle: 'bg-white text-[#8BA888]',
-        accent: (
-            <svg className="absolute -bottom-8 -right-8 h-40 w-40 text-[#8BA888] opacity-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        ),
+        icon: Wrench,
+        accentColor: '#8BA888',
+        size: 'small',
     },
     {
         pain: 'Onboarding Friction',
         headline: 'Switch in minutes. Not months.',
+        description: 'Migrating from your current system is painless. Import your existing data and start managing from day one.',
         solutions: ['Excel Migration', 'Automated Data Mapping', 'Portfolio Import'],
-        style: 'bg-[#1A1A2E] border border-transparent shadow-xl',
-        textStyle: 'text-white',
-        pillStyle: 'bg-white/10 text-white/60',
-        featurePillStyle: 'bg-white/10 text-white',
+        icon: Upload,
+        accentColor: '#8BA888',
+        size: 'medium',
     },
 ];
+
+const sizeClasses = {
+    large: 'md:col-span-2 md:row-span-2',
+    medium: 'md:col-span-1 md:row-span-1',
+    small: 'md:col-span-1 md:row-span-1',
+};
 
 export default function PainSolutionSection() {
     const ref = useRef<HTMLDivElement>(null);
@@ -76,73 +80,119 @@ export default function PainSolutionSection() {
 
     return (
         <section ref={ref} className="relative bg-[#FAF7F2] py-24 lg:py-32 overflow-hidden">
+            {/* Subtle background gradient */}
+            <div className="absolute inset-0 -z-10">
+                <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-[#D4A853]/5 blur-3xl" />
+                <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-[#8BA888]/5 blur-3xl" />
+            </div>
+
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 {/* Section header */}
                 <motion.div
-                    className="mx-auto max-w-2xl text-center mb-16 lg:mb-24"
+                    className="mx-auto max-w-2xl text-center mb-16 lg:mb-20"
                     initial={{ opacity: 0, y: 30 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
+                    <p
+                        className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-[#D4A853]"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                        Why Estate Exists
+                    </p>
                     <h2
                         className="text-4xl font-normal text-[#1A1A2E] sm:text-5xl"
                         style={{ fontFamily: "'DM Serif Display', serif" }}
                     >
                         Built around the problems you actually face.
                     </h2>
+                    <p
+                        className="mt-4 text-lg text-[#1A1A2E]/55"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                        We built Estate because property management shouldn't feel like a second job.
+                    </p>
                 </motion.div>
 
-                {/* Staggered Grid */}
-                <div className="grid gap-6 md:grid-cols-2 lg:gap-8 items-start">
+                {/* Bento Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-fr gap-5 lg:gap-6">
                     {cards.map((card, i) => {
-                        // Create stagger effect by adding top margin to right column on desktop
-                        const isRightCol = i % 2 !== 0;
-                        
+                        const IconComponent = card.icon;
+                        const isLarge = card.size === 'large';
+
                         return (
                             <motion.div
                                 key={i}
                                 className={cn(
-                                    "p-8 lg:p-10 rounded-2xl flex flex-col h-full transition-transform hover:-translate-y-1 duration-300",
-                                    card.style,
-                                    isRightCol ? "md:mt-16" : ""
+                                    'group relative overflow-hidden rounded-2xl border border-[#1A1A2E]/5 bg-white p-6 transition-all duration-500 hover:border-[#1A1A2E]/10 hover:shadow-xl hover:shadow-[#1A1A2E]/5 lg:p-8',
+                                    sizeClasses[card.size]
                                 )}
-                                initial={{ opacity: 0, y: 40 }}
-                                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                                transition={{ duration: 0.6, delay: i * 0.1 }}
+                                initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                                animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                                transition={{ duration: 0.6, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
                             >
-                                {card.accent && card.accent}
-                                
+                                {/* Subtle background accent on hover */}
+                                <div
+                                    className="absolute -top-20 -right-20 h-48 w-48 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                                    style={{ background: `radial-gradient(circle, ${card.accentColor}06, transparent 70%)` }}
+                                />
+
                                 <div className="relative z-10 flex flex-col h-full">
+                                    {/* Pain label with icon */}
                                     <div className="mb-6">
-                                        <span 
-                                            className={cn(
-                                                "inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-widest uppercase",
-                                                card.pillStyle
-                                            )}
-                                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                                        <span
+                                            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold tracking-wide"
+                                            style={{
+                                                backgroundColor: `${card.accentColor}10`,
+                                                color: card.accentColor,
+                                                fontFamily: "'Outfit', sans-serif",
+                                            }}
                                         >
+                                            <IconComponent className="h-3.5 w-3.5" />
                                             {card.pain}
                                         </span>
                                     </div>
-                                    
-                                    <h3 
+
+                                    {/* Headline */}
+                                    <h3
                                         className={cn(
-                                            "text-3xl font-normal mb-10 flex-1",
-                                            card.textStyle
+                                            'font-normal text-[#1A1A2E]',
+                                            isLarge ? 'text-3xl sm:text-4xl mb-6' : 'text-2xl sm:text-3xl mb-4'
                                         )}
                                         style={{ fontFamily: "'DM Serif Display', serif" }}
                                     >
                                         {card.headline}
                                     </h3>
-                                    
+
+                                    {/* Description */}
+                                    <p
+                                        className={cn(
+                                            'text-[#1A1A2E]/60 leading-relaxed',
+                                            isLarge ? 'text-base mb-8' : 'text-sm mb-6'
+                                        )}
+                                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                                    >
+                                        {card.description}
+                                    </p>
+
+                                    {/* Connector arrow */}
+                                    <div className="mb-4 flex items-center gap-2">
+                                        <div
+                                            className="h-px w-8 transition-all duration-300 group-hover:w-12"
+                                            style={{ backgroundColor: `${card.accentColor}40` }}
+                                        />
+                                        <ArrowRight
+                                            className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
+                                            style={{ color: `${card.accentColor}80` }}
+                                        />
+                                    </div>
+
+                                    {/* Feature pills */}
                                     <div className="flex flex-wrap gap-2 mt-auto">
                                         {card.solutions.map((solution, idx) => (
-                                            <span 
+                                            <span
                                                 key={idx}
-                                                className={cn(
-                                                    "inline-flex rounded-md px-2.5 py-1 text-xs font-medium",
-                                                    card.featurePillStyle
-                                                )}
+                                                className="inline-flex rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-300 bg-[#1A1A2E]/5 text-[#1A1A2E]/60 group-hover:bg-[#1A1A2E]/8 group-hover:text-[#1A1A2E]/70"
                                                 style={{ fontFamily: "'Outfit', sans-serif" }}
                                             >
                                                 {solution}

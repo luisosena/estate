@@ -8,7 +8,7 @@
 ## Current Status
 
 **Active branch:** `port/payment-architecture`
-**Last updated:** 2026-05-16
+**Last updated:** 2026-05-17
 
 ### Milestone Completion Overview
 
@@ -18,9 +18,10 @@
 | Property, unit, tenant, tenancy CRUD | ✅ Complete | Full lifecycle management |
 | Automated billing (rent + utilities) | ✅ Complete | Scheduled commands, status tracking |
 | Payment recording & receipt generation | ✅ Complete | DomPDF, multi-channel notifications |
-| Mobile app (React Native/Expo) | ✅ Complete | Landlord + tenant screens |
+| Document storage system | ✅ Complete | Polymorphic attachments, web + mobile UI, 49 tests, soft deletes |
+| Mobile app (React Native/Expo) | ✅ Complete | Landlord + tenant screens + document support |
 | API strict versioning (`/api/v1/`) | ✅ Complete | Unversioned routes removed |
-| Test suite | ✅ Complete | 348 tests, 1133 assertions |
+| Test suite | ✅ Complete | 457 tests, 1354 assertions |
 | Payment gateway layer | ⚠️ Scaffolded | Wired but not activated |
 
 ---
@@ -51,7 +52,7 @@
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Design and implement landing page (`/`) | ⬜ | Replace current `welcome.tsx` |
+| Design and implement landing page (`/`) | ✅ Complete | 9-section page with animations, responsive design |
 | Landlord onboarding flow (create account → add first property → add first unit) | ⬜ | |
 | Tenant self-registration flow (mobile) — refine existing | ⬜ | |
 | Email verification on registration | ⬜ | Fortify supports this, needs enabling |
@@ -85,13 +86,22 @@
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Design document schema (`documents` table) | ⬜ | |
-| File upload endpoint with validation | ⬜ | |
-| Document association (tenancy, payment, property) | ⬜ | |
-| Document listing and download UI (web + mobile) | ⬜ | |
-| Access control via Policies | ⬜ | |
+| Design document schema (`documents` table) | ✅ Complete | Polymorphic morphTo, soft deletes, composite indexes |
+| File upload endpoint with validation | ✅ Complete | MIME + size validation, UUID paths, `config/documents.php` |
+| Document association (tenancy, payment, property) | ✅ Complete | `documentable` polymorphic relationship, `OnboardingService` integration |
+| Document listing and download UI (web + mobile) | ✅ Complete | Landlord tenant show page, tenant `/documents` page, mobile screens with `expo-document-picker` |
+| Access control via Policies | ✅ Complete | `DocumentPolicy` with role-based access, N+1-free ownership checks |
 
-**Definition of done:** Landlord can upload a lease PDF to a tenancy; tenant can view and download it from mobile.
+**Definition of done:** Landlord can upload a lease PDF to a tenancy; tenant can view and download it from mobile. ✅ **Achieved.**
+
+**Implementation details:** See [`docs/reports/document-storage-implementation-report.md`](../reports/document-storage-implementation-report.md)
+
+**Remaining enhancements:**
+- [ ] S3 disk integration for production
+- [ ] Document preview (PDF viewer modal)
+- [ ] Drag-and-drop / bulk upload
+- [ ] Document versioning and expiration dates
+- [ ] Attach documents to Payment and Property models (not just Tenancy)
 
 ---
 
@@ -174,18 +184,18 @@ These are validated ideas that have not been assigned to a phase.
 | Payments | 70% | Recording works. Gateway activation pending. |
 | Notifications | 80% | Channels ported. Event wiring needs testing. |
 | Receipts | 90% | Generation works. Storage optimization possible. |
-| Mobile App | 75% | Core screens done. Payment gateway integration pending. |
-| Testing | 85% | 348 tests passing. Gateway flow tests pending. |
-| Documentation | 70% | Technical docs solid. Vision/roadmap now added. |
-| Landing & Onboarding | 10% | Basic welcome page exists. Full flow pending. |
-| Document Storage | 0% | Not started. |
+| Mobile App | 80% | Core screens + document support done. Payment gateway integration pending. |
+| Testing | 90% | 457 tests passing. Gateway flow tests pending. |
+| Documentation | 75% | Technical docs solid. Vision/roadmap now added. |
+| Landing & Onboarding | 30% | Full landing page implemented. Footer links, pricing, and onboarding flows pending. |
+| Document Storage | 90% | Core system complete (DB, services, policies, web + mobile UI, 49 tests). S3 integration and enhancements pending. |
 | Maintenance Requests | 0% | Not started. |
 | Analytics & Reporting | 10% | Dashboard cards exist. Charts are placeholder data. |
 
 ### Overall Project Completion
 
 ```
-[████████████████████░░░░░░░░░░] ~65%
+[██████████████████████░░░░░░░░] ~70%
 ```
 
 ---
@@ -203,3 +213,4 @@ These are validated ideas that have not been assigned to a phase.
 | 2026-05-10 | Receipt generation (Phase 4) complete |
 | 2026-05-15 | Event wiring and mobile types updated (Phase 5) |
 | 2026-05-16 | Vision and roadmap documentation created |
+| 2026-05-17 | Document storage system complete (Phase 6) — 39 files, 49 tests, web + mobile UI |
