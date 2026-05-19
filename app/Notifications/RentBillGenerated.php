@@ -60,10 +60,15 @@ class RentBillGenerated extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
+        $month = $this->rentBill->billing_month ? $this->rentBill->billing_month->format('F Y') : 'this month';
+
         return [
+            'title' => 'New Rent Bill',
+            'message' => "Your rent bill for {$month} has been generated.",
+            'priority' => 'medium',
             'rent_bill_id' => $this->rentBill->id,
             'amount_due' => $this->rentBill->amount_due,
-            'message' => "New rent bill generated: {$this->rentBill->amount_due}",
+            'billing_month' => $month,
         ];
     }
 }

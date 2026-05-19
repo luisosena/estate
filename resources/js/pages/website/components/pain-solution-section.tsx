@@ -115,7 +115,7 @@ export default function PainSolutionSection() {
                 </motion.div>
 
                 {/* Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-fr gap-5 lg:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 auto-rows-[minmax(180px,fr)] gap-5 lg:gap-6">
                     {cards.map((card, i) => {
                         const IconComponent = card.icon;
                         const isLarge = card.size === 'large';
@@ -148,7 +148,7 @@ export default function PainSolutionSection() {
                                                 fontFamily: "'Outfit', sans-serif",
                                             }}
                                         >
-                                            <IconComponent className="h-3.5 w-3.5" />
+                                            <IconComponent className="h-3.5 w-3.5" aria-hidden="true" />
                                             {card.pain}
                                         </span>
                                     </div>
@@ -184,6 +184,7 @@ export default function PainSolutionSection() {
                                         <ArrowRight
                                             className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
                                             style={{ color: `${card.accentColor}80` }}
+                                            aria-hidden="true"
                                         />
                                     </div>
 

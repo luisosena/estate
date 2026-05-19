@@ -58,10 +58,15 @@ class RentBillOverdue extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
+        $month = $this->rentBill->billing_month ? $this->rentBill->billing_month->format('F Y') : 'the previous month';
+
         return [
+            'title' => 'Overdue Rent Bill',
+            'message' => "Your rent bill for {$month} is overdue. Balance: {$this->rentBill->balance}",
+            'priority' => 'high',
             'rent_bill_id' => $this->rentBill->id,
             'balance' => $this->rentBill->balance,
-            'message' => "Rent bill overdue. Balance: {$this->rentBill->balance}",
+            'billing_month' => $month,
         ];
     }
 }

@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Notifications\PaymentReceived;
 use App\Notifications\RentBillGenerated;
 use App\Notifications\RentBillOverdue;
-use Illuminate\Support\Facades\Notification;
 
 class NotificationService
 {
@@ -34,13 +33,5 @@ class NotificationService
     public function sendRentBillOverdueNotification(User $user, RentBill $rentBill): void
     {
         $user->notify(new RentBillOverdue($rentBill));
-    }
-
-    /**
-     * Helper to notify a collection of users using Laravel facade.
-     */
-    public function sendNotificationsToUsers(mixed $users, mixed $notificationClass): void
-    {
-        Notification::send($users, $notificationClass);
     }
 }

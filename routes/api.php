@@ -46,6 +46,10 @@ $defineApiRoutes = function (): void {
 
         // User Management (Admin/Landlord only - role check in controller)
         Route::prefix('users')->group(function () {
+            // Push Token Management (must come before /{id} wildcard)
+            Route::post('push-token', [UserController::class, 'registerPushToken']);
+            Route::delete('push-token', [UserController::class, 'removePushToken']);
+
             Route::get('/', [UserController::class, 'index']);
             Route::get('/{id}', [UserController::class, 'show']);
             Route::post('/', [UserController::class, 'store']);
@@ -53,10 +57,6 @@ $defineApiRoutes = function (): void {
             Route::patch('/{id}', [UserController::class, 'update']);
             Route::delete('/{id}', [UserController::class, 'destroy']);
         });
-
-        // Push Token Management (authenticated users)
-        Route::post('users/push-token', [UserController::class, 'registerPushToken']);
-        Route::delete('users/push-token', [UserController::class, 'removePushToken']);
 
         // Tenant routes
         Route::prefix('tenant')->group(function () {
@@ -85,6 +85,7 @@ $defineApiRoutes = function (): void {
             // Tenant Notifications
             Route::get('notifications', [TenantNotificationController::class, 'index']);
             Route::put('notifications/{id}/read', [TenantNotificationController::class, 'markAsRead']);
+            Route::put('notifications/{id}/unread', [TenantNotificationController::class, 'markAsUnread']);
             Route::put('notifications/read-all', [TenantNotificationController::class, 'markAllAsRead']);
             Route::delete('notifications/{id}', [TenantNotificationController::class, 'destroy']);
 
@@ -125,6 +126,7 @@ $defineApiRoutes = function (): void {
 
             Route::get('notifications', [NotificationController::class, 'index']);
             Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+            Route::put('notifications/{id}/unread', [NotificationController::class, 'markAsUnread']);
             Route::put('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
             Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
 
@@ -168,6 +170,7 @@ $defineApiRoutes = function (): void {
         Route::prefix('admin')->group(function () {
             Route::get('notifications', [AdminNotificationController::class, 'index']);
             Route::put('notifications/{id}/read', [AdminNotificationController::class, 'markAsRead']);
+            Route::put('notifications/{id}/unread', [AdminNotificationController::class, 'markAsUnread']);
             Route::put('notifications/read-all', [AdminNotificationController::class, 'markAllAsRead']);
             Route::delete('notifications/{id}', [AdminNotificationController::class, 'destroy']);
         });

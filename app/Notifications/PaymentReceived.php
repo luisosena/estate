@@ -69,11 +69,13 @@ class PaymentReceived extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
+            'title' => 'Payment Received',
+            'message' => "Payment of {$this->payment->amount} received.",
+            'priority' => 'high',
             'payment_id' => $this->payment->id,
             'amount' => $this->payment->amount,
             'type' => $this->payment->payment_type,
             'status' => $this->payment->status,
-            'message' => "Payment of {$this->payment->amount} received.",
         ];
     }
 }
