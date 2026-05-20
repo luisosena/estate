@@ -1,5 +1,7 @@
 # Design Principles
 
+> Last updated: 2026-05-20
+
 ## Overview
 This document outlines the design patterns, coding conventions, architectural decisions, naming standards, and the technologies used in the Estate Practice application.
 
@@ -8,18 +10,18 @@ This document outlines the design patterns, coding conventions, architectural de
 ### Backend Technologies
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| Laravel | 12.x | PHP framework |
-| PHP | 8.2+ | Server-side language |
+| Laravel | 12.x (12.59.0) | PHP framework |
+| PHP | 8.5 | Server-side language |
 | MySQL | 8.0+ | Primary database |
 | Redis | - | Caching and sessions |
 
 ### Frontend Technologies
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| React | 19.x | UI framework |
+| React | 19.2.3 | UI framework |
 | TypeScript | 5.7.x | Type safety |
-| Inertia.js | 2.x | SSR framework |
-| TailwindCSS | 4.0 | Utility-first CSS |
+| Inertia.js | 2.x (2.0.24) | SSR framework |
+| TailwindCSS | 4.1.18 | Utility-first CSS |
 | shadcn/ui | 3.7.x | Component library |
 | Recharts | 2.15.x | Charting library |
 | Zod | 4.3.x | Schema validation |

@@ -1,5 +1,7 @@
 # Development Workflow
 
+> Last updated: 2026-05-20
+
 ## Overview
 This document explains the build process, testing approach, deployment procedures, coding standards, code review practices, and contribution guidelines for the Estate Practice application.
 
@@ -11,7 +13,7 @@ This document explains the build process, testing approach, deployment procedure
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| PHP | 8.2+ | Server-side runtime |
+| PHP | 8.5 | Server-side runtime |
 | Composer | 2.x | PHP dependency management |
 | Node.js | 20.x+ | Frontend build tools |
 | NPM | 10.x+ | Node package management |
@@ -379,7 +381,7 @@ Configuration: `vite.config.ts`
 
 ### Production Requirements
 
-1. **Server**: PHP 8.2+, MySQL 8.0+, Redis
+1. **Server**: PHP 8.5, MySQL 8.0+, Redis
 2. **Web Server**: Nginx or Apache
 3. **Queue Worker**: Supervisor or systemd
 
@@ -493,8 +495,10 @@ Add to crontab:
 |---------|----------|-------------|
 | `tenancies:end-expired` | Daily at 02:00 | End expired tenancies |
 | `tenancies:test-notifications` | On demand | Test notification system |
-| `utility-bills:mark-overdue` | Daily (see Kernel.php) | Mark pending/partial bills as overdue |
+| `utility-bills:mark-overdue` | Daily | Mark pending/partial utility bills as overdue |
 | `utility-bills:generate-monthly` | 1st of every month at 00:01 | Generate monthly utility bills |
+| `rent-bills:generate-monthly` | 1st of every month at 00:02 | Generate monthly rent bills for active tenancies |
+| `rent-bills:mark-overdue` | Daily at 00:30 | Mark pending/partial rent bills as overdue |
 | `documents:backfill` | On demand | Migrate legacy tenancy_agreement_path records to new document system |
 
 ---

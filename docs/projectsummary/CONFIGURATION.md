@@ -1,5 +1,7 @@
 # Configuration Documentation
 
+> Last updated: 2026-05-20
+
 ## Overview
 This document provides comprehensive documentation of all configuration files, environment variables, feature flags, and their expected values in the Estate Practice application.
 
@@ -109,6 +111,19 @@ DB_PASSWORD=secret
 | TWILIO_SID | Yes | - | Twilio Account SID |
 | TWILIO_TOKEN | Yes | - | Twilio Auth Token |
 | TWILIO_WHATSAPP_FROM | Yes | - | WhatsApp sender number |
+
+---
+
+### Reverb Configuration (WebSockets)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| REVERB_APP_ID | Yes | - | Reverb application ID |
+| REVERB_APP_KEY | Yes | - | Reverb application key |
+| REVERB_APP_SECRET | Yes | - | Reverb application secret |
+| REVERB_HOST | No | "localhost" | Reverb server host |
+| REVERB_PORT | No | "8080" | Reverb server port |
+| REVERB_SCHEME | No | "http" | Reverb server scheme |
 
 ---
 

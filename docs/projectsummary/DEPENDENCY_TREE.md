@@ -1,5 +1,7 @@
 # Dependency Tree Documentation
 
+> Last updated: 2026-05-20
+
 ## Overview
 This document provides a complete inventory of all dependencies, their exact versions, transitive dependencies, and any known conflicts or compatibility issues in the Estate Practice application.
 
@@ -13,31 +15,32 @@ This document provides a complete inventory of all dependencies, their exact ver
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| laravel/framework | ^12.0 (12.56.0) | Core Laravel framework |
-| laravel/fortify | ^1.36 | Authentication backend (Web) |
-| laravel/sanctum | ^4.3 | Authentication backend (API) |
+| laravel/framework | ^12.0 (12.59.0) | Core Laravel framework |
+| laravel/fortify | ^1.37 (1.37.1) | Authentication backend (Web) |
+| laravel/sanctum | ^4.3 (4.3.2) | Authentication backend (API) |
 | laravel/tinker | ^2.10.1 | REPL for Laravel |
-| laravel/wayfinder | ^0.1.15 | Routing helpers |
-| twilio/sdk | ^8.x | WhatsApp notification channel via Twilio API |
-| barryvdh/laravel-dompdf | ^3.x | PDF generation for payment receipts (DomPDF) |
+| laravel/wayfinder | ^0.1.20 | Routing helpers |
+| laravel/reverb | ^1.10 (1.10.2) | WebSocket server for real-time events |
+| twilio/sdk | ^8.x (8.11.6) | WhatsApp notification channel via Twilio API |
+| barryvdh/laravel-dompdf | ^3.x (3.1.2) | PDF generation for payment receipts (DomPDF) |
 
 ### Server-Side Rendering
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| inertiajs/inertia-laravel | ^2.0 | Inertia.js server-side adapter |
-| tightenco/ziggy | ^2.6 | Route helpers for JavaScript |
+| inertiajs/inertia-laravel | ^2.0 (2.0.24) | Inertia.js server-side adapter |
+| tightenco/ziggy | ^2.6 (2.6.2) | Route helpers for JavaScript |
 
 ### Development Dependencies
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| laravel/sail | ^1.41 | Docker development environment |
-| laravel/pint | ^1.24 | Code formatter |
-| laravel/pail | ^1.2.2 | Log tailing |
+| laravel/sail | ^1.59 (1.59.0) | Docker development environment |
+| laravel/pint | ^1.29 (1.29.1) | Code formatter |
+| laravel/pail | ^1.2 (1.2.6) | Log tailing |
 | mockery/mockery | ^1.6 | Mocking library |
 | nunomaduro/collision | ^8.6 | Error handling |
-| pestphp/pest | ^4.4 | Testing framework |
+| pestphp/pest | ^4.7 (4.7.0) | Testing framework |
 | pestphp/pest-plugin-laravel | ^4.0 | Laravel Pest integration |
 | fakerphp/faker | ^1.23 | Fake data generation |
 
@@ -51,15 +54,15 @@ This document provides a complete inventory of all dependencies, their exact ver
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| react | ^19.2.0 | React library |
-| react-dom | ^19.2.0 | React DOM rendering |
+| react | ^19.2.3 | React library |
+| react-dom | ^19.2.3 | React DOM rendering |
 
 #### Inertia.js
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| @inertiajs/react | ^2.3.7 | Inertia.js React adapter |
-| @inertiajs/server | ^2.3.7 | Inertia.js SSR |
+| @inertiajs/react | ^2.3.10 | Inertia.js React adapter |
+| @inertiajs/server | ^2.3.10 | Inertia.js SSR |
 
 #### UI Components (Radix + shadcn/ui)
 
@@ -92,6 +95,12 @@ This document provides a complete inventory of all dependencies, their exact ver
 | Package | Version | Purpose |
 |---------|---------|---------|
 | lucide-react | ^0.475.0 | Icon library |
+
+#### Real-time (WebSockets)
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| laravel-echo | ^2.3.4 | Client-side WebSocket event listening |
 
 #### Form Handling & Validation
 
@@ -131,7 +140,7 @@ This document provides a complete inventory of all dependencies, their exact ver
 |---------|---------|---------|
 | vite | ^7.0.4 | Build tool |
 | @vitejs/plugin-react | ^4.3.4 | Vite React plugin |
-| tailwindcss | ^4.0.0 | CSS framework |
+| tailwindcss | ^4.1.18 | CSS framework |
 | tailwindcss-animate | ^1.0.7 | Tailwind animations |
 | @tailwindcss/vite | ^4.0.0 | Tailwind Vite plugin |
 
@@ -148,14 +157,14 @@ This document provides a complete inventory of all dependencies, their exact ver
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| eslint | ^9.17.0 | Linter |
+| eslint | ^9.39.2 | Linter |
 | @eslint/js | ^9.17.0 | ESLint JS support |
 | @eslint/eslintrc | ^3.2.0 | ESLint config |
 | globals | ^15.14.0 | Global variables |
 | eslint-plugin-react | ^7.37.4 | React ESLint plugin |
 | eslint-plugin-react-hooks | ^5.2.0 | React hooks linting |
 | eslint-plugin-react-refresh | ^0.4.17 | React refresh linting |
-| prettier | ^3.4.2 | Code formatter |
+| prettier | ^3.8.0 | Code formatter |
 | eslint-config-prettier | ^10.0.1 | Prettier ESLint config |
 
 #### shadcn/ui
@@ -200,29 +209,17 @@ This document provides a complete inventory of all dependencies, their exact ver
 
 ### Known Compatibility Issues
 
-#### 1. TailwindCSS 4.0
+#### 1. TailwindCSS 4.x
 
-**Issue**: TailwindCSS 4.0 has breaking changes from v3
-
-**Impact**: Some Tailwind plugins may not be compatible
-
-**Resolution**: Use `@tailwindcss/vite` plugin for v4
+**Status**: Stable at v4.1.18. Uses `@tailwindcss/vite` plugin. No compatibility issues.
 
 #### 2. React 19
 
-**Issue**: React 19 is relatively new
-
-**Impact**: Some libraries may have type issues
-
-**Resolution**: Use `@types/react@19` and ensure packages support React 19
+**Status**: Stable at v19.2.3. All libraries support React 19. No type issues with `@types/react@19`.
 
 #### 3. Zod 4.x
 
-**Issue**: Zod 4.x has some breaking changes
-
-**Impact**: Schema definitions may need updates
-
-**Resolution**: Pin to v3 if issues arise or update schemas for v4
+**Status**: Stable at v4.x. No breaking changes encountered. Schema definitions working correctly.
 
 #### 4. Radix UI Versions
 

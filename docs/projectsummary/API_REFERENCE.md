@@ -1,5 +1,7 @@
 # API Reference Documentation
 
+> Last updated: 2026-05-20
+
 ## Overview
 This document provides complete documentation of all API endpoints in the Estate Practice property management system. It covers request/response formats, authentication mechanisms, error handling, and pagination rules.
 
@@ -243,6 +245,32 @@ GET /api/landlord/tenants?page=2&per_page=25
 
 ---
 
+### Admin API Endpoints (`/api/v1/admin/*`)
+
+#### Notifications
+
+##### GET /api/v1/admin/notifications
+**Description**: List all admin notifications
+**Auth Required**: Yes (admin role)
+
+##### PUT /api/v1/admin/notifications/read-all
+**Description**: Mark all admin notifications as read
+**Auth Required**: Yes (admin role)
+
+##### PUT /api/v1/admin/notifications/{id}/read
+**Description**: Mark a notification as read
+**Auth Required**: Yes (admin role)
+
+##### PUT /api/v1/admin/notifications/{id}/unread
+**Description**: Mark a notification as unread
+**Auth Required**: Yes (admin role)
+
+##### DELETE /api/v1/admin/notifications/{id}
+**Description**: Delete a notification
+**Auth Required**: Yes (admin role)
+
+---
+
 ### Landlord API Endpoints (`/api/v1/landlord/*`)
 
 #### Dashboard
@@ -315,7 +343,7 @@ GET /api/landlord/tenants?page=2&per_page=25
       "id": 1,
       "name": "Sunset Apartments",
       "address": "123 Main St",
-      "type": "apartment",
+      "property_type": "apartment",
       "total_units": 20,
       "occupied_units": 18,
       "created_at": "2024-01-01"
@@ -334,7 +362,7 @@ GET /api/landlord/tenants?page=2&per_page=25
 {
   "name": "Property Name",
   "address": "Full address",
-  "type": "apartment",
+  "property_type": "apartment",
   "description": "Property description"
 }
 ```
@@ -539,7 +567,7 @@ GET /api/landlord/tenants?page=2&per_page=25
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | status | string | Filter by status (pending, paid, partial, overdue, cancelled) |
-| type | string | Filter by type (rent, utility, deposit, penalty, other) |
+| type | string | Filter by type (rent, utility) |
 | tenant_id | int | Filter by tenant |
 | start_date | date | Filter start date |
 | end_date | date | Filter end date |
@@ -569,7 +597,7 @@ GET /api/landlord/tenants?page=2&per_page=25
 |-------|------|----------|-------------|
 | tenancy_id | number | Yes | Related tenancy ID |
 | amount | number | Yes | Payment amount |
-| type | string | Yes | 'rent', 'deposit', 'utility', 'penalty', or 'other' |
+| type | string | Yes | 'rent' or 'utility' |
 | method | string | Yes | 'cash', 'bank_transfer', 'mobile_money', 'card', or 'other' |
 | status | string | Yes | 'paid', 'partial', 'overdue', or 'pending' |
 | payment_date | date | Yes | Date payment was made |
@@ -1553,9 +1581,12 @@ The web application uses Inertia.js for server-side rendering. Routes return ful
   "owner_id": 1,
   "name": "Sunset Apartments",
   "address": "123 Main Street, City",
-  "type": "apartment",
+  "property_type": "apartment",
+  "status": "active",
+  "city": "Dar es Salaam",
+  "country": "Tanzania",
   "description": "Modern apartment complex",
-  "total_units": 20,
+  "amenities": ["parking", "gym"],
   "created_at": "2024-01-01T00:00:00Z"
 }
 ```

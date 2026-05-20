@@ -1,5 +1,7 @@
 # Known Anomalies and Technical Debt
 
+> Last updated: 2026-05-20
+
 ## Overview
 This document comprehensively documents all known issues, deprecated package versions, breaking changes, workarounds, technical debt, non-obvious behaviors, and any deviations from standard practices in the Estate Practice application.
 
@@ -25,18 +27,7 @@ This document comprehensively documents all known issues, deprecated package ver
 
 ### 2. Duplicate Documentation Files
 
-**Issue**: Duplicate or outdated documentation files exist in docs/
-
-**Location**: `docs/`
-
-**Files**:
-- `docs/user _flow _logic.md` - Contains space in filename (should be `user_flow_logic.md`)
-- `docs/user_flow_logic.md` - Current active version
-- `docs/OVERVIEW.md` - Contains some outdated information about Laravel version
-
-**Impact**: Confusion about which documentation is current
-
-**Workaround**: Use `docs/user_flow_logic.md` as the authoritative source for user flow logic
+> **RESOLVED**: Documentation has been consolidated into `docs/projectsummary/` with 10 focused documents. The `docs/vision/` directory contains product vision and roadmap.
 
 ---
 
@@ -98,8 +89,8 @@ This document comprehensively documents all known issues, deprecated package ver
 - Single resource endpoints often lacked the `'data'` wrapper, causing mobile crashes.
 
 **Status**:
-- **Standardized**: Rent Bills (Landlord/Tenant) and Dashboard `recent_payments` have been flattened and wrapped in `data`.
-- **Pending**: Utilities, Properties, and Units still require manual auditing for structure alignment.
+- **Standardized**: Rent Bills (Landlord/Tenant), Dashboard `recent_payments`, Payments, and Documents have been flattened and wrapped in `data`.
+- **Pending**: Utilities, Properties, and Units still benefit from periodic auditing as new fields are added.
 
 **Workaround**: Mobile app uses defensive parsing `(response as any).data || response` until standardization is complete.
 
@@ -111,7 +102,7 @@ This document comprehensively documents all known issues, deprecated package ver
 
 **Location**: No tests directory visible in standard location
 
-> **RESOLVED (Epoch 3)**: Pest testing has been comprehensively adopted — 336 tests, 1133 assertions, 100% passing. Includes strict `ArchTest.php` architecture guardrails, Feature API end-to-end endpoint checking, and Data Isolation validation.
+> **RESOLVED (Epoch 3)**: Pest testing has been comprehensively adopted — 483 tests, 1428 assertions, 100% passing. Includes strict `ArchTest.php` architecture guardrails, Feature API end-to-end endpoint checking, and Data Isolation validation.
 
 ---
 
@@ -269,37 +260,21 @@ $this->authorize('update', $property);
 
 ## Package-Specific Issues
 
-### 1. TailwindCSS 4.0 Configuration
+### 1. TailwindCSS 4.x Configuration
 
-**Issue**: TailwindCSS 4.0 has different configuration structure than 3.x
-
-**Location**: `tailwind.config.js`
-
-**Current**: Uses v4 format but some plugins may not be compatible
-
-**Workaround**: Ensure all Tailwind plugins support v4
+**Status**: Stable at v4.1.18. Uses `@tailwindcss/vite` plugin for v4 integration. All components and utilities are compatible.
 
 ---
 
 ### 2. Zod Version 4.x
 
-**Issue**: Using Zod 4.x which may have breaking changes from v3
-
-**Location**: `package.json`
-
-**Impact**: Schema definitions may need updates
-
-**Workaround**: Pin to specific version if issues arise
+**Status**: Stable at v4.x. Schema definitions are compatible with current version. No issues reported.
 
 ---
 
 ### 3. React 19 Compatibility
 
-**Issue**: React 19 is relatively new, some libraries may have compatibility issues
-
-**Location**: `package.json`
-
-**Monitor**: Watch for library updates addressing React 19 compatibility
+**Status**: Stable at v19.2.3. All UI libraries (Radix, shadcn, Recharts, framer-motion) are compatible.
 
 ---
 
@@ -393,7 +368,7 @@ This document covers:
 4. **Resolved Items**:
    - Role enum implementation — `App\Enums\Role` is the canonical source of truth ✔
    - API Resource classes — all endpoints wrapped in `*Resource.php` layer ✔
-   - Test coverage — 457 tests, 1354 assertions ✔
+   - Test coverage — 483 tests, 1428 assertions ✔
    - API Versioning — exclusively `/api/v1/`, unversioned routes removed ✔
    - String-based role checks — replaced with enum comparisons — no string literals ✔
    - Service layer extraction — controllers delegating to service classes ✔

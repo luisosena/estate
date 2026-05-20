@@ -1,5 +1,7 @@
 # Business Logic Documentation
 
+> Last updated: 2026-05-20
+
 ## Overview
 This document provides comprehensive documentation of all business logic, domain-specific rules, operational workflows, user roles, permissions, and data flow in the Estate Practice property management system.
 
@@ -250,7 +252,7 @@ sequenceDiagram
 ```php
 'name' => 'required|string|max:255',
 'address' => 'required|string',
-'type' => 'required|in:apartment,house,commercial,mixed',
+'property_type' => 'required|in:apartment,house,commercial,mixed',
 'description' => 'nullable|string',
 ```
 
@@ -260,7 +262,7 @@ POST /landlord/properties
 {
   "name": "Sunset Apartments",
   "address": "123 Main Street, City",
-  "type": "apartment",
+  "property_type": "apartment",
   "description": "Modern apartment complex with 20 units"
 }
 ```
@@ -318,15 +320,8 @@ $property->delete();
 **Validation**:
 ```php
 'property_id' => 'required|exists:properties,id',
-'unit_number' => 'required|string|max:50',
-'type' => 'required|in:studio,1bedroom,2bedroom,3bedroom,commercial',
-'floor' => 'nullable|integer|min:0',
-'size_sqm' => 'nullable|numeric|min:1',
-'bedrooms' => 'nullable|integer|min:0',
-'bathrooms' => 'nullable|numeric|min:0',
-'rent_amount' => 'required|numeric|min:0',
-'description' => 'nullable|string',
-'features' => 'nullable|array',
+'unit_code' => 'required|string|max:255',
+'unit_name' => 'required|string|max:255',
 ```
 
 **Ownership Check**:
@@ -342,16 +337,11 @@ if ($property->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
 |--------|-------------|
 | available | Unit is ready for rent |
 | occupied | Unit has active tenancy |
-| maintenance | Unit is under maintenance |
-| unavailable | Unit not available for rent |
 
 **State Transition**:
 ```
 available → occupied (when tenancy starts)
 occupied → available (when tenancy ends)
-available → maintenance
-maintenance → available
-any → unavailable
 ```
 
 ---
@@ -493,7 +483,7 @@ sequenceDiagram
     Controller->>Model: Find with relations
     Controller->>Model: End active tenancy
     Model->>DB: UPDATE status='ended'
-    Model->>DB: UPDATE terminated_at=NOW()
+    Model->>DB: UPDATE end_reason=<reason>
     Model->>DB: UPDATE unit status='available'
     Controller->>Landlord: Redirect
 ```
@@ -510,7 +500,7 @@ public function destroy(Tenant $tenant)
     if ($activeTenancy) {
         $activeTenancy->update([
             'status' => 'ended',
-            'terminated_at' => now(),
+            'end_reason' => $request->reason ?? null,
         ]);
         
         // Make unit available again
@@ -535,8 +525,8 @@ public function destroy(Tenant $tenant)
 ```php
 'tenancy_id' => 'required|exists:tenancies,id',
 'amount' => 'required|numeric|min:0.01',
-'type' => 'required|in:rent,deposit,utility,penalty,other',
-'method' => 'required|in:cash,bank_transfer,mobile_money,card,other',
+'type' => 'required|in:rent,utility',
+'method' => 'required|string',
 'payment_date' => 'required|date',
 'due_date' => 'required|date',
 'reference_number' => 'nullable|string|max:100',
@@ -932,21 +922,15 @@ php artisan documents:backfill --dry-run # Preview without migrating
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending: Create tenancy
-    pending --> active: Start date reached
-    active --> expired: End date passed
-    active --> ended: Manual termination
-    expired --> ended: Process termination
+    [*] --> active: Create tenancy
+    active --> ended: Manual termination or expiry
     ended --> [*]
-    pending --> ended: Cancelled
 ```
 
 **States**:
 | State | Description | Valid Transitions |
 |-------|-------------|------------------|
-| pending | Tenancy created, not yet started | → active, → ended |
-| active | Tenancy is ongoing | → expired, → ended |
-| expired | End date passed automatically | → ended |
+| active | Tenancy is ongoing | → ended |
 | ended | Tenancy terminated | → (terminal) |
 
 **State Validation Rules**:
@@ -961,11 +945,7 @@ stateDiagram-v2
 stateDiagram-v2
     [*] --> available: New unit
     available --> occupied: Tenancy starts
-    available --> maintenance: Mark for repair
-    available --> unavailable: Remove from market
     occupied --> available: Tenancy ends
-    maintenance --> available: Repairs complete
-    unavailable --> available: Put back on market
 ```
 
 ---
@@ -1149,7 +1129,7 @@ flowchart TD
     G -->|Yes| H[Warn landlord]
     H --> I[Process remaining payments first]
     I --> J[Set tenancy status to ended]
-    J --> K[Set terminated_at timestamp]
+    J --> K[Set end_reason]
     K --> L[Update unit status to available]
     L --> M[Send termination notification to tenant]
     M --> N[Redirect with success]
@@ -1384,7 +1364,34 @@ php artisan utility-bills:generate-monthly
 - Sets billing_month to current month, due_date to end of month
 - Status defaults to 'pending'
 
-### 5. BackfillDocuments
+### 5. GenerateMonthlyRentBills
+```bash
+# Runs on the 1st of every month at 00:02 (via scheduler)
+php artisan schedule:run
+# Or manually
+php artisan rent-bills:generate-monthly
+```
+
+**Functionality**:
+- Creates monthly rent bills for all active tenancies with monthly_rent > 0
+- Uses firstOrCreate to avoid duplicates (unique constraint on tenancy_id + billing_month)
+- Sets billing_month to current month, due_date to rent_due_day of the month
+- Status defaults to 'pending'
+
+### 6. MarkOverdueRentBills
+```bash
+# Runs daily at 00:30 (via scheduler)
+php artisan schedule:run
+# Or manually
+php artisan rent-bills:mark-overdue
+```
+
+**Functionality**:
+- Updates all rent bills where status IN ('pending', 'partial') AND due_date < today()
+- Sets status to 'overdue'
+- Logs count of updated bills
+
+### 7. BackfillDocuments
 ```bash
 # Migrate legacy tenancy_agreement_path records to new document system
 php artisan documents:backfill

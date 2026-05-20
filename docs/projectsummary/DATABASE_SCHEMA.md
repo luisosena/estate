@@ -1,5 +1,7 @@
 # Database Schema Documentation
 
+> Last updated: 2026-05-20
+
 ## Overview
 This document provides complete documentation of all database tables in the Estate Practice property management system. Each table includes its purpose, attributes, data types, constraints, relationships, and indexes.
 
@@ -89,6 +91,11 @@ erDiagram
 | password | VARCHAR(255) | NOT NULL | Bcrypt hashed password |
 | remember_token | VARCHAR(100) | NULLABLE | Remember me token |
 | role | ENUM('tenant', 'landlord', 'admin') | NOT NULL, INDEXED | User role |
+| phone | VARCHAR(255) | NULLABLE | User phone number |
+| must_change_password | TINYINT(1) | DEFAULT 0 | Force password change on next login |
+| expo_push_token | VARCHAR(255) | NULLABLE | Expo push notification token |
+| expo_push_token_updated_at | TIMESTAMP | NULLABLE | When Expo push token was last updated |
+| push_platform | VARCHAR(255) | NULLABLE | Mobile push platform (ios/android) |
 | two_factor_secret | TEXT | NULLABLE | Two-factor authentication secret |
 | two_factor_recovery_codes | TEXT | NULLABLE | Recovery codes for 2FA |
 | two_factor_confirmed_at | TIMESTAMP | NULLABLE | When 2FA was confirmed |
@@ -162,9 +169,15 @@ erDiagram
 | owner_id | BIGINT | FOREIGN KEY (users.id) | Property owner (landlord) |
 | name | VARCHAR(255) | NOT NULL | Property name |
 | address | TEXT | NOT NULL | Full property address |
-| type | ENUM('apartment', 'house', 'commercial', 'mixed') | NOT NULL | Property type |
+| property_type | ENUM('apartment', 'house', 'commercial', 'mixed') | NOT NULL | Property type |
+| status | ENUM('active', 'inactive', 'maintenance') | DEFAULT 'active' | Property operational status |
 | description | TEXT | NULLABLE | Property description |
-| total_units | INT | DEFAULT 0 | Total number of units |
+| amenities | JSON | NULLABLE | Property amenities list |
+| policies | JSON | NULLABLE | Property policies and rules |
+| city | VARCHAR(255) | NULLABLE | City |
+| state | VARCHAR(255) | NULLABLE | State/province |
+| postal_code | VARCHAR(20) | NULLABLE | Postal/ZIP code |
+| country | VARCHAR(255) | NULLABLE | Country |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -194,7 +207,7 @@ erDiagram
 | property_id | BIGINT | FOREIGN KEY (properties.id) | Parent property |
 | unit_code | VARCHAR(255) | UNIQUE, NOT NULL | Unit identifier |
 | unit_name | VARCHAR(255) | NOT NULL | Human-readable unit name |
-| status | ENUM('available', 'occupied', 'maintenance') | DEFAULT 'available' | Unit availability |
+| status | ENUM('available', 'occupied') | DEFAULT 'available' | Unit availability |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -232,9 +245,10 @@ erDiagram
 | monthly_rent | DECIMAL(12,2) | NOT NULL | Monthly rent amount |
 | rent_due_day | INT | DEFAULT 5 | Day of month rent is due (1-31) |
 | security_deposit | DECIMAL(12,2) | NULLABLE | Security deposit amount |
-| status | ENUM('active', 'ended', 'pending', 'expired') | DEFAULT 'pending' | Tenancy status |
-| termination_reason | VARCHAR(255) | NULLABLE | Reason for termination |
-| terminated_at | TIMESTAMP | NULLABLE | When tenancy was terminated |
+| status | ENUM('active', 'ended') | DEFAULT 'active' | Tenancy status |
+| end_reason | VARCHAR(255) | NULLABLE | Reason for tenancy ending |
+| deposit_return_status | VARCHAR(255) | NULLABLE | Security deposit return status |
+| final_meter_readings | TEXT | NULLABLE | Final utility meter readings at end |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -243,13 +257,14 @@ erDiagram
 - INDEX on tenant_id
 - INDEX on unit_id
 - INDEX on status
-- INDEX on (start_date, end_date)
 
 **Relationships**:
 - BelongsTo Tenant
 - BelongsTo Unit
 - HasMany Payment
-- HasMany Utility
+- HasMany RentBill
+- HasMany TenancyUtility
+- MorphMany Document (documentable)
 
 ---
 
@@ -274,21 +289,24 @@ erDiagram
 | utility_bill_id | BIGINT | FOREIGN KEY (nullable, nullOnDelete) | Link to utility bill (for utility payments) |
 | rent_bill_id | BIGINT | FOREIGN KEY (nullable, nullOnDelete) | Link to rent bill (for rent payments) |
 | amount | DECIMAL(12,2) | NOT NULL | Payment amount |
-| payment_type | ENUM('rent', 'deposit', 'utility', 'penalty', 'other') | NOT NULL | Payment type |
-| payment_method | ENUM('cash', 'bank_transfer', 'mobile_money', 'card', 'other') | NOT NULL | Payment method |
+| payment_type | ENUM('rent', 'utility') | NOT NULL | Payment type |
+| payment_method | VARCHAR(255) | NOT NULL | Payment method (free-form string) |
 | status | ENUM('paid', 'partial', 'overdue', 'cancelled', 'pending') | DEFAULT 'pending' | Payment status |
 | paid_at | TIMESTAMP | NOT NULL | Date payment was made |
 | due_date | DATE | NOT NULL | Date payment was due |
 | reference_number | VARCHAR(100) | NULLABLE | External payment reference |
 | notes | TEXT | NULLABLE | Payment notes |
-| gateway | varchar(255) | nullable | Payment gateway driver used (`manual`, `mpesa`) |
-| checkout_request_id | varchar(255) | nullable | M-Pesa STK push checkout request ID |
-| gateway_reference | varchar(255) | nullable | Gateway transaction reference |
-| gateway_status | varchar(255) | nullable | Raw status string from the gateway |
-| gateway_metadata | json | nullable | Full gateway response payload |
-| gateway_confirmed_at | timestamp | nullable | When the gateway confirmed the payment |
+| gateway | VARCHAR(255) | NULLABLE | Payment gateway driver used (`manual`, `mpesa`) |
+| checkout_request_id | VARCHAR(255) | NULLABLE | M-Pesa STK push checkout request ID |
+| gateway_reference | VARCHAR(255) | NULLABLE | Gateway transaction reference |
+| gateway_status | VARCHAR(255) | NULLABLE | Raw status string from the gateway |
+| gateway_metadata | JSON | NULLABLE | Full gateway response payload |
+| gateway_confirmed_at | TIMESTAMP | NULLABLE | When the gateway confirmed the payment |
+| reference_number | VARCHAR(255) | NULLABLE | External payment reference |
+| notes | TEXT | NULLABLE | Payment notes |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
+| deleted_at | TIMESTAMP | NULLABLE | Soft delete timestamp |
 
 **Indexes**:
 - PRIMARY KEY (id)
@@ -297,13 +315,14 @@ erDiagram
 - INDEX on utility_bill_id
 - INDEX on rent_bill_id
 - INDEX on status
-- INDEX on payment_date
+- INDEX on paid_at
 
 **Relationships**:
 - BelongsTo Tenancy
 - BelongsTo Tenant
 - BelongsTo UtilityBill (optional, for utility payments)
 - BelongsTo RentBill (optional, for rent payments)
+- Uses SoftDeletes trait
 
 ---
 
@@ -537,12 +556,10 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 |--------|------|-------------|-------------|
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | tenant_id | BIGINT | FOREIGN KEY (tenants.id) | Tenant reference |
-| type | ENUM('national_id', 'passport', 'drivers_license', 'other') | NOT NULL | ID type |
-| number | VARCHAR(100) | NOT NULL | ID number |
-| issued_date | DATE | NULLABLE | Date ID was issued |
-| expiry_date | DATE | NULLABLE | Date ID expires |
-| document_path | VARCHAR(500) | NULLABLE | Path to scanned document |
-| verified | BOOLEAN | DEFAULT FALSE | Whether ID is verified |
+| id_type | VARCHAR(255) | NOT NULL | ID type (national_id, passport, etc.) |
+| id_number | VARCHAR(255) | NOT NULL | ID number |
+| document_path | VARCHAR(255) | NULLABLE | Path to scanned document |
+| verified_at | TIMESTAMP | NULLABLE | When ID was verified |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
 | updated_at | TIMESTAMP | NOT NULL | Record update timestamp |
 
@@ -653,14 +670,19 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 | id | BIGINT | PRIMARY KEY, AUTO-INCREMENT | Unique identifier |
 | user_id | BIGINT | FOREIGN KEY (users.id) | User associated with event |
 | event_type | VARCHAR(100) | NOT NULL | Type of security event |
-| event_data | JSON | NULLABLE | Additional event data |
 | ip_address | VARCHAR(45) | NULLABLE | IP address |
 | user_agent | TEXT | NULLABLE | Browser/device user agent |
+| device_id | CHAR(36) | NULLABLE | UUID of the device |
+| location | VARCHAR(255) | NULLABLE | Geographic location |
+| metadata | JSON | NULLABLE | Additional event metadata |
 | severity | ENUM('low', 'medium', 'high', 'critical') | NOT NULL | Event severity |
 | created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
+| updated_at | TIMESTAMP | NULLABLE | Record update timestamp |
 
 **Event Types**:
-- password_changed
+- login
+- logout
+- password_change
 - password_reset_requested
 - suspicious_activity
 - unusual_location
@@ -671,6 +693,8 @@ Migration file reference: `database/migrations/2026_05_02_080758_add_performance
 - biometric_disabled
 - device_added
 - device_removed
+- profile_update
+- utility_update
 
 **Indexes**:
 - PRIMARY KEY (id)
@@ -693,32 +717,67 @@ The following tables are created by Laravel framework:
 
 **Migration**: `database/migrations/0001_01_01_000001_create_cache_table.php`
 
+#### cache_locks
+**Purpose**: Cache lock storage for atomic operations.
+
+**Migration**: Created alongside cache table.
+
 #### jobs
 **Purpose**: Queue job storage.
 
 **Migration**: `database/migrations/0001_01_01_000002_create_jobs_table.php`
+
+#### job_batches
+**Purpose**: Batched queue job tracking.
+
+**Migration**: Created alongside jobs table.
+
+#### failed_jobs
+**Purpose**: Failed queue job storage for retry/inspection.
+
+**Migration**: Created alongside jobs table.
 
 #### sessions
 **Purpose**: User session storage.
 
 **Migration**: `database/migrations/2026_02_19_133943_create_sessions_table.php`
 
-#### personal_access_tokens
-**Purpose**: Laravel Sanctum personal access tokens.
+#### password_reset_tokens
+**Purpose**: Password reset token storage.
 
-**Migration**: Created by Laravel Fortify
+**Migration**: Created by Laravel Fortify.
+
+#### notifications
+**Purpose**: Laravel notification table (polymorphic, UUID primary key).
+
+**Migration**: `database/migrations/2026_01_30_120958_create_notifications_table.php`
 
 ---
 
 ## Custom Field Definitions
 
-*(No custom JSON fields for units table in the current schema)*
-#### security_events.event_data
+#### security_events.metadata
 Stores event-specific data:
 ```json
 {
   "old_email": "old@example.com",
   "new_email": "new@example.com"
+}
+```
+
+#### properties.amenities
+JSON array of property amenities:
+```json
+["parking", "gym", "pool", "security"]
+```
+
+#### properties.policies
+JSON object of property policies:
+```json
+{
+  "pets_allowed": true,
+  "smoking_allowed": false,
+  "max_occupants": 4
 }
 ```
 
@@ -846,7 +905,7 @@ erDiagram
         bigint id PK
         bigint user_id FK
         string event_type
-        json event_data
+        json metadata
         enum severity
     }
     

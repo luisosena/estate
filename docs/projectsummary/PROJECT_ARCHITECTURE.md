@@ -1,4 +1,7 @@
 ## Overview
+
+> Last updated: 2026-05-20
+
 This is a Laravel 12 + React 19 full-stack property management application called "Estate Practice". It provides a multi-tenant property management system with three user roles: Admin, Landlord, and Tenant.
 
 All role-based authorization is enforced through `App\Enums\Role` — a PHP 8.1 backed string enum. This enum is the single source of truth for all authorization decisions across Policies, FormRequests, Controllers, and redirect logic. No string role literals exist in the active codebase.
@@ -6,12 +9,13 @@ All role-based authorization is enforced through `App\Enums\Role` — a PHP 8.1 
 ## Technology Stack
 
 ### Backend
-- **Framework**: Laravel 12.x (12.56.0)
+- **Framework**: Laravel 12.x (12.59.0)
 - **PHP Version**: 8.5
 - **Authentication**: Laravel Fortify (web), Laravel Sanctum (API)
 - **Authorization**: `App\Enums\Role` — PHP 8.1 backed enum; Policies with `before()` admin bypass
 - **Server-Side Rendering**: Inertia.js with React 19
 - **Notification Channels**: `WhatsAppChannel` (Twilio), `ExpoPushChannel` (Expo Push Service)
+- **Real-time WebSockets**: `laravel/reverb` (server), `laravel-echo` (client)
 
 ### Frontend (Web)
 - **UI Framework**: React 19 with TypeScript
@@ -518,6 +522,12 @@ sequenceDiagram
 /api/v1/auth/me          -> AuthController@me
 /api/v1/auth/register    -> AuthController@register
 
+/api/v1/admin/notifications         -> Api\Admin\NotificationController@index
+/api/v1/admin/notifications/read-all -> Api\Admin\NotificationController@markAllAsRead
+/api/v1/admin/notifications/{id}/read -> Api\Admin\NotificationController@markAsRead
+/api/v1/admin/notifications/{id}/unread -> Api\Admin\NotificationController@markAsUnread
+/api/v1/admin/notifications/{id}    -> Api\Admin\NotificationController@destroy
+
 /api/v1/tenant/dashboard    -> Tenant\DashboardController
 /api/v1/tenant/payments     -> Tenant\PaymentsController
 /api/v1/tenant/rent-bills   -> Tenant\RentBillController
@@ -547,7 +557,7 @@ sequenceDiagram
 
 /api/v1/users  -> UserController (admin/landlord scoped)
 ```
-**Total: 77 active routes**. Unversioned `/api/*` routes have been removed.
+**Total: 81 active routes**. Unversioned `/api/*` routes have been removed.
 
 ## Middleware Stack
 
@@ -588,7 +598,7 @@ Laravel scheduler handles:
 The project maintains a rigorous, phased testing approach powered by **Pest 4**.
 The test footprints are completely isolated, ensuring reliable test environments, preventing data leaks across partitions, and validating correct API behavior via Sanctum.
 
-**Test count: 457 tests, 1354 assertions — 100% passing.**
+**Test count: 483 tests, 1428 assertions — 100% passing.**
 
 All API tests target the `/api/v1/` prefix exclusively.
 

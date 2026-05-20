@@ -1,5 +1,7 @@
 ## Estate Practice – Technical Overview
 
+> Last updated: 2026-05-20
+
 > **What exists now.** For product vision, goals, and roadmap, see [`docs/vision/`](../vision/vision.md).
 
 ### 1. Summary
@@ -15,41 +17,44 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 
 - **Backend**
   - **Language**: PHP ^8.5
-  - **Framework**: Laravel ^12.0 (`laravel/framework`) — currently 12.56.0
+  - **Framework**: Laravel ^12.0 (`laravel/framework`) — currently 12.59.0
   - **SPA adapter**: `inertiajs/inertia-laravel` ^2.0
   - **Authentication & security**:
-    - `laravel/fortify` ^1.36 for web auth flows (registration, login, password reset, 2FA)
+    - `laravel/fortify` ^1.37 for web auth flows (registration, login, password reset, 2FA)
     - `laravel/sanctum` ^4.3 for mobile API authentication (permanent tokens)
     - `App\Enums\Role` — type-safe PHP 8.1 backed enum for all role authorization
   - **Notification channels** *(Phase 2 — ported)*:
     - `WhatsAppChannel` via `twilio/sdk` for WhatsApp delivery
     - `ExpoPushChannel` for Expo mobile push notifications
+  - **Real-time** *(WebSockets)*:
+    - `laravel/reverb` for WebSocket server
+    - `laravel-echo` for client-side event listening
   - **PDF Generation** *(Phase 4 — ported)*:
     - `barryvdh/laravel-dompdf` for receipt generation
   - **Document Storage** *(Phase 6 — complete)*:
     - Polymorphic document attachment system (tenancies, payments, properties)
     - UUID-based file paths, MIME validation, role-based access control, soft deletes
   - **Routing & URLs**:
-    - `laravel/wayfinder` ^0.1.15
-    - `tightenco/ziggy` ^2.6 (mirrored on the frontend with `ziggy-js`)
+    - `laravel/wayfinder` ^0.1.20
+    - `tightenco/ziggy` ^2.6.2 (mirrored on the frontend with `ziggy-js`)
   - **Dev & tooling**:
     - `laravel/tinker` (REPL)
     - `laravel/pail` (log viewer)
     - `laravel/sail` (optional Docker dev env)
     - `laravel/pint` (PHP linter/formatter)
-    - `pestphp/pest` ^4.4 + `pestphp/pest-plugin-laravel` (testing — 457 tests passing)
+    - `pestphp/pest` ^4.7 + `pestphp/pest-plugin-laravel` (testing — 483 tests passing)
 
 - **Frontend**
   - **Language & runtime**:
     - TypeScript ^5.7.2
-    - React ^19.2.0 (`react`, `react-dom`)
+    - React ^19.2.3 (`react`, `react-dom`)
   - **Bundler/dev server**:
     - Vite ^7.0.4 with `@vitejs/plugin-react`
     - `laravel-vite-plugin` and `@laravel/vite-plugin-wayfinder` for Laravel integration
   - **SPA framework**:
-    - `@inertiajs/react` ^2.3.7
+    - `@inertiajs/react` ^2.3.10
   - **Styling & UI**:
-    - Tailwind CSS ^4.0.0 with `@tailwindcss/vite`
+    - Tailwind CSS ^4.1.18 with `@tailwindcss/vite`
     - Glassmorphism component libraries: `@yhooi2/shadcn-glass-ui`
     - Animation: `framer-motion`, `motion`, `tw-animate-css`
     - Theming: `next-themes`
@@ -64,8 +69,8 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 
 - **Tooling & Quality**
   - **JS/TS**
-    - ESLint 9 (`eslint`, `@eslint/js`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-plugin-import`, `eslint-import-resolver-typescript`)
-    - Prettier 3 with `prettier-plugin-tailwindcss` and `prettier-plugin-organize-imports`
+    - ESLint 9.39 (`eslint`, `@eslint/js`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-plugin-import`, `eslint-import-resolver-typescript`)
+    - Prettier 3.8 with `prettier-plugin-tailwindcss` and `prettier-plugin-organize-imports`
     - `typescript-eslint`
   - **PHP**
     - Laravel Pint for coding style
@@ -250,7 +255,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 #### `routes/`
 
 - **`web.php`**: All web routes. Dashboard redirect enforced via `Role` enum (admin → `/admin/dashboard`, landlord → `/landlord/dashboard`, tenant → `/tenant/dashboard`). Debug routes (`/tests`, `/tests2`, `/mail`) have been **removed**.
-- **`api.php`**: Exclusively under `/api/v1/` prefix — **65 active routes**. Unversioned `/api/*` routes removed (strict versioning enforced). Groups: auth, landlord (dashboard, properties, units, tenants, payments, rent-bills, utility-bills, tenancy-utilities, notifications, profile), tenant (dashboard, payments, rent-bills, utilities, profile), users.
+- **`api.php`**: Exclusively under `/api/v1/` prefix — **81 active routes**. Unversioned `/api/*` routes removed (strict versioning enforced). Groups: auth, admin (notifications), landlord (dashboard, properties, units, tenants, payments, rent-bills, utility-bills, tenancy-utilities, notifications, profile, documents), tenant (dashboard, payments, rent-bills, utilities, notifications, profile, documents), users.
 - **`settings.php`**: Profile, password, appearance, 2FA settings routes.
 - **`console.php`**: Artisan console routes.
 
@@ -274,7 +279,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 - **`Feature/Tenant`**: Web Application controllers for Tenants
 - **`ArchTest.php`**: Architecture rules mapping rigid structures
 - **`Pest.php`, `TestCase.php`**: Pest bootstrap and base test case
-- **457 tests, 1354 assertions — 100% passing**
+- **483 tests, 1428 assertions — 100% passing**
 
 ---
 
@@ -322,7 +327,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - Bills auto-marked overdue daily.
 
 - **API**
-  - All mobile API endpoints exclusively at `/api/v1/` — **77 active routes**.
+  - All mobile API endpoints exclusively at `/api/v1/` — **81 active routes**.
   - All responses use `{ data: ..., meta: ... }` wrapping via Eloquent Resources.
   - Mobile `EXPO_PUBLIC_API_URL` configured to `http://{wifi-ip}:8000/api/v1`.
 
@@ -340,7 +345,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - Sanctum authentication with permanent tokens.
 
 - **Quality & tooling**
-  - Pest 4: **457 tests, 1354 assertions — 100% passing**.
+  - Pest 4: **483 tests, 1428 assertions — 100% passing**.
   - All API tests target `/api/v1/` prefix.
   - `npm run build` verified clean.
 
