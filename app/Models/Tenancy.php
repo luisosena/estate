@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Tenancy extends Model
 {
@@ -72,6 +73,19 @@ class Tenancy extends Model
     public function activeUtilities(): HasMany
     {
         return $this->hasMany(TenancyUtility::class)->where('tenancy_utilities.status', 'active');
+    }
+
+    /**
+     * Rent bills for this tenancy.
+     */
+    public function rentBills(): HasMany
+    {
+        return $this->hasMany(RentBill::class);
+    }
+
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'documentable');
     }
 
     public function scopeAgreement(Builder $query): Builder

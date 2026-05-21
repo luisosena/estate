@@ -60,12 +60,12 @@ class UtilityBill extends Model
         $this->save();
     }
 
-    public function scopePending($query): Builder
+    public function scopePending(Builder $query): Builder
     {
         return $query->where('utility_bills.status', 'pending');
     }
 
-    public function scopeOverdue($query): Builder
+    public function scopeOverdue(Builder $query): Builder
     {
         return $query->where(function ($q) {
             $q->where('utility_bills.status', 'overdue')

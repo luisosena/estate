@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -102,7 +103,7 @@ class SecurityEvent extends Model
     /**
      * Scope a query to only include security events for a specific user.
      */
-    public function scopeForUser($query, int $userId)
+    public function scopeForUser(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
     }
@@ -110,7 +111,7 @@ class SecurityEvent extends Model
     /**
      * Scope a query to only include security events of a specific type.
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType(Builder $query, string $type): Builder
     {
         return $query->where('event_type', $type);
     }
@@ -118,7 +119,7 @@ class SecurityEvent extends Model
     /**
      * Scope a query to only include security events from the last N days.
      */
-    public function scopeRecent($query, int $days = 30)
+    public function scopeRecent(Builder $query, int $days = 30): Builder
     {
         return $query->where('created_at', '>=', now()->subDays($days));
     }
@@ -126,7 +127,7 @@ class SecurityEvent extends Model
     /**
      * Scope a query to only include high severity security events.
      */
-    public function scopeHighSeverity($query)
+    public function scopeHighSeverity(Builder $query): Builder
     {
         return $query->whereIn('severity', [self::SEVERITY_HIGH, self::SEVERITY_CRITICAL]);
     }

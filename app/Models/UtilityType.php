@@ -32,7 +32,7 @@ class UtilityType extends Model
         return $this->hasMany(TenancyUtility::class);
     }
 
-    public function scopeActive($query): Builder
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }

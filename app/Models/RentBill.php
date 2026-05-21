@@ -58,12 +58,12 @@ class RentBill extends Model
         $this->save();
     }
 
-    public function scopePending($query): Builder
+    public function scopePending(Builder $query): Builder
     {
         return $query->where('rent_bills.status', 'pending');
     }
 
-    public function scopeOverdue($query): Builder
+    public function scopeOverdue(Builder $query): Builder
     {
         return $query->where(function ($q) {
             $q->where('rent_bills.status', 'overdue')
