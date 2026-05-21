@@ -44,32 +44,40 @@ class GenerateMonthlyUtilityBills extends Command
             $progressBar->start();
 
             foreach ($tenancyUtilities as $tu) {
-                // Skip utilities with no valid amount
-                if ($tu->amount === null || $tu->amount <= 0) {
-                    $progressBar->advance();
+                try {
+                    // Skip utilities with no valid amount
+                    if ($tu->amount === null || $tu->amount <= 0) {
+                        $progressBar->advance();
 
-                    continue;
-                }
+                        continue;
+                    }
 
-                $bill = UtilityBill::firstOrCreate(
-                    [
+                    $bill = UtilityBill::firstOrCreate(
+                        [
+                            'tenancy_utility_id' => $tu->id,
+                            'billing_month' => $billingMonth,
+                        ],
+                        [
+                            'amount_due' => $tu->amount,
+                            'due_date' => today()->endOfMonth(),
+                            'status' => 'pending',
+                        ]
+                    );
+
+                    if ($bill->wasRecentlyCreated) {
+                        $count++;
+                        $utilityName = $tu->utilityType?->name ?? 'Unknown Utility';
+                        $this->line("Created bill for {$utilityName} - Tenancy #{$tu->tenancy_id}");
+                    }
+                } catch (\Exception $e) {
+                    $this->error("  ✗ Failed to generate utility bill for tenancy utility #{$tu->id}: {$e->getMessage()}");
+                    Log::error('GenerateMonthlyUtilityBills: Failed for tenancy utility', [
                         'tenancy_utility_id' => $tu->id,
-                        'billing_month' => $billingMonth,
-                    ],
-                    [
-                        'amount_due' => $tu->amount,
-                        'due_date' => today()->endOfMonth(),
-                        'status' => 'pending',
-                    ]
-                );
-
-                if ($bill->wasRecentlyCreated) {
-                    $count++;
-                    $utilityName = $tu->utilityType?->name ?? 'Unknown Utility';
-                    $this->line("Created bill for {$utilityName} - Tenancy #{$tu->tenancy_id}");
+                        'error' => $e->getMessage(),
+                    ]);
+                } finally {
+                    $progressBar->advance();
                 }
-
-                $progressBar->advance();
             }
 
             $progressBar->finish();

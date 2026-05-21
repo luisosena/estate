@@ -45,51 +45,59 @@ class GenerateMonthlyRentBills extends Command
             $progressBar->start();
 
             foreach ($tenancies as $tenancy) {
-                // Skip tenancies with no valid rent amount
-                if ($tenancy->monthly_rent === null || $tenancy->monthly_rent <= 0) {
-                    Log::debug('GenerateMonthlyRentBills: Skipped tenancy - no valid rent', [
-                        'tenancy_id' => $tenancy->id,
-                        'monthly_rent' => $tenancy->monthly_rent,
-                    ]);
-                    $progressBar->advance();
+                try {
+                    // Skip tenancies with no valid rent amount
+                    if ($tenancy->monthly_rent === null || $tenancy->monthly_rent <= 0) {
+                        Log::debug('GenerateMonthlyRentBills: Skipped tenancy - no valid rent', [
+                            'tenancy_id' => $tenancy->id,
+                            'monthly_rent' => $tenancy->monthly_rent,
+                        ]);
+                        $progressBar->advance();
 
-                    continue;
-                }
+                        continue;
+                    }
 
-                // Calculate due date (default: 5th of the month)
-                $dueDate = $billingMonth->copy()->day(5);
+                    // Calculate due date (default: 5th of the month)
+                    $dueDate = $billingMonth->copy()->day(5);
 
-                $bill = RentBill::firstOrCreate(
-                    [
-                        'tenancy_id' => $tenancy->id,
-                        'billing_month' => $billingMonth,
-                    ],
-                    [
-                        'amount_due' => $tenancy->monthly_rent,
-                        'due_date' => $dueDate,
-                        'status' => 'pending',
-                    ]
-                );
+                    $bill = RentBill::firstOrCreate(
+                        [
+                            'tenancy_id' => $tenancy->id,
+                            'billing_month' => $billingMonth,
+                        ],
+                        [
+                            'amount_due' => $tenancy->monthly_rent,
+                            'due_date' => $dueDate,
+                            'status' => 'pending',
+                        ]
+                    );
 
-                if ($bill->wasRecentlyCreated) {
-                    $count++;
-                    $tenantName = $tenancy->tenant?->full_name ?? 'Unknown Tenant';
-                    $unitCode = $tenancy->unit?->unit_code ?? 'Unknown Unit';
-                    $this->line("Created rent bill for {$tenantName} - Unit {$unitCode}");
+                    if ($bill->wasRecentlyCreated) {
+                        $count++;
+                        $tenantName = $tenancy->tenant?->full_name ?? 'Unknown Tenant';
+                        $unitCode = $tenancy->unit?->unit_code ?? 'Unknown Unit';
+                        $this->line("Created rent bill for {$tenantName} - Unit {$unitCode}");
 
-                    if ($tenancy->tenant?->user) {
-                        try {
-                            $notificationService->sendRentBillGeneratedNotification($tenancy->tenant->user, $bill);
-                        } catch (\Exception $e) {
-                            Log::error('Failed to send rent bill generated notification', [
-                                'bill_id' => $bill->id,
-                                'error' => $e->getMessage(),
-                            ]);
+                        if ($tenancy->tenant?->user) {
+                            try {
+                                $notificationService->sendRentBillGeneratedNotification($tenancy->tenant->user, $bill);
+                            } catch (\Exception $e) {
+                                Log::error('Failed to send rent bill generated notification', [
+                                    'bill_id' => $bill->id,
+                                    'error' => $e->getMessage(),
+                                ]);
+                            }
                         }
                     }
+                } catch (\Exception $e) {
+                    $this->error("  ✗ Failed to generate bill for tenancy #{$tenancy->id}: {$e->getMessage()}");
+                    Log::error('GenerateMonthlyRentBills: Failed for tenancy', [
+                        'tenancy_id' => $tenancy->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                } finally {
+                    $progressBar->advance();
                 }
-
-                $progressBar->advance();
             }
 
             $progressBar->finish();
