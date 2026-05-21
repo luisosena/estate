@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Models\Property;
 use App\Services\DashboardExportService;
 use Illuminate\Http\Request;
 
@@ -15,14 +16,14 @@ class DashboardExportController extends Controller
 
     public function landlordCsv(Request $request)
     {
-        abort_if($request->user()->role !== Role::Landlord, 403);
+        $this->authorize('viewAny', Property::class);
 
         return $this->exportService->exportLandlordDashboardCsv($request->user());
     }
 
     public function landlordPdf(Request $request)
     {
-        abort_if($request->user()->role !== Role::Landlord, 403);
+        $this->authorize('viewAny', Property::class);
 
         return $this->exportService->exportLandlordDashboardPdf($request->user());
     }

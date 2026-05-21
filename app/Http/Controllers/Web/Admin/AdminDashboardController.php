@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
-use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\Admin\AdminDashboardService;
 use App\Services\Landlord\RevenueAnalyticsService;
 use Illuminate\Http\Request;
@@ -18,7 +18,7 @@ class AdminDashboardController extends Controller
 
     public function index(Request $request)
     {
-        abort_if($request->user()->role !== Role::Admin, 403);
+        $this->authorize('viewAny', User::class);
 
         $months = min(max((int) $request->get('months', 6), 1), 24);
 
@@ -30,7 +30,7 @@ class AdminDashboardController extends Controller
 
     public function auditReports(Request $request)
     {
-        abort_if($request->user()->role !== Role::Admin, 403);
+        $this->authorize('viewAny', User::class);
 
         return Inertia::render('admin/audit-reports', $this->dashboardService->getAuditReportData());
     }
