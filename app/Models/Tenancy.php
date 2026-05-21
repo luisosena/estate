@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasActiveScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Tenancy extends Model
 {
-    use HasFactory;
+    use HasActiveScope, HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -72,27 +72,6 @@ class Tenancy extends Model
     public function activeUtilities(): HasMany
     {
         return $this->hasMany(TenancyUtility::class)->where('tenancy_utilities.status', 'active');
-    }
-
-    /**
-     * Rent bills for this tenancy.
-     */
-    public function rentBills(): HasMany
-    {
-        return $this->hasMany(RentBill::class);
-    }
-
-    public function documents(): MorphMany
-    {
-        return $this->morphMany(Document::class, 'documentable');
-    }
-
-    /**
-     * Scope a query to only include active tenancies.
-     */
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->where('tenancies.status', 'active');
     }
 
     public function scopeAgreement(Builder $query): Builder

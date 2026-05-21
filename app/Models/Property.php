@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
+use App\Traits\HasActiveScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Property extends Model
 {
-    use HasFactory;
+    use HasActiveScope, HasFactory;
 
     protected $fillable = [
         'owner_id',
@@ -62,13 +62,5 @@ class Property extends Model
             'id',          // Local key on properties table...
             'id'           // Local key on units table...
         );
-    }
-
-    /**
-     * Scope a query to only include active properties.
-     */
-    public function scopeActive($query): Builder
-    {
-        return $query->where('properties.status', 'active');
     }
 }

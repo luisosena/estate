@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
+use App\Traits\HasActiveScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TenancyUtility extends Model
 {
-    use HasFactory;
+    use HasActiveScope, HasFactory;
 
     protected $fillable = [
         'tenancy_id',
@@ -44,10 +44,5 @@ class TenancyUtility extends Model
     public function bills(): HasMany
     {
         return $this->hasMany(UtilityBill::class);
-    }
-
-    public function scopeActive($query): Builder
-    {
-        return $query->where('tenancy_utilities.status', 'active');
     }
 }
