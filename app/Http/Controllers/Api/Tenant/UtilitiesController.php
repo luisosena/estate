@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\TenancyUtilityResource;
+use App\Http\Resources\UtilityBillResource;
 use App\Models\TenancyUtility;
 use App\Models\UtilityBill;
 use Illuminate\Http\JsonResponse;
@@ -27,7 +29,7 @@ class UtilitiesController extends Controller
 
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
-            ->with(['tenancyUtilities.utilityType'])
+            ->with(['tenancyUtilities.utilityType', 'tenancyUtilities.bills'])
             ->first();
 
         if (! $activeTenancy) {
@@ -38,23 +40,7 @@ class UtilitiesController extends Controller
         }
 
         return response()->json([
-            'data' => $activeTenancy->tenancyUtilities->map(fn ($u) => [
-                'id' => $u->id,
-                'tenancy_id' => $u->tenancy_id,
-                'utility_type_id' => $u->utility_type_id,
-                'utility_type' => $u->utilityType ? [
-                    'id' => $u->utilityType->id,
-                    'name' => $u->utilityType->name,
-                    'unit' => $u->utilityType->unit,
-                ] : null,
-                'amount' => $u->amount,
-                'billing_cycle' => $u->billing_cycle,
-                'provider' => $u->provider,
-                'account_number' => $u->account_number,
-                'meter_number' => $u->meter_number,
-                'status' => $u->status,
-                'notes' => $u->notes,
-            ]),
+            'data' => TenancyUtilityResource::collection($activeTenancy->tenancyUtilities)->toArray($request),
             'meta' => [
                 'tenancy_id' => $activeTenancy->id,
                 'monthly_rent' => $activeTenancy->monthly_rent,
@@ -112,39 +98,7 @@ class UtilitiesController extends Controller
         $totalOutstanding = $totalDue - $totalPaid;
 
         return response()->json([
-            'data' => $bills->map(fn ($b) => [
-                'id' => $b->id,
-                'tenancy_utility_id' => $b->tenancy_utility_id,
-                'tenancy_utility' => [
-                    'id' => $b->tenancy_utility_id,
-                    'utility_type' => $b->tenancyUtility?->utilityType ? [
-                        'id' => $b->tenancyUtility->utilityType->id,
-                        'name' => $b->tenancyUtility->utilityType->name,
-                        'unit' => $b->tenancyUtility->utilityType->unit,
-                    ] : null,
-                    'tenancy' => [
-                        'id' => $b->tenancyUtility->tenancy->id,
-                        'unit' => [
-                            'id' => $b->tenancyUtility->tenancy->unit->id,
-                            'unit_code' => $b->tenancyUtility->tenancy->unit->unit_code,
-                        ],
-                        'tenant' => [
-                            'id' => $b->tenancyUtility->tenancy->tenant->id,
-                            'full_name' => $b->tenancyUtility->tenancy->tenant->full_name,
-                        ],
-                    ],
-                ],
-                'billing_month' => $b->billing_month?->format('Y-m'),
-                'units_consumed' => $b->units_consumed,
-                'amount_due' => $b->amount_due,
-                'amount_paid' => $b->amount_paid,
-                'due_date' => $b->due_date?->toIso8601String(),
-                'status' => $b->status,
-                'notes' => $b->notes,
-                'provider' => $b->tenancyUtility->provider,
-                'account_number' => $b->tenancyUtility->account_number,
-                'meter_number' => $b->tenancyUtility->meter_number,
-            ]),
+            'data' => UtilityBillResource::collection($bills)->toArray($request),
             'meta' => [
                 'total_due' => $totalDue,
                 'total_paid' => $totalPaid,

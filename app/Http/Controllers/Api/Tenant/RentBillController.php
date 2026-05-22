@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RentBillResource;
 use App\Models\RentBill;
-use App\Models\Tenancy;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class RentBillController extends Controller
@@ -13,7 +14,7 @@ class RentBillController extends Controller
      * Get all rent bills for the tenant.
      * GET /api/v1/tenant/rent-bills
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', RentBill::class);
 
@@ -42,7 +43,7 @@ class RentBillController extends Controller
         $status = $request->get('status');
 
         $query = RentBill::where('tenancy_id', $activeTenancy->id)
-            ->with(['tenancy.unit.property']);
+            ->with(['tenancy.unit.property', 'payments']);
 
         if ($status) {
             $query->where('status', $status);
@@ -52,13 +53,12 @@ class RentBillController extends Controller
         $rentBills = $query->orderBy('billing_month', 'desc')
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
-            ->get()
-            ->map(fn (RentBill $bill) => $this->transformRentBill($bill));
+            ->get();
 
         $totalPages = ceil($totalItems / $perPage);
 
         return response()->json([
-            'data' => $rentBills,
+            'data' => RentBillResource::collection($rentBills)->toArray($request),
             'meta' => [
                 'current_page' => (int) $page,
                 'per_page' => (int) $perPage,
@@ -69,42 +69,10 @@ class RentBillController extends Controller
     }
 
     /**
-     * Transform a rent bill model into a standardized array.
-     */
-    private function transformRentBill(RentBill $bill): array
-    {
-        return [
-            'id' => $bill->id,
-            'billing_month' => $bill->billing_month?->format('Y-m'),
-            'amount_due' => (float) $bill->amount_due,
-            'amount_paid' => (float) $bill->amount_paid,
-            'outstanding_amount' => (float) $bill->outstanding_amount,
-            'due_date' => $bill->due_date?->format('Y-m-d'),
-            'status' => $bill->status,
-            'notes' => $bill->notes,
-            'unit' => $bill->tenancy?->unit ? [
-                'id' => $bill->tenancy->unit->id,
-                'unit_code' => $bill->tenancy->unit->unit_code,
-            ] : null,
-            'property' => $bill->tenancy?->unit?->property ? [
-                'id' => $bill->tenancy->unit->property->id,
-                'name' => $bill->tenancy->unit->property->name,
-            ] : null,
-            'payments' => $bill->relationLoaded('payments') ? $bill->payments->map(fn ($p) => [
-                'id' => $p->id,
-                'amount' => (float) $p->amount,
-                'paid_at' => $p->paid_at ? $p->paid_at->toISOString() : null,
-                'status' => $p->status,
-            ]) : [],
-            'created_at' => $bill->created_at,
-        ];
-    }
-
-    /**
      * Get current month's rent bill.
      * GET /api/v1/tenant/rent-bills/current
      */
-    public function current(Request $request)
+    public function current(Request $request): JsonResponse
     {
         $this->authorize('viewAny', RentBill::class);
 
@@ -125,7 +93,7 @@ class RentBillController extends Controller
 
         $rentBill = RentBill::where('tenancy_id', $activeTenancy->id)
             ->where('billing_month', now()->startOfMonth())
-            ->with(['payments:id,amount,payment_method,paid_at,status', 'tenancy.unit.property'])
+            ->with(['payments', 'tenancy.unit.property'])
             ->first();
 
         if (! $rentBill) {
@@ -149,7 +117,7 @@ class RentBillController extends Controller
         return response()->json([
             'data' => [
                 'has_current_bill' => true,
-                'rent_bill' => $this->transformRentBill($rentBill),
+                'rent_bill' => new RentBillResource($rentBill),
                 'monthly_rent' => (float) $activeTenancy->monthly_rent,
             ],
         ]);
@@ -159,27 +127,17 @@ class RentBillController extends Controller
      * Get a single rent bill.
      * GET /api/v1/tenant/rent-bills/{id}
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $rentBill = RentBill::where('id', $id)
             ->whereHas('tenancy', fn ($q) => $q->where('tenant_id', $request->user()->tenant_id))
-            ->with(['payments:id,amount,payment_method,paid_at,status', 'tenancy.unit', 'tenancy.unit.property'])
+            ->with(['payments', 'tenancy.unit', 'tenancy.unit.property'])
             ->firstOrFail();
 
         $this->authorize('view', $rentBill);
 
         return response()->json([
-            'data' => array_merge($this->transformRentBill($rentBill), [
-                'payments' => $rentBill->payments->map(function ($payment) {
-                    return [
-                        'id' => $payment->id,
-                        'amount' => (float) $payment->amount,
-                        'payment_method' => $payment->payment_method,
-                        'paid_at' => $payment->paid_at ? $payment->paid_at->toISOString() : null,
-                        'status' => $payment->status,
-                    ];
-                }),
-            ]),
+            'data' => new RentBillResource($rentBill),
         ]);
     }
 }
