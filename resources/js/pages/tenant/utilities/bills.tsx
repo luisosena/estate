@@ -15,8 +15,8 @@ import React from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
-import Pagination from '@/components/shared/Pagination';
 import { MetricCard } from '@/components/shared/DashboardComponents';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,8 +29,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 
 interface UtilityType {

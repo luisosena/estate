@@ -18,15 +18,15 @@ import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
-import Pagination from '@/components/shared/Pagination';
 import { MetricCard } from '@/components/shared/DashboardComponents';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 
 interface NotificationData {

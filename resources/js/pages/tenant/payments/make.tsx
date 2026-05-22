@@ -43,8 +43,8 @@ import {
 } from '@/components/ui/select';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
 import { formatCurrency, getFormattedDate } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 
 // Types

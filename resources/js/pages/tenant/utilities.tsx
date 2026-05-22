@@ -22,8 +22,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 
 interface UtilityType {
