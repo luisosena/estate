@@ -43,6 +43,24 @@ class TenancyUtilityResource extends JsonResource
             // Relationships
             'utility_type' => UtilityTypeResource::make($this->whenLoaded('utilityType')),
             'bills' => UtilityBillResource::collection($this->whenLoaded('bills')),
+            'tenancy' => $this->whenLoaded('tenancy', function () {
+                return [
+                    'id' => $this->tenancy->id,
+                    'status' => $this->tenancy->status,
+                    'unit' => $this->tenancy->relationLoaded('unit') ? [
+                        'id' => $this->tenancy->unit->id,
+                        'unit_code' => $this->tenancy->unit->unit_code,
+                        'property' => $this->tenancy->unit->relationLoaded('property') ? [
+                            'id' => $this->tenancy->unit->property->id,
+                            'name' => $this->tenancy->unit->property->name,
+                        ] : null,
+                    ] : null,
+                    'tenant' => $this->tenancy->relationLoaded('tenant') ? [
+                        'id' => $this->tenancy->tenant->id,
+                        'full_name' => $this->tenancy->tenant->full_name,
+                    ] : null,
+                ];
+            }),
         ];
     }
 }

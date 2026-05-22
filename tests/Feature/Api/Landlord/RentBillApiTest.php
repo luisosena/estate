@@ -44,7 +44,7 @@ test('landlord can list rent bills with nested structure', function () {
                     'property' => ['id', 'name'],
                 ],
             ],
-            'meta' => ['current_page', 'per_page', 'total', 'total_pages'],
+            'meta' => ['current_page', 'per_page', 'total', 'last_page'],
         ]);
 });
 

@@ -39,7 +39,9 @@ test('landlord can show a tenancy utility with flat fields', function () {
         ->assertJsonPath('data.unit_code', $this->unit->unit_code)
         ->assertJsonPath('data.property_id', $this->property->id)
         ->assertJsonPath('data.property_name', $this->property->name)
-        ->assertJsonMissingPath('data.tenancy');
+        ->assertJsonPath('data.tenancy.id', $this->tenancy->id)
+        ->assertJsonPath('data.tenancy.unit.unit_code', $this->unit->unit_code)
+        ->assertJsonPath('data.tenancy.unit.property.name', $this->property->name);
 });
 
 test('landlord can update a tenancy utility and receives full record', function () {
