@@ -1,17 +1,17 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as DocumentPicker from 'expo-document-picker';
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
 
-import { ScreenContainer } from '../../components/common/ScreenContainer';
-import { ErrorState } from '../../components/common/ErrorState';
 import { landlordApi } from '../../api/landlord';
-import { Skeleton } from '../../components/common/Skeleton';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
+import { ErrorState } from '../../components/common/ErrorState';
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { Skeleton } from '../../components/common/Skeleton';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { LandlordDocumentsStackParamList } from '../../navigation/AppNavigator';

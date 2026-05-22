@@ -14,15 +14,16 @@ import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
 
 // Tenant Screens
+import { AddPropertyScreen } from '../screens/landlord/AddPropertyScreen';
 import { AddTenantScreen } from '../screens/landlord/AddTenantScreen';
+import { AddUnitScreen } from '../screens/landlord/AddUnitScreen';
 import { LandlordDashboardScreen } from '../screens/landlord/DashboardScreen';
+import { LandlordDocumentsScreen } from '../screens/landlord/DocumentsScreen';
 import { LandlordEditProfileScreen } from '../screens/landlord/EditProfileScreen';
 import { LandlordPaymentsScreen } from '../screens/landlord/PaymentsScreen';
 import { LandlordProfileScreen } from '../screens/landlord/ProfileScreen';
 import { LandlordPropertiesScreen } from '../screens/landlord/PropertiesScreen';
 import { PropertyDetailsScreen } from '../screens/landlord/PropertyDetailsScreen';
-import { AddPropertyScreen } from '../screens/landlord/AddPropertyScreen';
-import { AddUnitScreen } from '../screens/landlord/AddUnitScreen';
 import { LandlordRentBillDetailsScreen } from '../screens/landlord/RentBillDetailsScreen';
 import { LandlordRentBillsScreen } from '../screens/landlord/RentBillsScreen';
 import { TenancyUtilitiesScreen } from '../screens/landlord/TenancyUtilitiesScreen';
@@ -31,6 +32,7 @@ import { LandlordTenantsScreen } from '../screens/landlord/TenantsScreen';
 import { UnitDetailsScreen } from '../screens/landlord/UnitDetailsScreen';
 import { LandlordUtilityBillsScreen } from '../screens/landlord/UtilityBillsScreen';
 import { TenantDashboardScreen } from '../screens/tenant/DashboardScreen';
+import { TenantDocumentsScreen } from '../screens/tenant/DocumentsScreen';
 import { TenantEditProfileScreen } from '../screens/tenant/EditProfileScreen';
 import { MakePaymentScreen } from '../screens/tenant/MakePaymentScreen';
 import { TenantPaymentsScreen } from '../screens/tenant/PaymentsScreen';
@@ -39,8 +41,6 @@ import { TenantRentBillDetailsScreen } from '../screens/tenant/RentBillDetailsSc
 import { TenantRentBillsScreen } from '../screens/tenant/RentBillsScreen';
 import { TenantUtilitiesScreen } from '../screens/tenant/UtilitiesScreen';
 import { TenantUtilityBillsScreen } from '../screens/tenant/UtilityBillsScreen';
-import { TenantDocumentsScreen } from '../screens/tenant/DocumentsScreen';
-import { LandlordDocumentsScreen } from '../screens/landlord/DocumentsScreen';
 
 // Landlord Screens
 

@@ -1,15 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Share, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
 
-import { ScreenContainer } from '../../components/common/ScreenContainer';
-import { ErrorState } from '../../components/common/ErrorState';
 import { tenantApi } from '../../api/tenant';
-import { Skeleton } from '../../components/common/Skeleton';
 import { Card } from '../../components/common/Card';
+import { ErrorState } from '../../components/common/ErrorState';
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { Skeleton } from '../../components/common/Skeleton';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { TenantDocumentsStackParamList } from '../../navigation/AppNavigator';
