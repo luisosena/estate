@@ -5,7 +5,6 @@ import { TextInput, Button, Text, HelperText } from 'react-native-paper';
 
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
-
 import { useAuth } from '../../context/AuthContext';
 import { getErrorMessage } from '../../utils/errors';
 

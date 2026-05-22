@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Text, TextInput, HelperText } from 'react-native-paper';
 
-import { colors } from '../../constants/colors';
-import { Card } from '../../components/common/Card';
+import { landlordApi } from '../../api/landlord';
 import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
-import { landlordApi } from '../../api/landlord';
+import { colors } from '../../constants/colors';
 import { LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
 
 type NavigationProp = NativeStackNavigationProp<LandlordPropertiesStackParamList, 'AddUnit'>;

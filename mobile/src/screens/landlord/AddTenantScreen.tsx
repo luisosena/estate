@@ -1,18 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, TextInput, HelperText, Switch, Menu, Divider } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
 
-import { colors } from '../../constants/colors';
-import { Card } from '../../components/common/Card';
+import { landlordApi } from '../../api/landlord';
 import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
+import { colors } from '../../constants/colors';
 import { useAddTenant } from '../../hooks/useAddTenant';
 import { LandlordTenantsStackParamList, LandlordPropertiesStackParamList } from '../../navigation/AppNavigator';
-import { landlordApi } from '../../api/landlord';
 import { Unit } from '../../types';
 
 type AddTenantRouteProp = RouteProp<LandlordTenantsStackParamList & LandlordPropertiesStackParamList, 'AddTenant'>;

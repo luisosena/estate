@@ -1,19 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Text, Portal, Modal, TextInput, SegmentedButtons } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-
-import { ScreenContainer } from '../../components/common/ScreenContainer';
-import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { landlordApi } from '../../api/landlord';
-import { Skeleton } from '../../components/common/Skeleton';
-import { BillRowSkeleton } from '../../components/common/SkeletonVariants';
-import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
+import { Skeleton } from '../../components/common/Skeleton';
+import { BillRowSkeleton } from '../../components/common/SkeletonVariants';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';

@@ -1,5 +1,5 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
+import React from 'react';
 import { Text } from 'react-native';
 
 // Simplified mock of the component to verify Jest is working with custom components

@@ -1,18 +1,17 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-
-import { ScreenContainer } from '../../components/common/ScreenContainer';
-import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 
 import { tenantApi } from '../../api/tenant';
+import { Badge } from '../../components/common/Badge';
+import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 import { Skeleton } from '../../components/common/Skeleton';
 import { SummaryHeaderSkeleton, BillRowSkeleton } from '../../components/common/SkeletonVariants';
-import { LoadingScreen } from '../../components/common/LoadingScreen';
-import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { TenantUtilitiesStackParamList, TenantPaymentsStackParamList } from '../../navigation/AppNavigator';

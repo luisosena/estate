@@ -4,13 +4,12 @@ import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { View, ScrollView, Alert, StyleSheet } from 'react-native';
 import { Text, TextInput, HelperText } from 'react-native-paper';
 
+import { tenantApi } from '../../api';
+import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
-
-import { tenantApi } from '../../api';
 import { ChangePasswordForm } from '../../components/profile/ChangePasswordForm';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import { useAuth } from '../../context/AuthContext';

@@ -1,17 +1,17 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useCallback, useLayoutEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
 
 import { landlordApi } from '../../api/landlord';
-import { ScreenContainer } from '../../components/common/ScreenContainer';
-import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { Button } from '../../components/common/Button';
+import { ErrorState } from '../../components/common/ErrorState';
+import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { Skeleton } from '../../components/common/Skeleton';
 import { DetailBoxSkeleton, ListSectionSkeleton } from '../../components/common/SkeletonVariants';
-import { ErrorState } from '../../components/common/ErrorState';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { LandlordPaymentsStackParamList } from '../../navigation/AppNavigator';

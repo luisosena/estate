@@ -58,7 +58,7 @@ files.forEach(p => {
   return (
     <ScreenContainer`;
 
-  code = code.replace(/  return \(\s*<ScreenContainer/, inject);
+  code = code.replace(/ {2}return \(\s*<ScreenContainer/, inject);
 
   if (code !== originalCode) {
     fs.writeFileSync(p, code);
