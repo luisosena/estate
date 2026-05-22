@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\TenancyUtilityResource;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +18,7 @@ class TenancyUtilityController extends Controller
      * Get utilities for a specific tenancy.
      * GET /api/v1/landlord/tenancies/{tenancy}/utilities
      */
-    public function index(Request $request, Tenancy $tenancy): JsonResponse
+    public function index(Request $request, Tenancy $tenancy): AnonymousResourceCollection
     {
         $this->authorize('viewAny', TenancyUtility::class);
         $this->authorize('view', $tenancy);
@@ -26,31 +28,7 @@ class TenancyUtilityController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $formattedUtilities = $utilities->map(function ($utility) {
-            return [
-                'id' => $utility->id,
-                'tenancy_id' => $utility->tenancy_id,
-                'utility_type_id' => $utility->utility_type_id,
-                'utility_type' => $utility->utilityType ? [
-                    'id' => $utility->utilityType->id,
-                    'name' => $utility->utilityType->name,
-                    'unit' => $utility->utilityType->unit,
-                ] : null,
-                'amount' => $utility->amount,
-                'billing_cycle' => $utility->billing_cycle,
-                'provider' => $utility->provider,
-                'account_number' => $utility->account_number,
-                'meter_number' => $utility->meter_number,
-                'status' => $utility->status,
-                'notes' => $utility->notes,
-                'created_at' => $utility->created_at,
-                'updated_at' => $utility->updated_at,
-            ];
-        });
-
-        return response()->json([
-            'data' => $formattedUtilities,
-        ]);
+        return TenancyUtilityResource::collection($utilities);
     }
 
     /**
@@ -97,24 +75,10 @@ class TenancyUtilityController extends Controller
                 'landlord_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'message' => 'Utility assigned successfully',
-                'data' => [
-                    'id' => $tenancyUtility->id,
-                    'tenancy_id' => $tenancyUtility->tenancy_id,
-                    'utility_type_id' => $tenancyUtility->utility_type_id,
-                    'utility_type' => $tenancyUtility->utilityType ? [
-                        'id' => $tenancyUtility->utilityType->id,
-                        'name' => $tenancyUtility->utilityType->name,
-                        'unit' => $tenancyUtility->utilityType->unit,
-                    ] : null,
-                    'amount' => $tenancyUtility->amount,
-                    'status' => $tenancyUtility->status,
-                    'notes' => $tenancyUtility->notes,
-                    'created_at' => $tenancyUtility->created_at,
-                    'updated_at' => $tenancyUtility->updated_at,
-                ],
-            ], 201);
+            return (new TenancyUtilityResource($tenancyUtility->load('utilityType')))
+                ->additional(['message' => 'Utility assigned successfully'])
+                ->response()
+                ->setStatusCode(201);
         } catch (\Exception $e) {
             Log::error('Failed to assign utility to tenancy', [
                 'tenancy_id' => $tenancy->id,
@@ -131,44 +95,20 @@ class TenancyUtilityController extends Controller
      * Get a single tenancy utility.
      * GET /api/v1/landlord/tenancy-utilities/{tenancyUtility}
      */
-    public function show(Request $request, TenancyUtility $tenancyUtility): JsonResponse
+    public function show(Request $request, TenancyUtility $tenancyUtility): TenancyUtilityResource
     {
         $this->authorize('view', $tenancyUtility);
 
         $tenancyUtility->load(['utilityType', 'tenancy.unit.property']);
 
-        return response()->json([
-            'data' => [
-                'id' => $tenancyUtility->id,
-                'tenancy_id' => $tenancyUtility->tenancy_id,
-                'unit_id' => $tenancyUtility->tenancy?->unit?->id,
-                'unit_code' => $tenancyUtility->tenancy?->unit?->unit_code,
-                'property_id' => $tenancyUtility->tenancy?->unit?->property?->id,
-                'property_name' => $tenancyUtility->tenancy?->unit?->property?->name,
-                'utility_type_id' => $tenancyUtility->utility_type_id,
-                'utility_type' => $tenancyUtility->utilityType ? [
-                    'id' => $tenancyUtility->utilityType->id,
-                    'name' => $tenancyUtility->utilityType->name,
-                    'unit' => $tenancyUtility->utilityType->unit,
-                ] : null,
-                'amount' => $tenancyUtility->amount,
-                'billing_cycle' => $tenancyUtility->billing_cycle,
-                'provider' => $tenancyUtility->provider,
-                'account_number' => $tenancyUtility->account_number,
-                'meter_number' => $tenancyUtility->meter_number,
-                'status' => $tenancyUtility->status,
-                'notes' => $tenancyUtility->notes,
-                'created_at' => $tenancyUtility->created_at,
-                'updated_at' => $tenancyUtility->updated_at,
-            ],
-        ]);
+        return new TenancyUtilityResource($tenancyUtility);
     }
 
     /**
      * Update a tenancy utility.
      * PUT /api/v1/landlord/tenancy-utilities/{tenancyUtility}
      */
-    public function update(Request $request, TenancyUtility $tenancyUtility): JsonResponse
+    public function update(Request $request, TenancyUtility $tenancyUtility): TenancyUtilityResource|JsonResponse
     {
         $this->authorize('update', $tenancyUtility);
 
@@ -192,28 +132,8 @@ class TenancyUtilityController extends Controller
 
             $tenancyUtility->load('utilityType');
 
-            return response()->json([
-                'message' => 'Utility updated successfully',
-                'data' => [
-                    'id' => $tenancyUtility->id,
-                    'tenancy_id' => $tenancyUtility->tenancy_id,
-                    'utility_type_id' => $tenancyUtility->utility_type_id,
-                    'utility_type' => $tenancyUtility->utilityType ? [
-                        'id' => $tenancyUtility->utilityType->id,
-                        'name' => $tenancyUtility->utilityType->name,
-                        'unit' => $tenancyUtility->utilityType->unit,
-                    ] : null,
-                    'amount' => $tenancyUtility->amount,
-                    'billing_cycle' => $tenancyUtility->billing_cycle,
-                    'provider' => $tenancyUtility->provider,
-                    'account_number' => $tenancyUtility->account_number,
-                    'meter_number' => $tenancyUtility->meter_number,
-                    'status' => $tenancyUtility->status,
-                    'notes' => $tenancyUtility->notes,
-                    'created_at' => $tenancyUtility->created_at,
-                    'updated_at' => $tenancyUtility->updated_at,
-                ],
-            ]);
+            return (new TenancyUtilityResource($tenancyUtility))
+                ->additional(['message' => 'Utility updated successfully']);
         } catch (\Exception $e) {
             Log::error('Failed to update tenancy utility', [
                 'tenancy_utility_id' => $tenancyUtility->id,
