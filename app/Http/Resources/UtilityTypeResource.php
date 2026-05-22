@@ -20,6 +20,7 @@ class UtilityTypeResource extends JsonResource
             'description' => $this->description,
             'icon' => $this->icon,
             'is_fixed' => $this->is_fixed,
+            'unit' => $this->unit,
             'created_at' => $this->created_at?->toDateTimeString(),
         ];
     }

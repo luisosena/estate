@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UtilityBillResource;
 use App\Models\UtilityBill;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +17,7 @@ class UtilityBillController extends Controller
      * Get all utility bills for the landlord.
      * GET /api/v1/landlord/utility-bills
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', UtilityBill::class);
 
@@ -57,72 +59,16 @@ class UtilityBillController extends Controller
             $query->where('billing_month', '<=', $request->to_month);
         }
 
-        $totalItems = $query->count();
-        $bills = $query->orderBy('billing_month', 'desc')
-            ->skip(($page - 1) * $perPage)
-            ->take($perPage)
-            ->get();
+        $bills = $query->orderBy('billing_month', 'desc')->paginate($perPage);
 
-        $totalPages = ceil($totalItems / $perPage);
-
-        $formattedBills = $bills->map(function ($bill) {
-            return [
-                'id' => $bill->id,
-                'tenancy_utility_id' => $bill->tenancy_utility_id,
-                'tenancy_utility' => [
-                    'id' => $bill->tenancy_utility_id,
-                    'utility_type' => $bill->tenancyUtility->utilityType ? [
-                        'id' => $bill->tenancyUtility->utilityType->id,
-                        'name' => $bill->tenancyUtility->utilityType->name,
-                        'unit' => $bill->tenancyUtility->utilityType->unit,
-                    ] : null,
-                    'tenancy' => [
-                        'id' => $bill->tenancyUtility->tenancy->id,
-                        'unit' => [
-                            'id' => $bill->tenancyUtility->tenancy->unit->id,
-                            'unit_code' => $bill->tenancyUtility->tenancy->unit->unit_code,
-                            'property' => [
-                                'id' => $bill->tenancyUtility->tenancy->unit->property->id,
-                                'name' => $bill->tenancyUtility->tenancy->unit->property->name,
-                            ],
-                        ],
-                        'tenant' => [
-                            'id' => $bill->tenancyUtility->tenancy->tenant->id,
-                            'full_name' => $bill->tenancyUtility->tenancy->tenant->full_name,
-                        ],
-                    ],
-                ],
-                'billing_month' => $bill->billing_month,
-                'units_consumed' => $bill->units_consumed,
-                'amount_due' => $bill->amount_due,
-                'amount_paid' => $bill->amount_paid,
-                'due_date' => $bill->due_date,
-                'status' => $bill->status,
-                'notes' => $bill->notes,
-                'provider' => $bill->tenancyUtility?->provider,
-                'account_number' => $bill->tenancyUtility?->account_number,
-                'meter_number' => $bill->tenancyUtility?->meter_number,
-                'created_at' => $bill->created_at,
-                'updated_at' => $bill->updated_at,
-            ];
-        });
-
-        return response()->json([
-            'data' => $formattedBills,
-            'meta' => [
-                'current_page' => (int) $page,
-                'per_page' => (int) $perPage,
-                'total' => $totalItems,
-                'total_pages' => $totalPages,
-            ],
-        ]);
+        return UtilityBillResource::collection($bills);
     }
 
     /**
      * Get a single utility bill.
      * GET /api/v1/landlord/utility-bills/{utilityBill}
      */
-    public function show(Request $request, UtilityBill $utilityBill): JsonResponse
+    public function show(Request $request, UtilityBill $utilityBill): UtilityBillResource
     {
         $this->authorize('view', $utilityBill);
 
@@ -135,61 +81,14 @@ class UtilityBillController extends Controller
             },
         ]);
 
-        return response()->json([
-            'data' => [
-                'id' => $utilityBill->id,
-                'tenancy_utility_id' => $utilityBill->tenancy_utility_id,
-                'tenancy_utility' => [
-                    'id' => $utilityBill->tenancy_utility_id,
-                    'utility_type' => $utilityBill->tenancyUtility->utilityType ? [
-                        'id' => $utilityBill->tenancyUtility->utilityType->id,
-                        'name' => $utilityBill->tenancyUtility->utilityType->name,
-                        'unit' => $utilityBill->tenancyUtility->utilityType->unit,
-                    ] : null,
-                    'tenancy' => [
-                        'id' => $utilityBill->tenancyUtility->tenancy->id,
-                        'unit' => [
-                            'id' => $utilityBill->tenancyUtility->tenancy->unit->id,
-                            'unit_code' => $utilityBill->tenancyUtility->tenancy->unit->unit_code,
-                            'property' => [
-                                'id' => $utilityBill->tenancyUtility->tenancy->unit->property->id,
-                                'name' => $utilityBill->tenancyUtility->tenancy->unit->property->name,
-                            ],
-                        ],
-                        'tenant' => [
-                            'id' => $utilityBill->tenancyUtility->tenancy->tenant->id,
-                            'full_name' => $utilityBill->tenancyUtility->tenancy->tenant->full_name,
-                        ],
-                    ],
-                ],
-                'billing_month' => $utilityBill->billing_month,
-                'units_consumed' => $utilityBill->units_consumed,
-                'amount_due' => $utilityBill->amount_due,
-                'amount_paid' => $utilityBill->amount_paid,
-                'due_date' => $utilityBill->due_date,
-                'status' => $utilityBill->status,
-                'notes' => $utilityBill->notes,
-                'provider' => $utilityBill->tenancyUtility?->provider,
-                'account_number' => $utilityBill->tenancyUtility?->account_number,
-                'meter_number' => $utilityBill->tenancyUtility?->meter_number,
-                'created_at' => $utilityBill->created_at,
-                'updated_at' => $utilityBill->updated_at,
-                'payments' => $utilityBill->payments->map(fn ($p) => [
-                    'id' => $p->id,
-                    'amount' => $p->amount,
-                    'paid_at' => $p->paid_at,
-                    'status' => $p->status,
-                    'reference_number' => $p->reference_number,
-                ]),
-            ],
-        ]);
+        return new UtilityBillResource($utilityBill);
     }
 
     /**
      * Update a utility bill.
      * PUT /api/v1/landlord/utility-bills/{utilityBill}
      */
-    public function update(Request $request, UtilityBill $utilityBill): JsonResponse
+    public function update(Request $request, UtilityBill $utilityBill): UtilityBillResource|JsonResponse
     {
         $this->authorize('update', $utilityBill);
 
@@ -209,17 +108,8 @@ class UtilityBillController extends Controller
                 'landlord_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'message' => 'Utility bill updated successfully',
-                'data' => [
-                    'id' => $utilityBill->id,
-                    'status' => $utilityBill->status,
-                    'amount_due' => $utilityBill->amount_due,
-                    'amount_paid' => $utilityBill->amount_paid,
-                    'units_consumed' => $utilityBill->units_consumed,
-                    'updated_at' => $utilityBill->updated_at,
-                ],
-            ]);
+            return (new UtilityBillResource($utilityBill))
+                ->additional(['message' => 'Utility bill updated successfully']);
         } catch (\Exception $e) {
             Log::error('Failed to update utility bill', [
                 'utility_bill_id' => $utilityBill->id,
@@ -236,7 +126,7 @@ class UtilityBillController extends Controller
      * Waive a utility bill.
      * POST /api/v1/landlord/utility-bills/{utilityBill}/waive
      */
-    public function waive(Request $request, UtilityBill $utilityBill): JsonResponse
+    public function waive(Request $request, UtilityBill $utilityBill): UtilityBillResource|JsonResponse
     {
         $this->authorize('waive', $utilityBill);
 
@@ -259,14 +149,8 @@ class UtilityBillController extends Controller
                 'landlord_id' => $request->user()->id,
             ]);
 
-            return response()->json([
-                'message' => 'Utility bill waived successfully',
-                'data' => [
-                    'id' => $utilityBill->id,
-                    'status' => $utilityBill->status,
-                    'updated_at' => $utilityBill->updated_at,
-                ],
-            ]);
+            return (new UtilityBillResource($utilityBill))
+                ->additional(['message' => 'Utility bill waived successfully']);
         } catch (\Exception $e) {
             Log::error('Failed to waive utility bill', [
                 'utility_bill_id' => $utilityBill->id,

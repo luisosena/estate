@@ -28,7 +28,12 @@ class UtilityBillResource extends JsonResource
             'usage' => $this->usage,
             'notes' => $this->notes,
             'outstanding_amount' => max(0, $this->amount_due - $this->amount_paid),
+            'units_consumed' => $this->units_consumed,
+            'provider' => $this->when($this->relationLoaded('tenancyUtility'), fn () => $this->tenancyUtility?->provider),
+            'account_number' => $this->when($this->relationLoaded('tenancyUtility'), fn () => $this->tenancyUtility?->account_number),
+            'meter_number' => $this->when($this->relationLoaded('tenancyUtility'), fn () => $this->tenancyUtility?->meter_number),
             'created_at' => $this->created_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
 
             // Relationships
             'tenancy_utility' => TenancyUtilityResource::make($this->whenLoaded('tenancyUtility')),
