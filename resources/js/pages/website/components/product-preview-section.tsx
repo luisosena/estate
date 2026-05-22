@@ -1,5 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
+
 import { cn } from '@/lib/utils';
 
 interface FeatureProps {
