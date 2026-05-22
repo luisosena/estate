@@ -247,13 +247,13 @@ class RentBillService implements RentBillServiceInterface
         $baseQuery = RentBill::whereHas('tenancy.unit.property', fn ($query) => $query->where('owner_id', $landlord->id));
 
         $rawStats = (clone $baseQuery)
-            ->selectRaw("
+            ->selectRaw('
                 COUNT(*) as total_count,
                 SUM(CASE WHEN status = ? AND (due_date >= CURRENT_DATE OR due_date IS NULL) THEN 1 ELSE 0 END) as pending_count,
                 SUM(CASE WHEN status = ? OR (status IN (?, ?) AND due_date < CURRENT_DATE) THEN 1 ELSE 0 END) as overdue_count,
                 SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as paid_count,
                 SUM(CASE WHEN status IN (?, ?, ?) THEN amount_due - amount_paid ELSE 0 END) as total_outstanding
-            ", [
+            ', [
                 BillStatus::Pending->value,
                 BillStatus::Overdue->value,
                 BillStatus::Pending->value,

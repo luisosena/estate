@@ -1,6 +1,6 @@
 # Design Principles
 
-> Last updated: 2026-05-20
+> Last updated: 2026-05-22
 
 ## Overview
 This document outlines the design patterns, coding conventions, architectural decisions, naming standards, and the technologies used in the Estate Practice application.
@@ -233,18 +233,37 @@ The application uses class-based dark mode. Toggle between modes using the `dark
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
-use App\Models\Property;
-use Illuminate\Http\Request;
+use App\Http\Requests\Api\Landlord\PaymentStoreRequest;
+use App\Http\Resources\PaymentResource;
+use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
-class PropertyController extends Controller
+class PaymentController extends Controller
 {
+    public function __construct(
+        protected PaymentServiceInterface $paymentService
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
-        $properties = Property::where('owner_id', $request->user()->id)
-            ->paginate($request->get('per_page', 15));
-        
-        return response()->json($properties);
+        $this->authorize('viewAny', Payment::class);
+
+        $payments = Payment::whereHas('tenancy.unit.property', function ($q) use ($request) {
+            $q->where('owner_id', $request->user()->id);
+        })->with(['tenant', 'tenancy.unit.property'])->paginate(15);
+
+        return response()->json([
+            'data' => PaymentResource::collection($payments),
+            'meta' => ['current_page' => $payments->currentPage(), 'last_page' => $payments->lastPage(), 'total' => $payments->total()],
+        ]);
+    }
+
+    public function store(PaymentStoreRequest $request): JsonResponse
+    {
+        $this->authorize('create', Payment::class);
+        $validated = $request->validated();
+        // ...
     }
 }
 ```
@@ -325,18 +344,18 @@ Three user roles with hierarchical permissions:
 - **Tenant**: Personal data and payments only
 
 ### 4. Service Layer Pattern
-Business logic is encapsulated in services:
-- `PaymentService`: Payment processing logic
-- `TenantService`: Tenant management operations
-- `UtilityService`: Utility tracking operations
-- `DocumentService`: Document upload, download, listing, deletion with MIME validation and authorization
+Business logic is encapsulated in services with contract interfaces for DI and testability:
+- `PaymentService` (implements `PaymentServiceInterface`): Payment processing logic
+- `RentBillService` (implements `RentBillServiceInterface`): Rent bill management
+- `UtilityService` (implements `UtilityServiceInterface`): Utility tracking operations
+- `TenantService`, `UnitService`, `OnboardingService`, `DocumentService`, `NotificationService`, `ReceiptService`, `RevenueAnalyticsService`, `DashboardExportService`, `DocSyncService`
 
 ### 5. Form Request Validation
-All form submissions use Laravel Form Requests:
-- `StoreTenantRequest`
-- `StoreTenantWithTenancyRequest`
-- `StoreUnitRequest`
-- `Settings/PasswordUpdateRequest`
+All form submissions use Laravel Form Requests (35+ across the codebase). API endpoints use dedicated requests under `app/Http/Requests/Api/`:
+- **Landlord**: `PaymentStoreRequest`, `PaymentUpdateRequest`, `RentBillUpdateRequest`, `TenancyUtilityStoreRequest`, `TenancyUtilityUpdateRequest`, `TenantUpdateRequest`, `UnitStoreRequest`, `UnitUpdateRequest`, `UtilityBillUpdateRequest`
+- **Tenant**: `PaymentStoreRequest`, `TenantProfileUpdateRequest`, `TenantUpdateRequest`
+- **User**: `UserStoreRequest`, `UserProfileUpdateRequest`, `RegisterPushTokenRequest`
+- **Settings**: `PasswordUpdateRequest`, `ProfileDeleteRequest`, `ProfileUpdateRequest`, `TwoFactorAuthenticationRequest`
 
 ---
 
@@ -408,7 +427,8 @@ export default {
 ```
 app/
 ├── Actions/           # Fortify actions
-├── Concerns/         # Shared concerns/traits
+├── Concerns/         # Shared concerns/traits (PhoneValidationRules, PasswordValidationRules, etc.)
+├── Contracts/         # Service interfaces (PaymentServiceInterface, etc.)
 ├── Console/          # Artisan commands
 │   └── Commands/
 ├── Exceptions/       # Exception handlers
@@ -460,19 +480,21 @@ database/
 
 ### Example Test
 ```php
-it('creates a tenant with valid data', function () {
-    $user = User::factory()->create(['role' => 'landlord']);
-    
-    $response = post('/landlord/tenants', [
-        'first_name' => 'John',
-        'last_name' => 'Doe',
-        'email' => 'john@example.com',
+it('landlord can onboard a new tenant via API', function () {
+    $freshUnit = Unit::factory()->create(['property_id' => $this->property->id, 'status' => 'available']);
+
+    $response = $this->postJson('/api/v1/landlord/tenants', [
+        'full_name' => 'John API',
+        'email' => 'john.api@example.com',
+        'phone' => '0700000001',
+        'unit_id' => $freshUnit->id,
+        'move_in_date' => now()->toDateString(),
+        'monthly_rent' => 12000,
+        'security_deposit' => 24000,
     ]);
-    
-    $response->assertRedirect();
-    $this->assertDatabaseHas('tenants', [
-        'email' => 'john@example.com',
-    ]);
+
+    $response->assertCreated();
+    $this->assertDatabaseHas('tenants', ['email' => 'john.api@example.com']);
 });
 ```
 

@@ -7,8 +7,8 @@
 
 ## Current Status
 
-**Active branch:** `message-and-notification`
-**Last updated:** 2026-05-19
+**Active branch:** `chore/backend-refactoring-pt2`
+**Last updated:** 2026-05-22
 
 ### Milestone Completion Overview
 
@@ -21,7 +21,7 @@
 | Document storage system | ✅ Complete | Polymorphic attachments, web + mobile UI, 49 tests, soft deletes |
 | Mobile app (React Native/Expo) | ✅ Complete | Landlord + tenant screens + document support + push notifications |
 | API strict versioning (`/api/v1/`) | ✅ Complete | Unversioned routes removed |
-| Test suite | ✅ Complete | 483 tests, 1428 assertions |
+| Test suite | ✅ Complete | 484 tests, 1431 assertions |
 | Notification system | ✅ Complete | 10 notification types, 5 channels (database, mail, WhatsApp, Expo push, WebSocket broadcast), admin notifications, real-time toast, push token management |
 | Analytics & reporting | ✅ Complete | Revenue charts, payment collection charts, CSV/PDF exports, admin audit reports |
 | Landing page | ✅ Complete | 9-section editorial redesign with bento grid, animations, responsive |
@@ -222,7 +222,7 @@ These are validated ideas that have not been assigned to a phase.
 | Notifications | 95% | Full system complete (10 types, 5 channels, real-time). Preferences and templates pending. |
 | Receipts | 95% | On-demand streaming works. |
 | Mobile App | 85% | Core screens + document support + push notifications done. Payment gateway integration pending. |
-| Testing | 95% | 483 tests passing. Gateway flow tests pending. |
+| Testing | 95% | 484 tests passing. Gateway flow tests pending. |
 | Documentation | 85% | Technical docs, vision/roadmap, implementation reports all current. |
 | Landing & Onboarding | 60% | Full landing page with bento grid implemented. Footer links, pricing, onboarding flows pending. |
 | Document Storage | 90% | Core system complete. S3 integration and enhancements pending. |

@@ -1,6 +1,6 @@
 ## Overview
 
-> Last updated: 2026-05-20
+> Last updated: 2026-05-22
 
 This is a Laravel 12 + React 19 full-stack property management application called "Estate Practice". It provides a multi-tenant property management system with three user roles: Admin, Landlord, and Tenant.
 
@@ -285,7 +285,8 @@ Located in `app/Http/Controllers/Api/`:
 
 ### 3. Business Logic Layer
 Located in:
-- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService`, `TenantService`, `UtilityService`, `OnboardingService`, `DashboardServices`, `RentBillService`, `NotificationService`, `ReceiptService`, `DocumentService`). **Note**: `ReceiptService` uses storage-based PDF generation—receipts are generated and stored on disk with URL caching. `DocumentService` handles polymorphic document upload/download/listing/deletion with MIME validation, size limits, and UUID-based file paths.
+- **Contracts**: `app/Contracts/` containing service interfaces (`PaymentServiceInterface`, `RentBillServiceInterface`, `UtilityServiceInterface`) for DI and testability.
+- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService` implements `PaymentServiceInterface`, `RentBillService` implements `RentBillServiceInterface`, `UtilityService`, `OnboardingService`, `DashboardServices`, `NotificationService`, `ReceiptService`, `DocumentService`, `RevenueAnalyticsService`, `DashboardExportService`, `DocSyncService`, plus role-scoped services in `Admin/`, `Landlord/`, `Tenant/` subdirectories). **Note**: `ReceiptService` uses DomPDF for on-demand receipt generation—receipts are streamed as PDF responses, not stored to disk.
 - **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, RentBill, Document, etc.)
 - **Actions**: `app/Actions/Fortify/` (User creation, password validation)
 - **Channels**: `app/Channels/` (`WhatsAppChannel` via Twilio, `ExpoPushChannel` via Expo Push)
@@ -598,7 +599,7 @@ Laravel scheduler handles:
 The project maintains a rigorous, phased testing approach powered by **Pest 4**.
 The test footprints are completely isolated, ensuring reliable test environments, preventing data leaks across partitions, and validating correct API behavior via Sanctum.
 
-**Test count: 483 tests, 1428 assertions — 100% passing.**
+**Test count: 484 tests, 1431 assertions — 100% passing.**
 
 All API tests target the `/api/v1/` prefix exclusively.
 

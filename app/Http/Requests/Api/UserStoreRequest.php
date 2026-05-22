@@ -11,8 +11,6 @@ class UserStoreRequest extends FormRequest
 {
     use PhoneValidationRules;
 
-class UserStoreRequest extends FormRequest
-{
     public function authorize(): bool
     {
         return true;

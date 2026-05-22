@@ -10,9 +10,10 @@ use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\UtilityBill;
-use App\Services\ReceiptService;
 use App\Models\UtilityType;
+use App\Services\ReceiptService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Response;
 
 uses(RefreshDatabase::class);
 
@@ -235,8 +236,9 @@ test('landlord receipt returns 500 when generation fails', function () {
         'paid_at' => now(),
     ]);
 
-    $failingReceipt = new class extends ReceiptService {
-        public function stream(Payment $payment): \Illuminate\Http\Response
+    $failingReceipt = new class extends ReceiptService
+    {
+        public function stream(Payment $payment): Response
         {
             throw new RuntimeException('PDF engine failure');
         }

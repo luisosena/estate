@@ -102,7 +102,7 @@ This document comprehensively documents all known issues, deprecated package ver
 
 **Location**: No tests directory visible in standard location
 
-> **RESOLVED (Epoch 3)**: Pest testing has been comprehensively adopted — 483 tests, 1428 assertions, 100% passing. Includes strict `ArchTest.php` architecture guardrails, Feature API end-to-end endpoint checking, and Data Isolation validation.
+> **RESOLVED (Epoch 3)**: Pest testing has been comprehensively adopted — 484 tests, 1431 assertions, 100% passing. Includes strict `ArchTest.php` architecture guardrails, Feature API end-to-end endpoint checking, and Data Isolation validation.
 
 ---
 
@@ -368,7 +368,7 @@ This document covers:
 4. **Resolved Items**:
    - Role enum implementation — `App\Enums\Role` is the canonical source of truth ✔
    - API Resource classes — all endpoints wrapped in `*Resource.php` layer ✔
-   - Test coverage — 483 tests, 1428 assertions ✔
+   - Test coverage — 484 tests, 1431 assertions ✔
    - API Versioning — exclusively `/api/v1/`, unversioned routes removed ✔
    - String-based role checks — replaced with enum comparisons — no string literals ✔
    - Service layer extraction — controllers delegating to service classes ✔

@@ -1,6 +1,6 @@
 # API Reference Documentation
 
-> Last updated: 2026-05-20
+> Last updated: 2026-05-22
 
 ## Overview
 This document provides complete documentation of all API endpoints in the Estate Practice property management system. It covers request/response formats, authentication mechanisms, error handling, and pagination rules.
@@ -758,10 +758,12 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
     "current_page": 1,
     "per_page": 15,
     "total": 50,
-    "total_pages": 4
+    "last_page": 4
   }
 }
 ```
+
+> **Pagination note**: All paginated responses now use Laravel's standard `paginate()` keys — `current_page`, `last_page`, `per_page`, `total`. The custom `total_pages` key has been replaced.
 
 ##### GET /api/landlord/utility-bills/{id}
 **Description**: Get utility bill details
@@ -879,7 +881,7 @@ For rent payments, you can optionally link a payment to a specific rent bill usi
     "current_page": 1,
     "per_page": 15,
     "total": 50,
-    "total_pages": 4
+    "last_page": 4
   }
 }
 ```

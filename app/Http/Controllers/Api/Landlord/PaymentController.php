@@ -12,7 +12,6 @@ use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\ReceiptService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PaymentController extends Controller
 {

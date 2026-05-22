@@ -1,6 +1,8 @@
 # Business Logic Documentation
 
-> Last updated: 2026-05-20
+> Last updated: 2026-05-22
+
+> **Note on status values**: All status strings shown in code examples throughout this doc (`'paid'`, `'pending'`, `'overdue'`, `'partial'`, `'waived'`, `'active'`, etc.) are represented in the actual codebase as PHP 8.1 backed enums — `BillStatus`, `PaymentStatus`, `PaymentType`, `TenancyStatus`, `PropertyStatus`, `Role`, etc. String literals for status and role values do not exist in the active PHP code.
 
 ## Overview
 This document provides comprehensive documentation of all business logic, domain-specific rules, operational workflows, user roles, permissions, and data flow in the Estate Practice property management system.
@@ -327,7 +329,7 @@ $property->delete();
 **Ownership Check**:
 ```php
 $property = Property::findOrFail($request->property_id);
-if ($property->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
+if ($property->owner_id !== auth()->id() && auth()->user()->role !== Role::Admin) {
     abort(403);
 }
 ```
@@ -378,22 +380,16 @@ sequenceDiagram
     Controller->>Landlord: Redirect with credentials
 ```
 
-**Validation** (StoreTenantRequest):
+**Validation** (`StoreTenantWithTenancyRequest`):
 ```php
-'first_name' => 'required|string|max:255',
-'last_name' => 'required|string|max:255',
-'email' => 'required|email|unique:tenants',
-'phone' => 'nullable|string|max:50',
-'emergency_contact' => 'nullable|string|max:255',
-```
-
-**Validation** (StoreTenantWithTenancyRequest extends StoreTenantRequest):
-```php
-'unit_id' => 'required|exists:units,id',
-'start_date' => 'required|date|after_or_equal:today',
-'end_date' => 'nullable|date|after:start_date',
-'rent_amount' => 'required|numeric|min:0',
-'security_deposit' => 'nullable|numeric|min:0',
+'full_name' => ['required', 'string', 'max:255'],
+'phone' => $this->phoneRules(),  // PhoneValidationRules trait
+'email' => ['required', 'email', 'max:255', 'unique:tenants,email', 'unique:users,email'],
+'emergency_contact_phone' => $this->phoneRules(false),
+'unit_id' => ['nullable', 'exists:units,id'],
+'move_in_date' => ['required_with:unit_id', 'nullable', 'date'],
+'monthly_rent' => ['required_with:unit_id', 'nullable', 'numeric', 'min:0'],
+'security_deposit' => ['required_with:unit_id', 'nullable', 'numeric', 'min:0'],
 ```
 
 **Auto-Generated Username**:
@@ -954,14 +950,14 @@ stateDiagram-v2
 
 ### 1. Tenant Creation Validation
 ```php
-// Email must be unique in tenants table
-'email' => 'unique:tenants,email'
+// Email must be unique in tenants and users tables
+'email' => ['required', 'email', 'max:255', 'unique:tenants,email', 'unique:users,email']
 
-// Phone format validation
-'phone' => 'regex:/^[0-9+\-\s()]*$/'
+// Phone format validation (via PhoneValidationRules trait)
+'phone' => $this->phoneRules()
 
-// Emergency contact should not be the same as tenant
-'emergency_contact' => 'different:phone'
+// Emergency contact phone (via PhoneValidationRules trait, optional)
+'emergency_contact_phone' => $this->phoneRules(false)
 ```
 
 ### 2. Tenancy Validation
@@ -1043,7 +1039,7 @@ If an unexpected status is encountered, it defaults to 'partial' as a safe fallb
 // User can only edit their own properties
 public function update(Request $request, Property $property)
 {
-    if ($property->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
+    if ($property->owner_id !== auth()->id() && auth()->user()->role !== Role::Admin) {
         abort(403, 'You do not own this property');
     }
     
@@ -1205,7 +1201,7 @@ $request = new Request([
 
 ```php
 // Tenant user logs in
-$tenantUser = User::where('role', 'tenant')->first();
+$tenantUser = User::where('role', Role::Tenant)->first();
 
 // Can only access their own data
 $tenant = $tenantUser->tenant;
@@ -1231,7 +1227,7 @@ $payments = $tenant->payments()
 
 ```php
 // Admin user logs in
-$admin = User::where('role', 'admin')->first();
+$admin = User::where('role', Role::Admin)->first();
 
 // Can view all properties
 $allProperties = Property::with('units')->paginate();

@@ -1,6 +1,6 @@
 ## Estate Practice – Technical Overview
 
-> Last updated: 2026-05-20
+> Last updated: 2026-05-22
 
 > **What exists now.** For product vision, goals, and roadmap, see [`docs/vision/`](../vision/vision.md).
 
@@ -9,7 +9,18 @@
 **Estate Practice** is a Laravel + Inertia + React/TypeScript application for property/tenant management, with role‑oriented dashboards (admin, landlord, tenant), and a modern glassmorphism UI.
 It uses Laravel 12 on the backend with Fortify for session-based web auth and Sanctum for token-based API auth, with Inertia for the SPA layer, and a Vite + Tailwind + React 19 front‑end.
 
-The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the canonical source of truth for all role comparisons. All authorization boundaries (Policies, FormRequests, Controllers, Redirects) are built against this enum — string literals for roles do not exist anywhere in the active codebase.
+The system enforces type-safe PHP 8.1 backed enums as the canonical source of truth throughout the codebase:
+- `Role` — all authorization boundaries (Policies, FormRequests, Controllers, Redirects)
+- `BillStatus` — pending, paid, partial, overdue, waived
+- `PaymentStatus` — paid, pending, partial, overdue, waived, failed
+- `PaymentType` — rent, utility, deposit, penalty
+- `PaymentMethod` — cash, mobile_money, bank_transfer, card
+- `PaymentGateway` — manual, mpesa
+- `PropertyStatus` — active, inactive, maintenance
+- `TenancyStatus` — pending, active, expired, ended
+- `DocumentCategory` — agreement, receipt, notice, invoice, other
+
+String literals for status/role values do not exist in the active codebase.
 
 ---
 
@@ -42,7 +53,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
     - `laravel/pail` (log viewer)
     - `laravel/sail` (optional Docker dev env)
     - `laravel/pint` (PHP linter/formatter)
-    - `pestphp/pest` ^4.7 + `pestphp/pest-plugin-laravel` (testing — 483 tests passing)
+    - `pestphp/pest` ^4.7 + `pestphp/pest-plugin-laravel` (testing — 484 tests passing)
 
 - **Frontend**
   - **Language & runtime**:
@@ -75,7 +86,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - **PHP**
     - Laravel Pint for coding style
   - **Test runner**
-    - Pest (feature + unit tests)
+    - Pest (feature + unit tests — 484 passing)
 
 ---
 
@@ -127,6 +138,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 
 - **`Concerns`**
   - `PasswordValidationRules.php`, `ProfileValidationRules.php`: reusable validation traits for user/password/profile operations.
+  - `PhoneValidationRules.php`: shared phone validation logic used across 7+ Form Requests.
 
 - **`Http/Controllers`**
   - `Controller.php`: base controller.
@@ -140,6 +152,10 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 
 - **`Http/Requests/Settings`**
   - `PasswordUpdateRequest.php`, `ProfileDeleteRequest.php`, `ProfileUpdateRequest.php`, `TwoFactorAuthenticationRequest.php`: form request validators for settings routes.
+- **`Http/Requests/Api`** — 19 Form Requests for API endpoints:
+  - `UserStoreRequest.php`, `UserProfileUpdateRequest.php`, `RegisterPushTokenRequest.php`
+  - `Landlord/` — `PaymentStoreRequest.php`, `PaymentUpdateRequest.php`, `RentBillUpdateRequest.php`, `TenancyUtilityStoreRequest.php`, `TenancyUtilityUpdateRequest.php`, `TenantUpdateRequest.php`, `UnitStoreRequest.php`, `UnitUpdateRequest.php`, `UtilityBillUpdateRequest.php`
+  - `Tenant/` — `PaymentStoreRequest.php`, `TenantProfileUpdateRequest.php`, `TenantUpdateRequest.php`
 
 - **`Models`**
   - `User.php`: main auth user model (Fortify and Sanctum enabled).
@@ -150,9 +166,11 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - `Payment.php`: tracks all payments including utility payments.
   - `Document.php`: polymorphic document attachment model with soft deletes.
 
+- **`Contracts`** — Service interfaces for DI and testability:
+  - `PaymentServiceInterface.php`, `RentBillServiceInterface.php`, `UtilityServiceInterface.php`
 - **`Services`**
-  - `UtilityService.php`: service for managing utility connections (legacy system).
-  - `DocumentService.php`: service for document upload, download, listing, and deletion with validation and authorization.
+  - Core: `PaymentService.php`, `RentBillService.php`, `UtilityService.php`, `ReceiptService.php`, `DocumentService.php`, `TenantService.php`, `UnitService.php`, `OnboardingService.php`, `NotificationService.php`, `DashboardExportService.php`, `RevenueAnalyticsService.php`, `DocSyncService.php`
+  - Role-scoped: `Landlord\LandlordDashboardService.php`, `Admin\AdminDashboardService.php`, `Admin\AdminLandlordService.php`, `Tenant\TenantDashboardService.php`, `Landlord\LandlordStatisticsService.php`
 
 - **`Rules`**
   - `UtilityBillBelongsToTenancy.php`: validation rule ensuring utility bills belong to the correct tenancy.
@@ -279,7 +297,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 - **`Feature/Tenant`**: Web Application controllers for Tenants
 - **`ArchTest.php`**: Architecture rules mapping rigid structures
 - **`Pest.php`, `TestCase.php`**: Pest bootstrap and base test case
-- **483 tests, 1428 assertions — 100% passing**
+- **484 tests, 1431 assertions — 100% passing**
 
 ---
 
@@ -328,7 +346,7 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
 
 - **API**
   - All mobile API endpoints exclusively at `/api/v1/` — **81 active routes**.
-  - All responses use `{ data: ..., meta: ... }` wrapping via Eloquent Resources.
+  - Collection responses standardize on Eloquent Resources with `{ data: ..., meta: ... }` wrapping.
   - Mobile `EXPO_PUBLIC_API_URL` configured to `http://{wifi-ip}:8000/api/v1`.
 
 - **Settings area**
@@ -345,12 +363,13 @@ The system enforces a type-safe `App\Enums\Role` PHP 8.1 backed enum as the cano
   - Sanctum authentication with permanent tokens.
 
 - **Quality & tooling**
-  - Pest 4: **483 tests, 1428 assertions — 100% passing**.
+  - Pest 4: **484 tests, 1431 assertions — 100% passing**.
   - All API tests target `/api/v1/` prefix.
   - `npm run build` verified clean.
 
 - **Service Pattern**
-  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`, `ReceiptService`, `DocumentService`.
+  - Services implement contracts in `app/Contracts/` (`PaymentServiceInterface`, `RentBillServiceInterface`, `UtilityServiceInterface`) for DI and testability.
+  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`, `ReceiptService`, `DocumentService`, `RevenueAnalyticsService`, `DashboardExportService`, `DocSyncService`, plus role-scoped dashboard services.
 
 ---
 
