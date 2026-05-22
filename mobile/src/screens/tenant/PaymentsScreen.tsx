@@ -1,18 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
 
+import { tenantApi } from '../../api/tenant';
+import { Badge } from '../../components/common/Badge';
+import { Card } from '../../components/common/Card';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
-import { tenantApi } from '../../api/tenant';
 import { Skeleton } from '../../components/common/Skeleton';
 import { BillRowSkeleton } from '../../components/common/SkeletonVariants';
-import { Card } from '../../components/common/Card';
 import { PaymentRowSkeleton } from '../../components/common/SkeletonVariants';
-import { Badge } from '../../components/common/Badge';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
 import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
@@ -14,18 +15,17 @@ import {
   TextInput,
   RadioButton,
 } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
 
 import { tenantApi, PaymentFormData } from '../../api/tenant';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
+import { ScreenContainer } from '../../components/common/ScreenContainer';
+import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 import { Skeleton } from '../../components/common/Skeleton';
 import { DetailBoxSkeleton, ListSectionSkeleton } from '../../components/common/SkeletonVariants';
 import { colors } from '../../constants/colors';
 import { screenStyles } from '../../constants/styles';
-import { ScreenContainer } from '../../components/common/ScreenContainer';
-import { ErrorState } from '../../components/common/ScreenContainer/../ErrorState';
 import type { TenantPaymentsStackParamList } from '../../navigation/AppNavigator';
 import type { UtilityBill, RentBill } from '../../types';
 import { formatCurrency, formatDate, capitalize } from '../../utils/formatters';
