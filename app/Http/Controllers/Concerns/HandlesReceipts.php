@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use App\Services\ReceiptService;
 use Illuminate\Http\Response;
@@ -17,7 +18,7 @@ trait HandlesReceipts
      */
     protected function buildReceiptResponse(Payment $payment, ReceiptService $receiptService): Response
     {
-        if (! in_array($payment->status, ['paid', 'partial'])) {
+        if (! in_array($payment->status, [PaymentStatus::Paid, PaymentStatus::Partial])) {
             abort(400, 'Receipt not available for unpaid payments.');
         }
 

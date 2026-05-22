@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentGateway;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -95,6 +99,10 @@ class Payment extends Model
             'paid_at' => 'datetime',
             'due_date' => 'date',
             'deleted_at' => 'datetime',
+            'status' => PaymentStatus::class,
+            'payment_type' => PaymentType::class,
+            'payment_method' => PaymentMethod::class,
+            'gateway' => PaymentGateway::class,
             'gateway_metadata' => 'array',
             'gateway_confirmed_at' => 'datetime',
         ];
@@ -142,40 +150,35 @@ class Payment extends Model
      *
      * @param  string|null  $paymentType  Filter by payment type (rent or utility)
      */
-    public function calculateStatus(?Tenancy $tenancy = null, ?string $paymentType = null): string
+    public function calculateStatus(?Tenancy $tenancy = null, ?PaymentType $paymentType = null): PaymentStatus
     {
         $tenancy = $tenancy ?? $this->tenancy;
         if (! $tenancy) {
-            return 'partial';
-        }
-
-        // Validate payment type if provided
-        if ($paymentType !== null && ! in_array($paymentType, ['rent', 'utility'], true)) {
-            return 'partial';
+            return PaymentStatus::Partial;
         }
 
         $monthlyRent = $tenancy->monthly_rent;
 
         $query = $tenancy->payments()
-            ->whereIn('status', ['paid', 'partial']);
+            ->whereIn('status', [PaymentStatus::Paid, PaymentStatus::Partial]);
 
         // Filter by payment type if specified
         if ($paymentType) {
             $query->where('payment_type', $paymentType);
         } else {
             // Default to rent payments only for backwards compatibility
-            $query->where('payment_type', 'rent');
+            $query->where('payment_type', PaymentType::Rent);
         }
 
         $totalPaid = $query->sum('amount');
 
         if ($totalPaid >= $monthlyRent) {
-            return 'paid';
+            return PaymentStatus::Paid;
         } elseif ($totalPaid > 0) {
-            return 'partial';
+            return PaymentStatus::Partial;
         }
 
-        return 'pending';
+        return PaymentStatus::Pending;
     }
 
     /**
@@ -183,19 +186,19 @@ class Payment extends Model
      *
      * @param  string|null  $paymentType  Filter by payment type (rent or utility)
      */
-    public static function calculatePendingAmount(Tenancy $tenancy, ?string $paymentType = null): float
+    public static function calculatePendingAmount(Tenancy $tenancy, ?PaymentType $paymentType = null): float
     {
         $monthlyRent = $tenancy->monthly_rent ?? 0;
 
         $query = $tenancy->payments()
-            ->whereIn('status', ['paid', 'partial']);
+            ->whereIn('status', [PaymentStatus::Paid, PaymentStatus::Partial]);
 
         // Filter by payment type if specified
         if ($paymentType) {
             $query->where('payment_type', $paymentType);
         } else {
             // Default to rent payments only for backwards compatibility
-            $query->where('payment_type', 'rent');
+            $query->where('payment_type', PaymentType::Rent);
         }
 
         $totalPaid = $query->sum('amount');

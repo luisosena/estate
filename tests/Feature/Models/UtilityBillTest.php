@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BillStatus;
 use App\Models\TenancyUtility;
 use App\Models\UtilityBill;
 use App\Models\UtilityType;
@@ -20,14 +21,14 @@ beforeEach(function () {
 test('markPaid sets status to paid on full payment', function () {
     $this->bill->markPaid(3000);
 
-    expect($this->bill->fresh()->status)->toBe('paid')
+    expect($this->bill->fresh()->status)->toBe(BillStatus::Paid)
         ->and($this->bill->fresh()->amount_paid)->toEqual('3000.00');
 });
 
 test('markPaid sets status to partial on underpayment', function () {
     $this->bill->markPaid(1500);
 
-    expect($this->bill->fresh()->status)->toBe('partial')
+    expect($this->bill->fresh()->status)->toBe(BillStatus::Partial)
         ->and($this->bill->fresh()->amount_paid)->toEqual('1500.00');
 });
 

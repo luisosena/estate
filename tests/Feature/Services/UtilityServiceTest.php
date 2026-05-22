@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BillStatus;
 use App\Models\Property;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
@@ -113,7 +114,7 @@ test('getPendingBillsForTenant returns pending bills for tenant with active tena
     $bills = $this->service->getPendingBillsForTenant($this->tenant);
 
     expect($bills)->toHaveCount(1)
-        ->and($bills->first()->status)->toBe('pending');
+        ->and($bills->first()->status)->toBe(BillStatus::Pending);
 });
 
 test('getPendingBillsForTenant returns empty collection when no active tenancy', function () {
@@ -202,7 +203,7 @@ test('getBillsForTenant filters by status', function () {
     $result = $this->service->getBillsForTenant($this->tenant, ['status' => 'paid']);
 
     expect($result['bills'])->toHaveCount(1)
-        ->and($result['bills']->first()->status)->toBe('paid');
+        ->and($result['bills']->first()->status)->toBe(BillStatus::Paid);
 });
 
 // --- processUtilityPayment ---
@@ -221,7 +222,7 @@ test('processUtilityPayment marks utility bill as paid on full payment', functio
 
     $this->service->processUtilityPayment($bill, 2000);
 
-    expect($bill->fresh()->status)->toBe('paid');
+    expect($bill->fresh()->status)->toBe(BillStatus::Paid);
 });
 
 test('processUtilityPayment marks utility bill as partial on underpayment', function () {
@@ -238,5 +239,5 @@ test('processUtilityPayment marks utility bill as partial on underpayment', func
 
     $this->service->processUtilityPayment($bill, 1000);
 
-    expect($bill->fresh()->status)->toBe('partial');
+    expect($bill->fresh()->status)->toBe(BillStatus::Partial);
 });

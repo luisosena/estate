@@ -6,6 +6,7 @@ use App\Contracts\PaymentGatewayInterface;
 use App\Contracts\PaymentServiceInterface;
 use App\Contracts\RentBillServiceInterface;
 use App\Contracts\UtilityServiceInterface;
+use App\Enums\BillStatus;
 use App\Models\Payment;
 use App\Models\Tenancy;
 use App\Models\Tenant;
@@ -104,8 +105,8 @@ class PaymentService implements PaymentServiceInterface
                 if ($bill->tenancyUtility->tenancy_id !== $activeTenancy->id) {
                     return ['error' => 'This utility bill does not belong to your active tenancy.'];
                 }
-                if (in_array($bill->status, ['paid', 'waived'])) {
-                    return ['error' => 'This utility bill has already been '.$bill->status.'.'];
+                if (in_array($bill->status, [BillStatus::Paid, BillStatus::Waived])) {
+                    return ['error' => 'This utility bill has already been '.$bill->status->value.'.'];
                 }
 
                 $utilityService = $this->utilityService ?? app(UtilityServiceInterface::class);
@@ -114,8 +115,8 @@ class PaymentService implements PaymentServiceInterface
                 $status = $bill->status;
 
                 // Validate the synced status is allowed
-                if (! in_array($status, ['paid', 'partial', 'overdue', 'pending'])) {
-                    $status = 'partial'; // Safe fallback
+                if (! in_array($status, [BillStatus::Paid, BillStatus::Partial, BillStatus::Overdue, BillStatus::Pending])) {
+                    $status = BillStatus::Partial; // Safe fallback
                 }
             } elseif ($validated['payment_type'] === 'rent') {
                 $rentBillService = $this->rentBillService ?? app(RentBillServiceInterface::class);
@@ -226,8 +227,8 @@ class PaymentService implements PaymentServiceInterface
                 if (! $utilityBill || $utilityBill->tenancyUtility->tenancy_id !== $tenancy->id) {
                     throw new \InvalidArgumentException('Invalid utility bill or unauthorized.');
                 }
-                if (in_array($utilityBill->status, ['paid', 'waived'])) {
-                    throw new \InvalidArgumentException("This utility bill has already been {$utilityBill->status}.");
+                if (in_array($utilityBill->status, [BillStatus::Paid, BillStatus::Waived])) {
+                    throw new \InvalidArgumentException("This utility bill has already been {$utilityBill->status->value}.");
                 }
             }
 
@@ -260,7 +261,7 @@ class PaymentService implements PaymentServiceInterface
                 if ($data['payment_type'] === 'utility' && $utilityBill) {
                     $this->utilityService->processUtilityPayment($utilityBill, $data['amount']);
                     $utilityBill->refresh();
-                    $paymentData['status'] = $utilityBill->status;
+                    $paymentData['status'] = $utilityBill->status->value;
                     $payment = Payment::create($paymentData);
                 } elseif ($data['payment_type'] === 'rent' && $rentBillId) {
                     try {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Landlord;
 
+use App\Enums\BillStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UtilityBillResource;
 use App\Models\UtilityBill;
@@ -96,7 +97,7 @@ class UtilityBillController extends Controller
             'amount_due' => 'sometimes|numeric|min:0',
             'units_consumed' => 'nullable|numeric|min:0',
             'due_date' => 'sometimes|date',
-            'status' => ['sometimes', Rule::in(['pending', 'paid', 'partial', 'overdue', 'waived'])],
+            'status' => ['sometimes', Rule::in(array_map(fn (BillStatus $s) => $s->value, BillStatus::cases()))],
             'notes' => 'nullable|string',
         ]);
 
@@ -132,14 +133,14 @@ class UtilityBillController extends Controller
 
         try {
             // Check if already paid or waived
-            if (in_array($utilityBill->status, ['paid', 'waived'])) {
+            if (in_array($utilityBill->status, [BillStatus::Paid, BillStatus::Waived])) {
                 return response()->json([
-                    'message' => 'This bill cannot be waived because it is already '.$utilityBill->status,
+                    'message' => 'This bill cannot be waived because it is already '.$utilityBill->status->value,
                 ], 422);
             }
 
             $utilityBill->update([
-                'status' => 'waived',
+                'status' => BillStatus::Waived,
                 'notes' => ($utilityBill->notes ? $utilityBill->notes.'\n\n' : '').
                     'Waived by landlord on '.now()->format('Y-m-d H:i:s'),
             ]);

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TenancyStatus;
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\Unit;
@@ -33,7 +34,7 @@ test('active scope returns only active tenancies', function () {
 
     $active = Tenancy::where('status', 'active')->get();
 
-    expect($active->every(fn ($t) => $t->status === 'active'))->toBeTrue();
+    expect($active->every(fn ($t) => $t->status === TenancyStatus::Active))->toBeTrue();
 });
 
 test('ended scope returns only ended tenancies', function () {
@@ -41,7 +42,7 @@ test('ended scope returns only ended tenancies', function () {
 
     $ended = Tenancy::where('status', 'ended')->get();
 
-    expect($ended->every(fn ($t) => $t->status === 'ended'))->toBeTrue();
+    expect($ended->every(fn ($t) => $t->status === TenancyStatus::Ended))->toBeTrue();
 });
 
 test('tenancy monthly_rent is stored correctly', function () {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BillStatus;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\RentBill;
@@ -10,7 +11,6 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\UtilityBill;
 use App\Models\UtilityType;
-use App\Services\ReceiptService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -72,7 +72,7 @@ test('landlord can link payment to a rent bill', function () {
     ]);
 
     $response->assertCreated();
-    expect($bill->fresh()->status)->toBe('paid');
+    expect($bill->fresh()->status)->toBe(BillStatus::Paid);
 });
 
 test('landlord can link payment to a utility bill', function () {
@@ -100,7 +100,7 @@ test('landlord can link payment to a utility bill', function () {
     ]);
 
     $response->assertCreated();
-    expect($utilityBill->fresh()->status)->toBe('pending');
+    expect($utilityBill->fresh()->status)->toBe(BillStatus::Pending);
 });
 
 test('payment creation fails without required fields', function () {

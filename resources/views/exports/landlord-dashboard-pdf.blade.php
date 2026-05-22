@@ -102,7 +102,7 @@
                 <td>{{ $payment->tenant?->full_name ?? '—' }}</td>
                 <td>{{ $payment->tenancy?->unit?->unit_code ?? '—' }}</td>
                 <td>{{ number_format($payment->amount, 0) }} TZS</td>
-                <td><span class="badge badge-{{ $payment->status }}">{{ ucfirst($payment->status) }}</span></td>
+                <td><span class="badge badge-{{ $payment->status->value }}">{{ ucfirst($payment->status->value) }}</span></td>
             </tr>
             @endforeach
         </tbody>

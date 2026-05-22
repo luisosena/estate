@@ -38,22 +38,22 @@ class PaymentReceived extends Notification implements ShouldQueue
             ->subject('Receipt: Payment Received')
             ->greeting("Hello {$notifiable->name},")
             ->line("We have received a payment of {$this->payment->amount} for your tenancy.")
-            ->line("Payment Type: {$this->payment->payment_type}")
-            ->line("Status: {$this->payment->status}")
+            ->line("Payment Type: {$this->payment->payment_type->value}")
+            ->line("Status: {$this->payment->status->value}")
             ->action('View Dashboard', url(config('app.url')))
             ->line('Thank you for being a great tenant!');
     }
 
     public function toWhatsApp(object $notifiable): string
     {
-        return "Hello {$notifiable->name}, we've received your payment of {$this->payment->amount} for {$this->payment->payment_type}. Status: {$this->payment->status}. Thank you! - Estate Practice";
+        return "Hello {$notifiable->name}, we've received your payment of {$this->payment->amount} for {$this->payment->payment_type->value}. Status: {$this->payment->status->value}. Thank you! - Estate Practice";
     }
 
     public function toExpoPush(object $notifiable): array
     {
         return [
             'title' => 'Payment Received',
-            'body' => "We've received your {$this->payment->payment_type} payment of {$this->payment->amount}.",
+            'body' => "We've received your {$this->payment->payment_type->value} payment of {$this->payment->amount}.",
             'data' => [
                 'type' => 'payment_received',
                 'payment_id' => $this->payment->id,

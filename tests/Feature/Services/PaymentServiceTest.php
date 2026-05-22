@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\RentBill;
@@ -80,7 +81,7 @@ test('calculateStatus returns paid when total equals monthly rent', function () 
         'paid_at' => now(),
     ]);
 
-    expect($payment->calculateStatus($this->tenancy))->toBe('paid');
+    expect($payment->calculateStatus($this->tenancy))->toBe(PaymentStatus::Paid);
 });
 
 test('calculateStatus returns partial when total is less than monthly rent', function () {
@@ -95,7 +96,7 @@ test('calculateStatus returns partial when total is less than monthly rent', fun
     ]);
 
     $payment = Payment::where('tenancy_id', $this->tenancy->id)->first();
-    expect($payment->calculateStatus($this->tenancy))->toBe('partial');
+    expect($payment->calculateStatus($this->tenancy))->toBe(PaymentStatus::Partial);
 });
 
 test('calculateStatus returns pending when no payments recorded', function () {
@@ -111,7 +112,7 @@ test('calculateStatus returns pending when no payments recorded', function () {
 
     // A fresh tenancy with no paid/partial payments returns pending
     $fresh = Tenancy::factory()->create(['monthly_rent' => 5000]);
-    expect($payment->calculateStatus($fresh))->toBe('pending');
+    expect($payment->calculateStatus($fresh))->toBe(PaymentStatus::Pending);
 });
 
 // --- Payment::calculatePendingAmount ---

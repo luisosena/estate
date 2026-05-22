@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BillStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +32,7 @@ class UtilityBill extends Model
             'amount_due' => 'decimal:2',
             'amount_paid' => 'decimal:2',
             'units_consumed' => 'decimal:3',
+            'status' => BillStatus::class,
         ];
     }
 

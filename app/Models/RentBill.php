@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BillStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +30,7 @@ class RentBill extends Model
             'due_date' => 'date',
             'amount_due' => 'decimal:2',
             'amount_paid' => 'decimal:2',
+            'status' => BillStatus::class,
         ];
     }
 

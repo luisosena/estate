@@ -52,7 +52,7 @@
         </div>
         <div class="info-item">
             <div class="info-label">Status</div>
-            <div class="info-value">{{ ucfirst($tenancy->status) }}</div>
+            <div class="info-value">{{ ucfirst($tenancy->status?->value ?? '') }}</div>
         </div>
     </div>
 
@@ -67,9 +67,9 @@
             <tr>
                 <td>{{ $payment->paid_at?->format('M d, Y') ?? '—' }}</td>
                 <td>{{ number_format($payment->amount, 0) }} TZS</td>
-                <td>{{ ucfirst($payment->payment_type ?? '—') }}</td>
-                <td>{{ ucfirst($payment->payment_method ?? '—') }}</td>
-                <td><span class="badge badge-{{ $payment->status }}">{{ ucfirst($payment->status) }}</span></td>
+                <td>{{ ucfirst($payment->payment_type?->value ?? '—') }}</td>
+                <td>{{ ucfirst($payment->payment_method?->value ?? '—') }}</td>
+                <td><span class="badge badge-{{ $payment->status->value }}">{{ ucfirst($payment->status->value) }}</span></td>
             </tr>
             @endforeach
         </tbody>
@@ -89,7 +89,7 @@
                 <td>{{ number_format($bill->amount_due, 0) }} TZS</td>
                 <td>{{ number_format($bill->amount_paid, 0) }} TZS</td>
                 <td>{{ number_format($bill->amount_due - $bill->amount_paid, 0) }} TZS</td>
-                <td><span class="badge badge-{{ $bill->status }}">{{ ucfirst($bill->status) }}</span></td>
+                <td><span class="badge badge-{{ $bill->status->value }}">{{ ucfirst($bill->status->value) }}</span></td>
             </tr>
             @endforeach
         </tbody>

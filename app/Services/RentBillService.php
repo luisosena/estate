@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Contracts\RentBillServiceInterface;
+use App\Enums\BillStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use App\Models\RentBill;
 use App\Models\User;
@@ -24,9 +26,9 @@ class RentBillService implements RentBillServiceInterface
     public function processRentPayment(RentBill $rentBill, float $amount): void
     {
         // Verify the bill is payable (not already paid or waived)
-        if (in_array($rentBill->status, ['paid', 'waived'])) {
+        if (in_array($rentBill->status, [BillStatus::Paid, BillStatus::Waived])) {
             throw new InvalidArgumentException(
-                "This rent bill has already been {$rentBill->status}."
+                "This rent bill has already been {$rentBill->status->value}."
             );
         }
 
@@ -58,8 +60,8 @@ class RentBillService implements RentBillServiceInterface
                 ->first();
 
             if ($rentBill) {
-                if (in_array($rentBill->status, ['paid', 'waived'])) {
-                    $error = "This rent bill has already been {$rentBill->status}.";
+                if (in_array($rentBill->status, [BillStatus::Paid, BillStatus::Waived])) {
+                    $error = "This rent bill has already been {$rentBill->status->value}.";
                 } else {
                     $rentBillId = $rentBill->id;
                 }
@@ -71,7 +73,7 @@ class RentBillService implements RentBillServiceInterface
         // If no specific bill provided or not found, try to find one for current month
         if (! $rentBillId && ! $error) {
             $currentBill = $this->getCurrentMonthBill($tenancyId);
-            if ($currentBill && ! in_array($currentBill->status, ['paid', 'waived'])) {
+            if ($currentBill && ! in_array($currentBill->status, [BillStatus::Paid, BillStatus::Waived])) {
                 $rentBillId = $currentBill->id;
             }
         }
@@ -113,7 +115,7 @@ class RentBillService implements RentBillServiceInterface
                     $this->processRentPayment($rentBill, $paymentAmount);
                     // Update payment status based on rent bill (source of truth)
                     $rentBill->refresh();
-                    $payment->status = $rentBill->status;
+                    $payment->status = PaymentStatus::from($rentBill->status->value);
                     $payment->save();
                 }
             }
@@ -130,7 +132,7 @@ class RentBillService implements RentBillServiceInterface
      */
     public function waiveRentBill(RentBill $rentBill, ?string $notes = null): void
     {
-        $rentBill->status = 'waived';
+        $rentBill->status = BillStatus::Waived;
         $rentBill->amount_paid = $rentBill->amount_due;
         if ($notes) {
             $rentBill->notes = ($rentBill->notes ? $rentBill->notes."\n" : '')."Waived: {$notes}";
@@ -212,13 +214,13 @@ class RentBillService implements RentBillServiceInterface
      */
     public function syncPaymentWithRentBill(Payment $payment): void
     {
-        if ($payment->status !== 'pending') {
+        if ($payment->status !== PaymentStatus::Pending) {
             return;
         }
 
         if ($payment->rent_bill_id) {
             $rentBill = RentBill::find($payment->rent_bill_id);
-            if ($rentBill && ! in_array($rentBill->status, ['paid', 'waived'])) {
+            if ($rentBill && ! in_array($rentBill->status, [BillStatus::Paid, BillStatus::Waived])) {
                 $this->processRentPayment($rentBill, (float) $payment->amount);
             }
         }

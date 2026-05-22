@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Landlord;
 
+use App\Enums\BillStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\WaiveBillRequest;
 use App\Http\Resources\PropertyResource;
@@ -108,17 +109,17 @@ class LandlordUtilityBillController extends Controller
         $this->authorize('waive', $utilityBill);
 
         try {
-            if (in_array($utilityBill->status, ['paid', 'waived'])) {
+            if (in_array($utilityBill->status, [BillStatus::Paid, BillStatus::Waived])) {
                 return redirect()
                     ->back()
-                    ->with('error', 'This bill cannot be waived as it is already '.$utilityBill->status);
+                    ->with('error', 'This bill cannot be waived as it is already '.$utilityBill->status->value);
             }
 
             $validated = $request->validated();
             $notes = $validated['notes'] ?? 'Waived by landlord';
 
             $utilityBill->update([
-                'status' => 'waived',
+                'status' => BillStatus::Waived,
                 'notes' => ($utilityBill->notes ? $utilityBill->notes."\n\n" : '').
                     $notes.' on '.now()->format('Y-m-d H:i:s'),
             ]);

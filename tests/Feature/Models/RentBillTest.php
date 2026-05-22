@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BillStatus;
 use App\Models\Property;
 use App\Models\RentBill;
 use App\Models\Tenancy;
@@ -33,13 +34,13 @@ test('markPaid accumulates amount_paid on consecutive partial payments', functio
     $this->bill->markPaid(6000);
 
     expect($this->bill->fresh()->amount_paid)->toEqual('10000.00')
-        ->and($this->bill->fresh()->status)->toBe('paid');
+        ->and($this->bill->fresh()->status)->toBe(BillStatus::Paid);
 });
 
 test('markPaid transitions to partial when amount is less than due', function () {
     $this->bill->markPaid(3000);
 
-    expect($this->bill->fresh()->status)->toBe('partial')
+    expect($this->bill->fresh()->status)->toBe(BillStatus::Partial)
         ->and($this->bill->fresh()->amount_paid)->toEqual('3000.00');
 });
 
@@ -69,7 +70,7 @@ test('scopePending returns only pending bills', function () {
 
     $pending = RentBill::pending()->get();
 
-    expect($pending->every(fn ($b) => $b->status === 'pending'))->toBeTrue();
+    expect($pending->every(fn ($b) => $b->status === BillStatus::Pending))->toBeTrue();
 });
 
 test('scopeOverdue includes past-due pending and partial bills', function () {

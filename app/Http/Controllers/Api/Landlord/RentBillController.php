@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Contracts\RentBillServiceInterface;
+use App\Enums\BillStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RentBillResource;
 use App\Models\RentBill;
@@ -132,9 +133,9 @@ class RentBillController extends Controller
         $this->authorize('waive', $rentBill);
 
         // Check if already waived or paid
-        if (in_array($rentBill->status, ['waived', 'paid'])) {
+        if (in_array($rentBill->status, [BillStatus::Waived, BillStatus::Paid])) {
             return response()->json([
-                'message' => "Cannot waive a rent bill that is already {$rentBill->status}.",
+                'message' => "Cannot waive a rent bill that is already {$rentBill->status->value}.",
             ], 422);
         }
 

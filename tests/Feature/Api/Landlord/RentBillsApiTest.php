@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BillStatus;
 use App\Models\Property;
 use App\Models\RentBill;
 use App\Models\Tenancy;
@@ -69,7 +70,7 @@ test('landlord can waive a pending rent bill', function () {
         ->assertOk()
         ->assertJsonFragment(['status' => 'waived']);
 
-    expect($this->bill->fresh()->status)->toBe('waived');
+    expect($this->bill->fresh()->status)->toBe(BillStatus::Waived);
 });
 
 test('landlord cannot waive an already paid bill via API', function () {

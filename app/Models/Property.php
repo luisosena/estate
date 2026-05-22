@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PropertyStatus;
 use App\Traits\HasActiveScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -34,7 +35,13 @@ class Property extends Model
         return [
             'amenities' => 'array',
             'policies' => 'array',
+            'status' => PropertyStatus::class,
         ];
+    }
+
+    protected function getActiveStatusValue(): string
+    {
+        return PropertyStatus::Active->value;
     }
 
     public function owner(): BelongsTo

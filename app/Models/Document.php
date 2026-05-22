@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DocumentCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +31,7 @@ class Document extends Model
         return [
             'file_size' => 'integer',
             'uploaded_at' => 'datetime',
-            'category' => 'string',
+            'category' => DocumentCategory::class,
         ];
     }
 

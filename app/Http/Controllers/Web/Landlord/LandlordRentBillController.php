@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Landlord;
 
+use App\Enums\BillStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\WaiveBillRequest;
 use App\Http\Resources\RentBillResource;
@@ -54,10 +55,10 @@ class LandlordRentBillController extends Controller
     {
         $this->authorize('waive', $rentBill);
 
-        if (in_array($rentBill->status, ['waived', 'paid'])) {
+        if (in_array($rentBill->status, [BillStatus::Waived, BillStatus::Paid])) {
             return redirect()
                 ->back()
-                ->with('error', "Cannot waive a rent bill that is already {$rentBill->status}.");
+                ->with('error', "Cannot waive a rent bill that is already {$rentBill->status->value}.");
         }
 
         $validated = $request->validated();

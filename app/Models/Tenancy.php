@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TenancyStatus;
 use App\Traits\HasActiveScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,7 +39,13 @@ class Tenancy extends Model
             'monthly_rent' => 'decimal:2',
             'security_deposit' => 'decimal:2',
             'final_meter_readings' => 'array',
+            'status' => TenancyStatus::class,
         ];
+    }
+
+    protected function getActiveStatusValue(): string
+    {
+        return TenancyStatus::Active->value;
     }
 
     public function getTenantCodeAttribute()

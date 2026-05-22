@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DocumentCategory;
 use App\Models\Document;
 use App\Models\Property;
 use App\Models\Tenancy;
@@ -36,7 +37,7 @@ it('uploads a valid PDF document', function () {
     $document = $this->service->upload($file, $this->tenancy, 'tenancy_agreement', $this->landlord);
 
     expect($document->file_name)->toBe('agreement.pdf')
-        ->and($document->category)->toBe('tenancy_agreement')
+        ->and($document->category)->toBe(DocumentCategory::TenancyAgreement)
         ->and($document->user_id)->toBe($this->landlord->id)
         ->and($document->documentable_type)->toBe(Tenancy::class)
         ->and($document->documentable_id)->toBe($this->tenancy->id)
@@ -49,7 +50,7 @@ it('uploads a valid DOCX document', function () {
     $document = $this->service->upload($file, $this->tenancy, 'other', $this->landlord);
 
     expect($document->file_name)->toBe('contract.docx')
-        ->and($document->category)->toBe('other');
+        ->and($document->category)->toBe(DocumentCategory::Other);
 });
 
 it('rejects file exceeding max size', function () {

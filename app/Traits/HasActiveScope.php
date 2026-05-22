@@ -8,6 +8,11 @@ trait HasActiveScope
 {
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where($this->getTable().'.status', 'active');
+        return $query->where($this->getTable().'.status', $this->getActiveStatusValue());
+    }
+
+    protected function getActiveStatusValue(): string
+    {
+        return 'active';
     }
 }

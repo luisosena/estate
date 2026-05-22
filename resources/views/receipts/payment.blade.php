@@ -120,10 +120,10 @@
             </div>
             <div class="details-col" style="text-align: right;">
                 <div class="details-title">Payment Info:</div>
-                <div class="details-data">Method: {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</div>
+                <div class="details-data">Method: {{ ucfirst(str_replace('_', ' ', $payment->payment_method?->value ?? '')) }}</div>
                 <div class="details-data">Gateway Ref: {{ $payment->gateway_reference ?? $payment->reference_number ?? 'N/A' }}</div>
                 <div class="details-data" style="margin-top: 10px;">
-                    Status: <span class="badge">{{ $payment->status }}</span>
+                    Status: <span class="badge">{{ $payment->status->value }}</span>
                 </div>
             </div>
         </div>
@@ -139,12 +139,12 @@
             <tbody>
                 <tr>
                     <td>
-                        @if($payment->payment_type === 'rent')
+                        @if($payment->payment_type?->value === 'rent')
                             Rent Payment
                             @if($payment->rentBill && $payment->rentBill->billing_month)
                                 for {{ $payment->rentBill->billing_month->format('F Y') }}
                             @endif
-                        @elseif($payment->payment_type === 'utility')
+                        @elseif($payment->payment_type?->value === 'utility')
                             Utility Payment
                             @if($payment->utilityBill)
                                 - {{ $payment->utilityBill->tenancyUtility?->utilityType?->name ?? 'Utility' }}
@@ -155,7 +155,7 @@
                             <br><small style="color: #666;">Note: {{ $payment->notes }}</small>
                         @endif
                     </td>
-                    <td>{{ ucfirst($payment->payment_type) }}</td>
+                    <td>{{ ucfirst($payment->payment_type?->value ?? '') }}</td>
                     <td class="amount-col">{{ number_format($payment->amount, 2) }}</td>
                 </tr>
                 <tr class="total-row">

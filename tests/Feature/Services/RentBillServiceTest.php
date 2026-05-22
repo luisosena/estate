@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BillStatus;
 use App\Models\Property;
 use App\Models\RentBill;
 use App\Models\Tenancy;
@@ -39,14 +40,14 @@ beforeEach(function () {
 test('processRentPayment marks bill as paid on full payment', function () {
     $this->service->processRentPayment($this->bill, 20000);
 
-    expect($this->bill->fresh()->status)->toBe('paid')
+    expect($this->bill->fresh()->status)->toBe(BillStatus::Paid)
         ->and($this->bill->fresh()->amount_paid)->toEqual('20000.00');
 });
 
 test('processRentPayment marks bill as partial on underpayment', function () {
     $this->service->processRentPayment($this->bill, 10000);
 
-    expect($this->bill->fresh()->status)->toBe('partial')
+    expect($this->bill->fresh()->status)->toBe(BillStatus::Partial)
         ->and($this->bill->fresh()->amount_paid)->toEqual('10000.00');
 });
 
@@ -70,7 +71,7 @@ test('waiveRentBill sets status to waived and amount_paid to amount_due', functi
     $this->service->waiveRentBill($this->bill);
 
     $fresh = $this->bill->fresh();
-    expect($fresh->status)->toBe('waived')
+    expect($fresh->status)->toBe(BillStatus::Waived)
         ->and($fresh->amount_paid)->toEqual($fresh->amount_due);
 });
 
@@ -113,7 +114,7 @@ test('getPendingBills returns pending partial and overdue bills excluding paid',
     $results = $this->service->getPendingBills($this->tenancy->id);
 
     expect($results)->toHaveCount(2)
-        ->and($results->pluck('status')->contains('paid'))->toBeFalse();
+        ->and($results->pluck('status')->contains(BillStatus::Paid))->toBeFalse();
 });
 
 // --- linkPaymentToBill ---
@@ -189,7 +190,7 @@ test('createPaymentWithRentBill creates payment and marks rent bill paid atomica
     );
 
     expect($payment->id)->not->toBeNull()
-        ->and($this->bill->fresh()->status)->toBe('paid');
+        ->and($this->bill->fresh()->status)->toBe(BillStatus::Paid);
 });
 
 // --- getRentStatistics ---

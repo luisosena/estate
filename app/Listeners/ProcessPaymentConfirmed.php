@@ -4,6 +4,8 @@ namespace App\Listeners;
 
 use App\Contracts\RentBillServiceInterface;
 use App\Contracts\UtilityServiceInterface;
+use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Events\PaymentConfirmed;
 use App\Models\RentBill;
 use App\Models\UtilityBill;
@@ -44,40 +46,40 @@ class ProcessPaymentConfirmed implements ShouldQueue
         $payment->gateway_confirmed_at = now();
         $payment->save();
 
-        if ($payment->payment_type === 'rent' && $payment->rent_bill_id) {
+        if ($payment->payment_type === PaymentType::Rent && $payment->rent_bill_id) {
             try {
                 $this->rentBillService->syncPaymentWithRentBill($payment);
                 // Derive payment status from rent bill (source of truth)
                 $rentBill = RentBill::find($payment->rent_bill_id);
                 if ($rentBill) {
-                    $payment->status = $rentBill->status; // 'paid' or 'partial'
+                    $payment->status = PaymentStatus::from($rentBill->status->value); // 'paid' or 'partial'
                     $payment->save();
                 }
                 Log::info("Synced rent bill for payment {$payment->id}, status={$payment->status}");
             } catch (\Exception $e) {
                 Log::error("Failed syncing rent bill for async payment {$payment->id}: ".$e->getMessage());
                 // Fall back to marking paid since gateway confirmed it
-                $payment->status = 'paid';
+                $payment->status = PaymentStatus::Paid;
                 $payment->save();
             }
-        } elseif ($payment->payment_type === 'utility' && $payment->utility_bill_id) {
+        } elseif ($payment->payment_type === PaymentType::Utility && $payment->utility_bill_id) {
             try {
                 $utilityBill = UtilityBill::find($payment->utility_bill_id);
                 if ($utilityBill) {
                     $this->utilityService->processUtilityPayment($utilityBill, $payment->amount);
                     $utilityBill->refresh();
-                    $payment->status = $utilityBill->status; // 'paid' or 'partial'
+                    $payment->status = PaymentStatus::from($utilityBill->status->value); // 'paid' or 'partial'
                     $payment->save();
                     Log::info("Synced utility bill for payment {$payment->id}, status={$payment->status}");
                 }
             } catch (\Exception $e) {
                 Log::error("Failed syncing utility bill for async payment {$payment->id}: ".$e->getMessage());
-                $payment->status = 'paid';
+                $payment->status = PaymentStatus::Paid;
                 $payment->save();
             }
         } else {
             // No linked bill — gateway confirms full payment
-            $payment->status = 'paid';
+            $payment->status = PaymentStatus::Paid;
             $payment->save();
         }
 

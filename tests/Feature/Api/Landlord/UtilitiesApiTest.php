@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\BillStatus;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
 use App\Models\Tenant;
@@ -104,7 +105,7 @@ test('landlord can waive a pending utility bill', function () {
     $this->postJson("/api/v1/landlord/utility-bills/{$bill->id}/waive", ['notes' => 'Waiver reason'])
         ->assertOk();
 
-    expect($bill->fresh()->status)->toBe('waived');
+    expect($bill->fresh()->status)->toBe(BillStatus::Waived);
 });
 
 test('landlord cannot waive an already paid utility bill', function () {
