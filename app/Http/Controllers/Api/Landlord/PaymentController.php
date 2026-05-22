@@ -129,18 +129,7 @@ class PaymentController extends Controller
 
         $response = [
             'message' => 'Payment created successfully',
-            'data' => [
-                'id' => $payment->id,
-                'tenant_id' => $payment->tenant_id,
-                'tenancy_id' => $payment->tenancy_id,
-                'rent_bill_id' => $payment->rent_bill_id,
-                'amount' => $payment->amount,
-                'payment_type' => $payment->payment_type,
-                'payment_method' => $payment->payment_method,
-                'status' => $payment->status,
-                'paid_at' => $payment->paid_at,
-                'created_at' => $payment->created_at,
-            ],
+            'data' => new PaymentResource($payment),
         ];
 
         // Include warning if rent bill was not found as specified
@@ -172,18 +161,8 @@ class PaymentController extends Controller
 
         $payment->update($validated);
 
-        return response()->json([
-            'message' => 'Payment updated successfully',
-            'data' => [
-                'id' => $payment->id,
-                'amount' => $payment->amount,
-                'payment_type' => $payment->payment_type,
-                'payment_method' => $payment->payment_method,
-                'status' => $payment->status,
-                'paid_at' => $payment->paid_at,
-                'updated_at' => $payment->updated_at,
-            ],
-        ]);
+        return (new PaymentResource($payment))
+            ->additional(['message' => 'Payment updated successfully']);
     }
 
     /**
