@@ -7,6 +7,7 @@ use App\Http\Resources\RentBillResource;
 use App\Models\RentBill;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class RentBillController extends Controller
 {
@@ -14,7 +15,7 @@ class RentBillController extends Controller
      * Get all rent bills for the tenant.
      * GET /api/v1/tenant/rent-bills
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection|JsonResponse
     {
         $this->authorize('viewAny', RentBill::class);
 
@@ -49,23 +50,10 @@ class RentBillController extends Controller
             $query->where('status', $status);
         }
 
-        $totalItems = $query->count();
         $rentBills = $query->orderBy('billing_month', 'desc')
-            ->skip(($page - 1) * $perPage)
-            ->take($perPage)
-            ->get();
+            ->paginate($perPage, ['*'], 'page', $page);
 
-        $totalPages = ceil($totalItems / $perPage);
-
-        return response()->json([
-            'data' => RentBillResource::collection($rentBills)->toArray($request),
-            'meta' => [
-                'current_page' => (int) $page,
-                'per_page' => (int) $perPage,
-                'total' => $totalItems,
-                'total_pages' => $totalPages,
-            ],
-        ]);
+        return RentBillResource::collection($rentBills);
     }
 
     /**

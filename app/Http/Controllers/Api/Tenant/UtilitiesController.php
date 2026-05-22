@@ -9,6 +9,7 @@ use App\Models\TenancyUtility;
 use App\Models\UtilityBill;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class UtilitiesController extends Controller
 {
@@ -16,7 +17,7 @@ class UtilitiesController extends Controller
      * Get utilities for the authenticated tenant.
      * GET /api/v1/tenant/utilities
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection|JsonResponse
     {
         $this->authorize('viewAny', TenancyUtility::class);
 
@@ -39,20 +40,20 @@ class UtilitiesController extends Controller
             ]);
         }
 
-        return response()->json([
-            'data' => TenancyUtilityResource::collection($activeTenancy->tenancyUtilities)->toArray($request),
-            'meta' => [
-                'tenancy_id' => $activeTenancy->id,
-                'monthly_rent' => $activeTenancy->monthly_rent,
-            ],
-        ]);
+        return TenancyUtilityResource::collection($activeTenancy->tenancyUtilities)
+            ->additional([
+                'meta' => [
+                    'tenancy_id' => $activeTenancy->id,
+                    'monthly_rent' => $activeTenancy->monthly_rent,
+                ],
+            ]);
     }
 
     /**
      * Get pending utility bills for the authenticated tenant.
      * GET /api/v1/tenant/utility-bills
      */
-    public function bills(Request $request): JsonResponse
+    public function bills(Request $request): AnonymousResourceCollection|JsonResponse
     {
         $this->authorize('viewAny', UtilityBill::class);
 
@@ -97,14 +98,14 @@ class UtilitiesController extends Controller
         $totalPaid = $bills->sum('amount_paid');
         $totalOutstanding = $totalDue - $totalPaid;
 
-        return response()->json([
-            'data' => UtilityBillResource::collection($bills)->toArray($request),
-            'meta' => [
-                'total_due' => $totalDue,
-                'total_paid' => $totalPaid,
-                'total_outstanding' => $totalOutstanding,
-                'bill_count' => $bills->count(),
-            ],
-        ]);
+        return UtilityBillResource::collection($bills)
+            ->additional([
+                'meta' => [
+                    'total_due' => $totalDue,
+                    'total_paid' => $totalPaid,
+                    'total_outstanding' => $totalOutstanding,
+                    'bill_count' => $bills->count(),
+                ],
+            ]);
     }
 }

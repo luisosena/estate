@@ -55,24 +55,24 @@ class UtilityBill extends Model
     {
         $this->amount_paid += $amount;
         if ($this->amount_paid >= $this->amount_due) {
-            $this->status = 'paid';
+            $this->status = BillStatus::Paid;
         } elseif ($this->amount_paid > 0) {
-            $this->status = 'partial';
+            $this->status = BillStatus::Partial;
         }
         $this->save();
     }
 
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('utility_bills.status', 'pending');
+        return $query->where('utility_bills.status', BillStatus::Pending->value);
     }
 
     public function scopeOverdue(Builder $query): Builder
     {
         return $query->where(function ($q) {
-            $q->where('utility_bills.status', 'overdue')
+            $q->where('utility_bills.status', BillStatus::Overdue->value)
                 ->orWhere(function ($q) {
-                    $q->whereIn('utility_bills.status', ['pending', 'partial'])
+                    $q->whereIn('utility_bills.status', [BillStatus::Pending->value, BillStatus::Partial->value])
                         ->where('utility_bills.due_date', '<', now());
                 });
         });

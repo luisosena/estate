@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\UtilityServiceInterface;
+use App\Enums\BillStatus;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
 use App\Models\Tenant;
@@ -41,7 +42,7 @@ class UtilityService implements UtilityServiceInterface
     {
         // Check for unpaid bills
         $unpaidBills = $tenancyUtility->bills()
-            ->whereIn('utility_bills.status', ['pending', 'partial', 'overdue'])
+            ->whereIn('utility_bills.status', [BillStatus::Pending->value, BillStatus::Partial->value, BillStatus::Overdue->value])
             ->exists();
 
         if ($unpaidBills) {
@@ -69,7 +70,7 @@ class UtilityService implements UtilityServiceInterface
         return UtilityBill::whereHas('tenancyUtility', function ($q) use ($activeTenancy) {
             $q->where('tenancy_id', $activeTenancy->id);
         })
-            ->whereIn('utility_bills.status', ['pending', 'partial', 'overdue'])
+            ->whereIn('utility_bills.status', [BillStatus::Pending->value, BillStatus::Partial->value, BillStatus::Overdue->value])
             ->with(['tenancyUtility.utilityType'])
             ->orderBy('due_date', 'asc')
             ->get();
@@ -160,9 +161,9 @@ class UtilityService implements UtilityServiceInterface
         return [
             'bills' => $bills,
             'total' => $bills->sum('amount_due'),
-            'pending' => $bills->where('status', 'pending')->sum('amount_due'),
-            'paid' => $bills->where('status', 'paid')->sum('amount_due'),
-            'overdue' => $bills->whereIn('status', ['overdue', 'partial'])->sum('amount_due'),
+            'pending' => $bills->where('status', BillStatus::Pending->value)->sum('amount_due'),
+            'paid' => $bills->where('status', BillStatus::Paid->value)->sum('amount_due'),
+            'overdue' => $bills->whereIn('status', [BillStatus::Overdue->value, BillStatus::Partial->value])->sum('amount_due'),
             'outstanding' => $bills->sum(function ($bill) {
                 return $bill->amount_due - $bill->amount_paid;
             }),

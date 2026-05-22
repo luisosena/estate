@@ -64,7 +64,6 @@ class BackfillDocuments extends Command
 
                 if ($existing) {
                     $skipped++;
-                    $bar->advance();
 
                     continue;
                 }
@@ -106,9 +105,9 @@ class BackfillDocuments extends Command
             } catch (\Exception $e) {
                 $errors++;
                 $this->error("Failed for tenancy {$tenancy->id}: {$e->getMessage()}");
+            } finally {
+                $bar->advance();
             }
-
-            $bar->advance();
         }
 
         $bar->finish();

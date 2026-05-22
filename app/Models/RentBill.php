@@ -53,24 +53,24 @@ class RentBill extends Model
     {
         $this->amount_paid += $amount;
         if ($this->amount_paid >= $this->amount_due) {
-            $this->status = 'paid';
+            $this->status = BillStatus::Paid;
         } elseif ($this->amount_paid > 0) {
-            $this->status = 'partial';
+            $this->status = BillStatus::Partial;
         }
         $this->save();
     }
 
     public function scopePending(Builder $query): Builder
     {
-        return $query->where('rent_bills.status', 'pending');
+        return $query->where('rent_bills.status', BillStatus::Pending->value);
     }
 
     public function scopeOverdue(Builder $query): Builder
     {
         return $query->where(function ($q) {
-            $q->where('rent_bills.status', 'overdue')
+            $q->where('rent_bills.status', BillStatus::Overdue->value)
                 ->orWhere(function ($q) {
-                    $q->whereIn('rent_bills.status', ['pending', 'partial'])
+                    $q->whereIn('rent_bills.status', [BillStatus::Pending->value, BillStatus::Partial->value])
                         ->where('rent_bills.due_date', '<', now());
                 });
         });

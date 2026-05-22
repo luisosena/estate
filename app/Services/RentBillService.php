@@ -160,7 +160,7 @@ class RentBillService implements RentBillServiceInterface
     public function getPendingBills(int $tenancyId): Collection
     {
         return RentBill::where('tenancy_id', $tenancyId)
-            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->whereIn('status', [BillStatus::Pending->value, BillStatus::Partial->value, BillStatus::Overdue->value])
             ->orderBy('billing_month')
             ->get();
     }
@@ -234,7 +234,7 @@ class RentBillService implements RentBillServiceInterface
     public function calculateTotalOutstanding(int $tenancyId): float
     {
         return (float) RentBill::where('tenancy_id', $tenancyId)
-            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->whereIn('status', [BillStatus::Pending->value, BillStatus::Partial->value, BillStatus::Overdue->value])
             ->selectRaw('SUM(amount_due - amount_paid) as outstanding')
             ->value('outstanding') ?? 0.0;
     }
@@ -249,11 +249,20 @@ class RentBillService implements RentBillServiceInterface
         $rawStats = (clone $baseQuery)
             ->selectRaw("
                 COUNT(*) as total_count,
-                SUM(CASE WHEN status = 'pending' AND (due_date >= CURRENT_DATE OR due_date IS NULL) THEN 1 ELSE 0 END) as pending_count,
-                SUM(CASE WHEN status = 'overdue' OR (status IN ('pending', 'partial') AND due_date < CURRENT_DATE) THEN 1 ELSE 0 END) as overdue_count,
-                SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_count,
-                SUM(CASE WHEN status IN ('pending', 'partial', 'overdue') THEN amount_due - amount_paid ELSE 0 END) as total_outstanding
-            ")
+                SUM(CASE WHEN status = ? AND (due_date >= CURRENT_DATE OR due_date IS NULL) THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status = ? OR (status IN (?, ?) AND due_date < CURRENT_DATE) THEN 1 ELSE 0 END) as overdue_count,
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as paid_count,
+                SUM(CASE WHEN status IN (?, ?, ?) THEN amount_due - amount_paid ELSE 0 END) as total_outstanding
+            ", [
+                BillStatus::Pending->value,
+                BillStatus::Overdue->value,
+                BillStatus::Pending->value,
+                BillStatus::Partial->value,
+                BillStatus::Paid->value,
+                BillStatus::Pending->value,
+                BillStatus::Partial->value,
+                BillStatus::Overdue->value,
+            ])
             ->first();
 
         return [

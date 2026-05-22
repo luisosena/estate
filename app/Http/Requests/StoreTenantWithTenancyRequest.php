@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Concerns\PhoneValidationRules;
 use App\Enums\Role;
 use App\Models\Unit;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -9,6 +10,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTenantWithTenancyRequest extends FormRequest
 {
+    use PhoneValidationRules;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -27,10 +30,10 @@ class StoreTenantWithTenancyRequest extends FormRequest
         return [
             // Tenant Information
             'full_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:50',
+            'phone' => $this->phoneRules(),
             'email' => 'required|email|max:255|unique:tenants,email|unique:users,email',
             'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:50',
+            'emergency_contact_phone' => $this->phoneRules(false),
             'emergency_contact_relation' => 'nullable|string|max:100',
 
             // Unit Assignment (Optional)

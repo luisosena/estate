@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Landlord\UnitStoreRequest;
+use App\Http\Requests\Api\Landlord\UnitUpdateRequest;
 use App\Http\Resources\UnitResource;
 use App\Models\Property;
 use App\Models\Unit;
@@ -82,17 +84,13 @@ class UnitController extends Controller
      * Create a new unit.
      * POST /api/v1/landlord/units
      */
-    public function store(Request $request)
+    public function store(UnitStoreRequest $request)
     {
         $this->authorize('create', Unit::class);
 
         $landlord = $request->user();
 
-        $validated = $request->validate([
-            'property_id' => 'required|exists:properties,id',
-            'unit_code' => 'required|string|max:50|unique:units',
-            'unit_name' => 'required|string|max:100',
-        ]);
+        $validated = $request->validated();
 
         // Verify property belongs to landlord
         $property = Property::where('owner_id', $landlord->id)
@@ -117,18 +115,14 @@ class UnitController extends Controller
      * Update a unit.
      * PUT /api/v1/landlord/units/{unit}
      */
-    public function update(Request $request, int $unitId)
+    public function update(UnitUpdateRequest $request, int $unitId)
     {
         $unit = Unit::whereHas('property', function ($query) use ($request) {
             $query->where('owner_id', $request->user()->id);
         })->findOrFail($unitId);
         $this->authorize('update', $unit);
 
-        $validated = $request->validate([
-            'unit_code' => 'sometimes|string|max:50|unique:units,unit_code,'.$unitId,
-            'unit_name' => 'sometimes|string|max:100',
-            'status' => 'sometimes|in:available,occupied,maintenance',
-        ]);
+        $validated = $request->validated();
 
         $unit->update($validated);
 

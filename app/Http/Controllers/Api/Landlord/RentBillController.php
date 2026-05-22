@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Landlord;
 use App\Contracts\RentBillServiceInterface;
 use App\Enums\BillStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Landlord\RentBillUpdateRequest;
 use App\Http\Resources\RentBillResource;
 use App\Models\RentBill;
 use Illuminate\Http\Request;
@@ -125,7 +126,7 @@ class RentBillController extends Controller
      * Waive a rent bill.
      * POST /api/v1/landlord/rent-bills/{id}/waive
      */
-    public function waive(Request $request, int $id)
+    public function waive(RentBillUpdateRequest $request, int $id)
     {
         $rentBill = RentBill::whereHas('tenancy.unit.property', function ($query) use ($request) {
             $query->where('owner_id', $request->user()->id);
@@ -139,9 +140,7 @@ class RentBillController extends Controller
             ], 422);
         }
 
-        $validated = $request->validate([
-            'notes' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $this->rentBillService->waiveRentBill($rentBill, $validated['notes'] ?? null);
 

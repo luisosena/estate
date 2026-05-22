@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api\Landlord;
 
 use App\Enums\BillStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Landlord\UtilityBillUpdateRequest;
 use App\Http\Resources\UtilityBillResource;
 use App\Models\UtilityBill;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 
 class UtilityBillController extends Controller
 {
@@ -89,17 +89,11 @@ class UtilityBillController extends Controller
      * Update a utility bill.
      * PUT /api/v1/landlord/utility-bills/{utilityBill}
      */
-    public function update(Request $request, UtilityBill $utilityBill): UtilityBillResource|JsonResponse
+    public function update(UtilityBillUpdateRequest $request, UtilityBill $utilityBill): UtilityBillResource|JsonResponse
     {
         $this->authorize('update', $utilityBill);
 
-        $validated = $request->validate([
-            'amount_due' => 'sometimes|numeric|min:0',
-            'units_consumed' => 'nullable|numeric|min:0',
-            'due_date' => 'sometimes|date',
-            'status' => ['sometimes', Rule::in(array_map(fn (BillStatus $s) => $s->value, BillStatus::cases()))],
-            'notes' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         try {
             $utilityBill->update($validated);

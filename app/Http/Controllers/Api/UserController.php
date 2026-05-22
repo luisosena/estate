@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\RegisterPushTokenRequest;
+use App\Http\Requests\Api\UserProfileUpdateRequest;
+use App\Http\Requests\Api\UserStoreRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -70,29 +72,11 @@ class UserController extends Controller
      * POST /api/users - Create new user
      * Role required: admin only (landlords can only create tenant users)
      */
-    public function store(Request $request): JsonResponse
+    public function store(UserStoreRequest $request): JsonResponse
     {
         $this->authorize('create', User::class);
 
-        // Determine role validation based on user role
-        if ($request->user()->role === Role::Landlord) {
-            $validated = $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'email', 'unique:users,email'],
-                'password' => ['required', 'string', 'min:8'],
-                'role' => ['required', Rule::in(['tenant'])], // Landlords can only create tenants
-                'phone' => ['nullable', 'string', 'max:20'],
-            ]);
-        } else {
-            // Admin can create any role
-            $validated = $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'email', 'unique:users,email'],
-                'password' => ['required', 'string', 'min:8'],
-                'role' => ['required', Rule::in(['tenant', 'landlord', 'admin'])],
-                'phone' => ['nullable', 'string', 'max:20'],
-            ]);
-        }
+        $validated = $request->validated();
 
         $user = User::create([
             'name' => $validated['name'],
@@ -116,17 +100,12 @@ class UserController extends Controller
      * PUT /api/users/{id} - Update user
      * Users can only update their own profile unless admin
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(UserProfileUpdateRequest $request, int $id): JsonResponse
     {
         $user = User::findOrFail($id);
         $this->authorize('update', $user);
 
-        $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', 'unique:users,email,'.$id],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'role' => ['sometimes', Rule::in(['tenant', 'landlord', 'admin'])],
-        ]);
+        $validated = $request->validated();
 
         // Non-admin users cannot change their own role
         if ($request->user()->role !== Role::Admin) {
@@ -144,12 +123,9 @@ class UserController extends Controller
     /**
      * POST /api/v1/users/push-token - Register device push token
      */
-    public function registerPushToken(Request $request): JsonResponse
+    public function registerPushToken(RegisterPushTokenRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'token' => ['required', 'string'],
-            'platform' => ['sometimes', 'string', 'in:ios,android'],
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         $updateData = [

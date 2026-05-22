@@ -21,6 +21,7 @@ class TenancyUtilityStoreRequest extends FormRequest
             'provider' => 'nullable|string|max:255',
             'account_number' => 'nullable|string|max:100',
             'meter_number' => 'nullable|string|max:100',
+            'status' => 'nullable|in:active,suspended,disconnected',
         ];
     }
 }

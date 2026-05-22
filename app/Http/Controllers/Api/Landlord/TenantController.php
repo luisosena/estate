@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Landlord\TenantUpdateRequest;
 use App\Http\Requests\StoreTenantWithTenancyRequest;
 use App\Http\Resources\TenancyResource;
 use App\Http\Resources\TenantResource;
@@ -126,19 +127,12 @@ class TenantController extends Controller
     /**
      * Update basic tenant details.
      */
-    public function update(Request $request, string $identifier)
+    public function update(TenantUpdateRequest $request, string $identifier)
     {
         $tenant = $this->findTenantByIdentifier($identifier);
         $this->authorize('update', $tenant);
 
-        $validated = $request->validate([
-            'full_name' => 'sometimes|string|max:255',
-            'phone' => 'sometimes|string|max:50',
-            'email' => 'sometimes|email|max:255|unique:tenants,email,'.$tenant->id,
-            'emergency_contact_name' => 'nullable|string|max:255',
-            'emergency_contact_phone' => 'nullable|string|max:50',
-            'emergency_contact_relation' => 'nullable|string|max:100',
-        ]);
+        $validated = $request->validated();
 
         $tenant->update($validated);
 

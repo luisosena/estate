@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Api\Landlord;
 
+use App\Enums\BillStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Landlord\TenancyUtilityStoreRequest;
+use App\Http\Requests\Api\Landlord\TenancyUtilityUpdateRequest;
 use App\Http\Resources\TenancyUtilityResource;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
@@ -10,7 +13,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 
 class TenancyUtilityController extends Controller
 {
@@ -35,25 +37,12 @@ class TenancyUtilityController extends Controller
      * Assign a utility to a tenancy.
      * POST /api/v1/landlord/tenancies/{tenancy}/utilities
      */
-    public function store(Request $request, Tenancy $tenancy): JsonResponse
+    public function store(TenancyUtilityStoreRequest $request, Tenancy $tenancy): JsonResponse
     {
         $this->authorize('update', $tenancy); // landlord owns this tenancy
         $this->authorize('create', TenancyUtility::class); // landlord role can create
 
-        $validated = $request->validate([
-            'utility_type_id' => [
-                'required',
-                'exists:utility_types,id',
-                Rule::unique('tenancy_utilities')->where('tenancy_id', $tenancy->id),
-            ],
-            'amount' => 'required|numeric|min:0',
-            'billing_cycle' => ['required', Rule::in(['monthly', 'quarterly', 'annual'])],
-            'provider' => 'nullable|string|max:255',
-            'account_number' => 'nullable|string|max:100',
-            'meter_number' => 'nullable|string|max:100',
-            'status' => ['required', Rule::in(['active', 'suspended', 'disconnected'])],
-            'notes' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         try {
             $tenancyUtility = TenancyUtility::create([
@@ -108,19 +97,11 @@ class TenancyUtilityController extends Controller
      * Update a tenancy utility.
      * PUT /api/v1/landlord/tenancy-utilities/{tenancyUtility}
      */
-    public function update(Request $request, TenancyUtility $tenancyUtility): TenancyUtilityResource|JsonResponse
+    public function update(TenancyUtilityUpdateRequest $request, TenancyUtility $tenancyUtility): TenancyUtilityResource|JsonResponse
     {
         $this->authorize('update', $tenancyUtility);
 
-        $validated = $request->validate([
-            'amount' => 'sometimes|numeric|min:0',
-            'billing_cycle' => ['sometimes', Rule::in(['monthly', 'quarterly', 'annual'])],
-            'provider' => 'nullable|string|max:255',
-            'account_number' => 'nullable|string|max:100',
-            'meter_number' => 'nullable|string|max:100',
-            'status' => ['sometimes', Rule::in(['active', 'suspended', 'disconnected'])],
-            'notes' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         try {
             $tenancyUtility->update($validated);
@@ -157,7 +138,7 @@ class TenancyUtilityController extends Controller
         try {
             // Check for unpaid bills before deletion
             $unpaidBills = $tenancyUtility->bills()
-                ->whereIn('status', ['pending', 'partial', 'overdue'])
+                ->whereIn('status', [BillStatus::Pending->value, BillStatus::Partial->value, BillStatus::Overdue->value])
                 ->exists();
 
             if ($unpaidBills) {

@@ -7,6 +7,8 @@ use App\Contracts\PaymentServiceInterface;
 use App\Contracts\RentBillServiceInterface;
 use App\Contracts\UtilityServiceInterface;
 use App\Enums\BillStatus;
+use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Models\Payment;
 use App\Models\Tenancy;
 use App\Models\Tenant;
@@ -46,8 +48,8 @@ class PaymentService implements PaymentServiceInterface
         $monthlyRent = $tenancy->monthly_rent ?? 0;
 
         $totalPaid = $tenancy->payments()
-            ->whereIn('status', ['paid', 'partial'])
-            ->where('payment_type', 'rent')
+            ->whereIn('status', [PaymentStatus::Paid->value, PaymentStatus::Partial->value])
+            ->where('payment_type', PaymentType::Rent->value)
             ->sum('amount');
 
         return (float) max(0, $monthlyRent - $totalPaid);
@@ -77,17 +79,17 @@ class PaymentService implements PaymentServiceInterface
             }
 
             $monthlyRent = $activeTenancy->monthly_rent ?? 0;
-            $status = 'pending';
+            $status = PaymentStatus::Pending;
             $utilityBillId = $validated['utility_bill_id'] ?? null;
             $rentBillId = null;
             $rentBillError = null;
             $excessAmount = 0;
 
             // Calculate excess amount for rent payments (overpayment handling)
-            if ($validated['payment_type'] === 'rent' && $monthlyRent > 0) {
+            if ($validated['payment_type'] === PaymentType::Rent->value && $monthlyRent > 0) {
                 $currentTotalPaid = $activeTenancy->payments()
-                    ->whereIn('status', ['paid', 'partial'])
-                    ->where('payment_type', 'rent')
+                    ->whereIn('status', [PaymentStatus::Paid->value, PaymentStatus::Partial->value])
+                    ->where('payment_type', PaymentType::Rent->value)
                     ->when($existingPayment, fn ($q) => $q->where('id', '!=', $existingPayment->id))
                     ->sum('amount');
                 $remainingBalance = max(0, $monthlyRent - $currentTotalPaid);
@@ -97,7 +99,7 @@ class PaymentService implements PaymentServiceInterface
             }
 
             // 2. Business Logic for Rent vs Utility
-            if ($validated['payment_type'] === 'utility' && $utilityBillId) {
+            if ($validated['payment_type'] === PaymentType::Utility->value && $utilityBillId) {
                 $bill = UtilityBill::with('tenancyUtility.tenancy.unit.property')->find($utilityBillId);
                 if (! $bill) {
                     return ['error' => 'Utility bill not found.'];
@@ -118,7 +120,7 @@ class PaymentService implements PaymentServiceInterface
                 if (! in_array($status, [BillStatus::Paid, BillStatus::Partial, BillStatus::Overdue, BillStatus::Pending])) {
                     $status = BillStatus::Partial; // Safe fallback
                 }
-            } elseif ($validated['payment_type'] === 'rent') {
+            } elseif ($validated['payment_type'] === PaymentType::Rent->value) {
                 $rentBillService = $this->rentBillService ?? app(RentBillServiceInterface::class);
                 $billLinkResult = $rentBillService->linkPaymentToBill(
                     $activeTenancy->id,
@@ -148,7 +150,7 @@ class PaymentService implements PaymentServiceInterface
             $rentBillWarning = null;
 
             // Handle rent payments with rent bill processing
-            if ($validated['payment_type'] === 'rent' && $rentBillId) {
+            if ($validated['payment_type'] === PaymentType::Rent->value && $rentBillId) {
                 try {
                     $rentBillService = $this->rentBillService ?? app(RentBillServiceInterface::class);
                     $payment = $rentBillService->createPaymentWithRentBill(
@@ -212,7 +214,7 @@ class PaymentService implements PaymentServiceInterface
             $rentBillWarning = null;
             $utilityBill = null;
 
-            if ($data['payment_type'] === 'rent') {
+            if ($data['payment_type'] === PaymentType::Rent->value) {
                 $billLinkResult = $this->rentBillService->linkPaymentToBill(
                     $tenancy->id,
                     ! empty($data['rent_bill_id']) ? (int) $data['rent_bill_id'] : null,
@@ -222,7 +224,7 @@ class PaymentService implements PaymentServiceInterface
                 $rentBillWarning = $billLinkResult['error'];
             }
 
-            if ($data['payment_type'] === 'utility' && ! empty($data['utility_bill_id'])) {
+            if ($data['payment_type'] === PaymentType::Utility->value && ! empty($data['utility_bill_id'])) {
                 $utilityBill = UtilityBill::with('tenancyUtility.tenancy')->find($data['utility_bill_id']);
                 if (! $utilityBill || $utilityBill->tenancyUtility->tenancy_id !== $tenancy->id) {
                     throw new \InvalidArgumentException('Invalid utility bill or unauthorized.');
@@ -243,7 +245,7 @@ class PaymentService implements PaymentServiceInterface
                 'amount' => $data['amount'],
                 'payment_type' => $data['payment_type'],
                 'payment_method' => $data['payment_method'],
-                'status' => $data['status'] ?? $gatewayResponse['status'] ?? 'pending',
+                'status' => $data['status'] ?? $gatewayResponse['status'] ?? PaymentStatus::Pending->value,
                 'paid_at' => $data['paid_at'] ?? now(),
                 'reference_number' => $data['reference_number'] ?? null,
                 'notes' => $data['notes'] ?? null,
@@ -258,12 +260,12 @@ class PaymentService implements PaymentServiceInterface
             // Handle synchronous resolutions (e.g. ManualGateway or already resolved)
             if ($gatewayResponse['status'] === 'success' || in_array($paymentData['status'], ['paid', 'partial'])) {
 
-                if ($data['payment_type'] === 'utility' && $utilityBill) {
+                if ($data['payment_type'] === PaymentType::Utility->value && $utilityBill) {
                     $this->utilityService->processUtilityPayment($utilityBill, $data['amount']);
                     $utilityBill->refresh();
                     $paymentData['status'] = $utilityBill->status->value;
                     $payment = Payment::create($paymentData);
-                } elseif ($data['payment_type'] === 'rent' && $rentBillId) {
+                } elseif ($data['payment_type'] === PaymentType::Rent->value && $rentBillId) {
                     try {
                         $payment = $this->rentBillService->createPaymentWithRentBill(
                             $paymentData, $rentBillId, $data['amount']
@@ -278,7 +280,7 @@ class PaymentService implements PaymentServiceInterface
 
             } else {
                 // Pending STK push / async resolution. Webhook will process the side-effects later.
-                $paymentData['status'] = 'pending';
+                $paymentData['status'] = PaymentStatus::Pending->value;
                 $payment = Payment::create($paymentData);
             }
 

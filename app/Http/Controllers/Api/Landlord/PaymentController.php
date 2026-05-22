@@ -144,20 +144,14 @@ class PaymentController extends Controller
      * Update a payment.
      * PUT /api/v1/landlord/payments/{payment}
      */
-    public function update(Request $request, int $paymentId, PaymentUpdateRequest $requestUpdate)
+    public function update(PaymentUpdateRequest $request, int $paymentId)
     {
         $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($request) {
             $query->where('owner_id', $request->user()->id);
         })->with(['tenancy.unit.property'])->findOrFail($paymentId);
         $this->authorize('update', $payment);
 
-        $validated = $request->validate([
-            'amount' => 'sometimes|numeric|min:0',
-            'payment_type' => ['sometimes', Rule::in(['rent', 'utility'])],
-            'payment_method' => 'sometimes|string|max:255',
-            'status' => ['sometimes', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
-            'paid_at' => 'sometimes|date',
-        ]);
+        $validated = $request->validated();
 
         $payment->update($validated);
 

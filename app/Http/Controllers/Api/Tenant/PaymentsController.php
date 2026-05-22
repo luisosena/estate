@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\Tenant;
 
+use App\Contracts\PaymentServiceInterface;
 use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Tenant\PaymentStoreRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
-use App\Services\PaymentService;
 use App\Services\ReceiptService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Log;
 class PaymentsController extends Controller
 {
     use HandlesReceipts;
+
+    public function __construct(
+        protected PaymentServiceInterface $paymentService
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -60,13 +65,13 @@ class PaymentsController extends Controller
 
         return response()->json([
             'data' => [
+                'payments' => PaymentResource::collection($payments),
                 'tenant' => [
                     'id' => $tenant->id,
                     'full_name' => $tenant->full_name,
                     'phone' => $tenant->phone,
                     'email' => $tenant->email,
                 ],
-                'payments' => PaymentResource::collection($payments),
                 'pending_amount' => $pendingAmount,
             ],
             'meta' => [
@@ -82,22 +87,14 @@ class PaymentsController extends Controller
     /**
      * Store a new payment.
      */
-    public function store(Request $request): JsonResponse
+    public function store(PaymentStoreRequest $request): JsonResponse
     {
         $this->authorize('create', Payment::class);
 
         $user = $request->user();
         $tenant = $user->tenant;
 
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:1|max:100000000',
-            'payment_type' => 'required|in:rent,utility',
-            'payment_method' => 'required|in:mobile_money,bank_transfer',
-            'utility_bill_id' => 'required_if:payment_type,utility|nullable|exists:utility_bills,id',
-            'rent_bill_id' => 'nullable|exists:rent_bills,id',
-            'reference_number' => 'nullable|string|max:100',
-            'notes' => 'nullable|string|max:500',
-        ]);
+        $validated = $request->validated();
 
         $activeTenancy = $tenant->tenancies()
             ->where('status', 'active')
@@ -110,7 +107,7 @@ class PaymentsController extends Controller
         }
 
         try {
-            $result = app(PaymentService::class)->processPayment($validated, $activeTenancy);
+            $result = $this->paymentService->processPayment($validated, $activeTenancy);
 
             if (isset($result['error'])) {
                 return response()->json(['message' => $result['error']], 422);
