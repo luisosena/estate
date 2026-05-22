@@ -1,10 +1,10 @@
 import { NavigationContainer } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
 
 import { SplashScreen } from './src/components/SplashScreen';
 import { AuthProvider } from './src/context/AuthContext';
