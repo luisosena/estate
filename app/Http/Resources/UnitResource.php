@@ -21,6 +21,13 @@ class UnitResource extends JsonResource
             'unit_name' => $this->unit_name,
             'status' => $this->status,
             'created_at' => $this->created_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
+            'property_name' => $this->when($this->relationLoaded('property'), function () {
+                return $this->property?->name;
+            }),
+            'property_address' => $this->when($this->relationLoaded('property'), function () {
+                return $this->property?->address;
+            }),
 
             // Relationships
             'property' => PropertyResource::make($this->whenLoaded('property')),

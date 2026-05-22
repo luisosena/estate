@@ -22,6 +22,12 @@ class TenancyResource extends JsonResource
             'tenancy_agreement_path' => $this->tenancy_agreement_path,
             'deposit_return_status' => $this->deposit_return_status,
             'created_at' => $this->created_at?->toDateTimeString(),
+            'tenant_name' => $this->when($this->relationLoaded('tenant'), function () {
+                return $this->tenant?->full_name;
+            }),
+            'tenant_email' => $this->when($this->relationLoaded('tenant'), function () {
+                return $this->tenant?->email;
+            }),
 
             // Relationships
             'unit' => UnitResource::make($this->whenLoaded('unit')),

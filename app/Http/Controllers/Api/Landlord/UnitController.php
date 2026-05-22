@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UnitResource;
 use App\Models\Property;
 use App\Models\Unit;
 use Illuminate\Http\Request;
@@ -49,27 +50,7 @@ class UnitController extends Controller
             ->orderBy('unit_code')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $formattedUnits = $units->getCollection()->map(function ($unit) {
-            return [
-                'id' => $unit->id,
-                'unit_code' => $unit->unit_code,
-                'unit_name' => $unit->unit_name,
-                'status' => $unit->status,
-                'property_id' => $unit->property_id,
-                'property_name' => $unit->property->name,
-                'created_at' => $unit->created_at,
-                'updated_at' => $unit->updated_at,
-            ];
-        });
-
-        return response()->json([
-            'data' => $formattedUnits,
-            'meta' => [
-                'current_page' => $units->currentPage(),
-                'per_page' => $units->perPage(),
-                'total' => $units->total(),
-                'total_pages' => $units->lastPage(),
-            ],
+        return UnitResource::collection($units)->additional([
             'stats' => [
                 'total_units' => $totalUnits,
                 'available_units' => $availableUnits,
@@ -94,32 +75,7 @@ class UnitController extends Controller
 
         $this->authorize('view', $unit);
 
-        return response()->json([
-            'data' => [
-                'id' => $unit->id,
-                'unit_code' => $unit->unit_code,
-                'unit_name' => $unit->unit_name,
-                'status' => $unit->status,
-                'property_id' => $unit->property_id,
-                'property_name' => $unit->property->name,
-                'property_address' => $unit->property->address,
-                'created_at' => $unit->created_at,
-                'updated_at' => $unit->updated_at,
-                'tenancies' => $unit->tenancies->map(function ($tenancy) {
-                    return [
-                        'id' => $tenancy->id,
-                        'status' => $tenancy->status,
-                        'move_in_date' => $tenancy->move_in_date,
-                        'move_out_date' => $tenancy->move_out_date,
-                        'monthly_rent' => $tenancy->monthly_rent,
-                        'security_deposit' => $tenancy->security_deposit,
-                        'tenant_id' => $tenancy->tenant->id,
-                        'tenant_name' => $tenancy->tenant->full_name,
-                        'tenant_email' => $tenancy->tenant->email,
-                    ];
-                }),
-            ],
-        ]);
+        return new UnitResource($unit);
     }
 
     /**
@@ -153,15 +109,7 @@ class UnitController extends Controller
 
         return response()->json([
             'message' => 'Unit created successfully',
-            'data' => [
-                'id' => $unit->id,
-                'unit_code' => $unit->unit_code,
-                'unit_name' => $unit->unit_name,
-                'status' => $unit->status,
-                'property_id' => $unit->property_id,
-                'created_at' => $unit->created_at,
-                'updated_at' => $unit->updated_at,
-            ],
+            'data' => new UnitResource($unit),
         ], 201);
     }
 
@@ -186,14 +134,7 @@ class UnitController extends Controller
 
         return response()->json([
             'message' => 'Unit updated successfully',
-            'data' => [
-                'id' => $unit->id,
-                'unit_code' => $unit->unit_code,
-                'unit_name' => $unit->unit_name,
-                'status' => $unit->status,
-                'created_at' => $unit->created_at,
-                'updated_at' => $unit->updated_at,
-            ],
+            'data' => new UnitResource($unit),
         ]);
     }
 
