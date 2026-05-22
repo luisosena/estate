@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTenantWithTenancyRequest;
+use App\Http\Resources\TenancyResource;
+use App\Http\Resources\TenantResource;
 use App\Models\Property;
 use App\Models\Tenancy;
 use App\Models\Tenant;
@@ -20,7 +22,7 @@ class TenantController extends Controller
     /**
      * Get all tenants for the landlord with stats.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Tenant::class);
 
@@ -50,18 +52,13 @@ class TenantController extends Controller
                     if (! $tenancy->tenant) {
                         continue;
                     }
-                    $tenants[] = [
-                        'id' => $tenancy->tenant->id,
-                        'tenant_code' => $tenancy->tenant->tenant_code,
-                        'full_name' => $tenancy->tenant->full_name,
-                        'phone' => $tenancy->tenant->phone,
-                        'email' => $tenancy->tenant->email,
-                        'tenancy_id' => $tenancy->id,
-                        'tenancy_status' => $tenancy->status,
-                        'unit_name' => $unit->unit_name,
-                        'unit_code' => $unit->unit_code,
-                        'property_name' => $property->name,
-                    ];
+                    $tenant = $tenancy->tenant;
+                    $tenant->tenancy_id = $tenancy->id;
+                    $tenant->tenancy_status = $tenancy->status;
+                    $tenant->unit_name = $unit->unit_name;
+                    $tenant->unit_code = $unit->unit_code;
+                    $tenant->property_name = $property->name;
+                    $tenants[] = $tenant;
                 }
             }
         }
@@ -72,27 +69,28 @@ class TenantController extends Controller
         $occupiedUnits = $propertiesData->sum(fn ($p) => $p->units()->whereHas('tenancies', fn ($q) => $q->where('tenancies.status', 'active'))->count());
 
         $offset = ($page - 1) * $perPage;
+        $paginatedTenants = array_slice($tenants, $offset, $perPage);
 
-        return response()->json([
-            'data' => array_slice($tenants, $offset, $perPage),
-            'meta' => [
-                'current_page' => (int) $page,
-                'total' => $totalTenants,
-                'total_pages' => ceil($totalTenants / $perPage),
-            ],
-            'stats' => [
-                'total_tenants' => $totalTenants,
-                'total_units' => $totalUnits,
-                'occupied_units' => $occupiedUnits,
-                'occupancy_rate' => $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0,
-            ],
-        ]);
+        return TenantResource::collection($paginatedTenants)
+            ->additional([
+                'meta' => [
+                    'current_page' => (int) $page,
+                    'total' => $totalTenants,
+                    'total_pages' => (int) ceil($totalTenants / $perPage),
+                ],
+                'stats' => [
+                    'total_tenants' => $totalTenants,
+                    'total_units' => $totalUnits,
+                    'occupied_units' => $occupiedUnits,
+                    'occupancy_rate' => $totalUnits > 0 ? round(($occupiedUnits / $totalUnits) * 100, 1) : 0,
+                ],
+            ]);
     }
 
     /**
      * Create a new tenant with optional tenancy.
      */
-    public function store(StoreTenantWithTenancyRequest $request): JsonResponse
+    public function store(StoreTenantWithTenancyRequest $request)
     {
         $this->authorize('create', Tenant::class);
 
@@ -103,8 +101,8 @@ class TenantController extends Controller
         return response()->json([
             'message' => 'Tenant created successfully',
             'data' => [
-                'tenant' => $result['tenant'],
-                'tenancy' => $result['tenancy'],
+                'tenant' => new TenantResource($result['tenant']),
+                'tenancy' => $result['tenancy'] ? new TenancyResource($result['tenancy']) : null,
                 'user' => [
                     'username' => $result['credentials']['username'],
                 ],
@@ -128,7 +126,7 @@ class TenantController extends Controller
     /**
      * Update basic tenant details.
      */
-    public function update(Request $request, string $identifier): JsonResponse
+    public function update(Request $request, string $identifier)
     {
         $tenant = $this->findTenantByIdentifier($identifier);
         $this->authorize('update', $tenant);
@@ -146,7 +144,7 @@ class TenantController extends Controller
 
         return response()->json([
             'message' => 'Tenant updated successfully',
-            'data' => $tenant,
+            'data' => new TenantResource($tenant),
         ]);
     }
 
