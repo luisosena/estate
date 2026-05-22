@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\RentBillServiceInterface;
 use App\Models\Payment;
 use App\Models\RentBill;
 use App\Models\Tenancy;
@@ -17,7 +18,7 @@ class DashboardExportService
     protected const EXPORT_LIMIT = 50;
 
     public function __construct(
-        protected RentBillService $rentBillService
+        protected RentBillServiceInterface $rentBillService
     ) {}
 
     public function exportLandlordDashboardCsv(User $landlord): Response

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\RentBillServiceInterface;
 use App\Models\Payment;
 use App\Models\RentBill;
 use App\Models\User;
@@ -10,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
-class RentBillService
+class RentBillService implements RentBillServiceInterface
 {
     /**
      * Process a rent payment and update the rent bill status.

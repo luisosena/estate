@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\UtilityServiceInterface;
 use App\Models\Tenancy;
 use App\Models\TenancyUtility;
 use App\Models\Tenant;
@@ -9,7 +10,7 @@ use App\Models\UtilityBill;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-class UtilityService
+class UtilityService implements UtilityServiceInterface
 {
     /**
      * Assign a utility type to a tenancy.

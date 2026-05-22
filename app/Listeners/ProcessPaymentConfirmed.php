@@ -2,12 +2,12 @@
 
 namespace App\Listeners;
 
+use App\Contracts\RentBillServiceInterface;
+use App\Contracts\UtilityServiceInterface;
 use App\Events\PaymentConfirmed;
 use App\Models\RentBill;
 use App\Models\UtilityBill;
 use App\Services\NotificationService;
-use App\Services\RentBillService;
-use App\Services\UtilityService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -27,8 +27,8 @@ class ProcessPaymentConfirmed implements ShouldQueue
     use InteractsWithQueue;
 
     public function __construct(
-        protected RentBillService $rentBillService,
-        protected UtilityService $utilityService,
+        protected RentBillServiceInterface $rentBillService,
+        protected UtilityServiceInterface $utilityService,
         protected NotificationService $notificationService
     ) {}
 

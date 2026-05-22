@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\Landlord;
 
+use App\Contracts\RentBillServiceInterface;
 use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\ReceiptService;
-use App\Services\RentBillService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -15,82 +15,9 @@ class PaymentController extends Controller
 {
     use HandlesReceipts;
 
-    protected RentBillService $rentBillService;
-
-    public function __construct(RentBillService $rentBillService)
-    {
-        $this->rentBillService = $rentBillService;
-    }
-
-    /**
-     * Get all payments for the landlord.
-     * GET /api/v1/landlord/payments
-     */
-    public function index(Request $request)
-    {
-        $this->authorize('viewAny', Payment::class);
-
-        $landlord = $request->user();
-        $page = $request->get('page', 1);
-        $perPage = $request->get('per_page', 15);
-
-        $query = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
-            $query->where('owner_id', $landlord->id);
-        })
-            ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name', 'rentBill:id,billing_month,status'])
-            ->orderBy('paid_at', 'desc');
-
-        $totalItems = $query->count();
-        $payments = $query->skip(($page - 1) * $perPage)
-            ->take($perPage)
-            ->get()
-            ->map(function ($payment) {
-                return [
-                    'id' => $payment->id,
-                    'amount' => $payment->amount,
-                    'payment_type' => $payment->payment_type,
-                    'payment_method' => $payment->payment_method,
-                    'status' => $payment->status,
-                    'paid_at' => $payment->paid_at,
-                    'due_date' => $payment->due_date,
-                    'created_at' => $payment->created_at,
-                    'rent_bill_id' => $payment->rent_bill_id,
-                    'tenant' => $payment->tenant ? [
-                        'id' => $payment->tenant->id,
-                        'full_name' => $payment->tenant->full_name,
-                        'tenant_code' => $payment->tenant->tenant_code,
-                    ] : null,
-                    'tenancy' => $payment->tenancy ? [
-                        'id' => $payment->tenancy->id,
-                        'unit' => $payment->tenancy->unit ? [
-                            'id' => $payment->tenancy->unit->id,
-                            'unit_code' => $payment->tenancy->unit->unit_code,
-                            'property' => $payment->tenancy->unit->property ? [
-                                'id' => $payment->tenancy->unit->property->id,
-                                'name' => $payment->tenancy->unit->property->name,
-                            ] : null,
-                        ] : null,
-                    ] : null,
-                    'rent_bill' => $payment->rentBill ? [
-                        'id' => $payment->rentBill->id,
-                        'billing_month' => $payment->rentBill->billing_month->format('Y-m'),
-                        'status' => $payment->rentBill->status,
-                    ] : null,
-                ];
-            });
-
-        $totalPages = ceil($totalItems / $perPage);
-
-        return response()->json([
-            'data' => $payments,
-            'meta' => [
-                'current_page' => (int) $page,
-                'per_page' => (int) $perPage,
-                'total' => $totalItems,
-                'total_pages' => $totalPages,
-            ],
-        ]);
-    }
+    public function __construct(
+        protected RentBillServiceInterface $rentBillService
+    ) {}
 
     /**
      * Get a single payment.

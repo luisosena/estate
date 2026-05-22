@@ -2,11 +2,17 @@
 
 namespace App\Providers;
 
+use App\Contracts\PaymentServiceInterface;
+use App\Contracts\RentBillServiceInterface;
+use App\Contracts\UtilityServiceInterface;
 use App\Events\PaymentConfirmed;
 use App\Listeners\NotifyAdminsOfNewLandlord;
 use App\Listeners\ProcessPaymentConfirmed;
 use App\Policies\NotificationPolicy;
 use App\Services\DocSyncService;
+use App\Services\PaymentService;
+use App\Services\RentBillService;
+use App\Services\UtilityService;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Registered as RegisteredEvent;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DocSyncService::class, function ($app) {
             return new DocSyncService;
         });
+
+        $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
+        $this->app->bind(RentBillServiceInterface::class, RentBillService::class);
+        $this->app->bind(UtilityServiceInterface::class, UtilityService::class);
     }
 
     /**

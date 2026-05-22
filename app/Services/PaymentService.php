@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Contracts\PaymentGatewayInterface;
+use App\Contracts\PaymentServiceInterface;
+use App\Contracts\RentBillServiceInterface;
+use App\Contracts\UtilityServiceInterface;
 use App\Models\Payment;
 use App\Models\Tenancy;
 use App\Models\Tenant;
@@ -10,22 +13,12 @@ use App\Models\UtilityBill;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * SCAFFOLD — PAYMENT SYSTEM (Phase 3)
- *
- * This file is part of the payment gateway scaffold. It has been ported from
- * the `architectural-refactoring` branch but is NOT yet wired into the
- * application. No route, controller, or service provider references this file.
- *
- * To activate: follow docs/plans/porting-plan.md Phase 3 wiring steps.
- * To remove:   follow the teardown inventory in handoff_payment_scaffold.md.
- */
-class PaymentService
+class PaymentService implements PaymentServiceInterface
 {
     public function __construct(
         protected ?PaymentGatewayInterface $gateway = null,
-        protected ?RentBillService $rentBillService = null,
-        protected ?UtilityService $utilityService = null
+        protected ?RentBillServiceInterface $rentBillService = null,
+        protected ?UtilityServiceInterface $utilityService = null
     ) {}
 
     public function getTenantPayments(Tenant $tenant): Collection
@@ -115,7 +108,7 @@ class PaymentService
                     return ['error' => 'This utility bill has already been '.$bill->status.'.'];
                 }
 
-                $utilityService = $this->utilityService ?? app(UtilityService::class);
+                $utilityService = $this->utilityService ?? app(UtilityServiceInterface::class);
                 $utilityService->processUtilityPayment($bill, $validated['amount']);
                 $bill->refresh();
                 $status = $bill->status;
@@ -125,7 +118,7 @@ class PaymentService
                     $status = 'partial'; // Safe fallback
                 }
             } elseif ($validated['payment_type'] === 'rent') {
-                $rentBillService = $this->rentBillService ?? app(RentBillService::class);
+                $rentBillService = $this->rentBillService ?? app(RentBillServiceInterface::class);
                 $billLinkResult = $rentBillService->linkPaymentToBill(
                     $activeTenancy->id,
                     ! empty($validated['rent_bill_id']) ? (int) $validated['rent_bill_id'] : null,
@@ -156,7 +149,7 @@ class PaymentService
             // Handle rent payments with rent bill processing
             if ($validated['payment_type'] === 'rent' && $rentBillId) {
                 try {
-                    $rentBillService = $this->rentBillService ?? app(RentBillService::class);
+                    $rentBillService = $this->rentBillService ?? app(RentBillServiceInterface::class);
                     $payment = $rentBillService->createPaymentWithRentBill(
                         $paymentData,
                         $rentBillId,
