@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Alert, StyleSheet } from 'react-native';
 import { Text, TextInput, HelperText } from 'react-native-paper';
 
-import { colors } from '../../constants/colors';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
+import { colors } from '../../constants/colors';
 
 interface Props {
   onUpdatePassword: (data: any) => Promise<{ message: string }>;

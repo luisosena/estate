@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { 
   TouchableOpacity, 
@@ -8,7 +9,7 @@ import {
   ActivityIndicator,
   TouchableOpacityProps
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+
 import { colors } from '../../constants/colors';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
