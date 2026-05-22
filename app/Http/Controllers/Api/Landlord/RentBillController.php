@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers\Api\Landlord;
 
+use App\Contracts\RentBillServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RentBillResource;
 use App\Models\RentBill;
-use App\Services\RentBillService;
 use Illuminate\Http\Request;
 
 class RentBillController extends Controller
 {
-    protected RentBillService $rentBillService;
-
-    public function __construct(RentBillService $rentBillService)
-    {
-        $this->rentBillService = $rentBillService;
-    }
+    public function __construct(
+        protected RentBillServiceInterface $rentBillService
+    ) {}
 
     /**
      * Get all rent bills for the landlord.
@@ -25,7 +23,6 @@ class RentBillController extends Controller
         $this->authorize('viewAny', RentBill::class);
 
         $landlord = $request->user();
-        $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
         $status = $request->get('status');
         $propertyId = $request->get('property_id');
@@ -34,7 +31,7 @@ class RentBillController extends Controller
         $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
-            ->with(['tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name']);
+            ->with(['tenancy.tenant:id,full_name,tenant_code,phone,email', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name']);
 
         if ($status) {
             $query->where('status', $status);
@@ -52,63 +49,9 @@ class RentBillController extends Controller
             });
         }
 
-        $totalItems = $query->count();
-        $rentBills = $query->orderBy('billing_month', 'desc')
-            ->skip(($page - 1) * $perPage)
-            ->take($perPage)
-            ->get()
-            ->map(fn (RentBill $bill) => $this->transformRentBill($bill));
+        $rentBills = $query->orderBy('billing_month', 'desc')->paginate($perPage);
 
-        $totalPages = ceil($totalItems / $perPage);
-
-        return response()->json([
-            'data' => $rentBills,
-            'meta' => [
-                'current_page' => (int) $page,
-                'per_page' => (int) $perPage,
-                'total' => $totalItems,
-                'total_pages' => $totalPages,
-            ],
-        ]);
-    }
-
-    /**
-     * Transform a rent bill model into a standardized array.
-     */
-    private function transformRentBill(RentBill $bill): array
-    {
-        return [
-            'id' => $bill->id,
-            'billing_month' => $bill->billing_month?->format('Y-m'),
-            'amount_due' => (float) $bill->amount_due,
-            'amount_paid' => (float) $bill->amount_paid,
-            'outstanding_amount' => (float) $bill->outstanding_amount,
-            'due_date' => $bill->due_date?->format('Y-m-d'),
-            'status' => $bill->status,
-            'notes' => $bill->notes,
-            'tenant' => $bill->tenancy?->tenant ? [
-                'id' => $bill->tenancy->tenant->id,
-                'full_name' => $bill->tenancy->tenant->full_name,
-                'tenant_code' => $bill->tenancy->tenant->tenant_code,
-                'phone' => $bill->tenancy->tenant->phone,
-                'email' => $bill->tenancy->tenant->email,
-            ] : null,
-            'unit' => $bill->tenancy?->unit ? [
-                'id' => $bill->tenancy->unit->id,
-                'unit_code' => $bill->tenancy->unit->unit_code,
-            ] : null,
-            'property' => $bill->tenancy?->unit?->property ? [
-                'id' => $bill->tenancy->unit->property->id,
-                'name' => $bill->tenancy->unit->property->name,
-            ] : null,
-            'payments' => $bill->relationLoaded('payments') ? $bill->payments->map(fn ($p) => [
-                'id' => $p->id,
-                'amount' => (float) $p->amount,
-                'paid_at' => $p->paid_at ? $p->paid_at->toISOString() : null,
-                'status' => $p->status,
-            ]) : [],
-            'created_at' => $bill->created_at,
-        ];
+        return RentBillResource::collection($rentBills);
     }
 
     /**
@@ -128,9 +71,7 @@ class RentBillController extends Controller
 
         $this->authorize('view', $rentBill);
 
-        return response()->json([
-            'data' => $this->transformRentBill($rentBill),
-        ]);
+        return new RentBillResource($rentBill);
     }
 
     /**
@@ -142,33 +83,18 @@ class RentBillController extends Controller
         $this->authorize('viewAny', RentBill::class);
 
         $landlord = $request->user();
-        $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
 
         $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
             ->overdue()
-            ->with(['tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name'])
+            ->with(['tenancy.tenant:id,full_name,tenant_code,phone,email', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name'])
             ->orderBy('due_date', 'asc');
 
-        $totalItems = $query->count();
-        $rentBills = $query->skip(($page - 1) * $perPage)
-            ->take($perPage)
-            ->get()
-            ->map(fn (RentBill $bill) => $this->transformRentBill($bill));
+        $rentBills = $query->paginate($perPage);
 
-        $totalPages = ceil($totalItems / $perPage);
-
-        return response()->json([
-            'data' => $rentBills,
-            'meta' => [
-                'current_page' => (int) $page,
-                'per_page' => (int) $perPage,
-                'total' => $totalItems,
-                'total_pages' => $totalPages,
-            ],
-        ]);
+        return RentBillResource::collection($rentBills);
     }
 
     /**
@@ -180,33 +106,18 @@ class RentBillController extends Controller
         $this->authorize('viewAny', RentBill::class);
 
         $landlord = $request->user();
-        $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
 
         $query = RentBill::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
             $query->where('owner_id', $landlord->id);
         })
             ->pending()
-            ->with(['tenancy.tenant:id,full_name,tenant_code', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name'])
+            ->with(['tenancy.tenant:id,full_name,tenant_code,phone,email', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name'])
             ->orderBy('due_date', 'asc');
 
-        $totalItems = $query->count();
-        $rentBills = $query->skip(($page - 1) * $perPage)
-            ->take($perPage)
-            ->get()
-            ->map(fn (RentBill $bill) => $this->transformRentBill($bill));
+        $rentBills = $query->paginate($perPage);
 
-        $totalPages = ceil($totalItems / $perPage);
-
-        return response()->json([
-            'data' => $rentBills,
-            'meta' => [
-                'current_page' => (int) $page,
-                'per_page' => (int) $perPage,
-                'total' => $totalItems,
-                'total_pages' => $totalPages,
-            ],
-        ]);
+        return RentBillResource::collection($rentBills);
     }
 
     /**
@@ -233,9 +144,7 @@ class RentBillController extends Controller
 
         $this->rentBillService->waiveRentBill($rentBill, $validated['notes'] ?? null);
 
-        return response()->json([
-            'message' => 'Rent bill waived successfully',
-            'data' => $this->transformRentBill($rentBill),
-        ]);
+        return (new RentBillResource($rentBill))
+            ->additional(['message' => 'Rent bill waived successfully']);
     }
 }

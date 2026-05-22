@@ -154,9 +154,8 @@ class RentBillService implements RentBillServiceInterface
      * Get pending rent bills for a tenancy.
      *
      * @param  int  $tenancyId  The tenancy ID
-     * @return Collection
      */
-    public function getPendingBills(int $tenancyId)
+    public function getPendingBills(int $tenancyId): Collection
     {
         return RentBill::where('tenancy_id', $tenancyId)
             ->whereIn('status', ['pending', 'partial', 'overdue'])

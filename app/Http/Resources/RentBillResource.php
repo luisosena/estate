@@ -28,6 +28,33 @@ class RentBillResource extends JsonResource
             // Relationships
             'tenancy' => TenancyResource::make($this->whenLoaded('tenancy')),
             'payments' => PaymentResource::collection($this->whenLoaded('payments')),
+            'tenant' => $this->when($this->relationLoaded('tenancy') && $this->tenancy?->relationLoaded('tenant'), function () {
+                $tenant = $this->tenancy->tenant;
+
+                return $tenant ? [
+                    'id' => $tenant->id,
+                    'full_name' => $tenant->full_name,
+                    'tenant_code' => $tenant->tenant_code,
+                    'phone' => $tenant->phone,
+                    'email' => $tenant->email,
+                ] : null;
+            }),
+            'unit' => $this->when($this->relationLoaded('tenancy') && $this->tenancy?->relationLoaded('unit'), function () {
+                $unit = $this->tenancy->unit;
+
+                return $unit ? [
+                    'id' => $unit->id,
+                    'unit_code' => $unit->unit_code,
+                ] : null;
+            }),
+            'property' => $this->when($this->relationLoaded('tenancy') && $this->tenancy?->relationLoaded('unit') && $this->tenancy->unit?->relationLoaded('property'), function () {
+                $property = $this->tenancy->unit->property;
+
+                return $property ? [
+                    'id' => $property->id,
+                    'name' => $property->name,
+                ] : null;
+            }),
         ];
     }
 }
