@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Landlord;
 use App\Contracts\RentBillServiceInterface;
 use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Landlord\PaymentStoreRequest;
+use App\Http\Requests\Api\Landlord\PaymentUpdateRequest;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\ReceiptService;
@@ -52,21 +54,13 @@ class PaymentController extends Controller
      * Create a new payment record.
      * POST /api/v1/landlord/payments
      */
-    public function store(Request $request)
+    public function store(PaymentStoreRequest $request)
     {
         $this->authorize('create', Payment::class);
 
         $landlord = $request->user();
 
-        $validated = $request->validate([
-            'tenant_id' => 'required|exists:tenants,id',
-            'amount' => 'required|numeric|min:0',
-            'payment_type' => ['required', Rule::in(['rent', 'utility'])],
-            'payment_method' => 'required|string|max:255',
-            'status' => ['required', Rule::in(['paid', 'partial', 'overdue', 'pending'])],
-            'paid_at' => 'required|date',
-            'rent_bill_id' => 'nullable|exists:rent_bills,id',
-        ]);
+        $validated = $request->validated();
 
         // Verify tenant belongs to landlord's property
         $tenant = Tenant::findOrFail($validated['tenant_id']);
@@ -164,7 +158,7 @@ class PaymentController extends Controller
      * Update a payment.
      * PUT /api/v1/landlord/payments/{payment}
      */
-    public function update(Request $request, int $paymentId)
+    public function update(Request $request, int $paymentId, PaymentUpdateRequest $requestUpdate)
     {
         $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($request) {
             $query->where('owner_id', $request->user()->id);

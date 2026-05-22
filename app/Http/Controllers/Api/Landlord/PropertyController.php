@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Landlord\PropertyStoreRequest;
+use App\Http\Requests\Api\Landlord\PropertyStoreRequest;
+use App\Http\Requests\Api\Landlord\PropertyUpdateRequest;
+use App\Http\Requests\Api\Landlord\PropertyUpdateRequest;
 use App\Models\Property;
 use Illuminate\Http\Request;
 
@@ -123,18 +127,13 @@ class PropertyController extends Controller
      * Create a new property.
      * POST /api/v1/landlord/properties
      */
-    public function store(Request $request)
+    public function store(PropertyStoreRequest $request)
     {
         $this->authorize('create', Property::class);
 
         $landlord = $request->user();
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:500',
-            'property_type' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $property = Property::create([
             'name' => $validated['name'],
@@ -163,17 +162,12 @@ class PropertyController extends Controller
      * Update a property.
      * PUT /api/v1/landlord/properties/{property}
      */
-    public function update(Request $request, int $propertyId)
+    public function update(Request $request, int $propertyId, PropertyUpdateRequest $requestUpdate)
     {
         $property = Property::where('owner_id', $request->user()->id)->findOrFail($propertyId);
         $this->authorize('update', $property);
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'address' => 'sometimes|string|max:500',
-            'property_type' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $requestUpdate->validated();
 
         $property->update($validated);
 

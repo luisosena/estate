@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Models\SecurityEvent;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -35,12 +36,9 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $validated = $request->validate([
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
-        ]);
+        $validated = $request->validated();
 
         /** @var User|null $user */
         $user = User::query()->where('username', $validated['username'])->first();

@@ -4,15 +4,13 @@ namespace App\Http\Controllers\Api\Tenant;
 
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Tenant\TenantProfileUpdateRequest;
 use App\Http\Requests\Api\UserProfileUpdateRequest;
 use App\Models\SecurityEvent;
 use Illuminate\Http\JsonResponse;
 
 class ProfileController extends Controller
 {
-    /**
-     * GET /api/tenant/profile - Get current tenant profile
-     */
     public function show(): JsonResponse
     {
         $user = request()->user();
@@ -35,10 +33,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * PUT /api/tenant/profile - Update tenant profile
-     */
-    public function update(UserProfileUpdateRequest $request): JsonResponse
+    public function update(UserProfileUpdateRequest $request, TenantProfileUpdateRequest $tenantProfileRequest): JsonResponse
     {
         $user = $request->user();
 
@@ -49,14 +44,7 @@ class ProfileController extends Controller
         $user->forceFill($request->validated())->save();
 
         if ($user->tenant) {
-            $tenantValidated = $request->validate([
-                'full_name' => ['sometimes', 'string', 'max:255'],
-                'phone' => ['sometimes', 'string', 'max:20'],
-                'email' => ['sometimes', 'email'],
-                'emergency_contact_name' => ['sometimes', 'string', 'max:255'],
-                'emergency_contact_phone' => ['sometimes', 'string', 'max:20'],
-                'emergency_contact_relation' => ['sometimes', 'string', 'max:100'],
-            ]);
+            $tenantValidated = $tenantProfileRequest->validated();
 
             $user->tenant->update($tenantValidated);
             $user->load('tenant');
