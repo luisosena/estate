@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\UtilityBill;
+use App\Services\ReceiptService;
 use App\Models\UtilityType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -223,6 +224,7 @@ test('landlord receipt returns 400 for unpaid payment', function () {
 });
 
 test('landlord receipt returns 500 when generation fails', function () {
+
     $payment = Payment::create([
         'tenant_id' => $this->tenant->id,
         'tenancy_id' => $this->tenancy->id,
@@ -233,9 +235,13 @@ test('landlord receipt returns 500 when generation fails', function () {
         'paid_at' => now(),
     ]);
 
-    $this->mock(ReceiptService::class, function ($mock) {
-        $mock->shouldReceive('stream')->andThrow(new RuntimeException('PDF engine failure'));
-    });
+    $failingReceipt = new class extends ReceiptService {
+        public function stream(Payment $payment): \Illuminate\Http\Response
+        {
+            throw new RuntimeException('PDF engine failure');
+        }
+    };
+    $this->app->instance(ReceiptService::class, $failingReceipt);
 
     $this->get("/api/v1/landlord/payments/{$payment->id}/receipt")
         ->assertStatus(500);
