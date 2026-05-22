@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Api\Landlord;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Landlord\PropertyStoreRequest;
-use App\Http\Requests\Api\Landlord\PropertyStoreRequest;
 use App\Http\Requests\Api\Landlord\PropertyUpdateRequest;
-use App\Http\Requests\Api\Landlord\PropertyUpdateRequest;
+use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use Illuminate\Http\Request;
 
@@ -24,7 +23,6 @@ class PropertyController extends Controller
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 15);
 
-        // Calculate stats using efficient COUNT queries (not loading all records)
         $totalProperties = Property::where('owner_id', $landlord->id)->count();
         $totalUnits = Property::where('owner_id', $landlord->id)->sum('total_units');
         $totalOccupiedUnits = Property::where('owner_id', $landlord->id)
@@ -38,7 +36,6 @@ class PropertyController extends Controller
             ? round(($totalOccupiedUnits / $totalUnits) * 100, 1)
             : 0;
 
-        // Use database-level pagination with proper eager loading
         $properties = Property::where('owner_id', $landlord->id)
             ->withCount(['units'])
             ->with(['tenancies' => function ($query) {
@@ -47,44 +44,16 @@ class PropertyController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        // Format properties
-        $formattedProperties = $properties->getCollection()->map(function ($property) {
-            return [
-                'id' => $property->id,
-                'name' => $property->name,
-                'address' => $property->address,
-                'property_type' => $property->property_type,
-                'description' => $property->description,
-                'total_units' => $property->total_units,
-                'units_count' => $property->units_count,
-                'active_tenants_count' => $property->tenancies->count(),
-                'occupied_units' => $property->tenancies->count(),
-                'vacant_units' => $property->units_count > 0
-                    ? $property->units_count - $property->tenancies->count()
-                    : 0,
-                'occupancy_rate' => $property->units_count > 0
-                    ? round(($property->tenancies->count() / $property->units_count) * 100, 1)
-                    : 0,
-                'created_at' => $property->created_at,
-            ];
-        });
-
-        return response()->json([
-            'data' => $formattedProperties,
-            'meta' => [
-                'current_page' => $properties->currentPage(),
-                'per_page' => $properties->perPage(),
-                'total' => $properties->total(),
-                'total_pages' => $properties->lastPage(),
-            ],
-            'stats' => [
-                'total_properties' => $totalProperties,
-                'total_units' => $totalUnits,
-                'total_occupied_units' => $totalOccupiedUnits,
-                'total_available_units' => $totalAvailableUnits,
-                'overall_occupancy_rate' => $overallOccupancyRate,
-            ],
-        ]);
+        return PropertyResource::collection($properties)
+            ->additional([
+                'stats' => [
+                    'total_properties' => $totalProperties,
+                    'total_units' => $totalUnits,
+                    'total_occupied_units' => $totalOccupiedUnits,
+                    'total_available_units' => $totalAvailableUnits,
+                    'overall_occupancy_rate' => $overallOccupancyRate,
+                ],
+            ]);
     }
 
     /**

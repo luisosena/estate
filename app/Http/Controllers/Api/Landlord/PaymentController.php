@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Landlord\PaymentStoreRequest;
 use App\Http\Requests\Api\Landlord\PaymentUpdateRequest;
+use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Services\ReceiptService;
@@ -21,10 +22,25 @@ class PaymentController extends Controller
         protected RentBillServiceInterface $rentBillService
     ) {}
 
-    /**
-     * Get a single payment.
-     * GET /api/v1/landlord/payments/{payment}
-     */
+    public function index(Request $request)
+    {
+        $this->authorize('viewAny', Payment::class);
+
+        $landlord = $request->user();
+        $page = $request->get('page', 1);
+        $perPage = $request->get('per_page', 15);
+
+        $query = Payment::whereHas('tenancy.unit.property', function ($query) use ($landlord) {
+            $query->where('owner_id', $landlord->id);
+        })
+            ->with(['tenant:id,full_name,tenant_code', 'tenancy:id,unit_id', 'tenancy.unit:id,unit_code,property_id', 'tenancy.unit.property:id,name', 'rentBill:id,billing_month,status'])
+            ->orderBy('paid_at', 'desc');
+
+        $payments = $query->paginate($perPage);
+
+        return PaymentResource::collection($payments);
+    }
+
     public function show(Request $request, int $paymentId)
     {
         $payment = Payment::whereHas('tenancy.unit.property', function ($query) use ($request) {
@@ -32,28 +48,9 @@ class PaymentController extends Controller
         })->with(['tenant', 'tenancy.unit'])->findOrFail($paymentId);
         $this->authorize('view', $payment);
 
-        return response()->json([
-            'data' => [
-                'id' => $payment->id,
-                'amount' => $payment->amount,
-                'payment_type' => $payment->payment_type,
-                'payment_method' => $payment->payment_method,
-                'status' => $payment->status,
-                'paid_at' => $payment->paid_at,
-                'due_date' => $payment->due_date,
-                'created_at' => $payment->created_at,
-                'tenant_name' => $payment->tenant?->full_name,
-                'tenant_code' => $payment->tenant?->tenant_code,
-                'unit_number' => $payment->tenancy?->unit?->unit_code,
-                'property_name' => $payment->tenancy?->unit?->property?->name,
-            ],
-        ]);
+        return new PaymentResource($payment);
     }
 
-    /**
-     * Create a new payment record.
-     * POST /api/v1/landlord/payments
-     */
     public function store(PaymentStoreRequest $request)
     {
         $this->authorize('create', Payment::class);
