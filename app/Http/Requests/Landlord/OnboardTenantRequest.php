@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\Landlord;
 
+use App\Concerns\PhoneValidationRules;
 use App\Enums\Role;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OnboardTenantRequest extends FormRequest
 {
+    use PhoneValidationRules;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -28,7 +31,7 @@ class OnboardTenantRequest extends FormRequest
             // Tenant personal details
             'full_name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
-            'phone' => 'required|string|max:20',
+            'phone' => $this->phoneRules(),
 
             // Onboarding details
             'move_in_date' => 'required|date',
@@ -37,7 +40,7 @@ class OnboardTenantRequest extends FormRequest
 
             // Emergency contact (Merged from legacy StoreTenantRequest)
             'emergency_contact_name' => 'required|string|max:255',
-            'emergency_contact_phone' => 'required|string|max:20',
+            'emergency_contact_phone' => $this->phoneRules(),
             'emergency_contact_relation' => 'required|string|max:100',
 
             // Tenancy Agreement (Optional)
