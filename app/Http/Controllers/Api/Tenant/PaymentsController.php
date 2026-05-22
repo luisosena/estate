@@ -4,17 +4,20 @@ namespace App\Http\Controllers\Api\Tenant;
 
 use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Services\PaymentService;
 use App\Services\ReceiptService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
 class PaymentsController extends Controller
 {
     use HandlesReceipts;
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Payment::class);
 
@@ -35,33 +38,14 @@ class PaymentsController extends Controller
 
         // Use active tenancy for unit/property info, fallback to latest if no active tenancy
         $displayTenancy = $activeTenancy ?? $latestTenancy;
-        $unit = $displayTenancy?->unit;
-        $property = $unit?->property;
 
         // Get payments from active tenancy only for privacy
         $paymentsQuery = $activeTenancy
             ? $activeTenancy->payments()
-                ->with(['tenancy.unit', 'tenancy.unit.property'])
+                ->with(['tenant', 'tenancy.unit', 'tenancy.unit.property'])
             : Payment::whereNull('id'); // Empty query if no active tenancy
 
-        $payments = $paymentsQuery->get()
-            ->sortByDesc('paid_at')
-            ->map(function ($payment) use ($tenant, $unit, $property) {
-                return [
-                    'id' => $payment->id,
-                    'amount' => $payment->amount,
-                    'payment_type' => $payment->payment_type,
-                    'payment_method' => $payment->payment_method,
-                    'status' => $payment->status,
-                    'paid_at' => $payment->paid_at,
-                    'due_date' => $payment->due_date,
-                    'created_at' => $payment->created_at,
-                    'tenant_name' => $tenant->full_name,
-                    'unit_number' => $unit?->unit_code,
-                    'property_name' => $property?->name,
-                ];
-            })
-            ->values() ?? collect();
+        $payments = $paymentsQuery->get()->sortByDesc('paid_at');
 
         // Calculate pending amount from active tenancy rent payments only
         $pendingAmount = 0;
@@ -82,7 +66,7 @@ class PaymentsController extends Controller
                     'phone' => $tenant->phone,
                     'email' => $tenant->email,
                 ],
-                'payments' => $payments,
+                'payments' => PaymentResource::collection($payments),
                 'pending_amount' => $pendingAmount,
             ],
             'meta' => [
@@ -98,7 +82,7 @@ class PaymentsController extends Controller
     /**
      * Store a new payment.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $this->authorize('create', Payment::class);
 
@@ -136,7 +120,7 @@ class PaymentsController extends Controller
                 'success' => true,
                 'message' => 'Payment processed successfully!',
                 'data' => [
-                    'payment' => $result['payment'],
+                    'payment' => new PaymentResource($result['payment']->load(['tenant', 'tenancy.unit', 'tenancy.unit.property'])),
                     'excess_amount' => $result['excessAmount'] ?? 0,
                     'warning' => $result['warning'] ?? null,
                     'rent_bill_warning' => $result['rentBillError'] ?? null,
@@ -158,7 +142,7 @@ class PaymentsController extends Controller
      * Generate and download a payment receipt PDF.
      * GET /api/v1/tenant/payments/{paymentId}/receipt
      */
-    public function receipt(Request $request, int $paymentId, ReceiptService $receiptService)
+    public function receipt(Request $request, int $paymentId, ReceiptService $receiptService): Response
     {
         $payment = Payment::where('tenant_id', $request->user()->tenant_id)
             ->with(['tenant', 'tenancy.unit.property', 'rentBill', 'utilityBill'])
