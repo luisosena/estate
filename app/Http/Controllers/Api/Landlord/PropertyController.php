@@ -72,24 +72,14 @@ class PropertyController extends Controller
 
         $this->authorize('view', $property);
 
-        return response()->json([
-            'data' => [
-                'id' => $property->id,
-                'name' => $property->name,
-                'address' => $property->address,
-                'property_type' => $property->property_type,
-                'description' => $property->description,
-                'total_units' => $property->total_units,
-                'units_count' => $property->units_count,
-                'active_tenants_count' => $property->tenancies->count(),
-                'occupied_units' => $property->tenancies->count(),
-                'vacant_units' => $property->units_count - $property->tenancies->count(),
-                'occupancy_rate' => $property->units_count > 0
-                    ? round(($property->tenancies->count() / $property->units_count) * 100, 1)
-                    : 0,
-                'created_at' => $property->created_at,
-            ],
-        ]);
+        $property->active_tenants_count = $property->tenancies->count();
+        $property->occupied_units = $property->tenancies->count();
+        $property->vacant_units = $property->units_count - $property->tenancies->count();
+        $property->occupancy_rate = $property->units_count > 0
+            ? round(($property->tenancies->count() / $property->units_count) * 100, 1)
+            : 0;
+
+        return new PropertyResource($property);
     }
 
     /**
@@ -113,18 +103,10 @@ class PropertyController extends Controller
             'total_units' => 0,
         ]);
 
-        return response()->json([
-            'message' => 'Property created successfully',
-            'data' => [
-                'id' => $property->id,
-                'name' => $property->name,
-                'address' => $property->address,
-                'property_type' => $property->property_type,
-                'description' => $property->description,
-                'total_units' => $property->total_units,
-                'created_at' => $property->created_at,
-            ],
-        ], 201);
+        return (new PropertyResource($property))
+            ->additional(['message' => 'Property created successfully'])
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -140,18 +122,8 @@ class PropertyController extends Controller
 
         $property->update($validated);
 
-        return response()->json([
-            'message' => 'Property updated successfully',
-            'data' => [
-                'id' => $property->id,
-                'name' => $property->name,
-                'address' => $property->address,
-                'property_type' => $property->property_type,
-                'description' => $property->description,
-                'total_units' => $property->total_units,
-                'updated_at' => $property->updated_at,
-            ],
-        ]);
+        return (new PropertyResource($property))
+            ->additional(['message' => 'Property updated successfully']);
     }
 
     /**

@@ -30,9 +30,11 @@ class PropertyResource extends JsonResource
             // Computed fields from current controller logic
             'active_tenants_count' => $this->when(isset($this->active_tenants_count), $this->active_tenants_count),
             'occupied_units' => $this->when(isset($this->occupied_units), $this->occupied_units),
+            'vacant_units' => $this->when(isset($this->vacant_units), $this->vacant_units),
             'available_units' => $this->when(isset($this->available_units), $this->available_units),
             'occupancy_rate' => $this->when(isset($this->occupancy_rate), $this->occupancy_rate),
             'created_at' => $this->created_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
             // Relationships
             'landlord' => LandlordResource::make($this->whenLoaded('landlord')),
             'owner' => LandlordResource::make($this->whenLoaded('owner')),
