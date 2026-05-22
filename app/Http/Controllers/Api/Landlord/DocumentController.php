@@ -10,6 +10,7 @@ use App\Models\Tenancy;
 use App\Services\DocumentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class DocumentController extends Controller
 {
@@ -24,21 +25,19 @@ class DocumentController extends Controller
 
         $document = $this->documentService->upload($file, $tenancy, $category, $request->user());
 
-        return response()->json([
-            'message' => 'Document uploaded successfully',
-            'data' => new DocumentResource($document),
-        ], 201);
+        return (new DocumentResource($document))
+            ->additional(['message' => 'Document uploaded successfully'])
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function index(Request $request, Tenancy $tenancy): JsonResponse
+    public function index(Request $request, Tenancy $tenancy): AnonymousResourceCollection
     {
         $this->authorize('viewAny', [Document::class, $tenancy]);
 
         $documents = $this->documentService->listFor($tenancy);
 
-        return response()->json([
-            'data' => DocumentResource::collection($documents),
-        ]);
+        return DocumentResource::collection($documents);
     }
 
     public function download(Request $request, Document $document)
