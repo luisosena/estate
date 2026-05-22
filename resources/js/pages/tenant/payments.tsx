@@ -4,8 +4,8 @@ import React from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
-import Pagination from '@/components/shared/Pagination';
 import { ReceiptDownloadButton } from '@/components/payments/ReceiptDownloadButton';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

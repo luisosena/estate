@@ -3,8 +3,8 @@ import { MoreHorizontal, Eye, CheckCircle2, Clock } from 'lucide-react';
 import React from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
-import Pagination from '@/components/shared/Pagination';
 import { ReceiptDownloadButton } from '@/components/payments/ReceiptDownloadButton';
+import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

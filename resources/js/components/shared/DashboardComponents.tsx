@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -62,6 +63,7 @@ interface QuickActionProps {
 }
 
 import { Link } from '@inertiajs/react';
+
 import { Button } from '@/components/ui/button';
 
 export function QuickAction({
