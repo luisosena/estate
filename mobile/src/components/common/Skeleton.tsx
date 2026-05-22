@@ -8,6 +8,7 @@ import Animated, {
   withSequence,
   interpolate,
 } from 'react-native-reanimated';
+
 import { colors } from '../../constants/colors';
 
 interface SkeletonProps {

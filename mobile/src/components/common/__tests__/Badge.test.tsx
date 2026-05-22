@@ -1,6 +1,7 @@
+import { render } from '@testing-library/react-native';
 import React from 'react';
 import { View } from 'react-native';
-import { render } from '@testing-library/react-native';
+
 import { Badge } from '../Badge';
 
 describe('Badge', () => {

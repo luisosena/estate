@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Skeleton } from './Skeleton';
+
 import { colors } from '../../constants/colors';
+
+import { Skeleton } from './Skeleton';
 
 /**
  * Skeleton for the statistical cards on the dashboard.

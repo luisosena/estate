@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets, Edge } from 'react-native-safe-area-context';
+
 import { colors } from '../../constants/colors';
 
 interface ScreenContainerProps {
