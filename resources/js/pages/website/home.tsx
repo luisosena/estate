@@ -6,11 +6,8 @@ import Footer from '@/pages/website/components/footer';
 import HeroSection from '@/pages/website/components/hero-section';
 import Navbar from '@/pages/website/components/navbar';
 import PainSolutionSection from '@/pages/website/components/pain-solution-section';
-import ProductPreviewSection from '@/pages/website/components/product-preview-section';
 import SocialProof from '@/pages/website/components/social-proof';
 import TestimonialsSection from '@/pages/website/components/testimonials-section';
-import TrustSection from '@/pages/website/components/trust-section';
-import WorkflowSection from '@/pages/website/components/workflow-section';
 
 export default function Home() {
     return (
@@ -30,12 +27,9 @@ export default function Home() {
 
             <Navbar />
             <HeroSection />
-            <SocialProof />
             <PainSolutionSection />
-            <ProductPreviewSection />
-            <WorkflowSection />
+            <SocialProof />
             <TestimonialsSection />
-            <TrustSection />
             <CtaSection />
             <Footer />
         </MarketingLayout>

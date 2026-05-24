@@ -79,7 +79,7 @@ export default function FeaturesSection() {
                     {features.map((feature, i) => (
                         <motion.div
                             key={feature.title}
-                            className="group relative overflow-hidden rounded-2xl border border-[#1A1A2E]/5 bg-white p-8 transition-all duration-500 hover:border-transparent hover:shadow-xl hover:shadow-[#1A1A2E]/5"
+                            className="group relative overflow-hidden rounded-2xl border border-black bg-white p-8 transition-all duration-500 hover:border-black"
                             initial={{ opacity: 0, y: 30 }}
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.5, delay: 0.2 + i * 0.15 }}

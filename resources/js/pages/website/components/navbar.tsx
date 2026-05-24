@@ -42,7 +42,7 @@ export default function Navbar() {
 
                 {/* Center Nav Links */}
                 <div className="hidden items-center gap-8 md:flex">
-                    {['Features', 'How It Works', 'Pricing'].map((item) => (
+                    {['Features', 'How It Works', 'Roadmap'].map((item) => (
                         <a
                             key={item}
                             href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
@@ -66,10 +66,10 @@ export default function Navbar() {
                         </Link>
                         <Link
                             href="/register"
-                            className="rounded-full bg-[#1A1A2E] px-6 py-2.5 text-sm font-medium tracking-wide text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E] hover:shadow-lg hover:shadow-[#1A1A2E]/10"
+                            className="rounded-full bg-[#1A1A2E] px-6 py-2.5 text-sm font-medium tracking-wide text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E] hover:border-black"
                             style={{ fontFamily: "'Outfit', sans-serif" }}
                         >
-                            Get started
+                            Request Pilot Access
                         </Link>
                     </div>
 
@@ -86,7 +86,7 @@ export default function Navbar() {
                                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                                 <div className="mt-8 flex flex-col gap-6">
                                     <div className="flex flex-col gap-4">
-                                        {['Features', 'How It Works', 'Pricing'].map((item) => (
+                                        {['Features', 'How It Works', 'Roadmap'].map((item) => (
                                             <a
                                                 key={item}
                                                 href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
@@ -111,7 +111,7 @@ export default function Navbar() {
                                             className="inline-flex items-center justify-center rounded-full bg-[#1A1A2E] px-6 py-3 text-sm font-medium tracking-wide text-[#FAF7F2] transition-colors hover:bg-[#2A2A4E]"
                                             style={{ fontFamily: "'Outfit', sans-serif" }}
                                         >
-                                            Get started
+                                            Request Pilot Access
                                         </Link>
                                     </div>
                                 </div>
