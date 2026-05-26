@@ -99,8 +99,12 @@ export default function Navbar() {
             </AnimatePresence>
 
             <motion.nav
-                className={`fixed inset-x-4 top-4 z-50 overflow-hidden border transition-all duration-300 ${
-                    offerOpen ? 'rounded-[2rem]' : 'rounded-full'
+                className={`fixed z-50 overflow-hidden border transition-all duration-300 ${
+                    offerOpen
+                        ? 'inset-x-0 top-0 rounded-none border-b border-[#1A1A2E]/6'
+                        : scrolled
+                        ? 'inset-x-4 top-4 rounded-full border border-[#1A1A2E]/6'
+                        : 'inset-x-0 top-0 border-b border-transparent rounded-none'
                 }`}
                 style={{
                     backgroundColor: (scrolled || offerOpen) ? 'rgba(250, 247, 242, 0.92)' : 'rgba(250, 247, 242, 0)',
