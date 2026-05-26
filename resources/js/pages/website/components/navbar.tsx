@@ -51,6 +51,7 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [offerOpen, setOfferOpen] = useState(false);
+    const [navbarExpanded, setNavbarExpanded] = useState(false);
     const [mobileOfferOpen, setMobileOfferOpen] = useState(false);
     const offerRef = useRef<HTMLDivElement>(null);
     const openTimer = useRef<ReturnType<typeof setTimeout>>(null);
@@ -72,7 +73,10 @@ export default function Navbar() {
             closeTimer.current = null;
         }
         if (!offerOpen) {
-            openTimer.current = setTimeout(() => setOfferOpen(true), 80);
+            openTimer.current = setTimeout(() => {
+                setOfferOpen(true);
+                setNavbarExpanded(true);
+            }, 80);
         }
     };
 
@@ -99,17 +103,17 @@ export default function Navbar() {
             </AnimatePresence>
 
             <motion.nav
-                className={`fixed z-50 overflow-hidden transition-all duration-300 ${
-                    offerOpen
+                className={`fixed z-50 overflow-hidden transition-[background-color,box-shadow,backdrop-filter] duration-300 ${
+                    navbarExpanded
                         ? 'inset-x-0 top-0 rounded-none border-b border-[#1A1A2E]/6'
                         : scrolled
                         ? 'inset-x-4 top-4 rounded-full border border-[#1A1A2E]/6'
-                        : 'inset-x-0 top-0 rounded-none border-b border-transparent'
+                        : 'inset-x-4 top-4 rounded-full border border-transparent'
                 }`}
                 style={{
-                    backgroundColor: (scrolled || offerOpen) ? 'rgba(250, 247, 242, 0.92)' : 'rgba(250, 247, 242, 0)',
-                    backdropFilter: (scrolled || offerOpen) ? 'blur(20px)' : 'blur(0px)',
-                    boxShadow: (scrolled || offerOpen)
+                    backgroundColor: (scrolled || navbarExpanded) ? 'rgba(250, 247, 242, 0.92)' : 'rgba(250, 247, 242, 0)',
+                    backdropFilter: (scrolled || navbarExpanded) ? 'blur(20px)' : 'blur(0px)',
+                    boxShadow: (scrolled || navbarExpanded)
                         ? '0 20px 40px -15px rgba(26, 26, 46, 0.1), 0 1px 3px rgba(26, 26, 46, 0.05)'
                         : 'none',
                 }}
@@ -117,7 +121,7 @@ export default function Navbar() {
             >
                 <div className="w-full">
                     {/* Top row */}
-                    <div className="mx-auto flex max-w-7xl items-center px-6 py-4 lg:px-8">
+                    <div className={`mx-auto flex max-w-7xl items-center px-6 lg:px-8 ${navbarExpanded ? 'py-4 pt-8' : 'py-4'}`}>
                         {/* Logo */}
                         <Link 
                             href="/" 
@@ -278,7 +282,7 @@ export default function Navbar() {
                     </div>
 
                     {/* Full-width integrated mega-menu */}
-                    <AnimatePresence>
+                    <AnimatePresence onExitComplete={() => setNavbarExpanded(false)}>
                         {offerOpen && (
                             <motion.div
                                 className="w-full overflow-hidden border-t border-[#1A1A2E]/6 bg-transparent"
