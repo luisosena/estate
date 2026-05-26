@@ -99,19 +99,18 @@ export default function Navbar() {
             </AnimatePresence>
 
             <motion.nav
-                className={`fixed z-50 overflow-hidden border transition-all duration-300 ${
+                className={`fixed z-50 overflow-hidden transition-all duration-300 ${
                     offerOpen
                         ? 'inset-x-0 top-0 rounded-none border-b border-[#1A1A2E]/6'
                         : scrolled
                         ? 'inset-x-4 top-4 rounded-full border border-[#1A1A2E]/6'
-                        : 'inset-x-0 top-0 border-b border-transparent rounded-none'
+                        : 'inset-x-0 top-0 rounded-none border-b border-transparent'
                 }`}
                 style={{
                     backgroundColor: (scrolled || offerOpen) ? 'rgba(250, 247, 242, 0.92)' : 'rgba(250, 247, 242, 0)',
-                    borderColor: (scrolled || offerOpen) ? 'rgba(26, 26, 46, 0.06)' : 'transparent',
                     backdropFilter: (scrolled || offerOpen) ? 'blur(20px)' : 'blur(0px)',
-                    boxShadow: (scrolled || offerOpen) 
-                        ? '0 20px 40px -15px rgba(26, 26, 46, 0.1), 0 1px 3px rgba(26, 26, 46, 0.05)' 
+                    boxShadow: (scrolled || offerOpen)
+                        ? '0 20px 40px -15px rgba(26, 26, 46, 0.1), 0 1px 3px rgba(26, 26, 46, 0.05)'
                         : 'none',
                 }}
                 onMouseLeave={handleClose}
