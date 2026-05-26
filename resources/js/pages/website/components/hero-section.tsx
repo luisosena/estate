@@ -12,6 +12,8 @@ import {
     Lock
 } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+
 export default function HeroSection() {
     return (
         <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-32">
@@ -41,47 +43,12 @@ export default function HeroSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                     >
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#D4A853]/30 bg-[#D4A853]/10 px-4 py-1.5 animate-pulse"
-                        >
-                            <span className="text-[#D4A853]">✦</span>
-                            <span
-                                className="text-xs font-semibold tracking-wider uppercase text-[#D4A853]"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
-                                Private Pilot Rolling-Launch
-                            </span>
-                        </motion.div>
-
                         <h1
                             className="text-4xl leading-[1.1] font-normal tracking-tight text-[#1A1A2E] sm:text-6xl lg:text-7xl"
-                            style={{ fontFamily: "'DM Serif Display', serif" }}
+                            style={{ fontFamily: "'Manrope', sans-serif" }}
                         >
-                            Unified Property Operations.<br />
-                            <span className="relative">
-                                Built for portfolios
-                                <svg
-                                    className="absolute -bottom-2 left-0 w-full"
-                                    viewBox="0 0 300 12"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    preserveAspectRatio="none"
-                                >
-                                    <motion.path
-                                        d="M2 8C50 3 100 2 150 4C200 6 250 3 298 7"
-                                        stroke="#D4A853"
-                                        strokeWidth="3"
-                                        strokeLinecap="round"
-                                        initial={{ pathLength: 0 }}
-                                        animate={{ pathLength: 1 }}
-                                        transition={{ duration: 1.2, delay: 0.8, ease: 'easeOut' }}
-                                    />
-                                </svg>
-                            </span>{' '}
-                            in East Africa.
+                            Property management for{' '}
+                            landlords and tenants.
                         </h1>
 
                         <p
@@ -92,48 +59,25 @@ export default function HeroSection() {
                         </p>
 
                         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                            <Link
-                                href="/register"
-                                className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#1A1A2E] px-8 py-4 text-sm font-semibold tracking-wide text-[#FAF7F2] transition-all duration-300 hover:bg-[#2A2A4E] hover:border-black hover:-translate-y-0.5"
+                            <Button
+                                asChild
+                                size="lg"
+                                className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#1A1A2E] px-8 py-6 text-sm font-semibold tracking-wide text-[#FAF7F2] transition-all duration-300 hover:bg-[#2A2A4E] hover:-translate-y-0.5"
                                 style={{ fontFamily: "'Outfit', sans-serif" }}
                             >
-                                Request Pilot Access
-                                <svg
-                                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                </svg>
-                            </Link>
-                            <a
-                                href="#briefing"
-                                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-[#1A1A2E]/15 px-8 py-4 text-sm font-semibold tracking-wide text-[#1A1A2E] transition-all duration-300 hover:border-[#1A1A2E]/30 hover:bg-[#1A1A2E]/5"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
-                                Schedule Executive Briefing
-                            </a>
-                        </div>
-                    </motion.div>
-
-                    {/* Logo Strip */}
-                    <motion.div 
-                        className="mt-16 flex flex-col items-center opacity-60"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.6 }}
-                        transition={{ duration: 1, delay: 0.6 }}
-                    >
-                        <p className="text-xs font-bold tracking-widest uppercase text-[#1A1A2E]/60 mb-6" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                            Designed for modern real estate operations in East Africa
-                        </p>
-                        <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 sm:gap-x-12 grayscale">
-                            <span className="text-xl font-bold font-serif text-[#1A1A2E]">Oaks&Co</span>
-                            <span className="text-xl font-extrabold tracking-tighter text-[#1A1A2E]">LUMEN</span>
-                            <span className="text-xl font-light tracking-widest text-[#1A1A2E]">VERTEX</span>
-                            <span className="text-xl font-medium italic text-[#1A1A2E]">Pinnacle</span>
-                            <span className="text-xl font-black tracking-tight text-[#1A1A2E]">NEXUS</span>
+                                <Link href="/register">
+                                    Get Started
+                                    <svg
+                                        className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                    </svg>
+                                </Link>
+                            </Button>
                         </div>
                     </motion.div>
 
@@ -336,10 +280,13 @@ export default function HeroSection() {
                                     <div className="mt-1 text-lg font-bold font-serif text-[#D4A853]">TZS 1,200,000</div>
                                     <div className="mt-0.5 text-[8px] text-white/50" style={{ fontFamily: "'Outfit', sans-serif" }}>Due Date: June 1, 2026</div>
                                     
-                                    <button className="mt-4 w-full bg-[#D4A853] hover:bg-[#c29642] text-[#1A1A2E] text-[10px] font-bold tracking-wide uppercase py-2.5 rounded-xl transition-all flex items-center justify-center gap-1">
+                                    <Button
+                                        className="mt-4 w-full bg-[#D4A853] hover:bg-[#c29642] text-[#1A1A2E] text-[10px] font-bold tracking-wide uppercase py-2.5 rounded-xl transition-all flex items-center justify-center gap-1 border-none"
+                                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                                    >
                                         Pay rent via M-Pesa
                                         <ArrowUpRight className="h-3 w-3" />
-                                    </button>
+                                    </Button>
                                     <div className="mt-2 text-center text-[7px] text-white/40 flex items-center justify-center gap-1">
                                         <Lock className="h-2 w-2" /> Encrypted API Connection
                                     </div>
@@ -360,12 +307,22 @@ export default function HeroSection() {
                                         <span className="text-xs font-bold text-[#1A1A2E]" style={{ fontFamily: "'Outfit', sans-serif" }}>32.4 kWh</span>
                                     </div>
                                     <div className="mt-3 flex gap-2">
-                                        <button className="flex-1 bg-[#1A1A2E]/5 hover:bg-[#1A1A2E]/8 text-[#1A1A2E]/80 text-[8px] font-bold py-1.5 rounded-lg transition-colors">
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="flex-1 bg-[#1A1A2E]/5 hover:bg-[#1A1A2E]/8 text-[#1A1A2E]/80 text-[8px] font-bold py-1 h-auto rounded-lg transition-colors border-none"
+                                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                                        >
                                             Buy Tokens
-                                        </button>
-                                        <button className="flex-1 border border-[#1A1A2E]/10 text-[#1A1A2E]/60 text-[8px] font-bold py-1.5 rounded-lg hover:bg-[#1A1A2E]/5 transition-colors">
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex-1 border border-[#1A1A2E]/10 text-[#1A1A2E]/60 text-[8px] font-bold py-1 h-auto rounded-lg hover:bg-[#1A1A2E]/5 transition-colors"
+                                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                                        >
                                             History
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
 

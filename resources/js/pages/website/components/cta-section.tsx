@@ -2,6 +2,8 @@ import { Link } from '@inertiajs/react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 
+import { Button } from '@/components/ui/button';
+
 export default function CtaSection() {
     const ref = useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: '-80px' });
@@ -43,29 +45,26 @@ export default function CtaSection() {
                     </p>
 
                     <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-                        <Link
-                            href="/register"
-                            className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-bold tracking-wide text-[#1A1A2E] border border-black transition-all duration-300 hover:border-black"
+                        <Button
+                            asChild
+                            variant="secondary"
+                            size="lg"
+                            className="group rounded-full bg-white px-8 py-6 text-sm font-bold tracking-wide text-[#1A1A2E] border border-black transition-all duration-300 hover:bg-white/90"
                             style={{ fontFamily: "'Outfit', sans-serif" }}
                         >
-                            Request Pilot Access
-                            <svg
-                                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                        </Link>
-                        <a
-                            href="#briefing"
-                            className="inline-flex items-center gap-2 rounded-full border-2 border-white/30 px-8 py-4 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:border-white/60 hover:bg-white/10"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
-                            Schedule Executive Briefing
-                        </a>
+                            <Link href="/register">
+                                Get Started
+                                <svg
+                                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </Link>
+                        </Button>
                     </div>
                 </motion.div>
             </div>
