@@ -291,7 +291,7 @@ export default function Navbar() {
                                 exit={{ height: 0, opacity: 0 }}
                                 transition={{ duration: 0.25, ease: 'easeInOut' }}
                             >
-                                <div className="mx-auto max-w-7xl px-6 pb-12 pt-8 lg:px-8">
+                                <div className="mx-auto max-w-5xl px-6 pb-12 pt-8 lg:px-8">
                                     <div className="grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
                                         {megaMenuItems.map((item) => (
                                             <a
