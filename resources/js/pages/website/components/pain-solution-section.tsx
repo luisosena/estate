@@ -176,7 +176,7 @@ export default function PainSolutionSection() {
     const IconComponent = activeSlide.icon;
 
     return (
-        <section ref={ref} className="relative bg-[#FAF7F2] py-24 lg:py-32 overflow-hidden">
+        <section ref={ref} className="relative bg-[#FAF7F2] py-8 lg:py-12 overflow-hidden">
             {/* Subtle background gradient */}
             <div className="absolute inset-0 -z-10">
                 <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-[#D4A853]/5 blur-3xl" />
@@ -191,15 +191,9 @@ export default function PainSolutionSection() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
-                    <p
-                        className="mb-4 text-xs font-bold tracking-widest uppercase text-[#D4A853]"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
-                        Why Estate Exists
-                    </p>
                     <h2
-                        className="text-4xl font-normal text-[#1A1A2E] sm:text-5xl"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-4xl font-bold tracking-tight text-[#1A1A2E] sm:text-5xl"
+                        style={{ fontFamily: "'Manrope', sans-serif" }}
                     >
                         Built around the problems you actually face.
                     </h2>

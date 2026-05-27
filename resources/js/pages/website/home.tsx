@@ -6,6 +6,7 @@ import Footer from '@/pages/website/components/footer';
 import HeroSection from '@/pages/website/components/hero-section';
 import Navbar from '@/pages/website/components/navbar';
 import PainSolutionSection from '@/pages/website/components/pain-solution-section';
+import SplitValuePropSection from '@/pages/website/components/split-value-prop-section';
 import SocialProof from '@/pages/website/components/social-proof';
 import TestimonialsSection from '@/pages/website/components/testimonials-section';
 
@@ -28,6 +29,7 @@ export default function Home() {
             <Navbar />
             <HeroSection />
             <PainSolutionSection />
+            <SplitValuePropSection />
             <SocialProof />
             <TestimonialsSection />
             <CtaSection />
