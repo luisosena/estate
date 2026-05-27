@@ -78,6 +78,17 @@ export default function HeroSection() {
                                     </svg>
                                 </Link>
                             </Button>
+                            <Button
+                                asChild
+                                variant="outline"
+                                size="lg"
+                                className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#1A1A2E]/20 px-8 py-6 text-sm font-semibold tracking-wide text-[#1A1A2E] transition-all duration-300 hover:bg-[#1A1A2E]/5 hover:-translate-y-0.5"
+                                style={{ fontFamily: "'Outfit', sans-serif" }}
+                            >
+                                <Link href="#contact">
+                                    Contact us
+                                </Link>
+                            </Button>
                         </div>
                     </motion.div>
 

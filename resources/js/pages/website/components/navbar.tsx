@@ -128,12 +128,11 @@ export default function Navbar() {
                             className="group flex shrink-0 items-center gap-2"
                             onMouseEnter={handleClose}
                         >
-                            <span
-                                className="text-2xl font-extrabold uppercase tracking-[0.05em] text-[#1A1A2E]"
-                                style={{ fontFamily: "'Nunito', sans-serif" }}
-                            >
-                                Estate
-                            </span>
+                            <img
+                                src="/ESTATE.png"
+                                alt="ESTATE"
+                                className="h-7 w-auto"
+                            />
                         </Link>
 
                         {/* Center Nav Links */}
