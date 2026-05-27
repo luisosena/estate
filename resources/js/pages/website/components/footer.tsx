@@ -17,7 +17,8 @@ const footerLinks = {
         { label: 'About', href: '#' },
         { label: 'Careers', href: '#' },
         { label: 'Contact', href: '#' },
-        { label: 'Privacy Policy', href: '#' },
+        { label: 'Privacy Policy', href: '/privacy' },
+        { label: 'Terms of Service', href: '/terms' },
     ],
 };
 
@@ -88,13 +89,23 @@ export default function Footer() {
                             <ul className="space-y-3">
                                 {links.map((link) => (
                                     <li key={link.label}>
-                                        <a
-                                            href={link.href}
-                                            className="text-sm text-white/40 transition-colors duration-200 hover:text-white/70"
-                                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                                        >
-                                            {link.label}
-                                        </a>
+                                        {link.href.startsWith('/') ? (
+                                            <Link
+                                                href={link.href}
+                                                className="text-sm text-white/40 transition-colors duration-200 hover:text-white/70"
+                                                style={{ fontFamily: "'Outfit', sans-serif" }}
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        ) : (
+                                            <a
+                                                href={link.href}
+                                                className="text-sm text-white/40 transition-colors duration-200 hover:text-white/70"
+                                                style={{ fontFamily: "'Outfit', sans-serif" }}
+                                            >
+                                                {link.label}
+                                            </a>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
@@ -111,16 +122,27 @@ export default function Footer() {
                         &copy; {new Date().getFullYear()} Estate. All rights reserved.
                     </p>
                     <div className="flex gap-6">
-                        {['Terms', 'Privacy', 'Cookies'].map((item) => (
-                            <a
-                                key={item}
-                                href="#"
-                                className="text-xs text-white/30 transition-colors duration-200 hover:text-white/50"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
-                                {item}
-                            </a>
-                        ))}
+                        <Link
+                            href="/terms"
+                            className="text-xs text-white/30 transition-colors duration-200 hover:text-white/50"
+                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                        >
+                            Terms of Service
+                        </Link>
+                        <Link
+                            href="/privacy"
+                            className="text-xs text-white/30 transition-colors duration-200 hover:text-white/50"
+                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                        >
+                            Privacy Policy
+                        </Link>
+                        <a
+                            href="#"
+                            className="text-xs text-white/30 transition-colors duration-200 hover:text-white/50"
+                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                        >
+                            Cookies
+                        </a>
                     </div>
                 </div>
             </div>
