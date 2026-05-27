@@ -159,14 +159,6 @@ export default function Navbar() {
                                     </Link>
                                 </Button>
                             </div>
-                            <Link
-                                href="/features"
-                                className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
-                                style={{ fontFamily: "'Nunito', sans-serif" }}
-                                onMouseEnter={handleClose}
-                            >
-                                Features
-                            </Link>
                             {['How It Works', 'Roadmap'].map((item) => (
                                 <a
                                     key={item}
@@ -236,13 +228,6 @@ export default function Navbar() {
                                                         </Link>
                                                     </Button>
                                                 </div>
-                                                <Link
-                                                    href="/features"
-                                                    className="block text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E]"
-                                                    style={{ fontFamily: "'Nunito', sans-serif" }}
-                                                >
-                                                    Features
-                                                </Link>
                                                 {['How It Works', 'Roadmap'].map((item) => (
                                                     <a
                                                         key={item}
