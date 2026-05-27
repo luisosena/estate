@@ -142,10 +142,6 @@ export default function HeroSection() {
                                             <p className="text-xs text-[#1A1A2E]/55" style={{ fontFamily: "'Outfit', sans-serif" }}>Live status update • Dar es Salaam, TZ</p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <div className="flex items-center gap-1.5 px-3 py-1 bg-[#8BA888]/12 text-[#8BA888] rounded-full border border-[#8BA888]/20">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-[#8BA888] animate-pulse" />
-                                                <span className="text-[10px] font-bold tracking-wide uppercase" style={{ fontFamily: "'Outfit', sans-serif" }}>M-Pesa Live Sync</span>
-                                            </div>
                                         </div>
                                     </div>
 

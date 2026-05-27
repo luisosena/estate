@@ -24,7 +24,7 @@ export default function SplitValuePropSection() {
                 >
                     <h2
                         className="text-4xl md:text-6xl font-normal text-[#1A1A2E] leading-tight"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
                         Build exceptional<br />property operations
                     </h2>
@@ -54,32 +54,84 @@ export default function SplitValuePropSection() {
                             </Button>
                         </div>
 
-                        {/* Bottom Graphic: Blue sleeve and gloved hand with magic wand */}
+                        {/* Bottom Graphic: Isometric Glassmorphic Portfolio Layers */}
                         <div className="absolute bottom-0 left-0 w-full h-[220px] pointer-events-none select-none">
                             <svg viewBox="0 0 350 220" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="splitPremiumGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#8BA888" stopOpacity="0.15" />
+                                        <stop offset="50%" stopColor="#D4A853" stopOpacity="0.05" />
+                                        <stop offset="100%" stopColor="#C4775A" stopOpacity="0.15" />
+                                    </linearGradient>
+                                    <linearGradient id="isoCardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+                                        <stop offset="100%" stopColor="#FAF7F2" stopOpacity="0.75" />
+                                    </linearGradient>
+                                    <filter id="isoShadow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
+                                        <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#1A1A2E" floodOpacity="0.08" />
+                                    </filter>
+                                </defs>
+
+                                {/* Ambient Glow Background */}
+                                <circle cx="175" cy="110" r="90" fill="url(#splitPremiumGlow)" filter="blur(25px)" />
+
                                 {/* Sparkles / Stars */}
-                                <path d="M190 90 L193 98 L201 101 L193 104 L190 112 L187 104 L179 101 L187 98 Z" fill="#1A1A2E" opacity="0.3" />
-                                <path d="M225 55 L227 61 L233 63 L227 65 L225 71 L223 65 L217 63 L223 61 Z" fill="#1A1A2E" opacity="0.4" />
-                                <path d="M160 120 L161.5 124 L165.5 125.5 L161.5 127 L160 131 L158.5 127 L154.5 125.5 L158.5 124 Z" fill="#1A1A2E" opacity="0.3" />
-                                
-                                {/* Magic Wand */}
-                                <rect x="180" y="100" width="6" height="55" rx="3" transform="rotate(-40 180 100)" fill="#1A1A2E" />
-                                <rect x="180" y="90" width="6" height="10" rx="1.5" transform="rotate(-40 180 90)" fill="#E5E7EB" />
-                                
-                                {/* Arm & Hand */}
-                                {/* Sleeve */}
-                                <path d="M0 200 Q70 190 130 155 L110 115 Q50 150 0 160 Z" fill="#1E88E5" />
-                                <path d="M110 115 Q120 135 130 155" stroke="white" strokeWidth="3" />
-                                
-                                {/* Glove cuff */}
-                                <path d="M130 155 Q135 145 140 135 Q130 125 120 135 Q125 145 130 155 Z" fill="#90CAF9" />
-                                
-                                {/* Hand gripping wand */}
-                                <path d="M142 130 Q148 132 155 128 Q158 123 152 120 Q145 122 142 130 Z" fill="#90CAF9" />
-                                <path d="M155 123 Q162 122 165 116 Q162 110 155 112 Q150 115 155 123 Z" fill="#90CAF9" stroke="#1E88E5" strokeWidth="0.5" />
-                                <path d="M156 129 Q164 128 166 122 Q162 117 155 119 Q151 122 156 129 Z" fill="#90CAF9" stroke="#1E88E5" strokeWidth="0.5" />
-                                <path d="M153 135 Q161 134 163 128 Q159 123 152 125 Q148 128 153 135 Z" fill="#90CAF9" stroke="#1E88E5" strokeWidth="0.5" />
-                                <path d="M148 140 Q155 139 157 133 Q153 128 146 130 Q143 133 148 140 Z" fill="#90CAF9" stroke="#1E88E5" strokeWidth="0.5" />
+                                <path d="M280 60 L282 66 L288 68 L282 70 L280 76 L278 70 L272 68 L278 66 Z" fill="#D4A853" opacity="0.6" />
+                                <path d="M70 140 L71.5 144 L75.5 145.5 L71.5 147 L70 151 L68.5 147 L64.5 145.5 L68.5 144 Z" fill="#8BA888" opacity="0.6" />
+
+                                {/* ISOMETRIC GROUP */}
+                                <g transform="translate(10, 0)">
+                                    {/* LAYER 1: BOTTOM (Ledger & Revenue - Sage Green themes) */}
+                                    <g filter="url(#isoShadow)">
+                                        {/* Isometric Plane Path */}
+                                        <path d="M165 140 L265 95 L165 50 L65 95 Z" fill="url(#isoCardBg)" stroke="#1A1A2E" strokeWidth="1" strokeOpacity="0.08" />
+                                        
+                                        {/* Chart Grid Lines on Plane */}
+                                        <path d="M95 81.5 L195 126.5 M125 68 L225 113 M145 104 L205 77 M115 90.5 L175 63.5" stroke="#1A1A2E" strokeWidth="0.5" strokeOpacity="0.04" />
+                                        
+                                        {/* Revenue Line */}
+                                        <path d="M95 85 L125 78 L155 92 L185 80 L215 94 L235 85" stroke="#8BA888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        <circle cx="185" cy="80" r="2.5" fill="#8BA888" />
+                                        <circle cx="235" cy="85" r="2.5" fill="#8BA888" />
+                                    </g>
+
+                                    {/* Vertical Connectors between layers */}
+                                    <line x1="165" y1="95" x2="165" y2="60" stroke="#1A1A2E" strokeWidth="1" strokeDasharray="3 3" strokeOpacity="0.2" />
+                                    <line x1="105" y1="122" x2="105" y2="87" stroke="#1A1A2E" strokeWidth="1" strokeDasharray="3 3" strokeOpacity="0.2" />
+                                    <line x1="225" y1="68" x2="225" y2="33" stroke="#1A1A2E" strokeWidth="1" strokeDasharray="3 3" strokeOpacity="0.2" />
+
+                                    {/* LAYER 2: MIDDLE (Operations & Occupancy - Terracotta themes) */}
+                                    <g filter="url(#isoShadow)" transform="translate(0, -35)">
+                                        <path d="M165 140 L265 95 L165 50 L65 95 Z" fill="url(#isoCardBg)" stroke="#1A1A2E" strokeWidth="1" strokeOpacity="0.08" />
+                                        
+                                        {/* Grid Points */}
+                                        <circle cx="115" cy="85" r="3" fill="#C4775A" fillOpacity="0.7" />
+                                        <circle cx="145" cy="75" r="3" fill="#1A1A2E" fillOpacity="0.15" />
+                                        <circle cx="175" cy="95" r="3" fill="#C4775A" fillOpacity="0.7" />
+                                        <circle cx="205" cy="85" r="3" fill="#1A1A2E" fillOpacity="0.15" />
+                                        <circle cx="145" cy="105" r="3" fill="#C4775A" fillOpacity="0.7" />
+                                        
+                                        {/* Connector Webs */}
+                                        <path d="M115 85 L145 75 L175 95 L145 105 Z" stroke="#C4775A" strokeWidth="1" strokeOpacity="0.3" />
+                                        <line x1="175" y1="95" x2="205" y2="85" stroke="#1A1A2E" strokeWidth="1" strokeOpacity="0.1" />
+                                    </g>
+
+                                    {/* LAYER 3: TOP (Blueprint Structure - Gold & Architecture) */}
+                                    <g filter="url(#isoShadow)" transform="translate(0, -70)">
+                                        <path d="M165 140 L265 95 L165 50 L65 95 Z" fill="url(#isoCardBg)" stroke="#1A1A2E" strokeWidth="1" strokeOpacity="0.08" />
+                                        
+                                        {/* Isometric Building Wireframe structure */}
+                                        {/* Base */}
+                                        <path d="M135 95 L165 108.5 L195 95 L165 81.5 Z" stroke="#D4A853" strokeWidth="1.5" strokeOpacity="0.8" />
+                                        {/* Columns */}
+                                        <line x1="135" y1="95" x2="135" y2="75" stroke="#D4A853" strokeWidth="1.5" strokeOpacity="0.8" />
+                                        <line x1="165" y1="108.5" x2="165" y2="88.5" stroke="#D4A853" strokeWidth="1.5" strokeOpacity="0.8" />
+                                        <line x1="195" y1="95" x2="195" y2="75" stroke="#D4A853" strokeWidth="1.5" strokeOpacity="0.8" />
+                                        <line x1="165" y1="81.5" x2="165" y2="61.5" stroke="#D4A853" strokeWidth="1.5" strokeOpacity="0.8" />
+                                        {/* Roof */}
+                                        <path d="M135 75 L165 88.5 L195 75 L165 61.5 Z" stroke="#D4A853" strokeWidth="1.5" strokeOpacity="0.8" fill="#D4A853" fillOpacity="0.1" />
+                                    </g>
+                                </g>
                             </svg>
                         </div>
                     </motion.div>
@@ -108,7 +160,7 @@ export default function SplitValuePropSection() {
                             <div>
                                 <h3
                                     className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
-                                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                                    style={{ fontFamily: "'Outfit', sans-serif" }}
                                 >
                                     Accelerate Revenue Velocity
                                 </h3>
@@ -134,7 +186,7 @@ export default function SplitValuePropSection() {
                             <div>
                                 <h3
                                     className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
-                                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                                    style={{ fontFamily: "'Outfit', sans-serif" }}
                                 >
                                     Create Consistency & Efficiency
                                 </h3>
@@ -159,7 +211,7 @@ export default function SplitValuePropSection() {
                             <div>
                                 <h3
                                     className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
-                                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                                    style={{ fontFamily: "'Outfit', sans-serif" }}
                                 >
                                     Scale Property Expertise
                                 </h3>
@@ -188,7 +240,7 @@ export default function SplitValuePropSection() {
                             <div>
                                 <h3
                                     className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
-                                    style={{ fontFamily: "'DM Serif Display', serif" }}
+                                    style={{ fontFamily: "'Outfit', sans-serif" }}
                                 >
                                     Reveal Portfolio Intelligence
                                 </h3>

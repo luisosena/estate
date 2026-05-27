@@ -1,308 +1,264 @@
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
+import { useRef } from 'react';
+import { Button } from '@/components/ui/button';
 import {
     BarChart3,
     Clock,
     Wallet,
-    MessageSquareOff,
+    MessageSquare,
     Wrench,
     Upload,
-    ArrowLeft,
-    ArrowRight,
-    Check,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 
-const slides = [
+const painPoints = [
     {
-        pain: 'Data Overload',
+        title: 'Workload Anxiety',
+        headline: 'Automate the busywork. Focus on growth.',
+        description: 'Chasing tenants, drafting notices, and writing reminders drains your executive focus. Estate automates routine communications so you can think strategically.',
+        icon: Clock,
+        color: '#C4775A',
+        bgColor: '#FCF9F6',
+        iconBg: '#FAF2ED',
+    },
+    {
+        title: 'Financial Leakage',
+        headline: 'Track every single cent.Stop losing money.',
+        description: 'Unlogged expenses, untracked water bills, and forgotten late fees dissolve your margins. Monitor payments with complete real-time ledger accounting.',
+        icon: Wallet,
+        color: '#8BA888',
+        bgColor: '#F7FAF7',
+        iconBg: '#F1F7F1',
+    },
+    {
+        title: 'Communication Chaos',
+        headline: 'Every resident interaction, logged & auditable.',
+        description: 'Stop digging through scattered emails, personal WhatsApp messages, and SMS history. Keep your landlord-tenant communications secure, indexed, and searchable.',
+        icon: MessageSquare,
+        color: '#C4775A',
+        bgColor: '#FCF9F6',
+        iconBg: '#FAF2ED',
+    },
+    {
+        title: 'Maintenance Tracking',
+        headline: 'Report it. Dispatched. Resolved.',
+        description: 'Tenants log work orders with photos directly from their portal. You assign local vendors, track dispatch statuses, and log repair expenditures seamlessly.',
+        icon: Wrench,
+        color: '#1E88E5',
+        bgColor: '#F4F9FD',
+        iconBg: '#E8F4FD',
+    },
+    {
+        title: 'Onboarding Friction',
+        headline: 'Seamless migration. Zero operational downtime.',
+        description: 'Moving systems should not paralyze your business. Our onboarding integration engineers handle 100% of your initial Excel portfolio imports and unit setups.',
+        icon: Upload,
+        color: '#8BA888',
+        bgColor: '#F7FAF7',
+        iconBg: '#F1F7F1',
+    },
+    {
+        title: 'Data Overload',
         headline: 'One dashboard. Total portfolio control.',
         description: 'Stop juggling scattered spreadsheets, physical notes, and WhatsApp logs. See every property, resident, and shilling in a single unified operating center.',
-        solutions: ['Investor-Grade Metrics', 'Clean Cashflow Analytics', 'Cross-Portfolio Summaries'],
         icon: BarChart3,
-        accentColor: '#D4A853',
-        visual: (
-            <div className="flex flex-col gap-4 h-full justify-center">
-                <div className="bg-white p-4 rounded-xl border border-black">
-                    <div className="h-2 w-20 rounded bg-[#1A1A2E]/10 mb-2" />
-                    <div className="h-6 w-32 rounded bg-[#D4A853]/15 text-[#D4A853] font-bold text-sm flex items-center px-2">TZS 18,400,000</div>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-black">
-                    <div className="flex justify-between items-center mb-2">
-                        <div className="h-2 w-14 rounded bg-[#1A1A2E]/10" />
-                        <div className="h-3.5 w-10 rounded bg-[#8BA888]/15" />
-                    </div>
-                    <div className="h-3 w-full bg-[#1A1A2E]/5 rounded-full overflow-hidden">
-                        <div className="h-full w-4/5 bg-[#8BA888]" />
-                    </div>
-                </div>
-            </div>
-        )
-    },
-    {
-        pain: 'Workload Anxiety',
-        headline: 'Automate the busywork. Focus on growth.',
-        //description: 'Chasing tenants, drafting notices, and writing reminders drains your executive focus. Estate automates routine communications so you can think strategically.',
-        solutions: ['Automated Reminders', 'Auto-Invoice Generation', 'Direct Tenant Alerts'],
-        icon: Clock,
-        accentColor: '#C4775A',
-        visual: (
-            <div className="flex flex-col gap-3 h-full justify-center">
-                {[
-                    { label: 'Invoice Generated', time: '1st of Month', status: 'Done', bg: '#8BA888' },
-                    { label: 'M-Pesa SMS Alert Sent', time: '5th of Month', status: 'Done', bg: '#8BA888' },
-                    { label: 'Late Fee Notice Prepared', time: '7th of Month', status: 'Pending', bg: '#C4775A' }
-                ].map((task, idx) => (
-                    <div key={idx} className="bg-white p-3 rounded-lg border border-black flex justify-between items-center">
-                        <div>
-                            <div className="text-xs font-bold text-[#1A1A2E]" style={{ fontFamily: "'Outfit', sans-serif" }}>{task.label}</div>
-                            <div className="text-[9px] text-[#1A1A2E]/50 mt-0.5">{task.time}</div>
-                        </div>
-                        <span
-                            className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded"
-                            style={{ backgroundColor: `${task.bg}15`, color: task.bg }}
-                        >
-                            {task.status}
-                        </span>
-                    </div>
-                ))}
-            </div>
-        )
-    },
-    {
-        pain: 'Financial Leakage',
-        headline: 'Track every single cent. Close every gap.',
-        //description: 'Unlogged expenses, untracked water bills, and forgotten late fees dissolve your margins. Monitor payments with complete real-time ledger accounting.',
-        solutions: ['Automated Ledger Balance', 'Integrated Expense Logging', 'Auto-Calculated Late Fees'],
-        icon: Wallet,
-        accentColor: '#D4A853',
-        visual: (
-            <div className="flex flex-col gap-4 h-full justify-center">
-                <div className="bg-white p-4 rounded-xl border border-black">
-                    <div className="text-[10px] font-bold text-[#1A1A2E]/40 uppercase tracking-wide mb-2" style={{ fontFamily: "'Outfit', sans-serif" }}>Reconciled Ledger</div>
-                    <div className="flex items-center justify-between border-b border-[#1A1A2E]/5 pb-2">
-                        <span className="text-xs font-semibold text-[#1A1A2E]" style={{ fontFamily: "'Outfit', sans-serif" }}>M-Pesa payment recd.</span>
-                        <span className="text-xs font-bold text-[#8BA888]">+ TZS 1.2M</span>
-                    </div>
-                    <div className="flex items-center justify-between pt-2">
-                        <span className="text-xs font-semibold text-[#1A1A2E]" style={{ fontFamily: "'Outfit', sans-serif" }}>Brokerage commission</span>
-                        <span className="text-xs font-bold text-[#C4775A]">- TZS 120k</span>
-                    </div>
-                </div>
-            </div>
-        )
-    },
-    {
-        pain: 'Communication Chaos',
-        headline: 'Every resident interaction, logged & auditable.',
-        //description: 'Stop digging through scattered emails, personal WhatsApp messages, and SMS history. Keep your landlord-tenant communications secure, indexed, and searchable.',
-        solutions: ['Official Action Tracking', 'Tenant In-App Notices', 'Regulatory Compliance Logs'],
-        icon: MessageSquareOff,
-        accentColor: '#C4775A',
-        visual: (
-            <div className="flex flex-col gap-3 h-full justify-center">
-                <div className="bg-white p-3 rounded-xl border border-black max-w-[85%] self-start text-left">
-                    <div className="text-[8px] font-bold text-[#1A1A2E]/40 uppercase mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>Resident (Apt 4B)</div>
-                    <p className="text-xs text-[#1A1A2E]/80" style={{ fontFamily: "'Outfit', sans-serif" }}>Is the water bill EFD-compliant?</p>
-                </div>
-                <div className="bg-[#1A1A2E] p-3 rounded-xl border border-white/20 max-w-[85%] self-end text-left text-white">
-                    <div className="text-[8px] font-bold text-white/50 uppercase mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>Operations Desk</div>
-                    <p className="text-xs text-white/90" style={{ fontFamily: "'Outfit', sans-serif" }}>Yes Daniel, PDF receipt generated automatically.</p>
-                </div>
-            </div>
-        )
-    },
-    {
-        pain: 'Maintenance Tracking',
-        headline: 'Report it. Dispatched. Resolved.',
-        //description: 'Tenants log work orders with photos directly from their portal. You assign local vendors, track dispatch statuses, and log repair expenditures seamlessly.',
-        solutions: ['Photo-Attached Work Orders', 'Local Vendor Dispatch Boards', 'Expense Book Reconciliation'],
-        icon: Wrench,
-        accentColor: '#8BA888',
-        visual: (
-            <div className="flex flex-col gap-4 h-full justify-center">
-                <div className="bg-white p-4 rounded-xl border border-black">
-                    <div className="flex justify-between items-center mb-3">
-                        <span className="text-xs font-bold text-[#1A1A2E]" style={{ fontFamily: "'Outfit', sans-serif" }}>Work Order WO-294</span>
-                        <span className="h-2 w-2 rounded-full bg-[#D4A853]" />
-                    </div>
-                    <div className="text-xs text-[#1A1A2E]/80" style={{ fontFamily: "'Outfit', sans-serif" }}>Plumbing: Kitchen Leaks</div>
-                    <div className="text-[9px] text-[#1A1A2E]/40 mt-1" style={{ fontFamily: "'Outfit', sans-serif" }}>Assigned to: Fundi Juma</div>
-                </div>
-            </div>
-        )
-    },
-    {
-        pain: 'Onboarding Friction',
-        headline: 'Seamless migration. Zero operational downtime.',
-        //description: 'Moving systems should not paralyze your business. Our onboarding integration engineers handle 100% of your initial Excel portfolio imports and unit setups.',
-        solutions: ['100% Data Migration Support', 'Excel Mapping Engines', 'Instant Tenant Invitations'],
-        icon: Upload,
-        accentColor: '#8BA888',
-        visual: (
-            <div className="flex flex-col gap-3 h-full justify-center items-center">
-                <div className="bg-white p-4 rounded-xl border border-black w-full text-center relative overflow-hidden">
-                    <div className="flex justify-center mb-2">
-                        <Upload className="h-8 w-8 text-[#D4A853]" />
-                    </div>
-                    <div className="text-xs font-bold text-[#1A1A2E]" style={{ fontFamily: "'Outfit', sans-serif" }}>portfolios_dar.xlsx</div>
-                    <div className="text-[9px] text-[#8BA888] mt-1 font-semibold flex items-center justify-center gap-1">
-                        <Check className="h-3 w-3" /> Mapping 42 units complete
-                    </div>
-                </div>
-            </div>
-        )
+        color: '#D4A853',
+        bgColor: '#FDFBF7',
+        iconBg: '#FDF8F0',
     },
 ];
 
 export default function PainSolutionSection() {
     const ref = useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: '-100px' });
-    const [current, setCurrent] = useState(0);
-
-    const nextSlide = () => {
-        setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-    };
-
-    const prevSlide = () => {
-        setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-    };
-
-    useEffect(() => {
-        const interval = setInterval(nextSlide, 2400);
-        return () => clearInterval(interval);
-    }, []);
-
-    const activeSlide = slides[current];
-    const IconComponent = activeSlide.icon;
 
     return (
-        <section ref={ref} className="relative bg-[#FAF7F2] py-8 lg:py-12 overflow-hidden">
-            {/* Subtle background gradient */}
+        <section ref={ref} className="relative bg-[#FAF7F2] py-16 lg:py-20 overflow-hidden border-b border-[#1A1A2E]/5">
+            {/* Subtle background gradients */}
             <div className="absolute inset-0 -z-10">
-                <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-[#D4A853]/5 blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-[#8BA888]/5 blur-3xl" />
+                <div className="absolute top-0 right-1/4 h-96 w-96 rounded-full bg-[#C4775A]/5 blur-3xl" />
+                <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-[#8BA888]/5 blur-3xl" />
             </div>
 
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                {/* Section header */}
+                {/* Left-aligned elegant header */}
                 <motion.div
-                    className="mx-auto max-w-2xl text-center mb-16 lg:mb-20"
+                    className="text-left mb-10 lg:mb-12 max-w-4xl"
                     initial={{ opacity: 0, y: 30 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
                     <h2
-                        className="text-4xl font-bold tracking-tight text-[#1A1A2E] sm:text-5xl"
-                        style={{ fontFamily: "'Manrope', sans-serif" }}
-                    >
-                        Built around the problems you actually face.
-                    </h2>
-                    <p
-                        className="mt-4 text-base sm:text-lg text-[#1A1A2E]/55"
+                        className="text-4xl md:text-6xl font-normal text-[#1A1A2E] leading-tight"
                         style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
-                        We designed Estate to replace physical hurdles with modern operational elegance.
-                    </p>
+                        Built around the problems<br />you actually face
+                    </h2>
                 </motion.div>
 
-                {/* Slideshow Selector Tabs (Clickable navigation list) */}
-                <div className="hidden lg:flex justify-center gap-2 mb-10 overflow-x-auto pb-2 relative z-10">
-                    {slides.map((slide, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setCurrent(idx)}
-                            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-300 ${current === idx
-                                ? 'bg-[#1A1A2E] text-white border border-white/20'
-                                : 'bg-white border border-[#1A1A2E]/8 text-[#1A1A2E]/55 hover:text-[#1A1A2E] hover:bg-white'
-                                }`}
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
-                            {slide.pain}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Main Slideshow Frame */}
-                <div className="relative mx-auto max-w-4xl min-h-[420px] bg-white rounded-3xl border border-black p-6 sm:p-10 flex flex-col justify-between overflow-hidden">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={current}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.35, ease: 'easeOut' }}
-                            className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center flex-1"
-                        >
-                            {/* Left Content Side */}
-                            <div className="text-left flex flex-col justify-center">
-                                <h3
-                                    className="text-2xl sm:text-3xl font-normal text-[#1A1A2E] leading-tight mb-4"
-                                    style={{ fontFamily: "'DM Serif Display', serif" }}
-                                >
-                                    {activeSlide.headline}
-                                </h3>
-
-                                {/* Solution Pills */}
-                                <div className="flex flex-col gap-2">
-                                    {activeSlide.solutions.map((sol, idx) => (
-                                        <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-[#1A1A2E]/80">
-                                            <div className="h-4.5 w-4.5 rounded-full bg-[#8BA888]/15 flex items-center justify-center text-[#8BA888] shrink-0">
-                                                <Check className="h-3 w-3" />
-                                            </div>
-                                            <span style={{ fontFamily: "'Outfit', sans-serif" }}>{sol}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Right Visual Side */}
-                            <div className="bg-[#FAF7F2] rounded-2xl border border-[#1A1A2E]/5 p-6 h-[260px] flex flex-col justify-center relative overflow-hidden select-none">
-                                {/* Small visual chart / mockup representation */}
-                                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                                    <IconComponent className="h-28 w-28 text-[#1A1A2E]" />
-                                </div>
-                                <div className="relative z-10 w-full">
-                                    {activeSlide.visual}
-                                </div>
-                            </div>
-                        </motion.div>
-                    </AnimatePresence>
-
-                    {/* Bottom Controls Panel */}
-                    <div className="mt-8 pt-6 border-t border-[#1A1A2E]/5 flex items-center justify-between">
-                        {/* Dot Paginations */}
-                        <div className="flex gap-2">
-                            {slides.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => setCurrent(idx)}
-                                    className={`h-2 rounded-full transition-all duration-300 ${current === idx ? 'w-6 bg-[#1A1A2E]' : 'w-2 bg-[#1A1A2E]/15'
-                                        }`}
-                                    aria-label={`Go to slide ${idx + 1}`}
-                                />
-                            ))}
+                {/* Main Content Split: 35% Left Column, 65% Right Column */}
+                <div className="grid grid-cols-1 lg:grid-cols-[0.35fr_0.65fr] gap-12 lg:gap-16 items-stretch">
+                    {/* Left Column: Anchor Intro Card */}
+                    <motion.div
+                        className="relative flex flex-col justify-between bg-[#F1EFEA] rounded-[24px] p-8 md:p-10 min-h-[520px] overflow-hidden border border-[#1A1A2E]/5"
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={isInView ? { opacity: 1, x: 0 } : {}}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                        <div className="relative z-10">
+                            <p
+                                className="text-[#1A1A2E]/80 text-base leading-relaxed mb-8 font-normal"
+                                style={{ fontFamily: "'Outfit', sans-serif" }}
+                            >
+                                Property operations are full of hidden friction. Legacy systems demand manual entries, disjointed WhatsApp logs, and continuous tenant chasing. We built Estate to replace these operational hurdles with automation and clarity, saving you time and protecting your margins.
+                            </p>
+                            <Button
+                                className="rounded-full bg-[#1A1A2E] hover:bg-[#2A2A4E] text-[#FAF7F2] text-sm font-semibold px-6 py-3 h-auto w-fit transition-all duration-200"
+                                style={{ fontFamily: "'Outfit', sans-serif" }}
+                            >
+                                View full features
+                            </Button>
                         </div>
 
-                        {/* Navigation Arrows */}
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={prevSlide}
-                                className="h-9 w-9 rounded-full border border-[#1A1A2E]/10 bg-white hover:bg-[#1A1A2E]/5 text-[#1A1A2E] flex items-center justify-center transition-colors"
-                                aria-label="Previous Slide"
-                            >
-                                <ArrowLeft className="h-4 w-4" />
-                            </button>
-                            <button
-                                onClick={nextSlide}
-                                className="h-9 w-9 rounded-full border border-[#1A1A2E]/10 bg-white hover:bg-[#1A1A2E]/5 text-[#1A1A2E] flex items-center justify-center transition-colors"
-                                aria-label="Next Slide"
-                            >
-                                <ArrowRight className="h-4 w-4" />
-                            </button>
+                        {/* Bottom Graphic: Clean dashboard automation concept */}
+                        <div className="absolute bottom-0 left-0 w-full h-[220px] pointer-events-none select-none">
+                            <svg viewBox="0 0 360 220" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    {/* Gradients */}
+                                    <linearGradient id="premiumGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#C4775A" stopOpacity="0.15" />
+                                        <stop offset="50%" stopColor="#8BA888" stopOpacity="0.05" />
+                                        <stop offset="100%" stopColor="#D4A853" stopOpacity="0.15" />
+                                    </linearGradient>
+                                    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+                                        <stop offset="100%" stopColor="#FAF7F2" stopOpacity="0.9" />
+                                    </linearGradient>
+                                    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="#C4775A" />
+                                        <stop offset="100%" stopColor="#E5A285" />
+                                    </linearGradient>
+                                    <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stopColor="#8BA888" stopOpacity="0.4" />
+                                        <stop offset="100%" stopColor="#8BA888" stopOpacity="0.0" />
+                                    </linearGradient>
+
+                                    {/* Shadow Filter */}
+                                    <filter id="premiumShadow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
+                                        <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#1A1A2E" floodOpacity="0.06" />
+                                    </filter>
+                                </defs>
+
+                                {/* Ambient Glow Background */}
+                                <circle cx="180" cy="130" r="100" fill="url(#premiumGlow)" filter="blur(20px)" />
+
+                                {/* Grid Background Lines */}
+                                <g stroke="#1A1A2E" strokeWidth="0.5" strokeOpacity="0.03">
+                                    <line x1="20" y1="40" x2="340" y2="40" />
+                                    <line x1="20" y1="80" x2="340" y2="80" />
+                                    <line x1="20" y1="120" x2="340" y2="120" />
+                                    <line x1="20" y1="160" x2="340" y2="160" />
+                                    <line x1="60" y1="20" x2="60" y2="200" />
+                                    <line x1="140" y1="20" x2="140" y2="200" />
+                                    <line x1="220" y1="20" x2="220" y2="200" />
+                                    <line x1="300" y1="20" x2="300" y2="200" />
+                                </g>
+
+                                {/* Main Glassmorphic Panel / Dashboard */}
+                                <rect x="40" y="45" width="280" height="175" rx="16" fill="url(#cardBg)" stroke="#1A1A2E" strokeWidth="1" strokeOpacity="0.06" filter="url(#premiumShadow)" />
+
+                                {/* Browser Toolbar */}
+                                <rect x="40" y="45" width="280" height="28" rx="16" fill="#1A1A2E" fillOpacity="0.02" />
+                                <circle cx="56" cy="59" r="4.5" fill="#C4775A" fillOpacity="0.8" />
+                                <circle cx="68" cy="59" r="4.5" fill="#D4A853" fillOpacity="0.8" />
+                                <circle cx="80" cy="59" r="4.5" fill="#8BA888" fillOpacity="0.8" />
+                                <rect x="110" y="53" width="140" height="12" rx="6" fill="#1A1A2E" fillOpacity="0.04" />
+                                <line x1="40" y1="73" x2="320" y2="73" stroke="#1A1A2E" strokeWidth="1" strokeOpacity="0.05" />
+
+                                {/* Chart Widget (Left Side of Dashboard) */}
+                                <g transform="translate(60, 90)">
+                                    {/* Mini Header */}
+                                    <rect x="0" y="0" width="45" height="6" rx="3" fill="#1A1A2E" fillOpacity="0.3" />
+                                    <rect x="0" y="10" width="80" height="10" rx="4" fill="#1A1A2E" fillOpacity="0.15" />
+
+                                    {/* Chart Graph */}
+                                    <path d="M0,75 L0,55 C15,45 25,60 40,35 C55,10 70,45 85,25 C100,5 110,15 120,5 L120,75 Z" fill="url(#chartGrad)" />
+                                    <path d="M0,55 C15,45 25,60 40,35 C55,10 70,45 85,25 C100,5 110,15 120,5" stroke="#8BA888" strokeWidth="2.5" strokeLinecap="round" />
+
+                                    {/* Chart Dots & Highlights */}
+                                    <circle cx="85" cy="25" r="4" fill="#FFFFFF" stroke="#8BA888" strokeWidth="2.5" />
+                                    <circle cx="120" cy="5" r="4" fill="#FFFFFF" stroke="#8BA888" strokeWidth="2.5" />
+
+                                    {/* Dynamic Pulse Ring around the highest point */}
+                                    <circle cx="120" cy="5" r="8" stroke="#8BA888" strokeWidth="1" strokeOpacity="0.5" />
+                                </g>
+
+                                {/* Notification / Activity Widget (Right Side of Dashboard, overlapping) */}
+                                <g transform="translate(200, 105)" filter="url(#premiumShadow)">
+                                    {/* Glassmorphic Alert Card */}
+                                    <rect x="-10" y="-15" width="120" height="75" rx="12" fill="#FFFFFF" stroke="#1A1A2E" strokeWidth="1" strokeOpacity="0.05" />
+
+                                    {/* Action Status Bar (Accent Color) */}
+                                    <path d="M-9, -14 H109 V-6 H-9 Z" fill="url(#accentGrad)" opacity="0.9" className="rounded-t-lg" style={{ clipPath: "inset(0px round 12px 12px 0px 0px)" }} />
+
+                                    {/* Mini Avatar or Icon */}
+                                    <circle cx="12" cy="18" r="9" fill="#C4775A" fillOpacity="0.15" />
+                                    <path d="M9 18 L11 20 L15 16" stroke="#C4775A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+
+                                    {/* Text Rows in Alert */}
+                                    <rect x="27" y="11" width="65" height="5" rx="2.5" fill="#1A1A2E" fillOpacity="0.35" />
+                                    <rect x="27" y="20" width="45" height="4" rx="2" fill="#1A1A2E" fillOpacity="0.15" />
+
+                                    {/* Value badge */}
+                                    <rect x="12" y="36" width="80" height="14" rx="7" fill="#FAF2ED" />
+                                    <rect x="20" y="41" width="64" height="4" rx="2" fill="#C4775A" fillOpacity="0.75" />
+                                </g>
+
+                                {/* Connecting Flow / Sparkle Spark */}
+                                <path d="M260 65 L263 71 L269 73 L263 75 L260 81 L257 75 L251 73 L257 71 Z" fill="#D4A853" opacity="0.8" />
+                                <path d="M305 190 L307 194 L311 195 L307 196 L305 200 L303 196 L299 195 L303 194 Z" fill="#8BA888" opacity="0.8" />
+                            </svg>
                         </div>
-                    </div>
+                    </motion.div>
+
+                    {/* Right Column: 2x3 Feature Pain-Solution Grid */}
+                    <motion.div
+                        className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 lg:gap-x-16 lg:gap-y-10 py-4"
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={isInView ? { opacity: 1, x: 0 } : {}}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                    >
+                        {painPoints.map((item, index) => {
+                            const Icon = item.icon;
+                            return (
+                                <div key={index} className="flex flex-col items-start gap-4">
+                                    {/* Icon container */}
+                                    <div
+                                        className="rounded-xl p-2.5 border border-[#1A1A2E]/5 shadow-sm"
+                                        style={{ backgroundColor: item.iconBg }}
+                                    >
+                                        <Icon className="h-6 w-6 shrink-0" style={{ color: item.color }} />
+                                    </div>
+                                    <div>
+                                        <h3
+                                            className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
+                                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                                        >
+                                            {item.headline}
+                                        </h3>
+                                        <p
+                                            className="text-sm leading-relaxed text-[#1A1A2E]/60 font-normal"
+                                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                                        >
+                                            {item.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </motion.div>
                 </div>
             </div>
         </section>
     );
 }
+

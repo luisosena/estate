@@ -1,12 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 
-const standards = [
-    { value: '100%', label: 'API Reconciliation Sync' },
-    { value: '12 Hours', label: 'Average Maintenance SLA' },
-    { value: 'Zero', label: 'Manual Reconciliation Paperwork' },
-];
-
 const caseStudies = [
     {
         quote: "Deploying the automated M-Pesa ledger reconciliation saved our accounting team 18 hours of bank statement auditing every single month. The API matches incoming mobile transactions to respective apartments instantly.",
@@ -38,33 +32,6 @@ export default function TestimonialsSection() {
     return (
         <section ref={ref} className="relative bg-white py-24 lg:py-32">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                {/* Stats Strip */}
-                <motion.div
-                    className="mb-24 rounded-2xl border border-[#1A1A2E]/5 bg-[#FAF7F2] py-8 lg:py-10"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.5 }}
-                >
-                    <div className="grid grid-cols-1 divide-y divide-[#1A1A2E]/5 sm:grid-cols-3 sm:divide-y-0 sm:divide-x">
-                        {standards.map((std, i) => (
-                            <div key={i} className="flex flex-col items-center justify-center py-6 sm:py-0 text-center px-4">
-                                <div
-                                    className="text-3xl font-normal text-[#1A1A2E] lg:text-4xl"
-                                    style={{ fontFamily: "'DM Serif Display', serif" }}
-                                >
-                                    {std.value}
-                                </div>
-                                <div
-                                    className="mt-2 text-xs font-bold tracking-wide text-[#1A1A2E]/50 uppercase"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
-                                    {std.label}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </motion.div>
-
                 {/* Header */}
                 <motion.div
                     className="mx-auto max-w-2xl text-center"
@@ -72,12 +39,6 @@ export default function TestimonialsSection() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                    <p
-                        className="mb-4 text-xs font-bold tracking-widest uppercase text-[#D4A853]"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
-                        Closed Pilot Validation
-                    </p>
                     <h2
                         className="text-3xl font-normal text-[#1A1A2E] sm:text-4xl"
                         style={{ fontFamily: "'DM Serif Display', serif" }}

@@ -18,7 +18,7 @@ const megaMenuItems = [
         title: 'Rent & Billing',
         description: 'Automated rent reconciliation with M-Pesa, Airtel Money & banks.',
         icon: Receipt,
-        href: '#billing',
+        href: '/features#rent-billing',
     },
     {
         title: 'Maintenance & SLAs',
@@ -42,7 +42,7 @@ const megaMenuItems = [
         title: 'Utility Management',
         description: 'Automated LUKU token tracking, water, and utility reconciliation.',
         icon: Zap,
-        href: '#utilities',
+        href: '/features#utility-management',
     },
 ];
 
@@ -144,24 +144,35 @@ export default function Navbar() {
                                 onMouseEnter={handleOpen}
                             >
                                 <Button
+                                    asChild
                                     variant="ghost"
                                     className="flex items-center gap-1 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 rounded-lg px-3 py-2 h-auto"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                    style={{ fontFamily: "'Nunito', sans-serif" }}
                                 >
-                                    What we offer
-                                    <ChevronDown
-                                        className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                                            offerOpen ? 'rotate-180' : ''
-                                        }`}
-                                    />
+                                    <Link href="/features">
+                                        What we offer
+                                        <ChevronDown
+                                            className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                                                offerOpen ? 'rotate-180' : ''
+                                            }`}
+                                        />
+                                    </Link>
                                 </Button>
                             </div>
+                            <Link
+                                href="/features"
+                                className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
+                                style={{ fontFamily: "'Nunito', sans-serif" }}
+                                onMouseEnter={handleClose}
+                            >
+                                Features
+                            </Link>
                             {['How It Works', 'Roadmap'].map((item) => (
                                 <a
                                     key={item}
                                     href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
                                     className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                    style={{ fontFamily: "'Nunito', sans-serif" }}
                                     onMouseEnter={handleClose}
                                 >
                                     {item}
@@ -176,7 +187,7 @@ export default function Navbar() {
                                     asChild
                                     variant="ghost"
                                     className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                    style={{ fontFamily: "'Nunito', sans-serif" }}
                                     onMouseEnter={handleClose}
                                 >
                                     <Link href="/login">
@@ -186,7 +197,7 @@ export default function Navbar() {
                                 <Button
                                     asChild
                                     className="rounded-full bg-[#1A1A2E] px-6 py-2.5 text-sm font-medium tracking-wide text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E]"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                    style={{ fontFamily: "'Nunito', sans-serif" }}
                                     onMouseEnter={handleClose}
                                 >
                                     <Link href="/register">
@@ -214,39 +225,30 @@ export default function Navbar() {
                                             <div className="flex flex-col gap-4">
                                                 <div>
                                                     <Button
+                                                        asChild
                                                         variant="ghost"
-                                                        onClick={() => setMobileOfferOpen(!mobileOfferOpen)}
                                                         className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E] px-0 hover:bg-transparent h-auto"
-                                                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
                                                     >
-                                                        What we offer
-                                                        <ChevronDown
-                                                            className={`h-4 w-4 transition-transform duration-200 ${
-                                                                mobileOfferOpen ? 'rotate-180' : ''
-                                                            }`}
-                                                        />
+                                                        <Link href="/features">
+                                                            What we offer
+                                                            <ChevronDown className="h-4 w-4" />
+                                                        </Link>
                                                     </Button>
-                                                    {mobileOfferOpen && (
-                                                        <div className="mt-2 space-y-1 pl-4">
-                                                            {megaMenuItems.map((item) => (
-                                                                <a
-                                                                    key={item.title}
-                                                                    href={item.href}
-                                                                    className="block rounded-lg px-4 py-2.5 text-base font-medium text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E]"
-                                                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                                                >
-                                                                    {item.title}
-                                                                </a>
-                                                            ))}
-                                                        </div>
-                                                    )}
                                                 </div>
+                                                <Link
+                                                    href="/features"
+                                                    className="block text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E]"
+                                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                >
+                                                    Features
+                                                </Link>
                                                 {['How It Works', 'Roadmap'].map((item) => (
                                                     <a
                                                         key={item}
                                                         href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
                                                         className="text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E]"
-                                                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
                                                     >
                                                         {item}
                                                     </a>
@@ -258,7 +260,7 @@ export default function Navbar() {
                                                     asChild
                                                     variant="outline"
                                                     className="inline-flex items-center justify-center rounded-full border border-[#1A1A2E]/15 px-6 py-3 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/5 bg-transparent"
-                                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                                    style={{ fontFamily: "'Nunito', sans-serif" }}
                                                 >
                                                     <Link href="/login">
                                                         Sign in
@@ -267,7 +269,7 @@ export default function Navbar() {
                                                 <Button
                                                     asChild
                                                     className="inline-flex items-center justify-center rounded-full bg-[#1A1A2E] px-6 py-3 text-sm font-medium tracking-wide text-[#FAF7F2] transition-colors hover:bg-[#2A2A4E]"
-                                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                                    style={{ fontFamily: "'Nunito', sans-serif" }}
                                                 >
                                                     <Link href="/register">
                                                         Get Started
@@ -305,13 +307,13 @@ export default function Navbar() {
                                                 <div className="pt-0.5">
                                                     <div
                                                         className="text-sm font-semibold text-[#1A1A2E]"
-                                                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
                                                     >
                                                         {item.title}
                                                     </div>
                                                     <div
                                                         className="mt-0.5 text-xs leading-relaxed text-[#1A1A2E]/60"
-                                                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
                                                     >
                                                         {item.description}
                                                     </div>
