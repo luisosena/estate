@@ -8,6 +8,17 @@
         "Rental management"
     ],
     "license": "MIT",
+    "homepage": "https://github.com/luisosena/estate-practice",
+    "support": {
+        "issues": "https://github.com/luisosena/estate-practice/issues",
+        "source": "https://github.com/luisosena/estate-practice"
+    },
+    "authors": [
+        {
+            "name": "Luis Osena",
+            "email": "luisosena2@gmail.com"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
