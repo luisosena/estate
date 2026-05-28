@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion';
-import { Building2, ChevronDown, Menu, Receipt, ShieldCheck, TrendingUp, Wrench, Zap } from 'lucide-react';
+import { Building2, ChevronDown, Menu, Receipt, ShieldCheck, TrendingUp, Wrench, Zap, Smartphone, BookOpen, Video, FileText, HelpCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -46,14 +46,50 @@ const megaMenuItems = [
     },
 ];
 
+const resourcesMenuItems = [
+    {
+        title: 'Mobile App',
+        description: 'Manage properties on the go with our iOS and Android apps.',
+        icon: Smartphone,
+        href: '/resources/mobile-app',
+    },
+    {
+        title: 'Documentation',
+        description: 'Comprehensive guides and API documentation.',
+        icon: BookOpen,
+        href: '/resources/docs',
+    },
+    {
+        title: 'Video Tutorials',
+        description: 'Step-by-step video guides for all features.',
+        icon: Video,
+        href: '/resources/tutorials',
+    },
+    {
+        title: 'Blog',
+        description: 'Latest news, tips, and industry insights.',
+        icon: FileText,
+        href: '/resources/blog',
+    },
+    {
+        title: 'Help Center',
+        description: 'FAQs and support resources.',
+        icon: HelpCircle,
+        href: '/resources/help',
+    },
+];
+
 export default function Navbar() {
     const { scrollY } = useScroll();
     const [scrolled, setScrolled] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [offerOpen, setOfferOpen] = useState(false);
+    const [resourcesOpen, setResourcesOpen] = useState(false);
     const [navbarExpanded, setNavbarExpanded] = useState(false);
     const [mobileOfferOpen, setMobileOfferOpen] = useState(false);
+    const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
     const offerRef = useRef<HTMLDivElement>(null);
+    const resourcesRef = useRef<HTMLDivElement>(null);
     const openTimer = useRef<ReturnType<typeof setTimeout>>(null);
     const closeTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
@@ -75,6 +111,21 @@ export default function Navbar() {
         if (!offerOpen) {
             openTimer.current = setTimeout(() => {
                 setOfferOpen(true);
+                setResourcesOpen(false);
+                setNavbarExpanded(true);
+            }, 80);
+        }
+    };
+
+    const handleResourcesOpen = () => {
+        if (closeTimer.current) {
+            clearTimeout(closeTimer.current);
+            closeTimer.current = null;
+        }
+        if (!resourcesOpen) {
+            openTimer.current = setTimeout(() => {
+                setResourcesOpen(true);
+                setOfferOpen(false);
                 setNavbarExpanded(true);
             }, 80);
         }
@@ -85,13 +136,16 @@ export default function Navbar() {
             clearTimeout(openTimer.current);
             openTimer.current = null;
         }
-        closeTimer.current = setTimeout(() => setOfferOpen(false), 150);
+        closeTimer.current = setTimeout(() => {
+            setOfferOpen(false);
+            setResourcesOpen(false);
+        }, 150);
     };
 
     return (
         <>
             <AnimatePresence>
-                {offerOpen && (
+                {(offerOpen || resourcesOpen) && (
                     <motion.div
                         className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
                         initial={{ opacity: 0 }}
@@ -158,16 +212,37 @@ export default function Navbar() {
                                     </Link>
                                 </Button>
                             </div>
-                            {['How It Works', 'Roadmap'].map((item) => (
-                                <a
+                            <div
+                                ref={resourcesRef}
+                                className="relative"
+                                onMouseEnter={handleResourcesOpen}
+                            >
+                                <Button
+                                    asChild
+                                    variant="ghost"
+                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 rounded-lg px-3 py-2 h-auto"
+                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                >
+                                    <Link href="/resources">
+                                        Resources
+                                        <ChevronDown
+                                            className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                                                resourcesOpen ? 'rotate-180' : ''
+                                            }`}
+                                        />
+                                    </Link>
+                                </Button>
+                            </div>
+                            {['About', 'Contact'].map((item) => (
+                                <Link
                                     key={item}
-                                    href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
+                                    href={item === 'About' ? '/about' : item === 'Contact' ? '/contact' : `#${item.toLowerCase().replace(/\s+/g, '-')}`}
                                     className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
                                     style={{ fontFamily: "'Nunito', sans-serif" }}
                                     onMouseEnter={handleClose}
                                 >
                                     {item}
-                                </a>
+                                </Link>
                             ))}
                         </div>
 
@@ -227,15 +302,28 @@ export default function Navbar() {
                                                         </Link>
                                                     </Button>
                                                 </div>
-                                                {['How It Works', 'Roadmap'].map((item) => (
-                                                    <a
+                                                <div>
+                                                    <Button
+                                                        asChild
+                                                        variant="ghost"
+                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E] px-0 hover:bg-transparent h-auto"
+                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                    >
+                                                        <Link href="/resources">
+                                                            Resources
+                                                            <ChevronDown className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                </div>
+                                                {['About', 'Contact'].map((item) => (
+                                                    <Link
                                                         key={item}
-                                                        href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
+                                                        href={item === 'About' ? '/about' : item === 'Contact' ? '/contact' : `#${item.toLowerCase().replace(/\s+/g, '-')}`}
                                                         className="text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E]"
                                                         style={{ fontFamily: "'Nunito', sans-serif" }}
                                                     >
                                                         {item}
-                                                    </a>
+                                                    </Link>
                                                 ))}
                                             </div>
                                             <Separator className="bg-[#1A1A2E]/10" />
@@ -280,6 +368,45 @@ export default function Navbar() {
                                 <div className="mx-auto max-w-5xl px-6 pb-12 pt-8 lg:px-8">
                                     <div className="grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
                                         {megaMenuItems.map((item) => (
+                                            <a
+                                                key={item.title}
+                                                href={item.href}
+                                                className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-[#1A1A2E]/5"
+                                            >
+                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors group-hover/mega:bg-[#1A1A2E] group-hover/mega:text-white">
+                                                    <item.icon className="h-5 w-5" />
+                                                </div>
+                                                <div className="pt-0.5">
+                                                    <div
+                                                        className="text-sm font-semibold text-[#1A1A2E]"
+                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                    >
+                                                        {item.title}
+                                                    </div>
+                                                    <div
+                                                        className="mt-0.5 text-xs leading-relaxed text-[#1A1A2E]/60"
+                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                    >
+                                                        {item.description}
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                        {resourcesOpen && (
+                            <motion.div
+                                className="w-full overflow-hidden border-t border-[#1A1A2E]/6 bg-transparent"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            >
+                                <div className="mx-auto max-w-5xl px-6 pb-12 pt-8 lg:px-8">
+                                    <div className="grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
+                                        {resourcesMenuItems.map((item) => (
                                             <a
                                                 key={item.title}
                                                 href={item.href}
