@@ -1,11 +1,11 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "luisosena/estate",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "A modern property management software.",
     "keywords": [
-        "laravel",
-        "framework"
+        "Property management",
+        "Rental management"
     ],
     "license": "MIT",
     "require": {
