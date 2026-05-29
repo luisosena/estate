@@ -75,7 +75,7 @@ function FeatureRow({ eyebrow, headline, description, points, isReversed, bgColo
                     >
                         <div className="relative mx-auto max-w-[600px]">
                             {/* Browser Chrome */}
-                            <div className="overflow-hidden rounded-xl border border-[#1A1A2E]/10 bg-white shadow-2xl shadow-[#1A1A2E]/10">
+                            <div className="overflow-hidden rounded-xl border border-black bg-white">
                                 {/* Title bar */}
                                 <div className="flex items-center gap-2 border-b border-[#1A1A2E]/5 bg-[#FAFAFA] px-4 py-2.5">
                                     <div className="flex gap-1.5">
@@ -121,16 +121,16 @@ export default function ProductPreviewSection() {
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="rounded-lg border border-[#1A1A2E]/5 bg-white p-4 shadow-sm">
+                            <div className="rounded-lg border border-black bg-white p-4">
                                 <div className="h-2 w-16 rounded bg-[#1A1A2E]/10 mb-3" />
                                 <div className="h-6 w-24 rounded bg-[#D4A853]/20" />
                             </div>
-                            <div className="rounded-lg border border-[#1A1A2E]/5 bg-white p-4 shadow-sm">
+                            <div className="rounded-lg border border-black bg-white p-4">
                                 <div className="h-2 w-16 rounded bg-[#1A1A2E]/10 mb-3" />
                                 <div className="h-6 w-16 rounded bg-[#8BA888]/20" />
                             </div>
                         </div>
-                        <div className="flex-1 rounded-lg border border-[#1A1A2E]/5 bg-white p-4 shadow-sm">
+                        <div className="flex-1 rounded-lg border border-black bg-white p-4">
                             <div className="h-3 w-24 rounded bg-[#1A1A2E]/10 mb-4" />
                             <div className="flex flex-col gap-3">
                                 {[1, 2, 3].map(i => (
@@ -164,7 +164,7 @@ export default function ProductPreviewSection() {
                 bgColor="bg-[#FAF7F2]"
                 mockup={
                     <div className="flex flex-col gap-4">
-                        <div className="rounded-lg border border-[#1A1A2E]/5 bg-white p-5 shadow-sm relative overflow-hidden">
+                        <div className="rounded-lg border border-black bg-white p-5 relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-10">
                                 <svg className="h-16 w-16 text-[#D4A853]" fill="currentColor" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.65 0 1.12-.97 1.93-2.73 1.93-1.97 0-2.81-1-2.92-2.3H7.3c.12 2.17 1.55 3.51 3.5 3.93V21h3v-2.1c1.94-.46 3.5-1.76 3.5-3.83 0-2.61-2-3.5-5.5-4.17z"/></svg>
                             </div>
@@ -185,11 +185,11 @@ export default function ProductPreviewSection() {
                         </div>
                         
                         <div className="flex gap-4">
-                            <div className="flex-1 rounded-lg border border-[#1A1A2E]/5 bg-white p-4 shadow-sm">
+                            <div className="flex-1 rounded-lg border border-black bg-white p-4">
                                 <div className="h-2 w-16 rounded bg-[#1A1A2E]/10 mb-2" />
                                 <div className="h-4 w-full rounded bg-[#1A1A2E]/5" />
                             </div>
-                            <div className="flex-1 rounded-lg border border-[#1A1A2E]/5 bg-white p-4 shadow-sm border-l-4 border-l-[#C4775A]">
+                            <div className="flex-1 rounded-lg border border-black bg-white p-4 border-l-4 border-l-[#C4775A]">
                                 <div className="h-2 w-16 rounded bg-[#1A1A2E]/10 mb-2" />
                                 <div className="h-4 w-full rounded bg-[#C4775A]/20" />
                             </div>
@@ -222,7 +222,7 @@ export default function ProductPreviewSection() {
                             { title: 'AC Filter Replacement', unit: 'Unit 2A', priority: 'Low', color: '#8BA888' },
                             { title: 'Broken Light Fixture', unit: 'Unit 1C', priority: 'Medium', color: '#D4A853' }
                         ].map((issue, i) => (
-                            <div key={i} className="rounded border border-[#1A1A2E]/5 bg-white p-3 shadow-sm flex gap-3">
+                            <div key={i} className="rounded border border-black bg-white p-3 flex gap-3">
                                 <div className="h-12 w-12 rounded bg-[#1A1A2E]/5 shrink-0 flex items-center justify-center">
                                     <svg className="h-5 w-5 text-[#1A1A2E]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                 </div>

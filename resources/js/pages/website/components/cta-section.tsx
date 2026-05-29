@@ -2,6 +2,8 @@ import { Link } from '@inertiajs/react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 
+import { Button } from '@/components/ui/button';
+
 export default function CtaSection() {
     const ref = useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: '-80px' });
@@ -32,40 +34,37 @@ export default function CtaSection() {
                         className="text-3xl font-normal text-white sm:text-4xl lg:text-5xl"
                         style={{ fontFamily: "'DM Serif Display', serif" }}
                     >
-                        Ready to simplify your property management?
+                        Partner with us to modernize your operations.
                     </h2>
                     <p
-                        className="mx-auto mt-6 max-w-xl text-lg text-white/80"
+                        className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-white/80"
                         style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
-                        Join thousands of landlords and tenants who trust Estate to run their
-                        properties. Start free — no credit card required.
+                        Estate is currently onboarding selective real estate portfolios and asset managers for our rolling-launch pilot.
+                        Get in touch to lock in your cohort onboarding and secure dedicated operational support.
                     </p>
 
                     <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-                        <Link
-                            href="/register"
-                            className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold tracking-wide text-[#1A1A2E] shadow-lg shadow-black/10 transition-all duration-300 hover:shadow-xl hover:shadow-black/15"
+                        <Button
+                            asChild
+                            variant="secondary"
+                            size="lg"
+                            className="group rounded-full bg-white px-8 py-6 text-sm font-bold tracking-wide text-[#1A1A2E] border border-black transition-all duration-300 hover:bg-white/90"
                             style={{ fontFamily: "'Outfit', sans-serif" }}
                         >
-                            Get Started For Free
-                            <svg
-                                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                        </Link>
-                        <Link
-                            href="/login"
-                            className="inline-flex items-center gap-2 rounded-full border-2 border-white/30 px-8 py-4 text-sm font-semibold tracking-wide text-white transition-all duration-300 hover:border-white/60 hover:bg-white/10"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
-                            Sign In
-                        </Link>
+                            <Link href="/register">
+                                Get Started
+                                <svg
+                                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </Link>
+                        </Button>
                     </div>
                 </motion.div>
             </div>

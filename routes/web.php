@@ -31,6 +31,18 @@ Route::get('/', function () {
     return Inertia::render('website/home');
 })->name('home');
 
+Route::get('/features', function () {
+    return Inertia::render('website/features');
+})->name('features');
+
+Route::get('/about', function () {
+    return Inertia::render('website/about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return Inertia::render('website/contact');
+})->name('contact');
+
 Route::middleware(['auth'])->group(function () {
     // Admin Routes
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])

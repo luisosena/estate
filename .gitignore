@@ -26,6 +26,12 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/.agent
+/.agents
+/.cursor
+/.kilocode
+/.windsurf
+
 
 # -----------------------------------------------
 # Dev artifact files — never commit these

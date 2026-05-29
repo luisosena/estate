@@ -1,13 +1,24 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "luisosena/estate",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "A modern property management software.",
     "keywords": [
-        "laravel",
-        "framework"
+        "Property management",
+        "Rental management"
     ],
     "license": "MIT",
+    "homepage": "https://github.com/luisosena/estate-practice",
+    "support": {
+        "issues": "https://github.com/luisosena/estate-practice/issues",
+        "source": "https://github.com/luisosena/estate-practice"
+    },
+    "authors": [
+        {
+            "name": "Luis Osena",
+            "email": "luisosena2@gmail.com"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
