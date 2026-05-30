@@ -7,8 +7,8 @@
 
 ## Current Status
 
-**Active branch:** `chore/backend-refactoring-pt2`
-**Last updated:** 2026-05-22
+**Active branch:** `main`
+**Last updated:** 2026-05-30
 
 ### Milestone Completion Overview
 
@@ -21,10 +21,11 @@
 | Document storage system | ✅ Complete | Polymorphic attachments, web + mobile UI, 49 tests, soft deletes |
 | Mobile app (React Native/Expo) | ✅ Complete | Landlord + tenant screens + document support + push notifications |
 | API strict versioning (`/api/v1/`) | ✅ Complete | Unversioned routes removed |
-| Test suite | ✅ Complete | 484 tests, 1431 assertions |
+| Test suite | ✅ Complete | 512 tests, 1561 assertions |
 | Notification system | ✅ Complete | 10 notification types, 5 channels (database, mail, WhatsApp, Expo push, WebSocket broadcast), admin notifications, real-time toast, push token management |
 | Analytics & reporting | ✅ Complete | Revenue charts, payment collection charts, CSV/PDF exports, admin audit reports |
 | Landing page | ✅ Complete | 9-section editorial redesign with bento grid, animations, responsive |
+| CSV bulk import | ✅ Complete | CSV upload, dry-run preview, row-level validation, batch history, per-row transactions, auto user creation, 28 tests |
 | Payment gateway layer | ⚠️ Scaffolded | Wired but not activated |
 
 ---
@@ -67,21 +68,24 @@
 
 ---
 
-### Excel Onboarding
+### CSV Bulk Import
 
-**Goal:** Allow landlords to bulk-import existing data (properties, units, tenants, tenancies, payment history) from Excel spreadsheets.
+**Goal:** Allow landlords to bulk-import existing data (properties, units, tenants, tenancies) from a CSV file.
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Excel template download (pre-formatted with required columns) | ⬜ | |
-| File upload and parsing (`phpoffice/phpspreadsheet` or similar) | ⬜ | |
-| Data validation with row-level error reporting | ⬜ | |
-| Preview before import (dry run) | ⬜ | |
-| Import execution with transaction rollback on failure | ⬜ | |
-| Auto-create user accounts for imported tenants | ⬜ | |
-| Import history and audit log | ⬜ | |
+| CSV template download | ✅ Complete | Generated in-memory via `fputcsv` — no file on disk, immune to test cleanup |
+| File upload and parsing | ✅ Complete | `SplFileObject` CSV parser, BOM-safe, empty-row skipping, whitespace trim |
+| Data validation with row-level error reporting | ✅ Complete | Laravel `Validator` per row, cross-row duplicate detection, pre-loaded occupied-unit check |
+| Preview before import (dry run) | ✅ Complete | Preview token stored in temp storage; confirm step requires no re-upload |
+| Import execution with per-row transactions | ✅ Complete | Each row in its own `DB::transaction`; partial success supported |
+| Auto-create user accounts for imported tenants | ✅ Complete | Creates `User` with `must_change_password = true` when tenant email is provided |
+| Import history and audit log | ✅ Complete | `CsvImportBatch` with `row_errors`, `import_summary`, `completed_at` |
+| Notifications on import completion | ✅ Complete | `CsvImportCompleted` sent to landlord + all admins |
 
-**Definition of done:** Landlord downloads template, fills in their existing portfolio data, uploads it, reviews any errors, and completes the import with all records created correctly.
+**Definition of done:** Landlord downloads template, fills in their existing portfolio data, uploads it, reviews any errors, and completes the import with all records created correctly. ✅ **Achieved.**
+
+**Implementation details:** `CsvImportService` (443 lines), `CsvImportBatch` model + factory, `CsvImportBatchPolicy`, 28 feature tests.
 
 ---
 
@@ -216,23 +220,24 @@ These are validated ideas that have not been assigned to a phase.
 |------|-----------|-------|
 | Authentication & Authorization | 95% | 2FA, role enum, policies done. Session management could improve. |
 | Property & Unit Management | 95% | CRUD complete. Analytics and charts integrated. |
-| Tenant & Tenancy Management | 90% | CRUD complete. Onboarding flow pending. |
+| Tenant & Tenancy Management | 95% | CRUD complete. CSV bulk import complete. Onboarding flow pending. |
 | Billing (Rent + Utilities) | 90% | Auto-generation works, notifications wired. Gateway integration pending. |
 | Payments | 70% | Recording works, receipt streaming works. Gateway activation pending. |
 | Notifications | 95% | Full system complete (10 types, 5 channels, real-time). Preferences and templates pending. |
 | Receipts | 95% | On-demand streaming works. |
 | Mobile App | 85% | Core screens + document support + push notifications done. Payment gateway integration pending. |
-| Testing | 95% | 484 tests passing. Gateway flow tests pending. |
+| Testing | 95% | 512 tests passing. Gateway flow tests pending. |
 | Documentation | 85% | Technical docs, vision/roadmap, implementation reports all current. |
 | Landing & Onboarding | 60% | Full landing page with bento grid implemented. Footer links, pricing, onboarding flows pending. |
 | Document Storage | 90% | Core system complete. S3 integration and enhancements pending. |
 | Analytics & Reporting | 80% | Charts, exports, audit reports complete. Aging report and reliability score pending. |
+| CSV Bulk Import | 100% | Complete — 17-column CSV upload, dry-run preview, per-row transactions, batch history, 28 tests. |
 | Maintenance Requests | 0% | Not started. |
 
 ### Overall Project Completion
 
 ```
-[█████████████████████████░░░] ~82%
+[██████████████████████████░░] ~85%
 ```
 
 ---
@@ -257,3 +262,4 @@ These are validated ideas that have not been assigned to a phase.
 | 2026-05-17 | Post-merge audit: PDF receipt refactor lost during conflict resolution (documented, pending fix) |
 | 2026-05-19 | Analytics & reporting complete — revenue charts, payment collection charts, CSV/PDF exports, admin audit reports |
 | 2026-05-19 | Notification system code review fixes — trait extraction, paginator, push token hiding, markAsUnread, 10 new tests |
+| 2026-05-30 | CSV bulk import shipped — `CsvImportService`, 17-column in-memory template, dry-run preview, per-row `DB::transaction`, `CsvImportBatch` audit log, 28 tests, 512 total tests |
