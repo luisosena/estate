@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\Admin\AdminLandlordController;
 use App\Http\Controllers\Web\Admin\AdminNotificationController;
 use App\Http\Controllers\Web\Admin\AdminPropertyController;
 use App\Http\Controllers\Web\DashboardExportController;
+use App\Http\Controllers\Web\Landlord\CsvImportController;
 use App\Http\Controllers\Web\Landlord\DocumentController as LandlordDocumentController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
 use App\Http\Controllers\Web\Landlord\LandlordNotificationController;
@@ -276,6 +277,28 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/landlord/rent-bills/{rentBill}/waive', [LandlordRentBillController::class, 'waive'])
         ->name('landlord.rent-bills.waive');
+
+    // -------------------------------------------------------------------------
+    // CSV Bulk Import Routes
+    // ORDERING: static segments (template, preview) must precede {batch} wildcard.
+    // -------------------------------------------------------------------------
+    Route::get('/landlord/import', [CsvImportController::class, 'index'])
+        ->name('landlord.import.index');
+
+    Route::get('/landlord/import/template', [CsvImportController::class, 'template'])
+        ->name('landlord.import.template');
+
+    Route::post('/landlord/import/preview', [CsvImportController::class, 'preview'])
+        ->name('landlord.import.preview')
+        ->middleware('throttle:10,1');
+
+    Route::post('/landlord/import', [CsvImportController::class, 'store'])
+        ->name('landlord.import.store')
+        ->middleware('throttle:5,1');
+
+    // {batch} wildcard MUST be last to avoid swallowing 'template' and 'preview'
+    Route::get('/landlord/import/{batch}', [CsvImportController::class, 'show'])
+        ->name('landlord.import.show');
 
     // Tenant Routes
     Route::get('/tenant/dashboard', [TenantDashboardController::class, 'index'])
