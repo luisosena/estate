@@ -8,6 +8,8 @@ use App\Contracts\UtilityServiceInterface;
 use App\Events\PaymentConfirmed;
 use App\Listeners\NotifyAdminsOfNewLandlord;
 use App\Listeners\ProcessPaymentConfirmed;
+use App\Models\CsvImportBatch;
+use App\Policies\CsvImportBatchPolicy;
 use App\Policies\NotificationPolicy;
 use App\Services\DocSyncService;
 use App\Services\PaymentService;
@@ -57,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Gate::policy(DatabaseNotification::class, NotificationPolicy::class);
+        Gate::policy(CsvImportBatch::class, CsvImportBatchPolicy::class);
 
         Model::preventLazyLoading(! app()->isProduction());
 
