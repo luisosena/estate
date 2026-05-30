@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus } from 'lucide-react';
+import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus, Upload } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import CsvImportController from '@/actions/App/Http/Controllers/Web/Landlord/CsvImportController';
 
 export interface TenantRow {
   id: number;
@@ -158,6 +159,12 @@ export default function LandlordTenantsIndex({
             </div>
             
             <div className="flex items-center gap-2 shrink-0">
+              <Link href={CsvImportController.index().url()}>
+                <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Bulk Import
+                </Button>
+              </Link>
               <Link href="/landlord/tenants/create">
                 <Button className="shadow-sm">
                   <UserPlus className="w-4 h-4 mr-2" />
