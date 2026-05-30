@@ -11,6 +11,7 @@ import {
     Home,
     Plus,
     Receipt,
+    Upload,
     Users,
     Zap,
 } from 'lucide-react';
@@ -338,6 +339,7 @@ export default function Dashboard({
                             <QuickAction label="Rent Bills" icon={Receipt} href={route('landlord.rent-bills.index')} />
                             <QuickAction label="Utilities" icon={Zap} href={route('landlord.utilities.index')} />
                             <QuickAction label="All Tenants" icon={Users} href={route('landlord.tenants.index')} />
+                            <QuickAction label="Bulk Import" icon={Upload} href={route('landlord.import.index')} />
                         </div>
                         <div className="flex items-center gap-2 sm:hidden">
                             <Button asChild variant="outline" size="sm" className="bg-card border-border/50 shadow-sm hover:bg-accent flex-1">

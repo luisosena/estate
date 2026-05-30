@@ -1,13 +1,15 @@
-import { Link } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, FileText, Building2, Home, Users, UserCheck, UserPlus } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, FileText, Building2, Home, Users, UserCheck, UserPlus, Calendar, AlertCircle } from 'lucide-react';
 import React from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import CsvImportController from '@/actions/App/Http/Controllers/Web/Landlord/CsvImportController';
+import { type SharedData } from '@/types';
 
 interface CsvImportBatch {
   id: number;
@@ -58,18 +60,27 @@ const statusConfig = (batch: CsvImportBatch) => {
 };
 
 const summaryCards = [
-  { key: 'properties', label: 'Properties Created', icon: Building2 },
-  { key: 'units', label: 'Units Created', icon: Home },
-  { key: 'tenants', label: 'Tenants Created', icon: Users },
-  { key: 'tenancies', label: 'Tenancies Created', icon: UserCheck },
-  { key: 'users', label: 'Portal Accounts Created', icon: UserPlus },
+  { key: 'properties', label: 'Properties Created', subLabel: 'Added to portfolio', icon: Building2 },
+  { key: 'units', label: 'Units Created', subLabel: 'Available units listed', icon: Home },
+  { key: 'tenants', label: 'Tenants Created', subLabel: 'Registered profiles', icon: Users },
+  { key: 'tenancies', label: 'Tenancies Created', subLabel: 'Active leases mapped', icon: UserCheck },
+  { key: 'users', label: 'Portal Accounts Created', subLabel: 'Logins generated', icon: UserPlus },
 ] as const;
 
 export default function ShowPage({ batch }: Props) {
   const config = statusConfig(batch);
+  const { flash } = usePage<SharedData>().props;
 
   return (
     <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+      {flash?.success && (
+        <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-900/30 dark:bg-green-950/20 dark:text-green-400">
+          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <AlertTitle>Import Complete</AlertTitle>
+          <AlertDescription>{flash.success}</AlertDescription>
+        </Alert>
+      )}
+
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -87,12 +98,12 @@ export default function ShowPage({ batch }: Props) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Link href={CsvImportController.index().url()}>
-            <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+          <Button asChild variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+            <Link href={CsvImportController.index().url}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Import
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </header>
 
@@ -108,14 +119,15 @@ export default function ShowPage({ batch }: Props) {
       {/* Summary Cards */}
       {batch.import_summary && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {summaryCards.map(({ key, label, icon: Icon }) => (
-            <Card key={key}>
+          {summaryCards.map(({ key, label, subLabel, icon: Icon }) => (
+            <Card key={key} className="bg-card border-border/50 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{label}</CardTitle>
+                <CardTitle className="text-sm font-semibold text-muted-foreground">{label}</CardTitle>
                 <Icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{batch.import_summary[key]}</div>
+                <div className="text-3xl font-bold tracking-tight text-foreground">{batch.import_summary[key]}</div>
+                <p className="text-xs text-muted-foreground mt-1">{subLabel}</p>
               </CardContent>
             </Card>
           ))}
@@ -125,7 +137,7 @@ export default function ShowPage({ batch }: Props) {
       {/* Error Table */}
       {batch.row_errors && batch.row_errors.length > 0 && (
         <Card>
-          <CardHeader className="border-b">
+          <CardHeader className="border-b bg-muted/10">
             <CardTitle className="text-base font-semibold">Import Errors</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -141,26 +153,58 @@ export default function ShowPage({ batch }: Props) {
                 <TableBody>
                   {batch.row_errors.map((error, idx) => (
                     <TableRow key={idx}>
-                      <TableCell className="text-sm font-mono">{error.row}</TableCell>
-                      <TableCell className="text-sm font-mono">{error.field}</TableCell>
+                      <TableCell className="text-sm font-mono text-muted-foreground">{error.row}</TableCell>
+                      <TableCell className="text-sm font-mono font-medium">{error.field}</TableCell>
                       <TableCell className="text-sm text-destructive">{error.message}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
+            <div className="p-4 border-t bg-muted/20 text-xs text-muted-foreground flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+              <p>
+                Fix these rows in your CSV file and run a new import. Successfully imported rows will not be duplicated (units with active tenancies are skipped).
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Action Footer */}
-      <div className="flex items-center justify-end">
-        <Link href={CsvImportController.index().url()}>
-          <Button>
-            Run Another Import
+      {/* Metadata Footer Card */}
+      <Card className="bg-muted/10 border-border/50">
+        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 shrink-0" />
+            <span>File Name: <strong>{batch.original_filename}</strong></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span>Import Date: <strong>{new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(batch.created_at))}</strong></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-primary" />
+            <span>Processed Rows: <strong>{batch.processed_rows} / {batch.total_rows}</strong></span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Action Footer Call to Action */}
+      <Card className="border-primary/20 bg-primary/5 dark:bg-primary/5 text-center p-8">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-semibold">Continue Importing?</CardTitle>
+          <CardDescription>
+            If you have more portfolios or tenants to migrate, upload another CSV file using the template.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4 flex justify-center">
+          <Button asChild size="lg" className="font-semibold shadow-sm">
+            <Link href={CsvImportController.index().url}>
+              Run Another Import
+            </Link>
           </Button>
-        </Link>
-      </div>
+        </CardContent>
+      </Card>
     </main>
   );
 }

@@ -38,20 +38,35 @@ class CsvImportController extends Controller
 
     /**
      * GET /landlord/import/template
-     * Stream the CSV template for download.
+     * Stream the CSV template for download (generated in-memory).
      */
     public function template(Request $request): StreamedResponse
     {
         $this->authorize('downloadTemplate', CsvImportBatch::class);
 
-        $path = storage_path('app/templates/tenant-import-template.csv');
+        $headers = [
+            'property_name', 'property_address', 'property_city', 'property_state',
+            'property_type', 'unit_code', 'unit_name', 'tenant_full_name', 'tenant_email',
+            'tenant_phone', 'emergency_contact_name', 'emergency_contact_phone',
+            'emergency_contact_relation', 'move_in_date', 'monthly_rent',
+            'security_deposit', 'rent_due_day',
+        ];
 
-        abort_unless(file_exists($path), 404, 'Template file not found.');
+        $example = [
+            'Sunset Apartments', '123 Main Street', 'Nairobi', 'Nairobi County',
+            'apartment', 'A101', 'Unit A101', 'Jane Doe', 'jane.doe@example.com',
+            '+254712345678', 'John Doe', '+254798765432',
+            'Spouse', '2025-01-01', '25000',
+            '50000', '5',
+        ];
 
-        return response()->streamDownload(function () use ($path) {
-            readfile($path);
+        return response()->streamDownload(function () use ($headers, $example) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $headers);
+            fputcsv($out, $example);
+            fclose($out);
         }, 'tenant-import-template.csv', [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 

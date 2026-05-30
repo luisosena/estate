@@ -1,5 +1,5 @@
-import { Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, FileText, Upload, AlertCircle, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Link, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, FileText, Upload, AlertCircle, CheckCircle2, Clock, XCircle, Loader2 } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
@@ -7,7 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import Pagination from '@/components/shared/Pagination';
 import CsvImportController from '@/actions/App/Http/Controllers/Web/Landlord/CsvImportController';
+import { type SharedData } from '@/types';
 
 interface CsvImportBatch {
   id: number;
@@ -33,18 +36,19 @@ interface Props {
   };
 }
 
-const statusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+const getStatusBadgeClasses = (status: string): string => {
   switch (status) {
     case 'completed':
-      return 'default';
+      return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900/30';
     case 'failed':
-      return 'destructive';
+      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30';
     case 'processing':
-      return 'secondary';
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30 animate-pulse';
     case 'pending':
-      return 'outline';
+      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/30';
+    case 'cancelled':
     default:
-      return 'outline';
+      return 'bg-zinc-50 text-zinc-700 border-zinc-200 dark:bg-zinc-950/30 dark:text-zinc-400 dark:border-zinc-900/30';
   }
 };
 
@@ -64,19 +68,68 @@ const statusIcon = (status: string) => {
 export default function ImportIndex({ batches }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const form = useForm({ csv_file: null as File | null });
+  const { flash } = usePage<SharedData>().props;
+
+  const validateAndSetFile = (file: File) => {
+    setValidationError(null);
+    form.clearErrors();
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setValidationError('Please select a valid CSV file (.csv format only).');
+      setSelectedFile(null);
+      form.setData('csv_file', null);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setValidationError('File size exceeds the 5 MB limit.');
+      setSelectedFile(null);
+      form.setData('csv_file', null);
+      return;
+    }
+
+    setSelectedFile(file);
+    form.setData('csv_file', file);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      form.setData('csv_file', file);
+      validateAndSetFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      validateAndSetFile(file);
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    form.post(CsvImportController.preview().url(), { forceFormData: true });
+    if (!selectedFile) return;
+    form.post(CsvImportController.preview().url, { forceFormData: true });
   };
 
   const formatFileSize = (bytes: number) => {
@@ -85,8 +138,27 @@ export default function ImportIndex({ batches }: Props) {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  const formatDateTime = (dateStr: string) => {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    }).format(new Date(dateStr));
+  };
+
   return (
     <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
+      {flash?.error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Import Error</AlertTitle>
+          <AlertDescription>{flash.error}</AlertDescription>
+        </Alert>
+      )}
+
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -104,12 +176,12 @@ export default function ImportIndex({ batches }: Props) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Link href="/landlord/tenants">
-            <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+          <Button asChild variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+            <Link href="/landlord/tenants">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Tenants
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </header>
 
@@ -121,7 +193,7 @@ export default function ImportIndex({ batches }: Props) {
             <CardDescription>
               Select a CSV file to import.{' '}
               <a
-                href={CsvImportController.template().url()}
+                href={CsvImportController.template().url}
                 download
                 className="text-primary underline underline-offset-4"
               >
@@ -133,8 +205,18 @@ export default function ImportIndex({ batches }: Props) {
           <CardContent>
             <form onSubmit={handleSubmit}>
               <div
-                className="border-2 border-dashed border-border/50 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200 ${
+                  isDragging
+                    ? 'border-primary bg-primary/5 scale-[0.99] shadow-sm'
+                    : validationError
+                    ? 'border-destructive bg-destructive/5'
+                    : 'border-border/50 hover:border-primary/50 hover:bg-muted/10'
+                }`}
                 onClick={() => fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
               >
                 <input
                   ref={fileInputRef}
@@ -143,30 +225,50 @@ export default function ImportIndex({ batches }: Props) {
                   className="hidden"
                   onChange={handleFileChange}
                 />
-                <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                <Upload className={`w-10 h-10 mx-auto mb-3 transition-colors ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
                 {selectedFile ? (
-                  <div>
-                    <p className="text-sm font-medium">{selectedFile.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold flex items-center justify-center gap-1.5">
+                      <FileText className="w-4 h-4 text-primary" />
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground font-medium">{formatFileSize(selectedFile.size)}</p>
                   </div>
                 ) : (
                   <div>
-                    <p className="text-sm font-medium">Click to select a CSV file</p>
-                    <p className="text-xs text-muted-foreground">Maximum file size: 5 MB</p>
+                    <p className="text-sm font-semibold">Click or drag CSV file here to upload</p>
+                    <p className="text-xs text-muted-foreground mt-1">Maximum file size: 5 MB</p>
                   </div>
                 )}
               </div>
 
+              {validationError && (
+                <p className="text-sm text-destructive mt-2 font-medium flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {validationError}
+                </p>
+              )}
+
               {form.errors.csv_file && (
-                <p className="text-sm text-destructive mt-2">{form.errors.csv_file}</p>
+                <p className="text-sm text-destructive mt-2 font-medium flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {form.errors.csv_file}
+                </p>
               )}
 
               <Button
                 type="submit"
-                className="w-full mt-4"
+                className="w-full mt-4 font-semibold"
                 disabled={!selectedFile || form.processing}
               >
-                {form.processing ? 'Processing...' : 'Preview Import'}
+                {form.processing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing file...
+                  </>
+                ) : (
+                  'Preview Import'
+                )}
               </Button>
             </form>
           </CardContent>
@@ -182,9 +284,9 @@ export default function ImportIndex({ batches }: Props) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-[300px] overflow-y-auto border rounded-md">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="sticky top-0 bg-card z-10">
                     <TableRow>
                       <TableHead className="text-xs">Column</TableHead>
                       <TableHead className="text-xs">Required</TableHead>
@@ -212,24 +314,27 @@ export default function ImportIndex({ batches }: Props) {
                       ['rent_due_day', 'No', 'Day 1-28 (default: 1)'],
                     ].map(([col, required, desc]) => (
                       <TableRow key={col}>
-                        <TableCell className="text-xs font-mono">{col}</TableCell>
+                        <TableCell className="text-xs font-mono font-medium">{col}</TableCell>
                         <TableCell className="text-xs">
                           {required === 'Yes' ? (
-                            <Badge variant="default" className="text-[10px]">Required</Badge>
+                            <Badge variant="default" className="text-[10px] px-1.5 py-0">Required</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px]">Optional</Badge>
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground border-dashed">Optional</Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{desc}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground leading-normal">{desc}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
 
-              <div className="rounded-lg bg-muted/50 p-4 text-sm space-y-2">
-                <p className="font-medium">Tips:</p>
-                <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+              <div className="rounded-lg bg-muted/40 border p-4 text-sm space-y-2">
+                <p className="font-semibold text-foreground flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Tips for Success
+                </p>
+                <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1.5 leading-relaxed">
                   <li>Phone numbers: include country code, e.g. +254712345678</li>
                   <li>Property names are matched case-insensitively</li>
                   <li>Existing properties are reused; new ones are created</li>
@@ -249,8 +354,9 @@ export default function ImportIndex({ batches }: Props) {
         </CardHeader>
         <CardContent className="p-0">
           {batches.data.length === 0 ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              No imports yet. Upload your first CSV to get started.
+            <div className="py-16 text-center text-sm text-muted-foreground flex flex-col items-center justify-center gap-2">
+              <FileText className="w-8 h-8 text-muted-foreground/50" />
+              <span>No imports yet. Upload your first CSV to get started.</span>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -262,48 +368,53 @@ export default function ImportIndex({ batches }: Props) {
                     <TableHead>Status</TableHead>
                     <TableHead>Created / Total</TableHead>
                     <TableHead>Failed</TableHead>
-                    <TableHead>Action</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {batches.data.map((batch) => (
-                    <TableRow key={batch.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{batch.original_filename}</span>
+                    <TableRow key={batch.id} className="hover:bg-muted/20">
+                      <TableCell className="max-w-[200px] truncate">
+                        <div className="flex items-center gap-2 font-medium">
+                          <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm truncate" title={batch.original_filename}>{batch.original_filename}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(batch.created_at).toLocaleDateString()}
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                        {formatDateTime(batch.created_at)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusVariant(batch.status)} className="flex items-center gap-1 w-fit">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold border ${getStatusBadgeClasses(batch.status)}`}>
                           {statusIcon(batch.status)}
-                          {batch.status}
-                        </Badge>
+                          <span className="capitalize">{batch.status}</span>
+                        </span>
                       </TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="text-sm font-semibold">
                         {batch.created_rows} / {batch.total_rows}
                       </TableCell>
                       <TableCell className="text-sm">
                         {batch.failed_rows > 0 ? (
-                          <span className="text-destructive">{batch.failed_rows}</span>
+                          <span className="text-destructive font-semibold bg-destructive/10 border border-destructive/20 px-2 py-0.5 rounded-md">{batch.failed_rows}</span>
                         ) : (
-                          <span className="text-muted-foreground">0</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
-                      <TableCell>
-                        <Link href={CsvImportController.show(batch.id).url()}>
-                          <Button variant="outline" size="sm" className="text-xs">
+                      <TableCell className="text-right">
+                        <Button asChild variant="outline" size="sm" className="text-xs h-8 bg-card border-border/50 hover:bg-accent">
+                          <Link href={CsvImportController.show(batch.id).url}>
                             View
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              {batches.links && batches.links.length > 3 && (
+                <div className="p-4 border-t flex justify-end">
+                  <Pagination links={batches.links} />
+                </div>
+              )}
             </div>
           )}
         </CardContent>

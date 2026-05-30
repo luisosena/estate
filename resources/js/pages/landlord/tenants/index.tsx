@@ -159,7 +159,7 @@ export default function LandlordTenantsIndex({
             </div>
             
             <div className="flex items-center gap-2 shrink-0">
-              <Link href={CsvImportController.index().url()}>
+              <Link href={CsvImportController.index().url}>
                 <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
                   <Upload className="w-4 h-4 mr-2" />
                   Bulk Import

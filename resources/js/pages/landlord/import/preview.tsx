@@ -1,5 +1,5 @@
 import { Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
@@ -37,10 +37,31 @@ export default function PreviewPage({ preview }: Props) {
   });
 
   const confirm = () => {
-    form.post(CsvImportController.store().url());
+    form.post(CsvImportController.store().url);
   };
 
-  const displayRows = showAll ? preview.rows : preview.rows.slice(0, 20);
+  // Row numbers in errors are 1-based; rows array is 0-indexed.
+  const errorRowNumbers = new Set(preview.errors.map((e) => e.row));
+  const rowsWithIndex = preview.rows.map((row, idx) => ({
+    ...row,
+    originalIndex: idx + 1,
+  }));
+  const validRows = rowsWithIndex.filter((row) => !errorRowNumbers.has(row.originalIndex));
+
+  const displayRows = showAll ? validRows : validRows.slice(0, 20);
+
+  // Group errors by row
+  const groupedErrors = preview.errors.reduce<Record<number, RowError[]>>((acc, error) => {
+    if (!acc[error.row]) {
+      acc[error.row] = [];
+    }
+    acc[error.row].push(error);
+    return acc;
+  }, {});
+
+  const errorRows = Object.keys(groupedErrors)
+    .map(Number)
+    .sort((a, b) => a - b);
 
   return (
     <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
@@ -61,22 +82,31 @@ export default function PreviewPage({ preview }: Props) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Link href={CsvImportController.index().url()}>
-            <Button variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+          <Button asChild variant="outline" className="bg-card border-border/50 shadow-sm hidden sm:flex">
+            <Link href={CsvImportController.index().url}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Import
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </header>
 
       {/* Summary Bar */}
-      <div className="flex items-center gap-4 text-sm">
-        <span className="font-medium">{preview.total_rows} rows</span>
-        <span className="text-muted-foreground">·</span>
-        <span className="text-green-600">{preview.valid_count} valid</span>
-        <span className="text-muted-foreground">·</span>
-        <span className="text-destructive">{preview.error_count} with errors</span>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-card text-card-foreground text-xs font-semibold shadow-sm">
+          <span className="text-muted-foreground">Total Rows:</span>
+          <span>{preview.total_rows}</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-200 bg-green-50 text-green-700 dark:border-green-900/30 dark:bg-green-950/20 dark:text-green-400 text-xs font-semibold shadow-sm">
+          <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+          <span>{validRows.length} Valid</span>
+        </div>
+        {preview.error_count > 0 && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-destructive/20 bg-destructive/10 text-destructive text-xs font-semibold shadow-sm">
+            <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+            <span>{preview.error_count} Errors</span>
+          </div>
+        )}
       </div>
 
       {/* Error Panel */}
@@ -99,13 +129,20 @@ export default function PreviewPage({ preview }: Props) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {preview.errors.map((error, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell className="text-sm font-mono">{error.row}</TableCell>
-                      <TableCell className="text-sm font-mono">{error.field}</TableCell>
-                      <TableCell className="text-sm text-destructive">{error.message}</TableCell>
-                    </TableRow>
-                  ))}
+                  {errorRows.map((rowNum) => {
+                    const rowErrors = groupedErrors[rowNum];
+                    return rowErrors.map((error, idx) => (
+                      <TableRow key={`${rowNum}-${idx}`} className={idx === 0 ? "border-t border-border/50" : "border-none"}>
+                        {idx === 0 && (
+                          <TableCell className="text-sm font-mono font-medium align-top bg-muted/20" rowSpan={rowErrors.length}>
+                            {rowNum}
+                          </TableCell>
+                        )}
+                        <TableCell className="text-sm font-mono align-top py-2.5">{error.field}</TableCell>
+                        <TableCell className="text-sm text-destructive align-top py-2.5">{error.message}</TableCell>
+                      </TableRow>
+                    ));
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -117,7 +154,7 @@ export default function PreviewPage({ preview }: Props) {
       <Card>
         <CardHeader className="border-b">
           <CardTitle className="text-base font-semibold">
-            Valid Rows ({preview.valid_count})
+            Valid Rows ({validRows.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -135,22 +172,30 @@ export default function PreviewPage({ preview }: Props) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayRows.map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="text-sm font-mono">{idx + 1}</TableCell>
-                    <TableCell className="text-sm">{row.property_name}</TableCell>
-                    <TableCell className="text-sm font-mono">{row.unit_code}</TableCell>
-                    <TableCell className="text-sm">{row.tenant_full_name}</TableCell>
-                    <TableCell className="text-sm font-mono">{row.tenant_phone}</TableCell>
-                    <TableCell className="text-sm">{row.move_in_date}</TableCell>
-                    <TableCell className="text-sm">{row.monthly_rent}</TableCell>
+                {displayRows.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                      No valid rows to import.
+                    </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  displayRows.map((row) => (
+                    <TableRow key={row.originalIndex}>
+                      <TableCell className="text-sm font-mono text-muted-foreground">{row.originalIndex}</TableCell>
+                      <TableCell className="text-sm font-medium">{row.property_name}</TableCell>
+                      <TableCell className="text-sm font-mono">{row.unit_code}</TableCell>
+                      <TableCell className="text-sm">{row.tenant_full_name}</TableCell>
+                      <TableCell className="text-sm font-mono">{row.tenant_phone}</TableCell>
+                      <TableCell className="text-sm">{row.move_in_date}</TableCell>
+                      <TableCell className="text-sm font-medium">{row.monthly_rent}</TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
 
-          {preview.rows.length > 20 && (
+          {validRows.length > 20 && (
             <div className="p-4 border-t text-center">
               <Button
                 variant="ghost"
@@ -165,7 +210,7 @@ export default function PreviewPage({ preview }: Props) {
                 ) : (
                   <>
                     <ChevronDown className="w-4 h-4 mr-1" />
-                    Show all {preview.rows.length} rows
+                    Show all {validRows.length} rows
                   </>
                 )}
               </Button>
@@ -176,20 +221,22 @@ export default function PreviewPage({ preview }: Props) {
 
       {/* Action Bar */}
       <div className="flex items-center justify-between">
-        <Link href={CsvImportController.index().url()}>
-          <Button variant="outline">
+        <Button asChild variant="outline">
+          <Link href={CsvImportController.index().url}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Re-upload
-          </Button>
-        </Link>
+          </Link>
+        </Button>
 
         <Button
           onClick={confirm}
-          disabled={preview.valid_count === 0 || form.processing}
+          disabled={validRows.length === 0 || form.processing}
         >
           {form.processing
             ? 'Importing...'
-            : `Import ${preview.valid_count} valid rows`}
+            : preview.error_count > 0
+            ? `Import ${validRows.length} of ${preview.total_rows} rows (skip ${preview.error_count} errors)`
+            : `Import all ${preview.total_rows} rows`}
         </Button>
       </div>
     </main>

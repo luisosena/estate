@@ -12,6 +12,7 @@ import {
     Receipt,
     Settings,
     ShieldCheck,
+    Upload,
     Users,
     Zap,
 } from 'lucide-react';
@@ -87,6 +88,7 @@ const LANDLORD_NAV: NavGroup[] = [
             { label: 'Properties', icon: Building2, route: 'landlord.properties.index' },
             { label: 'Units', icon: Home, route: 'landlord.units.index' },
             { label: 'All Tenants', icon: Users, route: 'landlord.tenants.index' },
+            { label: 'Bulk Import', icon: Upload, route: 'landlord.import.index' },
         ],
     },
     {

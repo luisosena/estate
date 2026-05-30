@@ -88,23 +88,6 @@ function writePreviewFile(string $token, string $content): void
     Storage::put('csv-imports/preview/'.$token.'.csv', $content);
 }
 
-/**
- * Create the CSV template at its real storage path so the controller's
- * file_exists(storage_path('app/templates/...')) call succeeds.
- * Returns the path so callers can clean it up after the test.
- */
-function createRealTemplate(): string
-{
-    $dir = storage_path('app/templates');
-    if (! is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
-    $path = $dir.'/tenant-import-template.csv';
-    file_put_contents($path, 'property_name,unit_code');
-
-    return $path;
-}
-
 // ---------------------------------------------------------------------------
 // Setup
 // ---------------------------------------------------------------------------
@@ -139,25 +122,17 @@ test('landlord can view import index', function () {
 // ---------------------------------------------------------------------------
 
 test('landlord can download the CSV template', function () {
-    $path = createRealTemplate();
-
     actingAs($this->landlord)
         ->get(route('landlord.import.template'))
         ->assertSuccessful()
         ->assertHeaderContains('Content-Type', 'text/csv');
-
-    @unlink($path);
 });
 
 test('admin can download the CSV template', function () {
-    $path = createRealTemplate();
-
     $admin = User::factory()->create(['role' => 'admin']);
     actingAs($admin)
         ->get(route('landlord.import.template'))
         ->assertSuccessful();
-
-    @unlink($path);
 });
 
 test('tenant cannot download the CSV template', function () {
