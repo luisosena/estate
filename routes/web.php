@@ -43,6 +43,10 @@ Route::get('/contact', function () {
     return Inertia::render('website/contact');
 })->name('contact');
 
+Route::get('/resources/mobile-app', function () {
+    return Inertia::render('website/mobile-app');
+})->name('resources.mobile-app');
+
 Route::middleware(['auth'])->group(function () {
     // Admin Routes
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])

@@ -40,8 +40,8 @@ export default function TestimonialsSection() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                 >
                     <h2
-                        className="text-3xl font-normal text-[#1A1A2E] sm:text-4xl"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-4xl md:text-6xl font-normal text-[#1A1A2E] leading-tight"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
                         Operational impact, proven in pre-launch
                     </h2>

@@ -199,7 +199,7 @@ export default function Navbar() {
                                 <Button
                                     asChild
                                     variant="ghost"
-                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 rounded-lg px-3 py-2 h-auto"
+                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 dark:hover:bg-[#1A1A2E]/5 rounded-lg px-3 py-2 h-auto"
                                     style={{ fontFamily: "'Nunito', sans-serif" }}
                                 >
                                     <Link href="/features">
@@ -220,7 +220,7 @@ export default function Navbar() {
                                 <Button
                                     asChild
                                     variant="ghost"
-                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 rounded-lg px-3 py-2 h-auto"
+                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 dark:hover:bg-[#1A1A2E]/5 rounded-lg px-3 py-2 h-auto"
                                     style={{ fontFamily: "'Nunito', sans-serif" }}
                                 >
                                     <Link href="/resources">
@@ -233,17 +233,21 @@ export default function Navbar() {
                                     </Link>
                                 </Button>
                             </div>
-                            {['About', 'Contact'].map((item) => (
-                                <Link
-                                    key={item}
-                                    href={item === 'About' ? '/about' : item === 'Contact' ? '/contact' : `#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                                    className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
-                                    style={{ fontFamily: "'Nunito', sans-serif" }}
-                                    onMouseEnter={handleClose}
-                                >
-                                    {item}
-                                </Link>
-                            ))}
+                            {['About', 'Contact'].map((item) => {
+                                const href = item === 'About' ? '/about' : item === 'Contact' ? '/contact' : `#${item.toLowerCase().replace(/\s+/g, '-')}`;
+                                const Component = href.startsWith('/') ? Link : 'a';
+                                return (
+                                    <Component
+                                        key={item}
+                                        href={href}
+                                        className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
+                                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                                        onMouseEnter={handleClose}
+                                    >
+                                        {item}
+                                    </Component>
+                                );
+                            })}
                         </div>
 
                         {/* Right side CTAs */}
@@ -252,7 +256,7 @@ export default function Navbar() {
                                 <Button
                                     asChild
                                     variant="ghost"
-                                    className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
+                                    className="text-sm font-medium tracking-wide text-[#1A1A2E] dark:text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 dark:hover:bg-transparent dark:hover:text-black"
                                     style={{ fontFamily: "'Nunito', sans-serif" }}
                                     onMouseEnter={handleClose}
                                 >
@@ -262,7 +266,7 @@ export default function Navbar() {
                                 </Button>
                                 <Button
                                     asChild
-                                    className="rounded-full bg-[#1A1A2E] px-6 py-2.5 text-sm font-medium tracking-wide text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E]"
+                                    className="rounded-full bg-[#1A1A2E] px-6 py-2.5 text-sm font-medium tracking-wide text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E] dark:hover:bg-[#2A2A4E]"
                                     style={{ fontFamily: "'Nunito', sans-serif" }}
                                     onMouseEnter={handleClose}
                                 >
@@ -279,7 +283,7 @@ export default function Navbar() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/10"
+                                            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/10 dark:hover:bg-[#1A1A2E]/10"
                                         >
                                             <Menu className="h-5 w-5" />
                                             <span className="sr-only">Open menu</span>
@@ -293,7 +297,7 @@ export default function Navbar() {
                                                     <Button
                                                         asChild
                                                         variant="ghost"
-                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E] px-0 hover:bg-transparent h-auto"
+                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E] px-0 hover:bg-transparent dark:hover:bg-transparent h-auto"
                                                         style={{ fontFamily: "'Nunito', sans-serif" }}
                                                     >
                                                         <Link href="/features">
@@ -306,7 +310,7 @@ export default function Navbar() {
                                                     <Button
                                                         asChild
                                                         variant="ghost"
-                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E] px-0 hover:bg-transparent h-auto"
+                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E] px-0 hover:bg-transparent dark:hover:bg-transparent h-auto"
                                                         style={{ fontFamily: "'Nunito', sans-serif" }}
                                                     >
                                                         <Link href="/resources">
@@ -315,23 +319,27 @@ export default function Navbar() {
                                                         </Link>
                                                     </Button>
                                                 </div>
-                                                {['About', 'Contact'].map((item) => (
-                                                    <Link
-                                                        key={item}
-                                                        href={item === 'About' ? '/about' : item === 'Contact' ? '/contact' : `#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                                                        className="text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E]"
-                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
-                                                    >
-                                                        {item}
-                                                    </Link>
-                                                ))}
+                                                {['About', 'Contact'].map((item) => {
+                                                    const href = item === 'About' ? '/about' : item === 'Contact' ? '/contact' : `#${item.toLowerCase().replace(/\s+/g, '-')}`;
+                                                    const Component = href.startsWith('/') ? Link : 'a';
+                                                    return (
+                                                        <Component
+                                                            key={item}
+                                                            href={href}
+                                                            className="text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E]"
+                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                        >
+                                                            {item}
+                                                        </Component>
+                                                    );
+                                                })}
                                             </div>
                                             <Separator className="bg-[#1A1A2E]/10" />
                                             <div className="flex flex-col gap-4">
                                                 <Button
                                                     asChild
                                                     variant="outline"
-                                                    className="inline-flex items-center justify-center rounded-full border border-[#1A1A2E]/15 px-6 py-3 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/5 bg-transparent"
+                                                    className="inline-flex items-center justify-center rounded-full border border-[#1A1A2E]/15 px-6 py-3 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/5 dark:hover:bg-[#1A1A2E]/5 bg-transparent"
                                                     style={{ fontFamily: "'Nunito', sans-serif" }}
                                                 >
                                                     <Link href="/login">
@@ -340,7 +348,7 @@ export default function Navbar() {
                                                 </Button>
                                                 <Button
                                                     asChild
-                                                    className="inline-flex items-center justify-center rounded-full bg-[#1A1A2E] px-6 py-3 text-sm font-medium tracking-wide text-[#FAF7F2] transition-colors hover:bg-[#2A2A4E]"
+                                                    className="inline-flex items-center justify-center rounded-full bg-[#1A1A2E] px-6 py-3 text-sm font-medium tracking-wide text-[#FAF7F2] transition-colors hover:bg-[#2A2A4E] dark:hover:bg-[#2A2A4E]"
                                                     style={{ fontFamily: "'Nunito', sans-serif" }}
                                                 >
                                                     <Link href="/register">
@@ -367,31 +375,34 @@ export default function Navbar() {
                             >
                                 <div className="mx-auto max-w-5xl px-6 pb-12 pt-8 lg:px-8">
                                     <div className="grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
-                                        {megaMenuItems.map((item) => (
-                                            <a
-                                                key={item.title}
-                                                href={item.href}
-                                                className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-[#1A1A2E]/5"
-                                            >
-                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors group-hover/mega:bg-[#1A1A2E] group-hover/mega:text-white">
-                                                    <item.icon className="h-5 w-5" />
-                                                </div>
-                                                <div className="pt-0.5">
-                                                    <div
-                                                        className="text-sm font-semibold text-[#1A1A2E]"
-                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
-                                                    >
-                                                        {item.title}
+                                        {megaMenuItems.map((item) => {
+                                            const Component = item.href.startsWith('/') ? Link : 'a';
+                                            return (
+                                                <Component
+                                                    key={item.title}
+                                                    href={item.href}
+                                                    className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-[#1A1A2E]/5"
+                                                >
+                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors group-hover/mega:bg-[#1A1A2E] group-hover/mega:text-white">
+                                                        <item.icon className="h-5 w-5" />
                                                     </div>
-                                                    <div
-                                                        className="mt-0.5 text-xs leading-relaxed text-[#1A1A2E]/60"
-                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
-                                                    >
-                                                        {item.description}
+                                                    <div className="pt-0.5">
+                                                        <div
+                                                            className="text-sm font-semibold text-[#1A1A2E]"
+                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                        >
+                                                            {item.title}
+                                                        </div>
+                                                        <div
+                                                            className="mt-0.5 text-xs leading-relaxed text-[#1A1A2E]/60"
+                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                        >
+                                                            {item.description}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </a>
-                                        ))}
+                                                </Component>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </motion.div>
@@ -406,31 +417,34 @@ export default function Navbar() {
                             >
                                 <div className="mx-auto max-w-5xl px-6 pb-12 pt-8 lg:px-8">
                                     <div className="grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
-                                        {resourcesMenuItems.map((item) => (
-                                            <a
-                                                key={item.title}
-                                                href={item.href}
-                                                className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-[#1A1A2E]/5"
-                                            >
-                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors group-hover/mega:bg-[#1A1A2E] group-hover/mega:text-white">
-                                                    <item.icon className="h-5 w-5" />
-                                                </div>
-                                                <div className="pt-0.5">
-                                                    <div
-                                                        className="text-sm font-semibold text-[#1A1A2E]"
-                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
-                                                    >
-                                                        {item.title}
+                                        {resourcesMenuItems.map((item) => {
+                                            const Component = item.href.startsWith('/') ? Link : 'a';
+                                            return (
+                                                <Component
+                                                    key={item.title}
+                                                    href={item.href}
+                                                    className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-[#1A1A2E]/5"
+                                                >
+                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors group-hover/mega:bg-[#1A1A2E] group-hover/mega:text-white">
+                                                        <item.icon className="h-5 w-5" />
                                                     </div>
-                                                    <div
-                                                        className="mt-0.5 text-xs leading-relaxed text-[#1A1A2E]/60"
-                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
-                                                    >
-                                                        {item.description}
+                                                    <div className="pt-0.5">
+                                                        <div
+                                                            className="text-sm font-semibold text-[#1A1A2E]"
+                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                        >
+                                                            {item.title}
+                                                        </div>
+                                                        <div
+                                                            className="mt-0.5 text-xs leading-relaxed text-[#1A1A2E]/60"
+                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                        >
+                                                            {item.description}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </a>
-                                        ))}
+                                                </Component>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </motion.div>

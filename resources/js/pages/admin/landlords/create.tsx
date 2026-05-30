@@ -1,5 +1,5 @@
 import { Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Mail, Phone, MapPin, Building, User, Lock, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MapPin, Building, User, Eye, EyeOff } from 'lucide-react';
 import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 

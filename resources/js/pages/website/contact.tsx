@@ -218,7 +218,7 @@ function ContactForm() {
                 </div>
                 <Button
                     type="submit"
-                    className="w-full rounded-full bg-[#1A1A2E] px-8 py-4 text-base font-semibold text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E]"
+                    className="w-full rounded-full bg-[#1A1A2E] px-8 py-4 text-base font-semibold text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E] dark:hover:bg-[#2A2A4E]"
                     style={{ fontFamily: "'Outfit', sans-serif" }}
                 >
                     <Send className="h-5 w-5 mr-2" />
