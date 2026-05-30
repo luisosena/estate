@@ -4,8 +4,7 @@ const footerLinks = {
     Product: [
         { label: 'Features', href: '#features' },
         { label: 'How It Works', href: '#how-it-works' },
-        { label: 'Roadmap', href: '#roadmap' },
-        { label: 'Mobile App', href: '#' },
+        { label: 'Mobile App', href: '/resources/mobile-app' },
     ],
     Resources: [
         { label: 'Documentation', href: '#' },
@@ -32,7 +31,7 @@ export default function Footer() {
                         <Link href="/" className="inline-block">
                             <span
                                 className="text-xl font-extralight uppercase tracking-[0.3em] text-white"
-                                style={{ fontFamily: "'DM Serif Display', serif" }}
+                                style={{ fontFamily: "'Outfit', sans-serif" }}
                             >
                                 Estate
                             </span>

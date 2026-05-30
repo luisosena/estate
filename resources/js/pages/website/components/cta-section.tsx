@@ -31,8 +31,8 @@ export default function CtaSection() {
                     transition={{ duration: 0.6 }}
                 >
                     <h2
-                        className="text-3xl font-normal text-white sm:text-4xl lg:text-5xl"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                        className="text-4xl md:text-6xl font-normal text-white leading-tight"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                     >
                         Partner with us to modernize your operations.
                     </h2>
@@ -49,7 +49,7 @@ export default function CtaSection() {
                             asChild
                             variant="secondary"
                             size="lg"
-                            className="group rounded-full bg-white px-8 py-6 text-sm font-bold tracking-wide text-[#1A1A2E] border border-black transition-all duration-300 hover:bg-white/90"
+                            className="group rounded-full bg-white px-8 py-6 text-sm font-bold tracking-wide text-[#1A1A2E] border border-black transition-all duration-300 hover:bg-white/90 dark:hover:bg-white/90"
                             style={{ fontFamily: "'Outfit', sans-serif" }}
                         >
                             <Link href="/register">

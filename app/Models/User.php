@@ -44,9 +44,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_recovery_codes',
         'remember_token',
         'tenant_id',
-        'expo_push_token',
-        'expo_push_token_updated_at',
-        'push_platform',
     ];
 
     protected $appends = ['tenant_code'];

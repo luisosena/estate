@@ -19,6 +19,10 @@ it('renders the login page', function (): void {
     $this->get('/login')->assertOk();
 });
 
+it('renders the mobile app page', function (): void {
+    $this->get('/resources/mobile-app')->assertOk();
+});
+
 // ---------------------------------------------------------------------------
 // Landlord routes
 // ---------------------------------------------------------------------------
