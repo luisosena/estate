@@ -1,5 +1,0 @@
-in docs/plans folder, you will find the plans for the mobile app.
-
-#Special note regarding authentication
-- authentication-session-architecture.md and security-audit.md were used in the designing and implementation of the previous session management system which utilised a custom ApiToken system and had robust features compared to the current and a more standard system which purely uses Laravel Sanctum.
-- the future plan with these is to adapt the features dicussed in these documents to the current system (they were removed in the migration to Laravel Sanctum)
