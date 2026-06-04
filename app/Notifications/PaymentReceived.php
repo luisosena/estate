@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Channels\BroadcastChannel;
 use App\Channels\ExpoPushChannel;
 use App\Channels\WhatsAppChannel;
 use App\Models\Payment;
@@ -26,7 +27,7 @@ class PaymentReceived extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database', WhatsAppChannel::class, ExpoPushChannel::class];
+        return ['mail', 'database', WhatsAppChannel::class, ExpoPushChannel::class, BroadcastChannel::class];
     }
 
     /**

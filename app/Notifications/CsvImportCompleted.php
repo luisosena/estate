@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Channels\BroadcastChannel;
 use App\Models\CsvImportBatch;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -21,7 +22,7 @@ class CsvImportCompleted extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', BroadcastChannel::class];
     }
 
     /**
