@@ -2,13 +2,13 @@ import { Link, usePage } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle2, AlertTriangle, XCircle, FileText, Building2, Home, Users, UserCheck, UserPlus, Calendar, AlertCircle } from 'lucide-react';
 import React from 'react';
 
+import CsvImportController from '@/actions/App/Http/Controllers/Web/Landlord/CsvImportController';
 import AppLayout from '@/components/layout/AppLayout';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import CsvImportController from '@/actions/App/Http/Controllers/Web/Landlord/CsvImportController';
 import { type SharedData } from '@/types';
 
 interface CsvImportBatch {
@@ -126,7 +126,7 @@ export default function ShowPage({ batch }: Props) {
                 <Icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold tracking-tight text-foreground">{batch.import_summary[key]}</div>
+                <div className="text-3xl font-bold tracking-tight text-foreground">{batch.import_summary?.[key] ?? 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">{subLabel}</p>
               </CardContent>
             </Card>

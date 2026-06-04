@@ -62,6 +62,16 @@ interface Document {
   uploaded_at: string;
 }
 
+interface RentBill {
+  id: number;
+  billing_month: string;
+  amount_due: number;
+  amount_paid: number;
+  due_date: string;
+  status: 'pending' | 'paid' | 'partial' | 'overdue' | 'waived';
+  outstanding_amount: number;
+}
+
 interface TenantDashboardProps {
   tenant: { data: Tenant };
   payments?: { data: Payment[] };
@@ -96,9 +106,10 @@ export default function TenantDashboard({
 
   const totalUtilityBalance = useMemo(() => 
     utilityList.reduce((sum, u) => {
-      const balance = (u as Record<string, unknown>).pending_balance ?? u.amount;
-      const status = (u as Record<string, unknown>).calculated_status ?? u.status ?? 'pending';
-      if (status.toLowerCase() !== 'paid') return sum + balance;
+      const raw = u as unknown as Record<string, unknown>;
+      const balance = (raw.pending_balance ?? u.amount) as number;
+      const status = ((raw.calculated_status ?? u.status ?? 'pending') as string).toLowerCase();
+      if (status !== 'paid') return sum + balance;
       return sum;
     }, 0),
     [utilityList]
@@ -106,7 +117,10 @@ export default function TenantDashboard({
 
   const pendingUtilities = useMemo(() => 
     utilityList.filter(
-      (u) => (((u as Record<string, unknown>).calculated_status ?? u.status) ?? 'pending').toLowerCase() !== 'paid',
+      (u) => {
+        const raw = u as unknown as Record<string, unknown>;
+        return ((raw.calculated_status ?? u.status ?? 'pending') as string).toLowerCase() !== 'paid';
+      },
     ).length,
     [utilityList]
   );

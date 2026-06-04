@@ -2,12 +2,12 @@ import { Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, AlertTriangle, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import React, { useState } from 'react';
 
+import CsvImportController from '@/actions/App/Http/Controllers/Web/Landlord/CsvImportController';
 import AppLayout from '@/components/layout/AppLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import CsvImportController from '@/actions/App/Http/Controllers/Web/Landlord/CsvImportController';
 
 interface RowError {
   row: number;
@@ -42,7 +42,7 @@ export default function PreviewPage({ preview }: Props) {
 
   // Row numbers in errors are 1-based; rows array is 0-indexed.
   const errorRowNumbers = new Set(preview.errors.map((e) => e.row));
-  const rowsWithIndex = preview.rows.map((row, idx) => ({
+  const rowsWithIndex: (Record<string, string | number> & { originalIndex: number })[] = preview.rows.map((row, idx) => ({
     ...row,
     originalIndex: idx + 1,
   }));

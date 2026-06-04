@@ -71,12 +71,12 @@ export function RevenueTrendChart({ data, title = "Revenue Trend" }: RevenueTren
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => value}
-                  formatter={(value: number) => [
+                  formatter={(value) => [
                     new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "TZS",
                       minimumFractionDigits: 0,
-                    }).format(value),
+                    }).format(Number(value)),
                     "Revenue",
                   ]}
                   indicator="dot"
