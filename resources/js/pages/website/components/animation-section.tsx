@@ -376,39 +376,31 @@ export default function AnimationSection() {
                 {/* Display area */}
                 <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20 min-h-[320px]">
                     <AnimatePresence mode="wait">
-                        {/* SVG side */}
                         <motion.div
-                            key={`svg-${currentDisplay.id}`}
-                            className="w-full max-w-[280px] lg:max-w-[320px] aspect-square"
+                            key={currentDisplay.id}
+                            className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20 w-full"
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -30 }}
+                            exit={{ opacity: 0, x: 30 }}
                             transition={{ duration: 0.4 }}
                         >
-                            <CurrentSvg color={currentDisplay.color} />
-                        </motion.div>
-
-                        {/* Text side */}
-                        <motion.div
-                            key={`text-${currentDisplay.id}`}
-                            className="flex-1 max-w-lg"
-                            initial={{ opacity: 0, x: 30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 30 }}
-                            transition={{ duration: 0.4, delay: 0.1 }}
-                        >
-                            <h3
-                                className="text-3xl md:text-4xl lg:text-5xl font-normal text-[#1A1A2E] leading-tight"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
-                                {currentDisplay.header}
-                            </h3>
-                            <p
-                                className="mt-5 text-base sm:text-lg text-[#1A1A2E]/60 leading-relaxed"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
-                                {currentDisplay.description}
-                            </p>
+                            <div className="w-full max-w-[280px] lg:max-w-[320px] aspect-square">
+                                <CurrentSvg color={currentDisplay.color} />
+                            </div>
+                            <div className="flex-1 max-w-lg">
+                                <h3
+                                    className="text-3xl md:text-4xl lg:text-5xl font-normal text-[#1A1A2E] leading-tight"
+                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                >
+                                    {currentDisplay.header}
+                                </h3>
+                                <p
+                                    className="mt-5 text-base sm:text-lg text-[#1A1A2E]/60 leading-relaxed"
+                                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                                >
+                                    {currentDisplay.description}
+                                </p>
+                            </div>
                         </motion.div>
                     </AnimatePresence>
                 </div>
