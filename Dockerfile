@@ -12,7 +12,8 @@ RUN apk add --no-cache \
   nodejs \
   npm \
   nginx \
-  gcompat
+  gcompat \
+  netcat-openbsd
 
 # Install PHP extensions
 RUN apk add --no-cache $PHPIZE_DEPS \
