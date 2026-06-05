@@ -2,21 +2,27 @@
 
 namespace App\Http\Controllers\Web\Landlord;
 
+use App\Enums\BillStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Concerns\HandlesReceipts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\PaymentStoreRequest;
 use App\Http\Requests\Landlord\PaymentUpdateRequest;
+use App\Http\Requests\Landlord\RecordPaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
+use App\Models\RentBill;
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\UtilityBill;
 use App\Services\ReceiptService;
 use App\Services\RentBillService;
 use App\Services\UtilityService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -252,6 +258,147 @@ class LandlordPaymentController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'Failed to delete payment record. Please try again.');
+        }
+    }
+
+    /**
+     * Record a multi-bill manual payment for a tenant.
+     */
+    public function recordPayment(RecordPaymentRequest $request, Tenant $tenant): RedirectResponse
+    {
+        $this->authorize('update', $tenant);
+
+        $landlord = $request->user();
+        $validated = $request->validated();
+
+        $activeTenancy = $tenant->tenancies()->where('status', 'active')->first();
+        if (! $activeTenancy) {
+            return redirect()->back()->with('error', 'This tenant has no active tenancy.');
+        }
+
+        try {
+            $result = DB::transaction(function () use ($validated, $activeTenancy, $tenant, $landlord) {
+                // 1. On-demand bill creation
+                $billIds = $validated['rent_bill_ids'] ?? [];
+                $billingMonths = $validated['billing_months'] ?? [];
+
+                foreach ($billingMonths as $month) {
+                    $billingMonth = Carbon::parse($month.'-01')->startOfMonth();
+                    $existing = RentBill::where('tenancy_id', $activeTenancy->id)
+                        ->where('billing_month', $billingMonth)
+                        ->first();
+
+                    if (! $existing) {
+                        $newBill = RentBill::create([
+                            'tenancy_id' => $activeTenancy->id,
+                            'billing_month' => $billingMonth,
+                            'amount_due' => $activeTenancy->monthly_rent,
+                            'amount_paid' => 0,
+                            'due_date' => $billingMonth->copy()->endOfMonth(),
+                            'status' => 'pending',
+                        ]);
+                        $billIds[] = $newBill->id;
+                    } else {
+                        $billIds[] = $existing->id;
+                    }
+                }
+
+                // 2. Fetch bills ordered by billing_month ASC
+                $bills = RentBill::whereIn('id', $billIds)
+                    ->where('tenancy_id', $activeTenancy->id)
+                    ->orderBy('billing_month')
+                    ->get();
+
+                // 3. Validate bills are payable
+                foreach ($bills as $bill) {
+                    if (in_array($bill->status, [BillStatus::Paid, BillStatus::Waived])) {
+                        throw new \InvalidArgumentException(
+                            "Bill for {$bill->billing_month->format('M Y')} is already {$bill->status->value}."
+                        );
+                    }
+                }
+
+                // 4. Sequential allocation
+                $totalAmount = (float) $validated['amount'];
+                $remaining = $totalAmount;
+                $allocations = [];
+
+                foreach ($bills as $i => $bill) {
+                    $outstanding = (float) $bill->outstanding_amount;
+                    $allocated = min($remaining, $outstanding);
+                    $remaining -= $allocated;
+                    $allocations[$bill->id] = $allocated;
+                }
+
+                // 5. Overpayment -> add to last bill
+                if ($remaining > 0 && ! empty($allocations)) {
+                    $lastBillId = array_key_last($allocations);
+                    $allocations[$lastBillId] += $remaining;
+                }
+
+                // 6. Create payment records + process bills
+                $payments = [];
+                foreach ($allocations as $billId => $allocated) {
+                    if ($allocated <= 0) {
+                        continue;
+                    }
+
+                    $bill = $bills->firstWhere('id', $billId);
+                    $outstanding = (float) $bill->outstanding_amount;
+
+                    $status = $allocated >= $outstanding ? 'paid' : 'partial';
+
+                    $paymentData = [
+                        'tenant_id' => $tenant->id,
+                        'tenancy_id' => $activeTenancy->id,
+                        'rent_bill_id' => $billId,
+                        'amount' => $allocated,
+                        'payment_type' => 'rent',
+                        'payment_method' => $validated['payment_method'],
+                        'status' => $status,
+                        'paid_at' => now(),
+                        'recorded_by' => $landlord->id,
+                        'reference_number' => $validated['reference_number'] ?? null,
+                        'notes' => $validated['notes'] ?? null,
+                    ];
+
+                    $payment = Payment::create($paymentData);
+                    $this->rentBillService->processRentPayment($bill, $allocated);
+
+                    // Sync payment status from bill (source of truth)
+                    $bill->refresh();
+                    $payment->status = PaymentStatus::from($bill->status->value);
+                    $payment->save();
+
+                    $payments[] = $payment;
+                }
+
+                return $payments;
+            });
+
+            $paymentIds = collect($result)->pluck('id')->toArray();
+
+            Log::info('Manual payment recorded', [
+                'tenant_id' => $tenant->id,
+                'landlord_id' => $landlord->id,
+                'payment_ids' => $paymentIds,
+                'total_amount' => $validated['amount'],
+            ]);
+
+            return redirect()
+                ->route('landlord.tenants.show', ['tenant' => $tenant->tenant_code])
+                ->with('success', 'Payment recorded successfully.')
+                ->with('recorded_payment_ids', $paymentIds);
+
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            Log::error('Failed to record manual payment', [
+                'tenant_id' => $tenant->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to record payment. Please try again.');
         }
     }
 

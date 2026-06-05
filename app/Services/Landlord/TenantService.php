@@ -35,7 +35,11 @@ class TenantService
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('tenant_code', 'like', "%{$search}%");
+                    ->orWhere('tenant_code', 'like', "%{$search}%")
+                    ->orWhereHas('tenancies.unit', function ($uq) use ($search) {
+                        $uq->where('unit_name', 'like', "%{$search}%")
+                            ->orWhere('unit_code', 'like', "%{$search}%");
+                    });
             });
         }
 

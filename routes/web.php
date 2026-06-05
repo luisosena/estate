@@ -184,6 +184,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/landlord/tenants/{tenant}/payments', [LandlordPaymentController::class, 'store'])
         ->name('landlord.tenants.payments.store');
 
+    Route::post('/landlord/tenants/{tenant}/record-payment', [LandlordPaymentController::class, 'recordPayment'])
+        ->name('landlord.tenants.payments.record');
+
     Route::put('/landlord/payments/{payment}', [LandlordPaymentController::class, 'update'])
         ->name('landlord.payments.update');
 

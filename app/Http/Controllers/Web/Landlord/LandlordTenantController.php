@@ -12,6 +12,7 @@ use App\Http\Resources\TenancyResource;
 use App\Http\Resources\TenantResource;
 use App\Http\Resources\UnitResource;
 use App\Models\Property;
+use App\Models\RentBill;
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\Unit;
@@ -104,15 +105,33 @@ class LandlordTenantController extends Controller
             : collect();
 
         return Inertia::render('landlord/tenants/show', [
-            'tenant' => new TenantResource($tenant),
-            'tenancy' => $activeTenancy ? new TenancyResource($activeTenancy) : null,
-            'unit' => $activeTenancy?->unit ? new UnitResource($activeTenancy->unit) : null,
-            'property' => $activeTenancy?->unit?->property ? new PropertyResource($activeTenancy->unit->property) : null,
+            'tenant' => (new TenantResource($tenant))->resolve(),
+            'tenancy' => $activeTenancy ? (new TenancyResource($activeTenancy))->resolve() : null,
+            'unit' => $activeTenancy?->unit ? (new UnitResource($activeTenancy->unit))->resolve() : null,
+            'property' => $activeTenancy?->unit?->property ? (new PropertyResource($activeTenancy->unit->property))->resolve() : null,
             'payments' => PaymentResource::collection($payments),
-            'tenancy_history' => TenancyResource::collection($tenancyHistory),
+            'tenancy_history' => TenancyResource::collection($tenancyHistory)->resolve(),
             'documents' => $documents,
-            'outstandingRent' => 0, // Placeholder for logic
-            'outstandingUtilities' => 0, // Placeholder
+            'outstandingRentBills' => $activeTenancy
+                ? RentBill::where('tenancy_id', $activeTenancy->id)
+                    ->whereIn('status', ['pending', 'partial', 'overdue'])
+                    ->orderBy('billing_month')
+                    ->get()
+                    ->map(fn (RentBill $bill) => [
+                        'id' => $bill->id,
+                        'billing_month' => $bill->billing_month->format('Y-m'),
+                        'billing_month_label' => $bill->billing_month->format('M Y'),
+                        'amount_due' => (float) $bill->amount_due,
+                        'amount_paid' => (float) $bill->amount_paid,
+                        'outstanding' => (float) $bill->outstanding_amount,
+                        'status' => $bill->status->value,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
+            'monthlyRent' => $activeTenancy?->monthly_rent ? (float) $activeTenancy->monthly_rent : 0,
+            'outstandingRent' => 0,
+            'outstandingUtilities' => 0,
         ]);
     }
 

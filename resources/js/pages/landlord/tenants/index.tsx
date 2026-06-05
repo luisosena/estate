@@ -1,6 +1,6 @@
 import { Link, router } from '@inertiajs/react';
-import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus, Upload } from 'lucide-react';
-import React, { useState, useMemo } from 'react';
+import { Building2, Mail, Phone, Users, Filter, Home, TrendingUp, UserPlus, Upload, Search } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
 import Pagination from '@/components/shared/Pagination';
@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import CsvImportController from '@/actions/App/Http/Controllers/Web/Landlord/CsvImportController';
+import { Input } from '@/components/ui/input';
 
 export interface TenantRow {
   id: number;
@@ -89,16 +90,33 @@ export default function LandlordTenantsIndex({
   filters,
 }: LandlordTenantsIndexProps) {
   const [currentProperty, setCurrentProperty] = useState(filters?.property || 'all');
+  const [searchQuery, setSearchQuery] = useState(filters?.search || '');
   const { data: tenantList, meta } = tenants;
   const links = meta.links;
 
   const handlePropertyChange = (value: string) => {
     setCurrentProperty(value);
-    router.get(`/landlord/tenants`, { property: value }, {
+    router.get(`/landlord/tenants`, {
+      property: value === 'all' ? undefined : value,
+      search: searchQuery || undefined,
+    }, {
       preserveState: true,
       preserveScroll: true,
     });
   };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      router.get('/landlord/tenants', {
+        search: searchQuery || undefined,
+        property: currentProperty === 'all' ? undefined : currentProperty,
+      }, {
+        preserveState: true,
+        preserveScroll: true,
+      });
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
 
   const handleRemoveTenant = (tenancyId: number) => {
     if (
@@ -257,6 +275,15 @@ export default function LandlordTenantsIndex({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="relative ml-auto w-64">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tenants, units..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8"
+                />
               </div>
             </div>
           </CardContent>

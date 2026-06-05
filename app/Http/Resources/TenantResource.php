@@ -20,6 +20,9 @@ class TenantResource extends JsonResource
             'full_name' => $this->full_name,
             'email' => $this->email,
             'phone' => $this->phone,
+            'emergency_contact_name' => $this->emergency_contact_name,
+            'emergency_contact_phone' => $this->emergency_contact_phone,
+            'emergency_contact_relation' => $this->emergency_contact_relation,
             'created_at' => $this->created_at?->toDateTimeString(),
             // Computed fields often returned in lists
             'tenancy_id' => $this->when(isset($this->tenancy_id), $this->tenancy_id),

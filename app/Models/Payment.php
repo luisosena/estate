@@ -83,6 +83,7 @@ class Payment extends Model
         'due_date',
         'reference_number',
         'notes',
+        'recorded_by',
         // SCAFFOLD: gateway fields — see PaymentGatewayInterface
         'gateway',
         'checkout_request_id',
@@ -139,6 +140,11 @@ class Payment extends Model
     public function rentBill(): BelongsTo
     {
         return $this->belongsTo(RentBill::class);
+    }
+
+    public function recordedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'recorded_by');
     }
 
     /**

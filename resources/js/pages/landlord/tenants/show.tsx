@@ -1,20 +1,18 @@
 import { Link, router, useForm } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Edit, FileText, Home, Loader2, Trash2, Download, Upload } from 'lucide-react';
+import { ArrowLeft, Edit, FileText, Home, Loader2, Trash2, Download, Upload } from 'lucide-react';
 import React from 'react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
+import RecordPaymentModal from '@/components/record-payment-modal';
 import TenantEditModal from '@/components/tenant-edit-modal';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field';
+import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Tenant {
@@ -81,6 +79,29 @@ interface Document {
   uploaded_at: string;
 }
 
+interface OutstandingRentBill {
+  id: number;
+  billing_month: string;
+  billing_month_label: string;
+  amount_due: number;
+  amount_paid: number;
+  outstanding: number;
+  status: string;
+}
+
+interface UtilityBill {
+  id: number;
+  amount_due: number;
+  amount_paid: number;
+  billing_month: string;
+  status: string;
+  tenancy_utility: {
+    utility_type: {
+      name: string;
+    };
+  };
+}
+
 interface Props {
   tenant: Tenant;
   tenancy?: Tenancy;
@@ -91,11 +112,12 @@ interface Props {
   };
   tenancy_history: TenancyHistory[];
   documents?: Document[];
-  properties: any[];
-  availableUnits: any[];
+  availableUnits?: Unit[];
   outstandingRent: number;
   outstandingUtilities: number;
-  pendingUtilityBills: any[];
+  pendingUtilityBills?: UtilityBill[];
+  outstandingRentBills: OutstandingRentBill[];
+  monthlyRent: number;
 }
 
 export default function TenantShow({
@@ -106,11 +128,12 @@ export default function TenantShow({
   payments,
   tenancy_history,
   documents = [],
-  properties,
   availableUnits,
   outstandingRent,
   outstandingUtilities,
   pendingUtilityBills = [],
+  outstandingRentBills = [],
+  monthlyRent = 0,
 }: Props) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editType, setEditType] = useState<
@@ -126,8 +149,9 @@ export default function TenantShow({
     | 'end-tenancy'
     | 'move-tenant'
   >('personal');
-  const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
 
   const { data: uploadData, setData: setUploadData, post: uploadPost, processing: uploadProcessing, reset: uploadReset } = useForm({
     document: null as File | null,
@@ -152,7 +176,7 @@ export default function TenantShow({
   };
 
   const handleDownloadDocument = (documentId: number) => {
-    window.location.href = route('landlord.documents.download', { document: documentId });
+    window.location.assign(route('landlord.documents.download', { document: documentId }));
   };
 
   const handleDeleteDocument = (documentId: number) => {
@@ -420,24 +444,23 @@ export default function TenantShow({
           </Card>
         )}
 
-        {/* Recent Payments */}
-        {(payments.data || []).length > 0 && (
-          <Card className="mb-6">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-lg font-medium">Recent Payments</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedPayment(null);
-                  setEditType('add-payment');
-                  setIsEditModalOpen(true);
-                }}
-              >
-                Add Payment
-              </Button>
-            </CardHeader>
-            <CardContent>
+        {/* Recent Payments — always visible */}
+        <Card className="mb-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <div>
+              <CardTitle className="text-lg font-medium">Payments</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {outstandingRentBills.length > 0
+                  ? `Outstanding: ${formatCurrency(outstandingRentBills.reduce((sum, b) => sum + (Number(b.outstanding) || 0), 0))}`
+                  : 'All rent paid'}
+              </p>
+            </div>
+            <Button onClick={() => setShowRecordPaymentModal(true)}>
+              Record Payment
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {(payments.data || []).length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -474,35 +497,13 @@ export default function TenantShow({
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Empty Payments State */}
-        {(payments.data || []).length === 0 && (
-          <Card className="mb-6">
-            <CardContent className="px-6 py-12 text-center">
-              <Home className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-200">
-                No payments
-              </h3>
-              <p className="mt-1 text-sm text-gray-400">
-                This tenant has no payment records yet.
-              </p>
-              <div className="mt-4">
-                <Button
-                  onClick={() => {
-                    setSelectedPayment(null);
-                    setEditType('add-payment');
-                    setIsEditModalOpen(true);
-                  }}
-                >
-                  Add First Payment
-                </Button>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
 
         {/* Tenancy History */}
         {tenancy_history.length > 0 && (
@@ -758,6 +759,18 @@ export default function TenantShow({
         )}
           </div>
       </main>
+
+      {/* Record Payment Modal */}
+      {tenancy && (
+        <RecordPaymentModal
+          isOpen={showRecordPaymentModal}
+          onClose={() => setShowRecordPaymentModal(false)}
+          tenant={{ full_name: tenant.full_name, tenant_code: tenant.tenant_code }}
+          tenancy={{ id: tenancy.id, monthly_rent: tenancy.monthly_rent || 0 }}
+          outstandingRentBills={outstandingRentBills}
+          monthlyRent={monthlyRent}
+        />
+      )}
 
       {/* Edit Modal */}
       <TenantEditModal
