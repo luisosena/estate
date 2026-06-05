@@ -45,6 +45,7 @@ RUN cp .env.example .env \
   && sed -i 's|REVERB_HOST=localhost|REVERB_HOST=estate-6icx.onrender.com|' .env \
   && sed -i 's|REVERB_PORT=6001|REVERB_PORT=443|' .env \
   && sed -i 's|REVERB_SCHEME=http|REVERB_SCHEME=https|' .env \
+  && sed -i 's|REVERB_APP_KEY=|REVERB_APP_KEY=nbsfpldxcdbwksgienip|' .env \
   && echo "ASSET_URL=https://estate-6icx.onrender.com" >> .env
 
 # Build the Vite frontend assets
