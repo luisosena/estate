@@ -42,6 +42,9 @@ RUN cp .env.example .env \
   && sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' .env \
   && sed -i 's|APP_URL=http://localhost|APP_URL=https://estate-6icx.onrender.com|' .env \
   && sed -i 's|APP_URL=http://localhost|APP_URL=https://estate-6icx.onrender.com|' .env.example \
+  && sed -i 's|REVERB_HOST=localhost|REVERB_HOST=estate-6icx.onrender.com|' .env \
+  && sed -i 's|REVERB_PORT=6001|REVERB_PORT=443|' .env \
+  && sed -i 's|REVERB_SCHEME=http|REVERB_SCHEME=https|' .env \
   && echo "ASSET_URL=https://estate-6icx.onrender.com" >> .env
 
 # Build the Vite frontend assets

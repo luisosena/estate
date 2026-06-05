@@ -31,5 +31,8 @@ php-fpm &
 # --max-time=3600: restart worker hourly (prevents memory leaks)
 php artisan queue:work --sleep=3 --tries=3 --max-time=3600 &
 
+# Start Reverb WebSocket server in background
+php artisan reverb:start --port="${REVERB_SERVER_PORT:-6001}" &
+
 # Start Nginx in foreground
 nginx -g 'daemon off;'
