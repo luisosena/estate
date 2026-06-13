@@ -1,4 +1,4 @@
-# Estate — Property management that works for both sides of the lease.
+# Estate — the modern Property management software
 
 
 🌐 **[Live Demo → estate-6icx.onrender.com](https://estate-6icx.onrender.com)**
@@ -6,6 +6,13 @@
 ## The Problem
 
 Managing rental properties still means juggling spreadsheets, chasing payments over WhatsApp, and sending PDF receipts by hand. Estate replaces that chaos with a single platform where landlords track every unit, bill, and payment — and tenants have a clear view of what they owe and when.
+
+## What is Estate?
+
+Estate is a full-stack web platform that gives landlords complete control over their rental portfolio and gives tenants a transparent, self-serve view of their tenancy — all in one place.
+
+![Landlord dashboard showing revenue analytics, occupancy rate, and payment collection charts](screenshots/landlord-dashboard.png)
+
 
 ## Features
 
@@ -44,7 +51,3 @@ Stack choices were driven by developer productivity, type safety end-to-end, and
 ## Live Demo
 
 🌐 [estate-6icx.onrender.com](https://estate-6icx.onrender.com)
-
-## What's Next
-
-Integrating a live payment gateway (Stripe) so rent payments happen inside the platform rather than being recorded after the fact.
