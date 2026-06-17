@@ -1,0 +1,5 @@
+in docs/plans folder, you will find the plans.md file which contains the plans for the future development of the system. These plans are based on the current state of the system and the goals we want to achieve in the future together with other already-implemented plans. The plans are divided into different sections, each focusing on a specific aspect of the system.
+
+#Special note regarding authentication
+- authentication-session-architecture.md and security-audit.md were used in the designing and implementation of the previous session management system which utilised a custom ApiToken system and had robust features compared to the current and a more standard system which purely uses Laravel Sanctum.
+- the future plan with these is to adapt the features dicussed in these documents to the current system (they were removed in the migration to Laravel Sanctum)
