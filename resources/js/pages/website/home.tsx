@@ -9,7 +9,6 @@ import PainSolutionSection from '@/pages/website/components/pain-solution-sectio
 import FeaturesSection from '@/pages/website/components/features-section';
 import AnimationSection from '@/pages/website/components/animation-section';
 import SplitValuePropSection from '@/pages/website/components/split-value-prop-section';
-import TestimonialsSection from '@/pages/website/components/testimonials-section';
 
 export default function Home() {
     return (
@@ -33,7 +32,6 @@ export default function Home() {
             <PainSolutionSection />
             <FeaturesSection />
             <SplitValuePropSection />
-            <TestimonialsSection />
             <CtaSection />
             <Footer />
         </MarketingLayout>
