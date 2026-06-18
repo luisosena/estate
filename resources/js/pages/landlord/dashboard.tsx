@@ -227,7 +227,7 @@ export default function Dashboard({
   );
 
   return (
-    <div className="min-h-full" style={{ backgroundColor: '#fff7f0' }}>
+    <div className="min-h-full font-sans" style={{ backgroundColor: '#fff7f0' }}>
     <main className="mx-auto flex w-full max-w-[1600px] flex-col gap-8 px-4 py-6 pb-12 sm:px-6 lg:px-8">
       {/* Header Section */}
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">

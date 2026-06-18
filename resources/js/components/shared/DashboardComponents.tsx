@@ -42,7 +42,7 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        'group flex flex-col gap-3 rounded-2xl p-5 transition-all',
+        'group flex flex-col gap-3 rounded-2xl border border-black p-5 transition-all',
         CARD_COLORS[color],
         alert && 'bg-red-100',
         className,
