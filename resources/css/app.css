@@ -63,6 +63,9 @@
 }
 
 :root {
+    --scrollbar-thumb: oklch(0.75 0 0 / 0.4);
+    --scrollbar-thumb-hover: oklch(0.6 0 0 / 0.6);
+    --scrollbar-track: transparent;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -99,6 +102,9 @@
 }
 
 .dark {
+    --scrollbar-thumb: oklch(0.35 0 0 / 0.5);
+    --scrollbar-thumb-hover: oklch(0.45 0 0 / 0.7);
+    --scrollbar-track: transparent;
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.145 0 0);
@@ -166,7 +172,35 @@
   * {
     @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
-    }
+}
+
+/* ── Custom Thin Scrollbar ─────────────────────────────────── */
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
 }
