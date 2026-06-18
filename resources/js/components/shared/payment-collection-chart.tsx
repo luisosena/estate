@@ -57,7 +57,7 @@ export function PaymentCollectionChart({
 }: PaymentCollectionChartProps) {
   if (!data || data.length === 0) {
     return (
-      <Card>
+      <Card className="border border-gray-300 shadow-none dark:border-gray-600">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
           <CardDescription>No collection data available</CardDescription>
@@ -67,7 +67,7 @@ export function PaymentCollectionChart({
   }
 
   return (
-    <Card>
+    <Card className="border border-gray-300 shadow-none dark:border-gray-600">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>

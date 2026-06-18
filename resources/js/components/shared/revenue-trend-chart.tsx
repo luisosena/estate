@@ -52,7 +52,7 @@ export function RevenueTrendChart({
 }: RevenueTrendChartProps) {
   if (!data || data.length === 0) {
     return (
-      <Card>
+      <Card className="border border-gray-300 shadow-none dark:border-gray-600">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
           <CardDescription>No revenue data available</CardDescription>
@@ -62,7 +62,7 @@ export function RevenueTrendChart({
   }
 
   return (
-    <Card>
+    <Card className="border border-gray-300 shadow-none dark:border-gray-600">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>

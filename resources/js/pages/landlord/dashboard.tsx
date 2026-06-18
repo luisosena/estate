@@ -196,7 +196,7 @@ export default function Dashboard({
         <Button
           variant="outline"
           size="sm"
-          className="border-border/50 bg-card shadow-sm hover:bg-accent"
+          className="border-gray-300 bg-card hover:bg-accent dark:border-gray-600"
         >
           <Download className="mr-2 h-4 w-4 text-muted-foreground" />
           Export
@@ -227,6 +227,7 @@ export default function Dashboard({
   );
 
   return (
+    <div className="min-h-full" style={{ backgroundColor: '#fff7f0' }}>
     <main className="mx-auto flex w-full max-w-[1600px] flex-col gap-8 px-4 py-6 pb-12 sm:px-6 lg:px-8">
       {/* Header Section */}
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -234,7 +235,7 @@ export default function Dashboard({
           <div className="mb-2 flex items-center gap-2">
             <Badge
               variant="outline"
-              className="flex items-center gap-1.5 border-border/50 bg-card text-xs font-medium text-muted-foreground"
+              className="flex items-center gap-1.5 border-gray-300 bg-card text-xs font-medium text-muted-foreground dark:border-gray-600"
             >
               <CalendarDays className="h-3 w-3" />
               {getFormattedDate()}
@@ -264,7 +265,7 @@ export default function Dashboard({
             asChild
             variant="outline"
             size="icon"
-            className="relative hidden border-border/50 bg-card shadow-sm hover:bg-accent sm:flex"
+            className="relative hidden border-gray-300 bg-card hover:bg-accent dark:border-gray-600 sm:flex"
             aria-label={
               unreadNotificationsCount > 0
                 ? `Notifications, ${unreadNotificationsCount} unread`
@@ -292,7 +293,7 @@ export default function Dashboard({
           <Button
             asChild
             variant="outline"
-            className="hidden border-border/50 bg-card shadow-sm hover:bg-accent sm:flex"
+            className="hidden border-gray-300 bg-card hover:bg-accent dark:border-gray-600 sm:flex"
           >
             <Link href={route('landlord.tenants.index')}>
               <Users
@@ -307,7 +308,7 @@ export default function Dashboard({
 
           <Button
             onClick={() => router.visit('/landlord/tenants/create')}
-            className="shadow-sm"
+            className="border border-gray-300 shadow-none dark:border-gray-600"
           >
             <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
             Add Tenant
@@ -322,28 +323,28 @@ export default function Dashboard({
           value={stats.total_tenants}
           icon={Users}
           description={`Across ${stats.total_properties} properties`}
-          accent="violet"
+          color="purple"
         />
         <MetricCard
           title="Properties & Units"
           value={stats.total_properties}
           icon={Building2}
           description={`${stats.total_units} total listed units`}
-          accent="amber"
+          color="peach"
         />
         <MetricCard
           title="Monthly Revenue"
           value={formatCurrencyCompact(stats.monthly_revenue)}
           icon={DollarSign}
           description="Estimated this cycle"
-          accent="emerald"
+          color="green"
         />
         <MetricCard
           title="Occupancy Rate"
           value={`${occupancyRate}%`}
           icon={Home}
           description={`${stats.occupied_units} of ${stats.total_units} units filled`}
-          accent="blue"
+          color="blue"
         />
       </section>
 
@@ -404,7 +405,7 @@ export default function Dashboard({
             </Button>
           </div>
 
-          <Card className="border-border/50 bg-card shadow-sm">
+          <Card className="border border-gray-300 shadow-none dark:border-gray-600">
             {propertiesList.length === 0 ? (
               <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
@@ -457,7 +458,7 @@ export default function Dashboard({
                               {typeLabel && (
                                 <Badge
                                   variant="secondary"
-                                  className="h-4 border border-border/40 bg-muted/60 px-1.5 py-0 text-[10px] font-medium text-muted-foreground"
+                                  className="h-4 border border-gray-300 dark:border-gray-600 bg-muted/60 px-1.5 py-0 text-[10px] font-medium text-muted-foreground"
                                 >
                                   {typeLabel}
                                 </Badge>
@@ -535,7 +536,7 @@ export default function Dashboard({
                         </div>
                       </div>
                       {idx < propertiesList.length - 1 && (
-                        <Separator className="bg-border/50" />
+                        <Separator className="bg-gray-300 dark:bg-gray-600" />
                       )}
                     </div>
                   );
@@ -557,7 +558,7 @@ export default function Dashboard({
             </h2>
           </div>
 
-          <Card className="border-border/50 bg-card shadow-sm">
+          <Card className="border border-gray-300 shadow-none dark:border-gray-600">
             <CardHeader className="px-5 pt-5 pb-3">
               <CardTitle className="flex items-center gap-2 text-sm font-medium tracking-widest text-muted-foreground uppercase">
                 <Receipt
@@ -571,7 +572,7 @@ export default function Dashboard({
               <div className="grid grid-cols-2 gap-3">
                 <Link
                   href={route('landlord.rent-bills.index')}
-                  className="flex flex-col rounded-xl border border-border/60 bg-card p-4 transition-colors hover:bg-muted/50"
+                  className="flex flex-col rounded-xl border border-gray-300 bg-card p-4 transition-colors hover:bg-muted/50 dark:border-gray-600"
                 >
                   <span className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                     <Clock
@@ -591,7 +592,7 @@ export default function Dashboard({
                     'flex flex-col rounded-xl border p-4 transition-colors',
                     hasOverdueBills
                       ? 'border-red-200 bg-red-50 hover:bg-red-100 dark:border-red-900/30 dark:bg-red-950/20'
-                      : 'border-border/60 bg-card hover:bg-muted/50',
+                      : 'border-gray-300 bg-card hover:bg-muted/50 dark:border-gray-600',
                   )}
                 >
                   <span
@@ -622,7 +623,7 @@ export default function Dashboard({
                 </Link>
               </div>
 
-              <div className="mt-4 flex flex-col gap-1 border-t border-border/50 pt-4">
+              <div className="mt-4 flex flex-col gap-1 border-t border-gray-300 pt-4 dark:border-gray-600">
                 <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                   Total Outstanding Balance
                 </span>
@@ -656,7 +657,7 @@ export default function Dashboard({
                   asChild
                   size="sm"
                   variant="destructive"
-                  className="h-8 bg-red-600 text-white shadow-sm hover:bg-red-700"
+                  className="h-8 bg-red-600 text-white hover:bg-red-700"
                 >
                   <Link href={route('landlord.rent-bills.index')}>
                     Review overdue bills
@@ -723,6 +724,7 @@ export default function Dashboard({
         </div>
       </section>
     </main>
+    </div>
   );
 }
 

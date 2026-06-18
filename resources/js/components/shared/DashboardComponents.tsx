@@ -3,25 +3,16 @@ import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-type AccentColor = 'emerald' | 'blue' | 'violet' | 'amber' | 'red';
+type CardColor = 'purple' | 'peach' | 'lavender' | 'green' | 'blue';
 
-const ACCENT_BORDER: Record<AccentColor, string> = {
-  emerald: 'border-t-emerald-500',
-  blue: 'border-t-blue-500',
-  violet: 'border-t-violet-500',
-  amber: 'border-t-amber-500',
-  red: 'border-t-red-500',
-};
-
-const ACCENT_ICON: Record<AccentColor, string> = {
-  emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  violet: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-  amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  red: 'bg-red-500/10 text-red-600 dark:text-red-400',
+const CARD_COLORS: Record<CardColor, string> = {
+  purple: 'bg-[#E6D5FF]',
+  peach: 'bg-[#FFE8D6]',
+  lavender: 'bg-[#F4E6F0]',
+  green: 'bg-[#D4F2E0]',
+  blue: 'bg-[#D4F0FF]',
 };
 
 interface MetricCardProps {
@@ -31,7 +22,7 @@ interface MetricCardProps {
   description: string;
   alert?: boolean;
   className?: string;
-  accent?: AccentColor;
+  color?: CardColor;
   trend?: {
     label: string;
     value: string;
@@ -45,51 +36,39 @@ export function MetricCard({
   description,
   alert = false,
   className,
-  accent = 'emerald',
+  color = 'purple',
   trend,
 }: MetricCardProps) {
   return (
-    <Card
+    <div
       className={cn(
-        'group border-t-2 border-border/50 shadow-none transition-all hover:shadow-sm',
-        ACCENT_BORDER[accent],
+        'group flex flex-col gap-3 rounded-2xl p-5 transition-all',
+        CARD_COLORS[color],
+        alert && 'bg-red-100',
         className,
       )}
     >
-      <CardContent className="flex flex-col gap-3 p-5">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <span
-              className={cn(
-                'inline-flex h-7 w-7 items-center justify-center rounded-md',
-                alert
-                  ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-                  : ACCENT_ICON[accent],
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-            </span>
-            {title}
-          </span>
-          {trend && (
-            <Badge
-              variant="secondary"
-              className="hidden bg-muted/50 text-xs font-normal shadow-none sm:inline-flex"
-            >
-              {trend.label}
-            </Badge>
-          )}
+      <Icon className="h-5 w-5 text-gray-900" strokeWidth={1.5} aria-hidden="true" />
+      <div className="flex flex-col gap-1">
+        <div className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums sm:text-3xl">
+          {value}
         </div>
-        <div>
-          <div className="text-2xl font-semibold tracking-tight text-foreground tabular-nums sm:text-3xl">
-            {value}
-          </div>
-          <p className="mt-1 text-xs font-medium text-muted-foreground">
-            {description}
-          </p>
+        <div className="text-sm font-semibold text-gray-800">
+          {title}
         </div>
-      </CardContent>
-    </Card>
+        <p className="text-xs font-normal text-gray-600">
+          {description}
+        </p>
+      </div>
+      {trend && (
+        <Badge
+          variant="secondary"
+          className="mt-auto self-start bg-white/50 text-xs font-medium text-gray-700 shadow-none"
+        >
+          {trend.label}
+        </Badge>
+      )}
+    </div>
   );
 }
 
@@ -119,7 +98,7 @@ export function QuickAction({
   );
 
   const baseClass = cn(
-    'h-auto justify-start rounded-xl border-border/50 bg-card px-4 py-3 shadow-none transition-all hover:bg-muted/50 hover:text-primary',
+    'h-auto justify-start rounded-xl border border-gray-300 bg-card px-4 py-3 shadow-none transition-all hover:bg-muted/50 hover:text-primary dark:border-gray-600',
     className,
   );
 
