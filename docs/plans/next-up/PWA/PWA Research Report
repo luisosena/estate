@@ -1,0 +1,647 @@
+# Progressive Web App (PWA) — Comprehensive Research Report
+
+> **Purpose**: Deep-dive research into what makes a high-quality, native-like Progressive Web App for both Android and iOS, independent of any specific project. This document is a knowledge base to inform implementation decisions.
+
+---
+
+## Table of Contents
+
+1. [The Three Pillars of a Great PWA](#1-the-three-pillars)
+2. [Web App Manifest — The Identity Card](#2-web-app-manifest)
+3. [Service Workers — The Engine](#3-service-workers)
+4. [Icons & Splash Screens — First Impressions](#4-icons--splash-screens)
+5. [Android-Specific Guidelines](#5-android-specific-guidelines)
+6. [iOS-Specific Guidelines & Workarounds](#6-ios-specific-guidelines--workarounds)
+7. [Native-Like UX Patterns](#7-native-like-ux-patterns)
+8. [Push Notifications](#8-push-notifications)
+9. [Offline Data & Background Sync](#9-offline-data--background-sync)
+10. [App Update Strategy](#10-app-update-strategy)
+11. [Performance & Core Web Vitals](#11-performance--core-web-vitals)
+12. [Security](#12-security)
+13. [Accessibility (a11y)](#13-accessibility)
+14. [Installability Checklist](#14-installability-checklist)
+15. [Platform Feature Matrix](#15-platform-feature-matrix)
+16. [Key Takeaways](#16-key-takeaways)
+
+---
+
+## 1. The Three Pillars
+
+A world-class PWA must be **Reliable**, **Fast**, and **Engaging**:
+
+| Pillar | What It Means | Key Technologies |
+|:---|:---|:---|
+| **Reliable** | Loads instantly even on flaky networks; works offline | Service Worker, Cache API, IndexedDB |
+| **Fast** | Responds to interactions in < 100ms; renders in < 2.5s | Code splitting, lazy loading, AVIF/WebP images |
+| **Engaging** | Feels like a native app; re-engages users | Web Push API, `display: standalone`, smooth animations |
+
+---
+
+## 2. Web App Manifest
+
+The `manifest.json` (or `manifest.webmanifest`) is your app's identity card for the OS. It tells the browser how to display your app when installed.
+
+### Required Properties
+
+```json
+{
+  "name": "My Application",
+  "short_name": "MyApp",
+  "description": "A brief, compelling description of the app.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#16213e",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
+```
+
+### Key Manifest Guidelines
+
+| Property | Best Practice |
+|:---|:---|
+| `name` | Full app name (max ~45 characters) |
+| `short_name` | Truncated name for tight spaces (< 12 characters ideally) |
+| `display` | Use `standalone` for native-like look (hides browser chrome). `fullscreen` for immersive apps. Never `browser`. |
+| `display_override` | Optional: allows specifying a preference chain, e.g. `["window-controls-overlay", "standalone"]` |
+| `background_color` | Must match your app's initial load background to prevent a "white flash" during startup |
+| `theme_color` | Colors the browser's status bar / title bar. Should harmonize with your design. |
+| `start_url` | URL that opens when the app launches. Often `"/"` or `"/?source=pwa"` for analytics tracking. |
+| `scope` | Defines the URL space the PWA controls. URLs outside scope open in the browser. |
+| `orientation` | `portrait-primary` for most apps; `any` for apps that benefit from landscape |
+
+> [!IMPORTANT]
+> The `display: standalone` mode removes the browser's back button. Your app **must** provide its own internal navigation to prevent users from getting stuck.
+
+---
+
+## 3. Service Workers
+
+The service worker is the heart of a PWA — a JavaScript file that runs in the background, intercepting network requests, managing caches, and enabling offline functionality.
+
+### Lifecycle
+
+```mermaid
+graph LR
+    A[Register] --> B[Install]
+    B --> C[Activate]
+    C --> D[Idle / Controlling]
+    D -->|Network Request| E[Fetch Event]
+    D -->|New SW Found| F[Waiting]
+    F -->|skipWaiting| C
+```
+
+### Caching Strategies
+
+Choose the right strategy for each resource type:
+
+| Strategy | When to Use | Behavior |
+|:---|:---|:---|
+| **Cache First** | Static assets (CSS, JS, fonts, images) | Serves from cache; falls back to network. Fastest. |
+| **Network First** | Dynamic API data, user-specific content | Tries network; falls back to cache if offline. Freshest. |
+| **Stale-While-Revalidate** | Content that changes occasionally (blog posts, product listings) | Serves cached instantly; fetches update in background. Balanced. |
+| **Network Only** | Real-time data (chat, live prices) | Always goes to network. No caching. |
+| **Cache Only** | Precached app shell | Only checks cache. Used for core UI skeleton. |
+
+### The App Shell Pattern
+
+The most important architectural pattern for PWAs:
+
+1. **Precache** the minimal HTML, CSS, and JS needed to render the app's UI skeleton (header, nav, layout) during the service worker's `install` event
+2. **Serve the shell instantly** from cache on every visit
+3. **Fetch dynamic content** (data) separately and inject it into the shell
+4. Result: Users see a functional interface immediately, even offline
+
+> [!TIP]
+> Use **Workbox** (by Google) instead of writing raw service worker code. It provides production-ready modules for routing (`workbox-routing`), strategies (`workbox-strategies`), precaching (`workbox-precaching`), and cache expiration (`workbox-expiration`).
+
+---
+
+## 4. Icons & Splash Screens
+
+### Icon Requirements
+
+Design your source icon at **1024×1024px** (SVG preferred) and generate all sizes from it.
+
+| Purpose | Size | Format | Notes |
+|:---|:---|:---|:---|
+| **Favicon** | 32×32 | `.ico` or `.png` | Legacy browser tab icon |
+| **Apple Touch Icon** | 180×180 | `.png` | iOS home screen. No rounded corners — iOS adds them. |
+| **PWA Standard** | 192×192 | `.png` | Required for Chrome/Android installability |
+| **PWA High-Res** | 512×512 | `.png` | Used for splash screens and high-DPI displays |
+| **Maskable** | 512×512 | `.png` | Android adaptive icons. Keep content within inner 80%. |
+
+### Maskable Icons — The Safe Zone
+
+```
+┌─────────────────────────┐
+│                         │  ← Outer 20% — may be cropped
+│   ┌─────────────────┐   │
+│   │                 │   │
+│   │   SAFE ZONE     │   │  ← Inner 80% — all content here
+│   │   (Your Logo)   │   │
+│   │                 │   │
+│   └─────────────────┘   │
+│                         │
+└─────────────────────────┘
+```
+
+> [!WARNING]
+> Maskable icons MUST have an **opaque background** (no transparency). Android will apply its own shape mask (circle, squircle, etc.) and a transparent icon will render with ugly artifacts.
+
+### Splash Screens
+
+| Platform | How It Works |
+|:---|:---|
+| **Android (Chrome)** | Automatically generated from manifest `name`, `background_color`, and 512px `icon`. No custom image needed. |
+| **iOS (Safari)** | Does **NOT** use the manifest. Requires custom `<link rel="apple-touch-startup-image">` meta tags in the HTML `<head>` for each screen size, or use a library like `pwacompat` to automate generation. |
+
+---
+
+## 5. Android-Specific Guidelines
+
+Android provides the most complete PWA experience. Chrome handles installation, updates, and integration with the OS.
+
+### Installability on Android
+
+Chrome will show an install prompt if:
+- ✅ Site is served over HTTPS
+- ✅ Valid `manifest.json` with `name`, `icons` (192px + 512px), `start_url`, and `display: standalone`
+- ✅ A service worker with a `fetch` event handler is registered
+- ✅ User has interacted with the page for at least **30 seconds**
+
+### Trusted Web Activities (TWA) — Play Store Distribution
+
+If you want your PWA listed on the **Google Play Store**:
+
+1. Use **Bubblewrap** CLI to generate an Android project wrapper from your manifest
+2. Implement **Digital Asset Links** (a `.well-known/assetlinks.json` file on your server) to verify ownership
+3. The TWA runs in the user's installed Chrome — no WebView, full performance
+4. Users get Play Store discoverability + native install flow
+
+> [!NOTE]
+> TWA is optional. A PWA installed directly from the browser already behaves like a native app on Android — with its own icon, splash screen, and task switcher entry.
+
+### Android Features Available to PWAs
+
+- ✅ Push notifications (full support)
+- ✅ Badging API (app icon badge count)
+- ✅ Background Sync API
+- ✅ Share Target API (receive shared content from other apps)
+- ✅ File Handling API
+- ✅ Shortcuts (manifest `shortcuts` array for quick actions)
+
+---
+
+## 6. iOS-Specific Guidelines & Workarounds
+
+iOS is more restrictive. Understanding and working around these limitations is **critical** for a quality experience.
+
+### Key Limitations (as of iOS 26, mid-2026)
+
+| Limitation | Impact | Workaround |
+|:---|:---|:---|
+| **No install prompt** | Users must manually "Add to Home Screen" via Safari's Share menu | Build a custom onboarding banner that teaches users the process |
+| **Cache volatility** | Safari may clear PWA data after 7 days of inactivity | Use IndexedDB over localStorage; implement server-side session persistence |
+| **No Background Sync** | The Background Sync API is not supported | Listen for the `online` event and trigger sync manually |
+| **Limited background execution** | Service workers are killed aggressively when the app is backgrounded | Design for graceful reconnection; avoid relying on long-running SW tasks |
+| **No `theme_color` on iOS 26+** | The `theme-color` meta tag / manifest member no longer controls status bar color | Use `<body>` background color or a `position: fixed` header with `backdrop-filter: blur()` |
+
+### Required Apple Meta Tags
+
+```html
+<!-- Enable standalone PWA mode on iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!-- Status bar style: default | black | black-translucent -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- App name displayed under the icon -->
+<meta name="apple-mobile-web-app-title" content="My App">
+
+<!-- Edge-to-edge rendering -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- Touch icon (180×180) -->
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+```
+
+### CSS Safe Areas (Notch & Home Bar)
+
+When using `viewport-fit=cover`, content extends behind the notch and home indicator. Protect it:
+
+```css
+:root {
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --sar: env(safe-area-inset-right);
+}
+
+body {
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+/* Or apply to specific elements */
+.app-header {
+  padding-top: calc(1rem + var(--sat));
+}
+
+.bottom-nav {
+  padding-bottom: calc(0.5rem + var(--sab));
+}
+```
+
+### iOS Install Prompt — Custom Onboarding
+
+Since iOS has no native install prompt, build your own:
+
+1. **Detect iOS + Safari** using user agent or `navigator.standalone === false`
+2. **Show a contextual banner** after the user has engaged (not on first visit)
+3. **Visually guide** the user: show an animated arrow pointing to the Share button, then "Add to Home Screen"
+4. **Persist dismissal** so the banner doesn't annoy returning users
+5. **Don't show on non-Safari iOS browsers** (they can't install PWAs)
+
+---
+
+## 7. Native-Like UX Patterns
+
+The difference between "website in a standalone window" and "native-like app" comes down to UX details.
+
+### Navigation & Transitions
+
+| Pattern | Implementation |
+|:---|:---|
+| **View Transitions API** | Use `document.startViewTransition()` for seamless cross-fade or shared-element transitions between pages |
+| **SPA Architecture** | Use React/Vue/Angular to avoid full page reloads. Keep navigation state in memory. |
+| **Bottom Navigation** | Place primary nav at the bottom of the screen (thumb zone). This is the #1 native-like pattern. |
+| **Pull-to-Refresh** | Implement custom pull-to-refresh with smooth spring animation (CSS `overscroll-behavior` to disable browser's default) |
+| **Swipe Gestures** | Use Pointer Events (`pointerdown`, `pointermove`, `pointerup`) for custom swipe navigation |
+
+### Animation Best Practices
+
+| Do | Don't |
+|:---|:---|
+| Animate `transform` and `opacity` (GPU-accelerated) | Animate `width`, `height`, `top`, `left` (triggers layout reflow) |
+| Use physics-based easing (spring curves) | Use linear or generic `ease` timing functions |
+| Keep animations under 300ms for interactions | Use animations > 500ms that feel sluggish |
+| Use `will-change` sparingly on elements that will animate | Apply `will-change` to everything (wastes GPU memory) |
+| Respect `prefers-reduced-motion` user preference | Force animations on users who've opted out |
+
+```css
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+### Typography & Visual Fidelity
+
+- Use `font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;` to match the device's native font
+- Or use a high-quality web font (Inter, Plus Jakarta Sans) loaded via `font-display: swap`
+- Use `-webkit-font-smoothing: antialiased` and `-moz-osx-font-smoothing: grayscale` for crisp text
+
+### Touch & Interaction
+
+- **Touch targets**: Minimum 44×44 CSS pixels (Apple HIG) / 48×48dp (Material Design)
+- **Disable text selection on UI elements**: `user-select: none` on buttons and nav
+- **Disable long-press context menu on interactive elements**: `-webkit-touch-callout: none`
+- **Disable tap highlight**: `-webkit-tap-highlight-color: transparent` (then add your own feedback)
+- **Skeleton screens**: Use animated skeleton loaders instead of spinners during data fetches
+
+### Overscroll Behavior
+
+```css
+/* Prevent the "bounce" / "pull-to-navigate" behavior */
+html, body {
+  overscroll-behavior: none;
+}
+
+/* Allow only vertical overscroll (for custom pull-to-refresh) */
+.scrollable-content {
+  overscroll-behavior-y: contain;
+}
+```
+
+---
+
+## 8. Push Notifications
+
+### Architecture
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App
+    participant SW as Service Worker
+    participant Push as Push Service (FCM/APNs)
+    participant Server
+
+    User->>App: Clicks "Enable Notifications"
+    App->>User: Browser permission prompt
+    User->>App: Grants permission
+    App->>SW: PushManager.subscribe({ applicationServerKey: VAPID_PUBLIC })
+    SW->>Push: Registers subscription
+    Push->>App: Returns PushSubscription (endpoint + keys)
+    App->>Server: Sends PushSubscription to backend
+    Note right of Server: Stores subscription in DB
+
+    Server->>Push: Sends push message (signed with VAPID_PRIVATE)
+    Push->>SW: Delivers push event
+    SW->>User: Shows notification
+    User->>App: Clicks notification → deep link opens
+```
+
+### Best Practices
+
+| Practice | Why |
+|:---|:---|
+| **Never request permission on page load** | Users haven't built trust yet. ~60% deny on first visit. |
+| **Use a "soft prompt" first** | Show a custom UI explaining *why* notifications are valuable, with "Enable" / "Not Now" |
+| **Trigger after engagement** | Ask after the user completes a key action (e.g., saves a favorite, completes onboarding) |
+| **Personalize content** | Send relevant, targeted notifications — not generic blasts |
+| **Include a clear CTA** | Every notification should have one clear action and deep-link to relevant content |
+| **Offer granular control** | Let users choose notification categories (e.g., "Price alerts" vs "Marketing") |
+| **Limit frequency** | 1–3 notifications per day maximum. Respect user attention. |
+
+### iOS Push Notification Requirements (iOS 16.4+)
+- The PWA **must** be installed to the home screen (push doesn't work in browser tabs)
+- Permission must be requested via a **user gesture** (button click)
+- VAPID authentication is required on the backend
+- Each push event **must** display a visible notification
+
+> [!CAUTION]
+> **Never expose your VAPID private key** in client-side code. Store it in server environment variables only.
+
+---
+
+## 9. Offline Data & Background Sync
+
+### Architecture Pattern
+
+```mermaid
+graph TB
+    A[User Action<br>e.g. Submit Form] --> B{Online?}
+    B -->|Yes| C[Send to Server]
+    B -->|No| D[Save to IndexedDB<br>Outbox Queue]
+    D --> E[Register Background Sync]
+    E -->|Connectivity Restored| F[Service Worker<br>sync Event Fires]
+    F --> G[Read from IndexedDB Outbox]
+    G --> H[Send to Server]
+    H -->|Success| I[Remove from Outbox]
+    H -->|Failure| J[Retry with<br>Exponential Backoff]
+    C --> K[Success Response]
+```
+
+### Key Technologies
+
+| Technology | Purpose | Browser Support |
+|:---|:---|:---|
+| **IndexedDB** | Persistent, structured local storage (large datasets) | All modern browsers ✅ |
+| **Cache API** | Store HTTP request/response pairs for offline access | All modern browsers ✅ |
+| **Background Sync** | Defer network requests until connectivity | Chromium only (Chrome, Edge) ⚠️ |
+| **Periodic Background Sync** | Fetch fresh data on a schedule (e.g., news) | Chromium only, browser-controlled frequency ⚠️ |
+
+### Fallback for Non-Chromium (Safari/Firefox)
+
+```javascript
+// When Background Sync isn't available, fall back to online event
+if ('serviceWorker' in navigator && 'SyncManager' in window) {
+  // Use Background Sync
+  registration.sync.register('outbox-sync');
+} else {
+  // Fallback: listen for online event
+  window.addEventListener('online', () => {
+    processOutboxQueue();
+  });
+}
+```
+
+> [!TIP]
+> Use Workbox's `workbox-background-sync` module — it handles the IndexedDB queue, retry logic, and expiration automatically with just a few lines of configuration.
+
+### User Feedback
+
+Always communicate offline state to the user:
+- Show an **offline indicator** banner when connectivity drops
+- Mark pending items with a "Syncing..." or "Pending" badge
+- Confirm when items have been successfully synced
+
+---
+
+## 10. App Update Strategy
+
+### The Problem
+
+When you deploy new code, users may still be running the old version because:
+1. The old service worker is still controlling the page
+2. Assets are served from cache
+
+### Recommended Update Flow
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant OldSW as Old Service Worker
+    participant NewSW as New Service Worker
+    participant UI as User Interface
+
+    Browser->>NewSW: Detects new SW file (byte diff)
+    NewSW->>NewSW: Installs (precaches new assets)
+    NewSW->>NewSW: Enters "waiting" state
+    NewSW-->>UI: Triggers "waiting" event
+    UI->>UI: Shows "Update Available" toast
+    Note right of UI: User clicks "Update Now"
+    UI->>NewSW: postMessage({ type: 'SKIP_WAITING' })
+    NewSW->>NewSW: self.skipWaiting()
+    NewSW->>Browser: Takes control
+    Browser->>UI: controllerchange event
+    UI->>UI: window.location.reload()
+```
+
+### Best Practices
+
+| Practice | Rationale |
+|:---|:---|
+| **Show a non-intrusive toast/banner** | Don't force-refresh — users may be mid-task |
+| **Give users control** | "Update available — Refresh to update" with a button |
+| **Never cache `service-worker.js` aggressively** | Serve with `Cache-Control: no-cache` so browsers detect updates |
+| **Version your caches** | Name caches with a version string; purge old caches in `activate` event |
+| **Use Workbox `workbox-window`** | Handles the `waiting` event detection and `skipWaiting` messaging automatically |
+
+---
+
+## 11. Performance & Core Web Vitals
+
+> [!IMPORTANT]
+> The Lighthouse PWA audit category has been **deprecated**. Performance validation now focuses on Core Web Vitals and the Chrome DevTools Application panel.
+
+### Core Web Vitals Targets
+
+| Metric | Target | What It Measures |
+|:---|:---|:---|
+| **LCP** (Largest Contentful Paint) | ≤ 2.5s | How fast the main content loads |
+| **INP** (Interaction to Next Paint) | ≤ 200ms | How quickly the app responds to user input |
+| **CLS** (Cumulative Layout Shift) | ≤ 0.1 | Visual stability — elements shouldn't jump around |
+
+### Performance Optimization Checklist
+
+- [ ] **Code split** aggressively — only load JS needed for the current route
+- [ ] **Lazy load** images and below-the-fold components
+- [ ] **Use modern image formats** (WebP/AVIF) with `<picture>` fallbacks
+- [ ] **Precache the app shell** via service worker
+- [ ] **Inline critical CSS** or use `<link rel="preload">` for render-blocking resources
+- [ ] **Set `font-display: swap`** to avoid invisible text during font loading
+- [ ] **Implement skeleton screens** for perceived performance
+- [ ] **Minimize third-party scripts** — each one is a performance tax
+- [ ] **Use `<link rel="preconnect">` and `<link rel="dns-prefetch">`** for external origins
+
+---
+
+## 12. Security
+
+### Security Checklist
+
+| Layer | Requirement |
+|:---|:---|
+| **HTTPS** | Mandatory. Service workers won't register without it. |
+| **HSTS** | Enable `Strict-Transport-Security` with `includeSubDomains` and `preload` |
+| **CSP** | Strict Content Security Policy. Avoid `'unsafe-inline'` and `'unsafe-eval'`. Use nonces or hashes. |
+| **SW Scope** | Limit service worker scope to the narrowest necessary path |
+| **Cache Hygiene** | Never store auth tokens or PII in the Cache API |
+| **SRI** | Use Subresource Integrity hashes for third-party scripts |
+| **Input Sanitization** | Sanitize all data handled by the service worker |
+| **SW File Caching** | Serve `service-worker.js` with `Cache-Control: no-cache` to ensure prompt updates |
+| **Mixed Content** | Use `upgrade-insecure-requests` CSP directive to catch all mixed content |
+
+> [!CAUTION]
+> Service workers can intercept **all** network traffic within their scope. A compromised service worker is a full man-in-the-middle attack. Always validate and sanitize.
+
+---
+
+## 13. Accessibility
+
+A PWA must meet **WCAG 2.1 Level AA** standards. Accessibility is not optional — it's a quality requirement.
+
+### Key Requirements
+
+| Area | Guidelines |
+|:---|:---|
+| **Keyboard Navigation** | All functionality accessible via keyboard. Logical tab order. Visible focus indicators. No keyboard traps. |
+| **Screen Readers** | Semantic HTML (`<nav>`, `<main>`, `<button>`, `<h1>`–`<h6>`). Proper `aria-label` on custom elements. Logical reading order. |
+| **Touch Targets** | Minimum 44×44px (Apple) / 48×48dp (Material Design) |
+| **Color Contrast** | 4.5:1 for normal text, 3:1 for large text |
+| **Motion** | Respect `prefers-reduced-motion`. Provide controls to pause animations. |
+| **Responsive Reflow** | Content must work at 320px width without horizontal scrolling |
+| **System Settings** | Respect OS-level text scaling and dark mode preferences |
+
+### Testing Strategy
+
+| Method | Coverage | Tools |
+|:---|:---|:---|
+| **Automated Scanning** | 30–40% of issues | Lighthouse, axe-core, WAVE |
+| **Manual Keyboard Testing** | Focus order, traps, missing indicators | Tab, Shift+Tab, Enter, Escape, Arrow keys |
+| **Screen Reader Testing** | Full assistive tech experience | VoiceOver (iOS/Mac), TalkBack (Android), NVDA (Windows) |
+| **Zoom Testing** | Reflow at 200% zoom | Browser zoom, OS text scaling |
+
+---
+
+## 14. Installability Checklist
+
+The definitive checklist for making your PWA installable across platforms:
+
+### Mandatory Requirements
+
+- [x] **HTTPS** — served over a secure origin
+- [x] **Web App Manifest** linked in HTML `<head>` via `<link rel="manifest" href="/manifest.json">`
+- [x] **`name` or `short_name`** in manifest
+- [x] **`start_url`** in manifest
+- [x] **`display`** set to `standalone`, `fullscreen`, or `minimal-ui`
+- [x] **Icons** — at least 192×192px and 512×512px PNG icons
+- [x] **Service Worker** registered with a `fetch` event handler
+- [x] **Offline response** — service worker returns a 200 OK for `start_url` when offline
+
+### iOS-Specific Requirements
+
+- [x] `<meta name="apple-mobile-web-app-capable" content="yes">`
+- [x] `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`
+- [x] `<meta name="apple-mobile-web-app-title" content="App Name">`
+- [x] `<link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png">`
+- [x] `<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">`
+- [x] CSS safe area insets applied
+
+### Enhanced (Recommended)
+
+- [x] Maskable icon with `purpose: "maskable"`
+- [x] `background_color` matching app's loading state
+- [x] `theme_color` for Android status bar
+- [x] Custom offline fallback page
+- [x] `shortcuts` array for quick actions from home screen long-press
+- [x] `categories` and `description` for better discoverability
+- [x] `screenshots` array for richer install UI (Chrome shows these in the install dialog)
+
+---
+
+## 15. Platform Feature Matrix
+
+> Current as of mid-2026.
+
+| Feature | Android (Chrome) | iOS (Safari) | Notes |
+|:---|:---|:---|:---|
+| **Install Prompt** | ✅ Automatic | ❌ Manual only | iOS requires Share → Add to Home Screen |
+| **Service Workers** | ✅ Full support | ✅ Supported (limited lifecycle) | iOS kills SW aggressively in background |
+| **Push Notifications** | ✅ Full support | ✅ (iOS 16.4+, installed only) | iOS: requires user gesture for permission |
+| **Background Sync** | ✅ Supported | ❌ Not supported | Fallback: `online` event listener |
+| **Periodic Background Sync** | ⚠️ Limited | ❌ Not supported | Browser-controlled frequency |
+| **Badging API** | ✅ Supported | ❌ Not supported | App icon badge count |
+| **Share Target API** | ✅ Supported | ❌ Not supported | Receive shared content |
+| **File Handling** | ✅ Supported | ❌ Not supported | Register as file handler |
+| **Splash Screen** | ✅ Auto-generated | ⚠️ Manual meta tags | iOS needs `apple-touch-startup-image` |
+| **`theme_color`** | ✅ Supported | ❌ Deprecated (iOS 26+) | iOS: use body background color |
+| **Shortcuts** | ✅ Supported | ❌ Not supported | Long-press quick actions |
+| **IndexedDB** | ✅ Supported | ✅ Supported (volatile) | iOS may clear after 7 days inactivity |
+| **Web App Manifest** | ✅ Full support | ⚠️ Partial support | iOS ignores many manifest properties |
+| **TWA (Play Store)** | ✅ Via Bubblewrap | N/A | Wrapper to publish PWA on Play Store |
+
+---
+
+## 16. Key Takeaways
+
+### The Golden Rules
+
+1. **Design for iOS first, then enhance for Android.** iOS has the strictest limitations. If it works well on iOS, it will work excellently on Android.
+
+2. **The app shell is non-negotiable.** Precache your UI skeleton so it loads instantly. This single pattern makes the biggest difference in perceived quality.
+
+3. **Offline is a feature, not an error state.** Design graceful offline experiences — informative fallback pages, cached content, and pending state indicators.
+
+4. **The install prompt is a conversation, not a command.** On Android, time it contextually. On iOS, teach users with a friendly onboarding flow.
+
+5. **Performance IS the experience.** A 3-second load time and janky scrolling will negate every other effort. Optimize relentlessly for Core Web Vitals.
+
+6. **Touch targets and safe areas are dealbreakers.** A 30px button that gets clipped by the notch will instantly betray the app as a web wrapper.
+
+7. **Updates must be graceful.** Never force-refresh. Show a polite "Update available" toast and let the user choose when to apply.
+
+8. **Accessibility is quality.** Semantic HTML, keyboard navigation, and screen reader support are not "nice to haves" — they define whether your app is truly production-grade.
+
+9. **Security is foundational.** HTTPS, strict CSP, scoped service workers, and no sensitive data in caches. These are non-negotiable.
+
+10. **Test on real devices.** Simulators miss real-world PWA behaviors. Always test installation, offline mode, and push notifications on physical Android and iOS devices.
+
+---
+
+> [!NOTE]
+> This report is a **platform-agnostic knowledge base**. The next step is to apply these findings to the specific project architecture (Laravel + Inertia + React) to create an actionable implementation plan.

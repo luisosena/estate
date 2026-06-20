@@ -1,0 +1,602 @@
+# PWA Implementation Plan — Estate
+
+> Transform the Estate Laravel + Inertia + React application into a production-grade Progressive Web App across **6 phases**, ordered by impact and dependency.
+
+## Progress Tracker
+
+| Phase | Scope | Effort | Status |
+|:---|:---|:---|:---|
+| **1** | Foundation — Manifest, Icons & Meta Tags | Small | ⬜ Not started |
+| **2** | Service Worker & Offline Support | Medium | ⬜ Not started |
+| **3** | Native-Like UX Enhancements | Medium | ⬜ Not started |
+| **4** | App Update Strategy | Small | ⬜ Not started |
+| **5** | Push Notifications | Large | ⬜ Not started |
+| **6** | Offline Data & Background Sync | Large | ⬜ Not started |
+
+> **Legend**: ⬜ Not started · 🟡 In progress · ✅ Complete · ⏸️ Deferred
+
+---
+
+## Phase 1 — Foundation: Manifest, Icons & Meta Tags
+
+**Goal**: Make the app installable on Android and "Add to Home Screen"-capable on iOS.
+
+**Estimated effort**: Small  
+**Dependencies**: None — this is the starting point.
+
+---
+
+### 1.1 Create PWA Icon Set
+
+Generate all required icons from a single 1024×1024 source:
+
+| File | Size | Purpose |
+|:---|:---|:---|
+| `public/icons/favicon.ico` | 32×32 | Browser tab |
+| `public/icons/favicon.svg` | Scalable | Modern browsers |
+| `public/icons/apple-touch-icon-180.png` | 180×180 | iOS home screen |
+| `public/icons/icon-192.png` | 192×192 | Android installability |
+| `public/icons/icon-512.png` | 512×512 | Android splash / high-DPI |
+| `public/icons/icon-512-maskable.png` | 512×512 | Android adaptive icons (safe zone) |
+
+> [!IMPORTANT]
+> We need a source icon design at 1024×1024px. If one exists in the design system or brand assets, we use that. Otherwise, this needs to be created or provided by the user first.
+
+#### [NEW] `public/icons/` — entire directory of generated icons
+
+---
+
+### 1.2 Create Web App Manifest
+
+#### [NEW] [manifest.json](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/public/manifest.json)
+
+```json
+{
+  "name": "Estate",
+  "short_name": "Estate",
+  "description": "Estate — your real estate platform",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16213e",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["business", "lifestyle"],
+  "shortcuts": []
+}
+```
+
+> [!NOTE]
+> `background_color` and `theme_color` should be finalized to match the actual app design tokens. Shortcuts can be added later once core navigation is established.
+
+---
+
+### 1.3 Update HTML Template with PWA & Apple Meta Tags
+
+#### [MODIFY] [app.blade.php](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/views/app.blade.php)
+
+Add these to the `<head>`:
+
+```html
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- Theme color for Android -->
+<meta name="theme-color" content="#16213e">
+
+<!-- Apple PWA meta tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Estate">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png">
+```
+
+Update the viewport meta to include `viewport-fit=cover`:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
+Replace the empty `favicon.ico` reference:
+
+```html
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
+```
+
+---
+
+### 1.4 Add CSS Safe Area Support
+
+#### [MODIFY] [app.css](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/css/app.css)
+
+Add safe-area CSS variables and overscroll behavior:
+
+```css
+:root {
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --sar: env(safe-area-inset-right);
+}
+
+html, body {
+  overscroll-behavior: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+#### [MODIFY] [app-layout.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/layouts/app-layout.tsx)
+
+Apply safe area padding to the main layout's header and bottom navigation areas.
+
+---
+
+### Phase 1 Verification
+
+- [ ] Manifest is accessible at `/manifest.json` and valid (Chrome DevTools → Application → Manifest)
+- [ ] All icons load correctly at their paths
+- [ ] Apple meta tags render in HTML source
+- [ ] Android Chrome shows install prompt after 30s engagement
+- [ ] iOS Safari allows "Add to Home Screen"
+- [ ] Safe areas render correctly on notched devices
+
+---
+
+## Phase 2 — Service Worker & Offline Support
+
+**Goal**: Register a service worker, implement the App Shell caching pattern, and provide a meaningful offline experience.
+
+**Estimated effort**: Medium  
+**Dependencies**: Phase 1 (manifest and icons must exist)
+
+---
+
+### 2.1 Install Vite PWA Plugin & Workbox
+
+Install `vite-plugin-pwa` which integrates Workbox into the Vite build pipeline:
+
+```bash
+npm install -D vite-plugin-pwa
+```
+
+This provides:
+- Automatic service worker generation via Workbox
+- Precache manifest generation from Vite build output
+- `workbox-window` for client-side SW registration and update detection
+
+---
+
+### 2.2 Configure Vite PWA Plugin
+
+#### [MODIFY] [vite.config.ts](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/vite.config.ts)
+
+Add `VitePWA` plugin with these strategies:
+
+| Resource Type | Strategy |
+|:---|:---|
+| App shell (HTML, CSS, JS bundles) | **Precache** (via Workbox `precacheAndRoute`) |
+| Fonts (bunny.net) | **Cache First** with 30-day expiration |
+| API responses (`/api/*`) | **Network First** with fallback to cache |
+| Images | **Cache First** with 60-entry limit |
+| Navigation requests | **Network First** with offline fallback page |
+
+Configuration specifics:
+- `registerType: 'prompt'` — don't auto-update; let the user control updates (Phase 4)
+- `workbox.globPatterns` to precache the Vite-built assets
+- `workbox.runtimeCaching` array for the strategies above
+- `workbox.navigateFallback` pointing to the offline page
+
+---
+
+### 2.3 Create Offline Fallback Page
+
+#### [NEW] [offline.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/pages/offline.tsx)
+
+A branded, informative offline page that:
+- Matches the app's visual design
+- Explains the user is offline
+- Shows a "Try Again" button that calls `window.location.reload()`
+- Optionally shows cached content summary if available
+
+#### [NEW] `public/offline.html`
+
+A static HTML fallback that the service worker can serve directly (since the React app may not be available offline on first visit). Should be visually consistent with the React offline page.
+
+---
+
+### 2.4 Register Service Worker in React App
+
+#### [NEW] [service-worker-registration.ts](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/lib/service-worker-registration.ts)
+
+A utility module that:
+- Registers the Workbox-generated service worker
+- Uses `workbox-window`'s `Workbox` class for lifecycle management
+- Exposes callbacks: `onUpdate`, `onSuccess`, `onOffline`
+- Handles the SW update flow (used in Phase 4)
+
+#### [MODIFY] [app.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/app.tsx)
+
+Import and call `registerServiceWorker()` after Inertia app creation.
+
+---
+
+### Phase 2 Verification
+
+- [ ] Service worker registers successfully (DevTools → Application → Service Workers)
+- [ ] App shell assets are precached (DevTools → Application → Cache Storage)
+- [ ] Navigating to any page while offline shows the offline fallback
+- [ ] Fonts are cached after first visit
+- [ ] Previously-visited pages with cached API data remain accessible offline
+
+---
+
+## Phase 3 — Native-Like UX Enhancements
+
+**Goal**: Make the installed app feel indistinguishable from a native app through UX patterns.
+
+**Estimated effort**: Medium  
+**Dependencies**: Phase 1 (safe areas), Phase 2 (SW registered)
+
+---
+
+### 3.1 iOS Install Prompt Banner
+
+#### [NEW] [ios-install-prompt.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/components/pwa/ios-install-prompt.tsx)
+
+A component that:
+- Detects iOS + Safari + not already installed (`navigator.standalone === false`)
+- Shows after meaningful engagement (not on first page load)
+- Provides animated visual guide (Share button → Add to Home Screen)
+- Persists dismissal to `localStorage`
+- Does not show on non-Safari iOS browsers
+
+---
+
+### 3.2 Android Install Prompt (BeforeInstallPrompt)
+
+#### [NEW] [android-install-prompt.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/components/pwa/android-install-prompt.tsx)
+
+A component that:
+- Captures the `beforeinstallprompt` event
+- Defers it until the user has engaged (e.g., browsed 2+ pages or spent 30s+)
+- Shows a branded, contextual prompt encouraging installation
+- Tracks installation outcome via the `appinstalled` event
+
+---
+
+### 3.3 Offline Status Indicator
+
+#### [NEW] [offline-indicator.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/components/pwa/offline-indicator.tsx)
+
+A subtle banner/toast that:
+- Listens to `navigator.onLine` and the `online`/`offline` events
+- Shows a non-intrusive "You're offline" indicator when connectivity drops
+- Shows a "Back online" confirmation when connectivity returns
+- Auto-dismisses after a few seconds
+
+---
+
+### 3.4 PWA Context Provider
+
+#### [NEW] [pwa-provider.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/components/pwa/pwa-provider.tsx)
+
+A React context that centralizes PWA state:
+- `isOnline: boolean`
+- `isInstalled: boolean` (detects standalone mode via `matchMedia('(display-mode: standalone)')`)
+- `isIOS: boolean`
+- `canInstall: boolean` (Android `beforeinstallprompt` captured)
+- `promptInstall()` — triggers the deferred prompt
+
+#### [MODIFY] [app-layout.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/layouts/app-layout.tsx)
+
+Wrap the layout with `<PwaProvider>` and render the install prompts + offline indicator.
+
+---
+
+### 3.5 Touch & Interaction Polish
+
+#### [MODIFY] [app.css](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/css/app.css)
+
+Add native-like CSS overrides:
+- `-webkit-tap-highlight-color: transparent` (with custom tap feedback)
+- `user-select: none` on interactive UI elements (buttons, nav)
+- `-webkit-touch-callout: none` on interactive elements
+- Touch target minimum sizing utility classes
+
+---
+
+### Phase 3 Verification
+
+- [ ] iOS install prompt appears on Safari after engagement, with correct visual guide
+- [ ] Android install prompt appears after engagement, deferred from the browser's native timing
+- [ ] Offline indicator shows/hides correctly when toggling airplane mode
+- [ ] PWA context correctly reports `isInstalled`, `isOnline`, `canInstall`
+- [ ] Touch interactions feel native (no tap highlights, no text selection on buttons)
+
+---
+
+## Phase 4 — App Update Strategy
+
+**Goal**: Implement a graceful, user-controlled update flow so new deployments reach users without disrupting their session.
+
+**Estimated effort**: Small  
+**Dependencies**: Phase 2 (service worker must be registered with `registerType: 'prompt'`)
+
+---
+
+### 4.1 Update Available Toast
+
+#### [NEW] [update-prompt.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/components/pwa/update-prompt.tsx)
+
+A non-intrusive toast/banner that:
+- Detects the `waiting` service worker via `workbox-window`
+- Shows "A new version is available" with an "Update Now" button
+- On click: sends `SKIP_WAITING` message to the new SW, then reloads
+- Does NOT auto-refresh or force-update
+- Persists across page navigations until the user acts
+
+---
+
+### 4.2 Service Worker Update Handling
+
+#### [MODIFY] [service-worker-registration.ts](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/lib/service-worker-registration.ts)
+
+Enhance with:
+- `onUpdate` callback that sets state to trigger the update toast
+- `controllerchange` listener that reloads the page after SW activation
+- Cache versioning with old cache cleanup in the `activate` event
+
+---
+
+### 4.3 Server-Side Cache Headers
+
+#### [MODIFY] [nginx.conf](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/nginx.conf) or equivalent
+
+Ensure:
+- `service-worker.js` served with `Cache-Control: no-cache, no-store`
+- `manifest.json` served with short TTL (`max-age=3600`)
+- Build assets (in `public/build/`) retain aggressive caching (Vite handles content hashing)
+
+---
+
+### Phase 4 Verification
+
+- [ ] Deploying a new version causes the "Update Available" toast to appear
+- [ ] Clicking "Update Now" activates the new SW and reloads smoothly
+- [ ] Old caches are purged on activation
+- [ ] Service worker file is never cached by the browser
+
+---
+
+## Phase 5 — Push Notifications
+
+**Goal**: Enable push notifications with VAPID authentication, per-user subscription management, and iOS compatibility.
+
+**Estimated effort**: Large  
+**Dependencies**: Phase 2 (service worker), backend infrastructure
+
+---
+
+### 5.1 Backend: VAPID Keys & Push Infrastructure
+
+#### Generate VAPID Keys
+
+```bash
+php artisan make:command GenerateVapidKeys
+```
+
+Or use the `web-push` PHP library to generate a key pair, stored in `.env`:
+
+```
+VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:support@estate.app
+```
+
+#### [NEW] `app/Services/PushNotificationService.php`
+
+Service class handling:
+- Storing push subscriptions (per-user, multi-device)
+- Sending push messages via the `web-push` PHP library
+- Subscription cleanup (remove expired/invalid subscriptions)
+
+#### [NEW] `database/migrations/xxxx_create_push_subscriptions_table.php`
+
+```
+push_subscriptions: id, user_id, endpoint, p256dh_key, auth_key, user_agent, created_at, updated_at
+```
+
+#### [NEW] `app/Http/Controllers/PushSubscriptionController.php`
+
+API endpoints:
+- `POST /api/push/subscribe` — store subscription
+- `DELETE /api/push/unsubscribe` — remove subscription
+- `GET /api/push/vapid-key` — return public VAPID key
+
+---
+
+### 5.2 Frontend: Subscription & Permission Flow
+
+#### [NEW] [notification-permission.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/components/pwa/notification-permission.tsx)
+
+"Soft prompt" component that:
+- Explains the value of notifications before requesting permission
+- Shows "Enable Notifications" / "Not Now" buttons
+- Only triggers the real browser permission prompt if the user clicks "Enable"
+- Appears after meaningful engagement (e.g., user saves a favorite or completes onboarding)
+- Handles the VAPID subscription flow via `PushManager.subscribe()`
+- Sends the subscription to the backend
+
+#### [MODIFY] Service Worker (Workbox config)
+
+Add `push` and `notificationclick` event handlers:
+- `push`: Parse payload, show notification with icon/badge/body
+- `notificationclick`: Deep-link to the relevant page
+
+---
+
+### 5.3 Notification Preferences Page
+
+#### [NEW] [notification-settings.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/pages/settings/notification-settings.tsx)
+
+A settings page allowing users to:
+- Enable/disable push notifications
+- Choose notification categories (if applicable)
+- See their current subscription status
+
+---
+
+### Phase 5 Verification
+
+- [ ] VAPID keys generate and store correctly in `.env`
+- [ ] Push subscription saves to DB with correct endpoint + keys
+- [ ] Backend can send a push notification that arrives on Android Chrome
+- [ ] iOS (installed PWA, 16.4+) receives push notifications
+- [ ] Notification click deep-links to the correct page
+- [ ] Users can unsubscribe and re-subscribe
+
+---
+
+## Phase 6 — Offline Data & Background Sync
+
+**Goal**: Allow users to perform actions while offline, with automatic sync when connectivity returns.
+
+**Estimated effort**: Large  
+**Dependencies**: Phase 2 (service worker), Phase 5 (push for sync confirmations)
+
+---
+
+### 6.1 IndexedDB Outbox Queue
+
+#### [NEW] [offline-queue.ts](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/lib/offline-queue.ts)
+
+A utility that:
+- Opens an IndexedDB database with an `outbox` object store
+- Provides `enqueue(request)` and `dequeue()` methods
+- Stores failed/offline mutations (POST, PUT, DELETE) with full request data
+- Tags entries with timestamps for expiration
+
+---
+
+### 6.2 Background Sync with Fallback
+
+#### Service Worker: Sync Handler
+
+In the Workbox config, register a `sync` event handler:
+- On `sync` event: read all entries from IndexedDB outbox, replay them
+- On success: remove from outbox, optionally notify user
+- On failure: retry with exponential backoff
+
+#### Fallback for iOS/Safari
+
+Since Background Sync API is unsupported on Safari:
+- Listen for `online` event in the React app
+- Trigger `processOutboxQueue()` manually
+- Use the same IndexedDB outbox as the SW-based sync
+
+---
+
+### 6.3 UI: Pending State Indicators
+
+#### [NEW] [pending-badge.tsx](file:///c:/Users/Admin/Desktop/SurveyCorps/Projects/estate/resources/js/components/pwa/pending-badge.tsx)
+
+A small component that:
+- Renders a "Pending" or "Syncing..." badge on items queued offline
+- Transitions to "Synced ✓" on successful background sync
+- Integrates with the offline queue to reflect real-time status
+
+---
+
+### 6.4 Offline-First Data Patterns
+
+Identify the most critical user actions that should work offline and implement offline-first patterns for them:
+
+| Action | Offline Behavior |
+|:---|:---|
+| Browsing listings | Serve from cache (previously viewed) |
+| Saving favorites | Queue in IndexedDB, sync later |
+| Search | Serve cached results, show "limited results" indicator |
+| Form submissions | Queue in outbox, show "pending" badge |
+
+> [!IMPORTANT]
+> The specific actions to support offline will depend on the app's core user flows. This should be scoped collaboratively based on which features matter most to users when offline.
+
+---
+
+### Phase 6 Verification
+
+- [ ] Mutations made while offline are stored in IndexedDB outbox
+- [ ] When connectivity returns, queued items sync automatically (Chromium: via Background Sync; Safari: via `online` event)
+- [ ] Pending badges appear on queued items and update on sync
+- [ ] Previously viewed pages/listings are accessible offline from cache
+- [ ] No data loss occurs during offline → online transitions
+
+---
+
+## Phase Summary
+
+| Phase | Scope | Effort | Key Deliverables |
+|:---|:---|:---|:---|
+| **1** | Foundation | Small | Manifest, icons, Apple meta tags, safe area CSS |
+| **2** | Service Worker | Medium | Workbox SW, app shell caching, offline fallback page |
+| **3** | Native UX | Medium | Install prompts (iOS/Android), offline indicator, PWA context |
+| **4** | Updates | Small | Graceful update toast, cache versioning |
+| **5** | Push | Large | VAPID backend, subscription management, notification UI |
+| **6** | Offline Data | Large | IndexedDB outbox, background sync, pending state UI |
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> **1. Source Icon**: Do you have a 1024×1024 brand icon/logo to use as the PWA icon source? If not, should we generate one?
+
+> [!IMPORTANT]
+> **2. App Colors**: The manifest `background_color` and `theme_color` need to match the actual app design tokens. What are the correct brand colors? (I can pull these from the design system if documented.)
+
+> [!IMPORTANT]
+> **3. Offline Scope**: Phase 6 offline data support could be narrow (just caching viewed pages) or deep (full offline-first with IndexedDB sync). Which user actions are most critical to support offline?
+
+> [!IMPORTANT]
+> **4. Push Notification Use Cases**: What types of notifications should the app send? (e.g., new listing alerts, price changes, message notifications, appointment reminders). This affects the notification categories UI and backend event integration.
+
+> [!IMPORTANT]
+> **5. Phase Prioritization**: Should we implement all 6 phases sequentially, or do you want to skip or defer any phases? For example, if push notifications aren't a priority, Phase 5 could be deferred.
+
+> [!IMPORTANT]
+> **6. SSR Compatibility**: The app has SSR via `resources/js/ssr.tsx`. Service worker registration must be client-side only. The plan accounts for this, but are there any SSR-specific concerns?
+
+---
+
+## Verification Plan
+
+### Automated Tests
+
+```bash
+# Pest feature tests for push subscription controller
+php artisan test --compact --filter=PushSubscription
+
+# Lint and format
+vendor/bin/pint --dirty --format agent
+npx eslint resources/js/components/pwa/ resources/js/lib/
+```
+
+### Manual Verification
+
+- **Android**: Install from Chrome → verify splash screen, standalone mode, push notifications, offline fallback
+- **iOS**: Add to Home Screen from Safari → verify standalone mode, safe areas, custom install prompt, push (16.4+)
+- **Desktop**: Install from Chrome → verify standalone window, update toast, offline fallback
+- **Lighthouse**: Run Application panel audits (not deprecated PWA category) for manifest and SW validation
+- **Offline simulation**: DevTools → Network → Offline toggle → verify all fallback behaviors
