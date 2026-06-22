@@ -3,6 +3,8 @@
 
 🌐 Official website → **[estate-6icx.onrender.com](https://estate-6icx.onrender.com)**
 
+
+
 ## The Problem
 
 Managing rental properties still means juggling spreadsheets, chasing payments over WhatsApp, and sending PDF receipts by hand. Estate replaces that chaos with a single platform where landlords track every unit, bill, and payment — and tenants have a clear view of what they owe and when.
