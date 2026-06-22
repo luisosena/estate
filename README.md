@@ -1,7 +1,7 @@
-# Estate — the modern Property management software
+# Estate — The modern Property Management Software
 
 
-🌐 **[Live Demo → estate-6icx.onrender.com](https://estate-6icx.onrender.com)**
+🌐 Live Demo → **[estate-6icx.onrender.com](https://estate-6icx.onrender.com)**
 
 ## The Problem
 
