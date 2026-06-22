@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 <img src="public/ESTATE.png" alt="Estate logo" width="200" />
 
@@ -165,4 +165,3 @@ When reporting a bug, please include:
 Made with ☕ and determination.
 
 </div>
-]]>
