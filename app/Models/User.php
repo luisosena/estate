@@ -47,7 +47,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'tenant_id',
     ];
 
-    protected $appends = ['tenant_code'];
+    protected $appends = ['tenant_code', 'is_demo'];
 
     protected function casts(): array
     {
@@ -88,6 +88,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getTenantCodeAttribute()
     {
         return $this->tenant?->tenant_code;
+    }
+
+    public function getIsDemoAttribute(): bool
+    {
+        return (bool) ($this->attributes['is_demo'] ?? false) || in_array($this->email, [
+            config('demo.landlord_email'),
+            config('demo.tenant_email'),
+        ]);
     }
 
     /**

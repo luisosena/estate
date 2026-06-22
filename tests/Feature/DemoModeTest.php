@@ -10,10 +10,12 @@ beforeEach(function () {
     // Create demo users
     $this->demoLandlord = User::factory()->demo()->create([
         'name' => 'Demo Landlord',
+        'email' => config('demo.landlord_email'),
         'role' => Role::Landlord->value,
     ]);
     $this->demoTenant = User::factory()->demo()->create([
         'name' => 'Demo Tenant',
+        'email' => config('demo.tenant_email'),
         'role' => Role::Tenant->value,
     ]);
 

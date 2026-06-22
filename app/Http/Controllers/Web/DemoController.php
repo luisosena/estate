@@ -19,9 +19,12 @@ class DemoController extends Controller
             ? Role::Tenant
             : Role::Landlord;
 
+        $email = $role === Role::Tenant
+            ? config('demo.tenant_email')
+            : config('demo.landlord_email');
+
         $demoUser = User::query()
-            ->where('is_demo', true)
-            ->where('role', $role->value)
+            ->where('email', $email)
             ->firstOrFail();
 
         Auth::login($demoUser);

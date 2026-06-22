@@ -53,6 +53,10 @@ class HandleInertiaRequests extends Middleware
                     ->addMinutes(30)
                     ->toIso8601String()
                 : null,
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+            ],
         ];
     }
 }
