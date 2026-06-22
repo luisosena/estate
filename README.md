@@ -1,53 +1,168 @@
-# Estate — the modern Property management software
+<![CDATA[<div align="center">
 
+<img src="public/ESTATE.png" alt="Estate logo" width="200" />
 
-🌐 **[Live Demo → estate-6icx.onrender.com](https://estate-6icx.onrender.com)**
+# Estate
 
-## The Problem
+**The modern property management platform for landlords and tenants.**
 
-Managing rental properties still means juggling spreadsheets, chasing payments over WhatsApp, and sending PDF receipts by hand. Estate replaces that chaos with a single platform where landlords track every unit, bill, and payment — and tenants have a clear view of what they owe and when.
+Manage properties, automate billing, track payments, and keep everyone in the loop —\
+from a single dashboard.
 
-## What is Estate?
+[![Status](https://img.shields.io/badge/status-beta-blue?style=flat-square)](https://estate-6icx.onrender.com)
+[![Tests](https://img.shields.io/badge/tests-512_passed-brightgreen?style=flat-square)](#)
+[![License](https://img.shields.io/badge/license-proprietary-lightgrey?style=flat-square)](#)
+
+[Official Website](https://estate-6icx.onrender.com) ·
+[Live Demo](https://estate-6icx.onrender.com) ·
+[Report an Issue](https://github.com/luisosena/estate-practice/issues)
+
+</div>
+
+---
+
+## Table of Contents
+
+- [About](#about)
+- [Overview](#overview)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Reporting Issues](#reporting-issues)
+
+---
+
+## About
 
 Estate is a full-stack web platform that gives landlords complete control over their rental portfolio and gives tenants a transparent, self-serve view of their tenancy — all in one place.
 
+Managing rental properties still means juggling spreadsheets, chasing payments over WhatsApp, and sending PDF receipts by hand. Estate replaces that with a single system of record where every unit, bill, and payment is tracked — and tenants always know what they owe and when.
+
+### Built With
+
+<table>
+  <tr>
+    <td align="center"><strong>Backend</strong></td>
+    <td>Laravel 12 · PHP 8.5 · Redis</td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Frontend</strong></td>
+    <td>React 19 · Inertia.js v2 · Tailwind CSS v4</td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Auth</strong></td>
+    <td>Fortify · Sanctum · 2FA (TOTP)</td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Mobile</strong></td>
+    <td>React Native · Expo · Push Notifications</td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Infra</strong></td>
+    <td>Docker · Render · Sentry · Laravel Reverb</td>
+  </tr>
+</table>
+
+---
+
+## Overview
+
+> **🌐 Try it live →** [estate-6icx.onrender.com](https://estate-6icx.onrender.com)
+
+### Landlord Dashboard
+
 ![Landlord dashboard showing revenue analytics, occupancy rate, and payment collection charts](screenshots/landlord-dashboard.png)
 
+<details>
+<summary><strong>📸 More Screenshots</strong></summary>
+
+<br />
+
+| View | Screenshot |
+|------|------------|
+| Tenant Dashboard | ![Tenant dashboard with rent balance and payment activity](screenshots/tenant-dashboard.png) |
+| Property Management | ![Property and unit management interface](screenshots/property-management.png) |
+| Payment Processing | ![Payment recording and receipt generation](screenshots/payment-processing.png) |
+| Mobile App | ![React Native mobile app screens](screenshots/mobile-app.png) |
+
+</details>
+
+---
 
 ## Features
 
 ### For Landlords
-- **Property & unit management** — Organise properties into individual units, track occupancy, and assign tenants to specific units without spreadsheets.
-- **Tenant onboarding** — Add tenants manually or bulk-import them from a CSV file, with lease details attached from day one.
-- **Rent & utility billing** — Generate rent bills and utility charges per unit, with a clear record of what's been issued, paid, and outstanding.
-- **Payment tracking** — Log and reconcile payments against bills, with a full transaction history and overdue visibility at a glance.
-- **Revenue dashboard** — See income across all properties in one view, with the option to export a financial summary as a PDF.
-- **Document management** — Store and share lease agreements and receipts with tenants directly through the platform.
-- **Real-time notifications** — Get alerted the moment a payment is received or a bill goes past its due date.
+
+| | Feature | Description |
+|---|---------|-------------|
+| 🏢 | **Property & Unit Management** | Organise properties into units, track occupancy, and assign tenants — no spreadsheets |
+| 👤 | **Tenant Onboarding** | Add tenants manually or bulk-import from CSV with lease details attached from day one |
+| 💰 | **Automated Billing** | Rent bills generate monthly on schedule. Utility charges per unit. Never miss a billing cycle |
+| 💳 | **Payment Tracking** | Log payments, reconcile against bills, and see overdue balances at a glance |
+| 📊 | **Revenue Dashboard** | Revenue trends, payment collection breakdowns, occupancy rates — exportable as CSV or PDF |
+| 📄 | **Document Management** | Store and share leases, receipts, and documents directly through the platform |
+| 🔔 | **Real-Time Notifications** | Instant alerts via in-app, email, WhatsApp, and push notifications when payments land or bills go overdue |
 
 ### For Tenants
-- **Personal dashboard** — A single view of current rent balance, utility charges, and recent payment activity — no need to contact the landlord for updates.
-- **Payment history** — Full record of every payment made, with downloadable receipts.
-- **Document access** — View and download lease agreements and any documents the landlord has shared.
-- **Notifications** — Receive alerts when a new bill is issued or a payment is confirmed.
 
-### For Mobile
-- **REST API** — All core functionality is available through a versioned, Sanctum-authenticated API, ready for a companion mobile app.
+| | Feature | Description |
+|---|---------|-------------|
+| 📱 | **Personal Dashboard** | Current rent balance, utility charges, and recent payment activity in one view |
+| 🧾 | **Payment History** | Full record of every payment with downloadable PDF receipts |
+| 📂 | **Document Access** | View and download lease agreements and shared documents |
+| 🔔 | **Notifications** | Get alerted when a new bill is issued or a payment is confirmed |
 
-## Tech & Architecture
+### Mobile App
 
-Stack choices were driven by developer productivity, type safety end-to-end, and keeping the codebase maintainable as it scales.
+A companion **React Native** app provides landlords and tenants the same core features on the go — Sanctum-authenticated, with push notifications via Expo.
 
-| Layer | Technology | Why |
-|---|---|---|
-| Backend | Laravel 12 (PHP 8.5) | Structured service layer keeps business logic out of controllers and fully testable |
-| Frontend | React 19 + Inertia.js v2 | Full SPA feel without a separate API — server-side routing stays in Laravel |
-| Styling | Tailwind CSS v4 | Utility-first, consistent design system with zero unused CSS in production |
-| Auth | Laravel Fortify + Sanctum | Covers both session-based web auth and token-based API auth from one config |
-| Queue | Redis (prod) / Database (local) | Async notifications and background jobs without blocking the request cycle |
-| PDF | barryvdh/laravel-dompdf | Server-side report generation, no client-side dependencies |
-| Deployment | Docker + Render | Reproducible builds, environment parity between local and production |
+---
 
-## Live Demo
+## Getting Started
 
-🌐 [estate-6icx.onrender.com](https://estate-6icx.onrender.com)
+The fastest way to explore Estate is through the live demo.
+
+### 1. Visit the Demo
+
+Head to **[estate-6icx.onrender.com](https://estate-6icx.onrender.com)** and create an account as a **Landlord**.
+
+### 2. Set Up Your Portfolio
+
+Once logged in, you'll land on the **Landlord Dashboard**. From here:
+
+1. **Add a property** — Go to *Properties → Create* and enter your property details
+2. **Create units** — Inside a property, add individual rental units
+3. **Onboard tenants** — Add tenants manually or use **Bulk Import** to upload a CSV of your existing tenant list
+
+### 3. Start Managing
+
+- **Bills** generate automatically each month, or create them manually
+- **Record payments** as they come in and watch your dashboard update in real time
+- **Export reports** as CSV or PDF for your records
+
+> [!TIP]
+> Use the **Bulk Import** feature under *All Tenants → Import* to migrate an existing portfolio in minutes. Download the CSV template first to see the expected format.
+
+---
+
+## Reporting Issues
+
+Found a bug or have a suggestion? Open an issue on GitHub:
+
+**[→ Open an Issue](https://github.com/luisosena/estate-practice/issues)**
+
+When reporting a bug, please include:
+- Steps to reproduce the problem
+- What you expected to happen
+- What actually happened
+- Your browser and OS (if relevant)
+
+---
+
+<div align="center">
+
+**[⬆ Back to top](#estate)**
+
+Made with ☕ and determination.
+
+</div>
+]]>
