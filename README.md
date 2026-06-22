@@ -139,8 +139,6 @@ Once logged in, you'll land on the **Landlord Dashboard**. From here:
 - **Record payments** as they come in and watch your dashboard update in real time
 - **Export reports** as CSV or PDF for your records
 
-> [!TIP]
-> Use the **Bulk Import** feature under *All Tenants → Import* to migrate an existing portfolio in minutes. Download the CSV template first to see the expected format.
 
 ---
 
