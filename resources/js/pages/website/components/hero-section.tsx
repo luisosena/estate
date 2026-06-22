@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 
+import { TryDemoButton } from '@/components/try-demo-button';
 import { Button } from '@/components/ui/button';
 
 export default function HeroSection() {
@@ -67,11 +68,18 @@ export default function HeroSection() {
                                     </svg>
                                 </Link>
                             </Button>
-                            <Button
-                                asChild
+                            <TryDemoButton
                                 variant="outline"
                                 size="lg"
                                 className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#1A1A2E]/20 px-8 py-6 text-sm font-semibold tracking-wide text-[#1A1A2E] transition-all duration-300 hover:bg-[#1A1A2E]/5 hover:-translate-y-0.5 dark:bg-transparent dark:border-[#1A1A2E]/20 dark:text-[#1A1A2E] dark:hover:bg-[#1A1A2E]/5"
+                                style={{ fontFamily: "'Outfit', sans-serif" }}
+                                label="Try Demo"
+                            />
+                            <Button
+                                asChild
+                                variant="ghost"
+                                size="lg"
+                                className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full px-8 py-6 text-sm font-semibold tracking-wide text-[#1A1A2E] transition-all duration-300 hover:bg-[#1A1A2E]/5"
                                 style={{ fontFamily: "'Outfit', sans-serif" }}
                             >
                                 <Link href="#contact">

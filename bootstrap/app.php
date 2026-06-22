@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\DemoSessionTimeout;
+use App\Http\Middleware\EnsureNotDemoUser;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RedirectIfAuthenticatedWithRole;
@@ -27,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            DemoSessionTimeout::class,
         ]);
 
         $middleware->api(append: [
@@ -36,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'auth.role' => RedirectIfAuthenticatedWithRole::class,
+            'demo.readonly' => EnsureNotDemoUser::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule): void {

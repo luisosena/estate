@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -46,6 +47,12 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
                 'query' => $request->query(),
             ],
+            'isDemoUser' => (bool) ($request->user()?->is_demo ?? false),
+            'demoExpiresAt' => $request->session()->has('demo_started_at')
+                ? Carbon::parse($request->session()->get('demo_started_at'))
+                    ->addMinutes(30)
+                    ->toIso8601String()
+                : null,
         ];
     }
 }

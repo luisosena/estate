@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'must_change_password',
         'role',
+        'is_demo',
         'tenant_id',
         'phone',
         'expo_push_token',
@@ -54,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'must_change_password' => 'boolean',
+            'is_demo' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
             'role' => Role::class,
         ];

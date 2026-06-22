@@ -3,9 +3,10 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-
 import { Building2, ChevronDown, Menu, Receipt, ShieldCheck, TrendingUp, Wrench, Zap, Smartphone, BookOpen, Video, FileText, HelpCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { TryDemoButton } from '@/components/try-demo-button';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const megaMenuItems = [
     {
@@ -253,6 +254,12 @@ export default function Navbar() {
                         {/* Right side CTAs */}
                         <div className="ml-auto flex items-center justify-end gap-4">
                             <div className="hidden items-center gap-4 md:flex">
+                                <TryDemoButton
+                                    variant="ghost"
+                                    className="text-sm font-medium tracking-wide text-[#1A1A2E] hover:bg-[#1A1A2E]/5"
+                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                    onMouseEnter={handleClose}
+                                />
                                 <Button
                                     asChild
                                     variant="ghost"
@@ -336,6 +343,11 @@ export default function Navbar() {
                                             </div>
                                             <Separator className="bg-[#1A1A2E]/10" />
                                             <div className="flex flex-col gap-4">
+                                                <TryDemoButton
+                                                    variant="outline"
+                                                    className="inline-flex w-full items-center justify-center rounded-full border border-[#1A1A2E]/15 px-6 py-3 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/5 dark:hover:bg-[#1A1A2E]/5 bg-transparent"
+                                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                />
                                                 <Button
                                                     asChild
                                                     variant="outline"

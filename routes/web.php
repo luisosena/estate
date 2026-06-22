@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\Admin\AdminLandlordController;
 use App\Http\Controllers\Web\Admin\AdminNotificationController;
 use App\Http\Controllers\Web\Admin\AdminPropertyController;
 use App\Http\Controllers\Web\DashboardExportController;
+use App\Http\Controllers\Web\DemoController;
 use App\Http\Controllers\Web\Landlord\CsvImportController;
 use App\Http\Controllers\Web\Landlord\DocumentController as LandlordDocumentController;
 use App\Http\Controllers\Web\Landlord\LandlordDashboardController;
@@ -48,7 +49,11 @@ Route::get('/resources/mobile-app', function () {
     return Inertia::render('website/mobile-app');
 })->name('resources.mobile-app');
 
-Route::middleware(['auth'])->group(function () {
+Route::get('/demo', [DemoController::class, 'login'])
+    ->name('demo.login')
+    ->middleware('throttle:10,1');
+
+Route::middleware(['auth', 'demo.readonly'])->group(function () {
     // Admin Routes
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');

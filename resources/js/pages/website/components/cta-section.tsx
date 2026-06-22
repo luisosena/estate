@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 
+import { TryDemoButton } from '@/components/try-demo-button';
 import { Button } from '@/components/ui/button';
 
 export default function CtaSection() {
@@ -65,6 +66,13 @@ export default function CtaSection() {
                                 </svg>
                             </Link>
                         </Button>
+                        <TryDemoButton
+                            variant="outline"
+                            size="lg"
+                            className="group rounded-full border-2 border-white/40 bg-transparent px-8 py-6 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:bg-white/10 hover:-translate-y-0.5"
+                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                            label="Try Demo"
+                        />
                     </div>
                 </motion.div>
             </div>

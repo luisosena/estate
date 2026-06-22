@@ -69,6 +69,7 @@ class DevelopmentSeeder extends Seeder
             'email' => 'wanjiku.kamau@estatemanager.co.tz',
             'password' => Hash::make('wanjiku.kamau'),
             'role' => 'landlord',
+            'is_demo' => true,
         ]);
 
         $propA = Property::create([
@@ -255,6 +256,7 @@ class DevelopmentSeeder extends Seeder
                 'password' => Hash::make($td['username']),
                 'role' => 'tenant',
                 'tenant_id' => $tenant->id,
+                'is_demo' => $td['username'] === 'amina.salim',
             ]);
             $tenant->update(['id' => $tenant->id]); // keep reference
 
@@ -564,13 +566,14 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('  LOGIN CREDENTIALS  (password = username)');
         $this->command->info('----------------------------------------------------');
         $this->command->info('  admin          admin          / admin');
-        $this->command->info('  landlord       wanjiku.kamau  / wanjiku.kamau');
+        $this->command->info('  landlord [D]   wanjiku.kamau  / wanjiku.kamau');
         $this->command->info('  landlord       hassan.omar    / hassan.omar');
-        $this->command->info('  tenant         amina.salim    / amina.salim');
+        $this->command->info('  tenant [D]    amina.salim    / amina.salim');
         $this->command->info('  tenant         bernard.omondi / bernard.omondi');
         $this->command->info('  tenant         fatuma.rashid  / fatuma.rashid');
         $this->command->info('  tenant         david.mwangi   / david.mwangi');
         $this->command->info('  tenant         zainab.ali     / zainab.ali');
+        $this->command->info('  [D] = also serves as the demo account');
         $this->command->info('====================================================');
     }
 }

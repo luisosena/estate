@@ -19,6 +19,7 @@ import {
 import React from 'react';
 import { route } from 'ziggy-js';
 
+import { cn } from '@/lib/utils';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -132,6 +133,7 @@ export function AppSidebar() {
     const { url, props } = usePage<SharedData>();
     const user = props.auth?.user;
     const role = user?.role as 'admin' | 'landlord' | 'tenant';
+    const isDemoUser = props.isDemoUser as boolean;
     
     // Notifications & Properties (Dynamic props from Inertia)
     const unreadNotificationsCount = (props.unreadNotificationsCount as number) || 0;
@@ -145,12 +147,22 @@ export function AppSidebar() {
         .slice(0, 2) ?? 'EP';
 
     const getNavGroups = () => {
+        let groups: NavGroup[] = [];
         switch (role) {
-            case 'admin': return ADMIN_NAV;
-            case 'landlord': return LANDLORD_NAV;
-            case 'tenant': return TENANT_NAV;
-            default: return [];
+            case 'admin': groups = ADMIN_NAV; break;
+            case 'landlord': groups = LANDLORD_NAV; break;
+            case 'tenant': groups = TENANT_NAV; break;
+            default: groups = []; break;
         }
+
+        if (isDemoUser) {
+            return groups.map(group => ({
+                ...group,
+                items: group.items.filter(item => !item.route.includes('settings'))
+            })).filter(group => group.items.length > 0);
+        }
+
+        return groups;
     };
 
     const getNotificationRoute = () => {
@@ -322,21 +334,45 @@ export function AppSidebar() {
                         <SidebarMenuButton
                             size="lg"
                             tooltip={user?.name ?? 'User Account'}
-                            className="group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:!justify-center hover:bg-transparent"
+                            className={cn(
+                                "group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:!justify-center",
+                                isDemoUser ? "hover:bg-transparent cursor-default" : "hover:bg-sidebar-accent"
+                            )}
+                            asChild={!isDemoUser && route().has('profile.edit')}
                         >
-                            <Avatar className="h-8 w-8 shrink-0 rounded-lg shadow-sm">
-                                <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-black border border-primary/20">
-                                    {initials}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col gap-0.5 overflow-hidden text-left leading-tight group-data-[collapsible=icon]:hidden">
-                                <span className="truncate text-sm font-bold text-foreground capitalize">
-                                    {user?.name ?? 'User Account'}
-                                </span>
-                                <span className="truncate text-[10px] text-muted-foreground uppercase font-black opacity-70">
-                                    {role} Account
-                                </span>
-                            </div>
+                            {!isDemoUser && route().has('profile.edit') ? (
+                                <Link href={route('profile.edit')}>
+                                    <Avatar className="h-8 w-8 shrink-0 rounded-lg shadow-sm">
+                                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-black border border-primary/20">
+                                            {initials}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col gap-0.5 overflow-hidden text-left leading-tight group-data-[collapsible=icon]:hidden">
+                                        <span className="truncate text-sm font-bold text-foreground capitalize">
+                                            {user?.name ?? 'User Account'}
+                                        </span>
+                                        <span className="truncate text-[10px] text-muted-foreground uppercase font-black opacity-70">
+                                            {role} Account
+                                        </span>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <div className="flex items-center gap-3 w-full">
+                                    <Avatar className="h-8 w-8 shrink-0 rounded-lg shadow-sm">
+                                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-black border border-primary/20">
+                                            {initials}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col gap-0.5 overflow-hidden text-left leading-tight group-data-[collapsible=icon]:hidden">
+                                        <span className="truncate text-sm font-bold text-foreground capitalize">
+                                            {user?.name ?? 'User Account'}
+                                        </span>
+                                        <span className="truncate text-[10px] text-muted-foreground uppercase font-black opacity-70">
+                                            {role} Account {isDemoUser && '(Demo)'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </SidebarMenuButton>
                     </SidebarMenuItem>
 
