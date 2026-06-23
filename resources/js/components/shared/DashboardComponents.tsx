@@ -1,118 +1,113 @@
 import { Link } from '@inertiajs/react';
-import React from 'react';
+import { type LucideIcon } from 'lucide-react';
+import { type ReactNode } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-type CardColor = 'purple' | 'peach' | 'lavender' | 'green' | 'blue';
-
-const CARD_COLORS: Record<CardColor, string> = {
-  purple: 'bg-[#E6D5FF]',
-  peach: 'bg-[#FFE8D6]',
-  lavender: 'bg-[#F4E6F0]',
-  green: 'bg-[#D4F2E0]',
-  blue: 'bg-[#D4F0FF]',
-};
-
 interface MetricCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  description: string;
-  alert?: boolean;
-  className?: string;
-  color?: CardColor;
-  trend?: {
-    label: string;
-    value: string;
-  };
+    title: string;
+    value: string | number;
+    icon: LucideIcon;
+    description: string;
+    alert?: boolean;
+    className?: string;
+    trend?: {
+        label: string;
+        value: string;
+    };
 }
 
 export function MetricCard({
-  title,
-  value,
-  icon: Icon,
-  description,
-  alert = false,
-  className,
-  color = 'purple',
-  trend,
+    title,
+    value,
+    icon: Icon,
+    description,
+    alert = false,
+    className,
+    trend,
 }: MetricCardProps) {
-  return (
-    <div
-      className={cn(
-        'group flex flex-col gap-3 rounded-2xl border border-black p-5 transition-all',
-        CARD_COLORS[color],
-        alert && 'bg-red-100',
-        className,
-      )}
-    >
-      <Icon className="h-5 w-5 text-gray-900" strokeWidth={1.5} aria-hidden="true" />
-      <div className="flex flex-col gap-1">
-        <div className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums sm:text-3xl">
-          {value}
-        </div>
-        <div className="text-sm font-semibold text-gray-800">
-          {title}
-        </div>
-        <p className="text-xs font-normal text-gray-600">
-          {description}
-        </p>
-      </div>
-      {trend && (
-        <Badge
-          variant="secondary"
-          className="mt-auto self-start bg-white/50 text-xs font-medium text-gray-700 shadow-none"
+    return (
+        <Card
+            className={cn(
+                'gap-2 py-5 shadow-none',
+                alert && 'border-destructive/30 bg-destructive/5',
+                className,
+            )}
         >
-          {trend.label}
-        </Badge>
-      )}
-    </div>
-  );
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 px-5 pb-0">
+                <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                    {title}
+                </span>
+                <div
+                    className={cn(
+                        'flex h-7 w-7 items-center justify-center rounded-md',
+                        alert
+                            ? 'bg-destructive/10 text-destructive'
+                            : 'bg-primary/10 text-primary',
+                    )}
+                >
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                </div>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-1 px-5">
+                <div className="text-2xl font-semibold tracking-tight tabular-nums">
+                    {value}
+                </div>
+                <p className="text-xs text-muted-foreground">{description}</p>
+                {trend && (
+                    <Badge variant="secondary" className="mt-2 self-start text-xs font-medium">
+                        {trend.label}
+                    </Badge>
+                )}
+            </CardContent>
+        </Card>
+    );
 }
 
 interface QuickActionProps {
-  label: string;
-  icon: React.ElementType;
-  onClick?: () => void;
-  href?: string;
-  className?: string;
-  disabled?: boolean;
+    label: string;
+    icon: LucideIcon;
+    onClick?: () => void;
+    href?: string;
+    className?: string;
+    disabled?: boolean;
 }
 
 export function QuickAction({
-  label,
-  icon: Icon,
-  onClick,
-  href,
-  className,
-}: QuickActionProps) {
-  const content = (
-    <div className="flex flex-col items-start gap-2">
-      <div className="rounded-md bg-muted/50 p-2 text-muted-foreground transition-colors group-hover:text-primary">
-        <Icon className="h-4 w-4" />
-      </div>
-      <span className="text-sm font-semibold">{label}</span>
-    </div>
-  );
-
-  const baseClass = cn(
-    'h-auto justify-start rounded-xl border border-gray-300 bg-card px-4 py-3 shadow-none transition-all hover:bg-muted/50 hover:text-primary dark:border-gray-600',
+    label,
+    icon: Icon,
+    onClick,
+    href,
     className,
-  );
-
-  if (href) {
-    return (
-      <Button asChild variant="outline" className={baseClass}>
-        <Link href={href}>{content}</Link>
-      </Button>
+}: QuickActionProps) {
+    const content: ReactNode = (
+        <span className="flex items-center gap-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+            </span>
+            <span className="text-sm font-medium">{label}</span>
+        </span>
     );
-  }
 
-  return (
-    <Button variant="outline" className={baseClass} onClick={onClick}>
-      {content}
-    </Button>
-  );
+    const baseClass = cn(
+        'h-auto justify-start px-4 py-3 shadow-none',
+        className,
+    );
+
+    if (href) {
+        return (
+            <Button asChild variant="outline" className={baseClass}>
+                <Link href={href}>{content}</Link>
+            </Button>
+        );
+    }
+
+    return (
+        <Button variant="outline" className={baseClass} onClick={onClick}>
+            {content}
+        </Button>
+    );
 }

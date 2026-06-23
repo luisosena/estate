@@ -205,7 +205,7 @@ export function AppSidebar() {
     };
 
     return (
-        <Sidebar collapsible="icon" variant="inset" className="border border-black">
+        <Sidebar collapsible="icon" variant="inset">
             
             {/* Header: Identity */}
             <SidebarHeader className="border-b border-sidebar-border">
