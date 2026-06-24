@@ -76,7 +76,13 @@ export function RevenueTrendChart({
                         margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
                     >
                         <defs>
-                            <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <linearGradient
+                                id="fillRevenue"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
                                 <stop
                                     offset="5%"
                                     stopColor="var(--color-revenue)"
@@ -89,26 +95,39 @@ export function RevenueTrendChart({
                                 />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                        <CartesianGrid
+                            vertical={false}
+                            stroke="var(--color-border)"
+                            strokeOpacity={0.5}
+                        />
                         <XAxis
                             dataKey="label"
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
                             minTickGap={32}
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                            tick={{
+                                fill: 'var(--color-muted-foreground)',
+                                fontSize: 11,
+                            }}
                         />
                         <YAxis
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
                             width={56}
-                            tickFormatter={(value) => compactCurrency(Number(value))}
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                            tickFormatter={(value) =>
+                                compactCurrency(Number(value))
+                            }
+                            tick={{
+                                fill: 'var(--color-muted-foreground)',
+                                fontSize: 11,
+                            }}
                         />
                         <ChartTooltip
                             cursor={{
-                                stroke: 'hsl(var(--muted-foreground) / 0.3)',
+                                stroke: 'var(--color-muted-foreground)',
+                                strokeOpacity: 0.3,
                                 strokeWidth: 1,
                                 strokeDasharray: '3 3',
                             }}

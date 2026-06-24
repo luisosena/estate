@@ -186,7 +186,11 @@ export default function TenantDashboard({
                 value={unit?.unit_name ?? '—'}
                 icon={House}
                 description={unit?.unit_code ?? 'No unit assigned'}
-                trend={tenancy?.status === 'active' ? { label: 'Active', value: '' } : undefined}
+                status={
+                    tenancy?.status === 'active'
+                        ? { label: 'Active', variant: 'success' }
+                        : undefined
+                }
             />
             <MetricCard
                 title="Rent Balance"
@@ -207,7 +211,11 @@ export default function TenantDashboard({
                 value={unreadNotificationsCount}
                 icon={MessageCircleMore}
                 description="Unread alerts for you"
-                trend={unreadNotificationsCount > 0 ? { label: 'Action Required', value: '' } : undefined}
+                status={
+                    unreadNotificationsCount > 0
+                        ? { label: 'Action Required', variant: 'warning' }
+                        : undefined
+                }
             />
         </section>
 

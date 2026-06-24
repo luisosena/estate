@@ -14,6 +14,7 @@ import {
 import React, { useState } from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
+import { MetricCard } from '@/components/shared/DashboardComponents';
 import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -76,25 +77,6 @@ interface AdminLandlordsIndexProps {
         status: string;
     };
 }
-
-/* ─── Helper Components ─────────────────────────────────────────── */
-
-const MetricCard = ({ title, value, icon: Icon, description, alert = false }: any) => (
-    <Card className={`overflow-hidden transition-all border-border/50 ${alert ? 'border-amber-200/50 dark:border-amber-500/20' : ''}`}>
-        <CardContent className="p-6">
-            <div className="flex items-center justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
-                    <h3 className="text-3xl font-black tracking-tight">{value}</h3>
-                    <p className="text-[10px] text-muted-foreground font-medium">{description}</p>
-                </div>
-                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${alert ? 'bg-amber-500/10 text-amber-500' : 'bg-primary/10 text-primary animate-pulse-subtle'}`}>
-                    <Icon className="h-6 w-6" />
-                </div>
-            </div>
-        </CardContent>
-    </Card>
-);
 
 const getStatusVariant = (verified: boolean): "default" | "secondary" | "destructive" | "outline" | null => {
     return verified ? 'default' : 'secondary';

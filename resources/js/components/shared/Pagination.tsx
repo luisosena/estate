@@ -1,8 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
-import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface PaginationLink {
     url: string | null;
@@ -11,39 +11,47 @@ interface PaginationLink {
 }
 
 interface PaginationProps {
-    links: PaginationLink[] | any; // Flexibility during transition
+    links: PaginationLink[] | any;
     className?: string;
 }
 
-const Pagination = ({ links, className = "" }: PaginationProps) => {
-    // Safety handling for Laravel API Resource structures
-    // If 'links' is passed as the top-level pagination object, the array is in 'meta.links'
-    // If it's passed as the 'links' object from a Resource, it's actually not the array we want
-    const actualLinks = Array.isArray(links) 
-        ? links 
-        : (links?.meta?.links || links?.links || []); // Handle various Resource structures
+const Pagination = ({ links, className = '' }: PaginationProps) => {
+    const actualLinks = Array.isArray(links)
+        ? links
+        : (links?.meta?.links || links?.links || []);
 
-    // Validation
     if (!Array.isArray(actualLinks) || actualLinks.length <= 3) {
         if (!Array.isArray(actualLinks) && links) {
-            console.warn('Pagination component received invalid links prop. Expected array, received:', typeof links);
+            console.warn(
+                'Pagination component received invalid links prop. Expected array, received:',
+                typeof links,
+            );
         }
         return null;
     }
 
     return (
-        <div className={`flex items-center justify-center space-x-1 ${className}`}>
+        <nav
+            aria-label="Pagination"
+            className={cn(
+                'flex flex-wrap items-center justify-center gap-1',
+                className,
+            )}
+        >
             {actualLinks.map((link, index) => {
-                // Determine if this is a previous or next link
                 const isPrev = index === 0;
                 const isNext = index === actualLinks.length - 1;
                 const isDots = link.label === '...';
 
                 if (isDots) {
                     return (
-                        <div key={index} className="flex h-9 w-9 items-center justify-center">
-                            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                        </div>
+                        <span
+                            key={index}
+                            className="text-muted-foreground flex h-8 w-8 items-center justify-center"
+                            aria-hidden="true"
+                        >
+                            <MoreHorizontal className="h-4 w-4" />
+                        </span>
                     );
                 }
 
@@ -52,16 +60,39 @@ const Pagination = ({ links, className = "" }: PaginationProps) => {
                     .replace('Next &raquo;', '')
                     .trim();
 
+                const pageNumberLabel = isPrev
+                    ? 'Previous page'
+                    : isNext
+                        ? 'Next page'
+                        : `Page ${label}`;
+
                 if (!link.url) {
                     return (
                         <Button
                             key={index}
-                            variant="outline"
-                            size={isPrev || isNext ? "default" : "icon"}
+                            variant="ghost"
+                            size={isPrev || isNext ? 'sm' : 'icon'}
                             disabled
-                            className="opacity-50 h-8 sm:h-9"
+                            aria-label={pageNumberLabel}
+                            className="h-8 min-w-8 opacity-50"
                         >
-                            {isPrev ? "Previous" : isNext ? "Next" : label}
+                            {isPrev ? (
+                                <span className="flex items-center gap-1">
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                    <span className="hidden sm:inline">
+                                        Previous
+                                    </span>
+                                </span>
+                            ) : isNext ? (
+                                <span className="flex items-center gap-1">
+                                    <span className="hidden sm:inline">
+                                        Next
+                                    </span>
+                                    <ChevronRight className="h-3.5 w-3.5" />
+                                </span>
+                            ) : (
+                                label
+                            )}
                         </Button>
                     );
                 }
@@ -69,20 +100,32 @@ const Pagination = ({ links, className = "" }: PaginationProps) => {
                 return (
                     <Button
                         key={index}
-                        variant={link.active ? "default" : "outline"}
-                        size={isPrev || isNext ? "default" : "icon"}
+                        variant={link.active ? 'default' : 'ghost'}
+                        size={isPrev || isNext ? 'sm' : 'icon'}
                         asChild
-                        className="h-8 sm:h-9"
+                        className="h-8 min-w-8"
                     >
-                        <Link 
+                        <Link
                             href={link.url}
                             preserveState
                             preserveScroll
+                            aria-label={pageNumberLabel}
+                            aria-current={link.active ? 'page' : undefined}
                         >
                             {isPrev ? (
-                                <span className="flex items-center"><ChevronLeft className="h-4 w-4 mr-1" /> Previous</span>
+                                <span className="flex items-center gap-1">
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                    <span className="hidden sm:inline">
+                                        Previous
+                                    </span>
+                                </span>
                             ) : isNext ? (
-                                <span className="flex items-center">Next <ChevronRight className="h-4 w-4 ml-1" /></span>
+                                <span className="flex items-center gap-1">
+                                    <span className="hidden sm:inline">
+                                        Next
+                                    </span>
+                                    <ChevronRight className="h-3.5 w-3.5" />
+                                </span>
                             ) : (
                                 label
                             )}
@@ -90,7 +133,7 @@ const Pagination = ({ links, className = "" }: PaginationProps) => {
                     </Button>
                 );
             })}
-        </div>
+        </nav>
     );
 };
 

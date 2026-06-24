@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import {
     Card,
@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/card';
 import {
     ChartContainer,
+    ChartLegend,
+    ChartLegendContent,
     ChartTooltip,
     ChartTooltipContent,
     type ChartConfig,
@@ -17,23 +19,23 @@ import {
 const chartConfig = {
     paid: {
         label: 'Paid',
-        color: 'hsl(160, 65%, 38%)',
+        color: 'var(--chart-1)',
     },
     pending: {
         label: 'Pending',
-        color: 'hsl(38, 92%, 50%)',
+        color: 'var(--chart-5)',
     },
     overdue: {
         label: 'Overdue',
-        color: 'hsl(0, 72%, 51%)',
+        color: 'var(--destructive)',
     },
     partial: {
         label: 'Partial',
-        color: 'hsl(217, 91%, 60%)',
+        color: 'var(--chart-3)',
     },
     waived: {
         label: 'Waived',
-        color: 'hsl(220, 9%, 60%)',
+        color: 'var(--chart-2)',
     },
 } satisfies ChartConfig;
 
@@ -71,46 +73,57 @@ export function PaymentCollectionChart({
             <CardHeader>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>
-                    Monthly bill status breakdown over the last {data.length} months
+                    Monthly bill status breakdown over the last {data.length}{' '}
+                    months
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="h-[260px] w-full">
+                <ChartContainer
+                    config={chartConfig}
+                    className="h-[260px] w-full"
+                >
                     <BarChart
                         data={data}
                         margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
                     >
-                        <CartesianGrid vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                        <CartesianGrid
+                            vertical={false}
+                            stroke="var(--color-border)"
+                            strokeOpacity={0.5}
+                        />
                         <XAxis
                             dataKey="label"
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
                             minTickGap={32}
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                            tick={{
+                                fill: 'var(--color-muted-foreground)',
+                                fontSize: 11,
+                            }}
                         />
                         <YAxis
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
                             width={32}
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                            tick={{
+                                fill: 'var(--color-muted-foreground)',
+                                fontSize: 11,
+                            }}
                             allowDecimals={false}
                         />
                         <ChartTooltip
-                            cursor={{ fill: 'hsl(var(--muted) / 0.5)' }}
+                            cursor={{
+                                fill: 'var(--color-muted)',
+                                fillOpacity: 0.4,
+                            }}
                             content={<ChartTooltipContent indicator="dot" />}
                         />
-                        <Legend
+                        <ChartLegend
+                            content={<ChartLegendContent verticalAlign="top" />}
                             verticalAlign="top"
                             align="right"
-                            height={32}
-                            iconType="circle"
-                            iconSize={8}
-                            wrapperStyle={{
-                                fontSize: 11,
-                                color: 'hsl(var(--muted-foreground))',
-                            }}
                         />
                         <Bar
                             dataKey="paid"
