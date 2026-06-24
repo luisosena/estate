@@ -1,21 +1,19 @@
 import { usePage } from '@inertiajs/react';
+import React from 'react';
 
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { SharedData } from '@/types';
 
 interface AppShellProps {
     children: React.ReactNode;
-    variant?: 'header' | 'sidebar';
 }
 
-export function AppShell({ children, variant = 'header' }: AppShellProps) {
+/**
+ * @deprecated Use `<AppLayout />` from `@/components/layout/AppLayout` directly.
+ * Kept as a backwards-compatible sidebar shell for older imports.
+ */
+export function AppShell({ children }: AppShellProps) {
     const isOpen = usePage<SharedData>().props.sidebarOpen;
-
-    if (variant === 'header') {
-        return (
-            <div className="flex min-h-screen w-full flex-col">{children}</div>
-        );
-    }
 
     return <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>;
 }

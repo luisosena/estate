@@ -6,8 +6,12 @@ interface AppContentProps extends React.ComponentProps<'main'> {
     variant?: 'header' | 'sidebar';
 }
 
+/**
+ * @deprecated Use `<main>` directly inside `<AppLayout />`.
+ * Kept as a backwards-compatible SidebarInset wrapper for older imports.
+ */
 export function AppContent({
-    variant = 'header',
+    variant = 'sidebar',
     children,
     ...props
 }: AppContentProps) {
@@ -17,7 +21,7 @@ export function AppContent({
 
     return (
         <main
-            className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl"
+            className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4"
             {...props}
         >
             {children}

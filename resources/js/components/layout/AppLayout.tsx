@@ -1,46 +1,60 @@
 import { usePage } from '@inertiajs/react';
 import React from 'react';
 
+import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { type SharedData } from '@/types';
+import {
+    SidebarInset,
+    SidebarProvider,
+    SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { type BreadcrumbItem, type SharedData } from '@/types';
 
 interface AppLayoutProps {
     children: React.ReactNode;
+    breadcrumbs?: BreadcrumbItem[];
 }
 
 /**
- * Universal Persistent Layout for Admin, Landlord, and Tenant portals.
- * Standardizes the "Sheet" sidebar experience across all user roles.
+ * Canonical Application Layout (Design System v2.0 — Linear-Inspired).
+ *
+ * - Flat 240px sidebar with 1px right border (no inset, no shadow).
+ * - Sticky h-14 top bar with breadcrumb, search, user menu, mode toggle.
+ * - Content area: p-6 (desktop) / p-4 (mobile), max-w-7xl centered.
+ *
+ * Used by every authenticated page via:
+ *     Page.layout = (page) => <AppLayout>{page}</AppLayout>
  */
-export default function AppLayout({ children }: AppLayoutProps) {
+export default function AppLayout({ children, breadcrumbs = [] }: AppLayoutProps) {
     const { props } = usePage<SharedData>();
     const user = props.auth?.user;
-    
-    // Safety check for unauthenticated access to layouts
+
     if (!user) {
-        return <div className="min-h-screen bg-background flex items-center justify-center p-4">{children}</div>;
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-background p-4">
+                {children}
+            </div>
+        );
     }
 
     return (
         <SidebarProvider defaultOpen={true}>
-            {/* Unified Role-Aware Sidebar */}
             <AppSidebar />
-            
-            {/* Main Application Canvas */}
-            <SidebarInset className="bg-slate-50/40 dark:bg-background h-screen flex flex-col overflow-hidden relative">
-                
-                {/* Global Mobile/Icon-mode Sidebar Trigger */}
-                <div className="absolute top-6 left-4 z-50 md:hidden">
-                    <SidebarTrigger className="h-9 w-9 shadow-md bg-background border border-border/50 rounded-lg" />
+
+            <SidebarInset className="flex h-svh min-h-0 flex-col bg-background">
+                {/* Mobile-only sidebar trigger (top-left of canvas) */}
+                <div className="absolute left-3 top-3 z-40 md:hidden">
+                    <SidebarTrigger className="h-9 w-9 rounded-md border border-border bg-card shadow-sm" />
                 </div>
 
-                {/* Content Area */}
-                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
-                    {children}
-                </div>
-                
-                {/* Optional: Global Flash Notifications could be rendered here */}
+                <AppHeader breadcrumbs={breadcrumbs} />
+
+                {/* Page content */}
+                <main className="flex-1 overflow-y-auto">
+                    <div className="mx-auto w-full max-w-7xl p-4 md:p-6">
+                        {children}
+                    </div>
+                </main>
             </SidebarInset>
         </SidebarProvider>
     );

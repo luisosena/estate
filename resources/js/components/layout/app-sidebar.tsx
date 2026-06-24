@@ -16,10 +16,9 @@ import {
     Users,
     Zap,
 } from 'lucide-react';
-import React from 'react';
 import { route } from 'ziggy-js';
 
-import { cn } from '@/lib/utils';
+import { AppLogo } from '@/components/layout/app-logo';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -35,7 +34,6 @@ import {
     SidebarMenuItem,
     SidebarRail,
     SidebarSeparator,
-    SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { type SharedData } from '@/types';
 
@@ -134,8 +132,7 @@ export function AppSidebar() {
     const user = props.auth?.user;
     const role = user?.role as 'admin' | 'landlord' | 'tenant';
     const isDemoUser = props.isDemoUser as boolean;
-    
-    // Notifications & Properties (Dynamic props from Inertia)
+
     const unreadNotificationsCount = (props.unreadNotificationsCount as number) || 0;
     const properties = (props.properties as any[]) || [];
 
@@ -146,7 +143,7 @@ export function AppSidebar() {
         .toUpperCase()
         .slice(0, 2) ?? 'EP';
 
-    const getNavGroups = () => {
+    const getNavGroups = (): NavGroup[] => {
         let groups: NavGroup[] = [];
         switch (role) {
             case 'admin': groups = ADMIN_NAV; break;
@@ -156,10 +153,12 @@ export function AppSidebar() {
         }
 
         if (isDemoUser) {
-            return groups.map(group => ({
-                ...group,
-                items: group.items.filter(item => !item.route.includes('settings'))
-            })).filter(group => group.items.length > 0);
+            return groups
+                .map((group) => ({
+                    ...group,
+                    items: group.items.filter((item) => !item.route.includes('settings')),
+                }))
+                .filter((group) => group.items.length > 0);
         }
 
         return groups;
@@ -167,7 +166,7 @@ export function AppSidebar() {
 
     const getNotificationRoute = () => {
         switch (role) {
-            case 'admin': return 'admin.notifications.index'; // Future proofing
+            case 'admin': return 'admin.notifications.index';
             case 'landlord': return 'landlord.notifications.index';
             case 'tenant': return 'tenant.notifications.index';
             default: return '';
@@ -194,49 +193,21 @@ export function AppSidebar() {
         }
     };
 
-    const BrandingIcon = () => {
-        if (role === 'admin') return <ShieldCheck className="h-4 w-4" />;
-        return <Building2 className="h-4 w-4" />;
-    };
-
-    const BrandingLabel = () => {
-        if (role === 'admin') return 'Admin Portal';
-        return 'Estate Practice';
-    };
-
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            
-            {/* Header: Identity */}
-            <SidebarHeader className="border-b border-sidebar-border">
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <div className="flex items-center justify-between w-full px-1 py-1">
-                            <Link
-                                href={user ? route(`${role}.dashboard`) : '/'}
-                                className="flex items-center gap-2.5 overflow-hidden"
-                            >
-                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
-                                    <BrandingIcon />
-                                </div>
-                                <span className="truncate font-bold text-sm leading-tight text-sidebar-foreground">
-                                    {BrandingLabel()}
-                                </span>
-                            </Link>
-                            <SidebarTrigger className="ml-auto shrink-0 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
-                        </div>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+        <Sidebar collapsible="icon" variant="sidebar">
+            {/* Header: Brand */}
+            <SidebarHeader className="border-b border-sidebar-border px-3 py-3">
+                <AppLogo />
             </SidebarHeader>
 
             {/* Content: Role-based Navigation */}
-            <SidebarContent>
+            <SidebarContent className="gap-0 px-2 py-3">
                 {getNavGroups().map((group) => (
-                    <SidebarGroup key={group.title}>
-                        <SidebarGroupLabel className="uppercase tracking-widest text-[10px] font-bold opacity-60">
+                    <SidebarGroup key={group.title} className="px-0 py-2">
+                        <SidebarGroupLabel className="px-2 mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                             {group.title}
                         </SidebarGroupLabel>
-                        <SidebarMenu>
+                        <SidebarMenu className="gap-0.5">
                             {group.items.map((item) => (
                                 <SidebarMenuItem key={item.route}>
                                     <SidebarMenuButton
@@ -244,17 +215,22 @@ export function AppSidebar() {
                                         tooltip={item.label}
                                         isActive={isActive(item.route)}
                                         disabled={item.disabled}
-                                        className={item.disabled ? "opacity-50 cursor-not-allowed" : ""}
+                                        size="default"
+                                        className={
+                                            item.disabled
+                                                ? 'h-8 px-2 opacity-50 cursor-not-allowed'
+                                                : 'h-8 px-2'
+                                        }
                                     >
                                         {item.disabled ? (
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2.5">
                                                 <item.icon className="h-4 w-4" />
                                                 <span>{item.label}</span>
                                             </div>
                                         ) : (
                                             <Link href={route(item.route)}>
                                                 <item.icon className="h-4 w-4 text-muted-foreground group-data-[active=true]:text-primary" />
-                                                <span className="font-medium">{item.label}</span>
+                                                <span className="text-sm">{item.label}</span>
                                             </Link>
                                         )}
                                     </SidebarMenuButton>
@@ -265,50 +241,54 @@ export function AppSidebar() {
                 ))}
 
                 {/* System Group (Common) */}
-                <SidebarGroup>
-                    <SidebarGroupLabel className="uppercase tracking-widest text-[10px] font-bold opacity-60">
-                        System
-                    </SidebarGroupLabel>
-                    <SidebarMenu>
-                        {getNotificationRoute() && route().has(getNotificationRoute()) && (
+                {getNotificationRoute() && route().has(getNotificationRoute()) && (
+                    <SidebarGroup className="px-0 py-2">
+                        <SidebarGroupLabel className="px-2 mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            System
+                        </SidebarGroupLabel>
+                        <SidebarMenu className="gap-0.5">
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     asChild
                                     tooltip="Notifications"
                                     isActive={isActive(getNotificationRoute())}
+                                    size="default"
+                                    className="h-8 px-2"
                                 >
                                     <Link href={route(getNotificationRoute())}>
                                         <Bell className="h-4 w-4 text-muted-foreground group-data-[active=true]:text-primary" />
-                                        <span className="font-medium">Notifications</span>
+                                        <span className="text-sm">Notifications</span>
                                         {unreadNotificationsCount > 0 && (
-                                            <SidebarMenuBadge className="bg-primary/10 text-primary font-bold text-[10px] px-1.5 h-4 min-w-[16px]">
+                                            <SidebarMenuBadge className="ml-auto bg-primary text-primary-foreground text-[10px] font-medium px-1.5 h-4 min-w-[16px]">
                                                 {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
                                             </SidebarMenuBadge>
                                         )}
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
-                        )}
-                    </SidebarMenu>
-                </SidebarGroup>
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
 
                 {/* Landlord Property Quick Links */}
                 {role === 'landlord' && properties.length > 0 && (
-                    <SidebarGroup>
-                        <SidebarGroupLabel className="uppercase tracking-widest text-[10px] font-bold opacity-60">
+                    <SidebarGroup className="px-0 py-2">
+                        <SidebarGroupLabel className="px-2 mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                             Managed Properties
                         </SidebarGroupLabel>
-                        <SidebarMenu>
+                        <SidebarMenu className="gap-0.5">
                             {properties.map((property) => (
                                 <SidebarMenuItem key={property.id}>
                                     <SidebarMenuButton
                                         asChild
                                         tooltip={property.name}
                                         isActive={isPropertyActive(property.id)}
+                                        size="default"
+                                        className="h-8 px-2"
                                     >
                                         <Link href={route('landlord.properties.tenants', { property: property.id })}>
                                             <Building2 className="h-4 w-4 text-muted-foreground group-data-[active=true]:text-primary" />
-                                            <span className="truncate font-medium">{property.name}</span>
+                                            <span className="truncate text-sm">{property.name}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -319,56 +299,53 @@ export function AppSidebar() {
             </SidebarContent>
 
             {/* Footer: Theme + User Profile */}
-            <SidebarFooter className="border-t border-sidebar-border gap-3 p-4">
-                <div className="flex items-center gap-3 px-1 group-data-[collapsible=icon]:justify-center">
+            <SidebarFooter className="border-t border-sidebar-border gap-2 p-3">
+                <div className="flex items-center gap-2 px-1 group-data-[collapsible=icon]:justify-center">
                     <ModeToggle />
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-tight truncate group-data-[collapsible=icon]:hidden">
+                    <span className="text-xs text-muted-foreground truncate group-data-[collapsible=icon]:hidden">
                         Appearance
                     </span>
                 </div>
 
                 <SidebarSeparator className="opacity-50" />
 
-                <SidebarMenu>
+                <SidebarMenu className="gap-0.5">
                     <SidebarMenuItem>
                         <SidebarMenuButton
-                            size="lg"
+                            size="default"
                             tooltip={user?.name ?? 'User Account'}
-                            className={cn(
-                                "group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:!justify-center",
-                                isDemoUser ? "hover:bg-transparent cursor-default" : "hover:bg-sidebar-accent"
-                            )}
                             asChild={!isDemoUser && route().has('profile.edit')}
+                            className="h-9 px-2"
                         >
                             {!isDemoUser && route().has('profile.edit') ? (
                                 <Link href={route('profile.edit')}>
-                                    <Avatar className="h-8 w-8 shrink-0 rounded-lg shadow-sm">
-                                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-black border border-primary/20">
+                                    <Avatar size="sm" className="h-7 w-7 shrink-0">
+                                        <AvatarFallback className="text-[10px]">
                                             {initials}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <div className="flex flex-col gap-0.5 overflow-hidden text-left leading-tight group-data-[collapsible=icon]:hidden">
-                                        <span className="truncate text-sm font-bold text-foreground capitalize">
+                                    <div className="flex min-w-0 flex-col gap-0 overflow-hidden text-left leading-tight group-data-[collapsible=icon]:hidden">
+                                        <span className="truncate text-sm font-medium text-foreground capitalize">
                                             {user?.name ?? 'User Account'}
                                         </span>
-                                        <span className="truncate text-[10px] text-muted-foreground uppercase font-black opacity-70">
-                                            {role} Account
+                                        <span className="truncate text-[10px] text-muted-foreground uppercase tracking-wide">
+                                            {role} account
                                         </span>
                                     </div>
                                 </Link>
                             ) : (
-                                <div className="flex items-center gap-3 w-full">
-                                    <Avatar className="h-8 w-8 shrink-0 rounded-lg shadow-sm">
-                                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-black border border-primary/20">
+                                <div className="flex items-center gap-2.5 w-full">
+                                    <Avatar size="sm" className="h-7 w-7 shrink-0">
+                                        <AvatarFallback className="text-[10px]">
                                             {initials}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <div className="flex flex-col gap-0.5 overflow-hidden text-left leading-tight group-data-[collapsible=icon]:hidden">
-                                        <span className="truncate text-sm font-bold text-foreground capitalize">
+                                    <div className="flex min-w-0 flex-col gap-0 overflow-hidden text-left leading-tight group-data-[collapsible=icon]:hidden">
+                                        <span className="truncate text-sm font-medium text-foreground capitalize">
                                             {user?.name ?? 'User Account'}
                                         </span>
-                                        <span className="truncate text-[10px] text-muted-foreground uppercase font-black opacity-70">
-                                            {role} Account {isDemoUser && '(Demo)'}
+                                        <span className="truncate text-[10px] text-muted-foreground uppercase tracking-wide">
+                                            {role} account{isDemoUser && ' · demo'}
                                         </span>
                                     </div>
                                 </div>
@@ -380,10 +357,11 @@ export function AppSidebar() {
                         <SidebarMenuButton
                             tooltip="Sign out"
                             onClick={() => router.post('/logout')}
-                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors font-bold text-xs"
+                            size="default"
+                            className="h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/5"
                         >
                             <LogOut className="h-4 w-4" />
-                            <span>Log out</span>
+                            <span className="text-sm">Log out</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
