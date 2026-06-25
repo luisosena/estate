@@ -99,6 +99,12 @@ const LANDLORD_NAV: NavGroup[] = [
             { label: 'Utilities', icon: Zap, route: 'landlord.utilities.index' },
         ],
     },
+    {
+        title: 'Account',
+        items: [
+            { label: 'Settings', icon: Settings, route: 'profile.edit' },
+        ],
+    },
 ];
 
 const TENANT_NAV: NavGroup[] = [
@@ -121,6 +127,12 @@ const TENANT_NAV: NavGroup[] = [
             { label: 'Utilities', icon: Zap, route: 'tenant.utilities' },
             { label: 'Utility Bills', icon: FileText, route: 'tenant.utilities.bills' },
             { label: 'Documents', icon: FileText, route: 'tenant.documents.index' },
+        ],
+    },
+    {
+        title: 'Account',
+        items: [
+            { label: 'Settings', icon: Settings, route: 'profile.edit' },
         ],
     },
 ];
@@ -156,7 +168,7 @@ export function AppSidebar() {
             return groups
                 .map((group) => ({
                     ...group,
-                    items: group.items.filter((item) => !item.route.includes('settings')),
+                    items: group.items.filter((item) => !item.route.includes('settings') && !item.route.includes('profile')),
                 }))
                 .filter((group) => group.items.length > 0);
         }
