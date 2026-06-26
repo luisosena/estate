@@ -27,11 +27,7 @@ export default function Register() {
                     <>
                         <div className="grid gap-5">
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="name"
-                                    className="text-[#1A1A2E]/70"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <Label htmlFor="name" className="text-muted-foreground">
                                     Name
                                 </Label>
                                 <Input
@@ -43,7 +39,7 @@ export default function Register() {
                                     autoComplete="name"
                                     name="name"
                                     placeholder="Full name"
-                                    className="border-[#1A1A2E]/15" style={{ backgroundColor: '#ffffff' }}
+                                    className="border-input bg-card"
                                 />
                                 <InputError
                                     message={errors.name}
@@ -52,11 +48,7 @@ export default function Register() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="email"
-                                    className="text-[#1A1A2E]/70"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <Label htmlFor="email" className="text-muted-foreground">
                                     Email address
                                 </Label>
                                 <Input
@@ -67,17 +59,13 @@ export default function Register() {
                                     autoComplete="email"
                                     name="email"
                                     placeholder="email@example.com"
-                                    className="border-[#1A1A2E]/15" style={{ backgroundColor: '#ffffff' }}
+                                    className="border-input bg-card"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="password"
-                                    className="text-[#1A1A2E]/70"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <Label htmlFor="password" className="text-muted-foreground">
                                     Password
                                 </Label>
                                 <Input
@@ -88,17 +76,13 @@ export default function Register() {
                                     autoComplete="new-password"
                                     name="password"
                                     placeholder="Password"
-                                    className="border-[#1A1A2E]/15" style={{ backgroundColor: '#ffffff' }}
+                                    className="border-input bg-card"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label
-                                    htmlFor="password_confirmation"
-                                    className="text-[#1A1A2E]/70"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <Label htmlFor="password_confirmation" className="text-muted-foreground">
                                     Confirm password
                                 </Label>
                                 <Input
@@ -109,7 +93,7 @@ export default function Register() {
                                     autoComplete="new-password"
                                     name="password_confirmation"
                                     placeholder="Confirm password"
-                                    className="border-[#1A1A2E]/15" style={{ backgroundColor: '#ffffff' }}
+                                    className="border-input bg-card"
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
@@ -118,25 +102,21 @@ export default function Register() {
 
                             <Button
                                 type="submit"
-                                className="mt-2 w-full bg-[#1A1A2E] hover:bg-[#2A2A4E] text-[#FAF7F2]"
+                                className="mt-2 w-full"
                                 tabIndex={5}
                                 data-test="register-user-button"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
                             >
                                 {processing && <Spinner />}
                                 Create account
                             </Button>
                         </div>
 
-                        <div
-                            className="text-center text-sm text-[#1A1A2E]/50"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
+                        <div className="text-center text-sm text-muted-foreground">
                             Already have an account?{' '}
                             <TextLink
                                 href={login()}
                                 tabIndex={6}
-                                className="text-[#1A1A2E] hover:text-[#1A1A2E]/80"
+                                className="text-foreground hover:text-foreground/80"
                             >
                                 Log in
                             </TextLink>

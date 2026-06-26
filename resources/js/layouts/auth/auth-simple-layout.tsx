@@ -15,12 +15,11 @@ export default function AuthSimpleLayout({
     description,
 }: PropsWithChildren<AuthLayoutProps>) {
     return (
-        <div className="relative flex min-h-svh flex-col items-center justify-center bg-[#FAF7F2] p-6 md:p-10">
-            {/* Subtle gradient background */}
+        <div className="relative flex min-h-svh flex-col items-center justify-center bg-background p-6 md:p-10">
             <div className="absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-[#D4A853]/8 blur-3xl" />
-                <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-[#8BA888]/6 blur-3xl" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-[#C4775A]/5 blur-3xl" />
+                <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-success/4 blur-3xl" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-chart-3/4 blur-3xl" />
             </div>
 
             <div className="w-full max-w-sm">
@@ -36,16 +35,10 @@ export default function AuthSimpleLayout({
                         </Link>
 
                         <div className="space-y-2 text-center">
-                            <h1
-                                className="text-xl font-medium text-[#1A1A2E]"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
+                            <h1 className="font-display text-xl text-foreground">
                                 {title}
                             </h1>
-                            <p
-                                className="text-sm text-[#1A1A2E]/50"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
+                            <p className="text-sm text-muted-foreground">
                                 {description}
                             </p>
                         </div>
