@@ -49,11 +49,11 @@ function AboutHero() {
     return (
         <section
             ref={ref}
-            className="relative min-h-[70vh] flex items-center bg-[#FAF7F2] pt-36 pb-24 lg:pt-44 lg:pb-32 overflow-hidden"
+            className="relative min-h-[70vh] flex items-center bg-background pt-36 pb-24 lg:pt-44 lg:pb-32 overflow-hidden"
         >
             <div className="absolute inset-0 -z-10">
-                <div className="absolute top-20 left-1/3 h-[500px] w-[500px] rounded-full bg-[#D4A853]/8 blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-[#8BA888]/8 blur-3xl" />
+                <div className="absolute top-20 left-1/3 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-success/5 blur-3xl" />
             </div>
 
             <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
@@ -62,32 +62,24 @@ function AboutHero() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
-                    <h1
-                        className="text-4xl leading-[1.1] font-normal tracking-tight text-[#1A1A2E] sm:text-6xl lg:text-7xl"
-                        style={{ fontFamily: "'Manrope', sans-serif" }}
-                    >
+                    <h1 className="font-display text-4xl leading-[1.1] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
                         About{' '}
-                        <span className="text-[#D4A853]">Estate</span>
+                        <span className="text-primary">Estate</span>
                     </h1>
-                    <p
-                        className="mx-auto max-w-2xl text-lg md:text-xl text-[#1A1A2E]/60 leading-relaxed mb-10"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed mb-10">
                         We're on a mission to transform property management across Africa, one property at a time.
                     </p>
                     <div className="flex items-center justify-center gap-4">
                         <Link
                             href="/register"
-                            className="inline-flex items-center gap-2 rounded-full bg-[#1A1A2E] px-8 py-4 text-base font-semibold text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E] shadow-sm"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                            className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 shadow-sm"
                         >
                             Get Started
                             <ArrowRight className="h-5 w-5" />
                         </Link>
                         <Link
                             href="/features"
-                            className="inline-flex items-center gap-2 rounded-full border border-[#1A1A2E]/15 px-8 py-4 text-base font-semibold text-[#1A1A2E] transition-all duration-200 hover:bg-[#1A1A2E]/5"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                            className="inline-flex items-center gap-2 rounded-full border border-input px-8 py-4 text-base font-semibold text-foreground transition-all duration-200 hover:bg-muted"
                         >
                             View Features
                         </Link>
@@ -109,21 +101,15 @@ function ValueCard({ value, index }: { value: (typeof values)[0]; index: number 
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="rounded-2xl border border-[#1A1A2E]/8 bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+            className="rounded-2xl border border-border bg-card p-8 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
         >
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] mb-6">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted text-foreground mb-6">
                 <Icon className="h-7 w-7" strokeWidth={1.5} />
             </div>
-            <h3
-                className="text-xl font-semibold text-[#1A1A2E] mb-3"
-                style={{ fontFamily: "'Outfit', sans-serif" }}
-            >
+            <h3 className="text-xl font-semibold text-foreground mb-3">
                 {value.title}
             </h3>
-            <p
-                className="text-base leading-relaxed text-[#1A1A2E]/60"
-                style={{ fontFamily: "'Outfit', sans-serif" }}
-            >
+            <p className="text-base leading-relaxed text-muted-foreground">
                 {value.description}
             </p>
         </motion.div>
@@ -138,22 +124,16 @@ function StorySection({ section, index }: { section: (typeof storySections)[0]; 
     return (
         <motion.section
             ref={ref}
-            className={`py-24 lg:py-32 ${isEven ? 'bg-[#FAF7F2]' : 'bg-white'}`}
+            className={`py-24 lg:py-32 ${isEven ? 'bg-muted/30' : 'bg-card'}`}
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
         >
             <div className="mx-auto max-w-4xl px-6 lg:px-8 text-center">
-                <h2
-                    className="text-4xl md:text-5xl font-normal text-[#1A1A2E] leading-tight mb-6"
-                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                >
+                <h2 className="font-display text-4xl md:text-5xl text-foreground leading-tight mb-6">
                     {section.title}
                 </h2>
-                <p
-                    className="text-lg md:text-xl leading-relaxed text-[#1A1A2E]/60"
-                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                >
+                <p className="text-lg md:text-xl leading-relaxed text-muted-foreground">
                     {section.content}
                 </p>
             </div>
@@ -165,12 +145,6 @@ export default function About() {
     return (
         <MarketingLayout>
             <Head title="About — Estate">
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap"
-                    rel="stylesheet"
-                />
                 <meta
                     name="description"
                     content="Learn about Estate — our mission, vision, and values. We're transforming property management across Africa with an all-in-one platform for landlords and tenants."
@@ -182,19 +156,13 @@ export default function About() {
             {storySections.map((section, index) => (
                 <StorySection key={section.title} section={section} index={index} />
             ))}
-            <section className="py-24 lg:py-32 bg-white">
+            <section className="py-24 lg:py-32 bg-card">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2
-                            className="text-4xl md:text-5xl font-normal text-[#1A1A2E] leading-tight mb-4"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
+                        <h2 className="font-display text-4xl md:text-5xl text-foreground leading-tight mb-4">
                             Our Values
                         </h2>
-                        <p
-                            className="text-lg text-[#1A1A2E]/60 max-w-2xl mx-auto"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             The principles that guide everything we do
                         </p>
                     </div>

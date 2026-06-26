@@ -147,11 +147,11 @@ function FeatureHero() {
     return (
         <section
             ref={ref}
-            className="relative min-h-[70vh] flex items-center bg-[#FAF7F2] pt-36 pb-24 lg:pt-44 lg:pb-32 overflow-hidden"
+            className="relative min-h-[70vh] flex items-center bg-background pt-36 pb-24 lg:pt-44 lg:pb-32 overflow-hidden"
         >
             <div className="absolute inset-0 -z-10">
-                <div className="absolute top-20 left-1/3 h-[500px] w-[500px] rounded-full bg-[#D4A853]/8 blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-[#8BA888]/8 blur-3xl" />
+                <div className="absolute top-20 left-1/3 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-success/5 blur-3xl" />
             </div>
 
             <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
@@ -160,33 +160,25 @@ function FeatureHero() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
-                    <h1
-                        className="text-4xl leading-[1.1] font-normal tracking-tight text-[#1A1A2E] sm:text-6xl lg:text-7xl"
-                        style={{ fontFamily: "'Manrope', sans-serif" }}
-                    >
+                    <h1 className="font-display text-4xl leading-[1.1] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
                         All features,{' '}
-                        <span className="text-[#D4A853]">no friction</span>
+                        <span className="text-primary">no friction</span>
                     </h1>
-                    <p
-                        className="mx-auto max-w-2xl text-lg md:text-xl text-[#1A1A2E]/60 leading-relaxed mb-10"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed mb-10">
                         Estate brings together property management, financials, maintenance, and tenant
                         communication into one seamless platform — built for African real estate.
                     </p>
                     <div className="flex items-center justify-center gap-4">
                         <Link
                             href="/register"
-                            className="inline-flex items-center gap-2 rounded-full bg-[#1A1A2E] px-8 py-4 text-base font-semibold text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E] shadow-sm"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                            className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 shadow-sm"
                         >
                             Get Started
                             <ArrowRight className="h-5 w-5" />
                         </Link>
                         <a
                             href="#property-management"
-                            className="inline-flex items-center gap-2 rounded-full border border-[#1A1A2E]/15 px-8 py-4 text-base font-semibold text-[#1A1A2E] transition-all duration-200 hover:bg-[#1A1A2E]/5"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                            className="inline-flex items-center gap-2 rounded-full border border-input px-8 py-4 text-base font-semibold text-foreground transition-all duration-200 hover:bg-muted"
                         >
                             Explore features
                         </a>
@@ -213,7 +205,7 @@ function DetailedFeature({
         <section
             id={feature.id}
             ref={ref}
-            className={`relative py-24 lg:py-32 ${isEven ? 'bg-[#FAF7F2]' : 'bg-white'}`}
+            className={`relative py-24 lg:py-32 ${isEven ? 'bg-muted/30' : 'bg-card'}`}
         >
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <motion.div
@@ -222,48 +214,31 @@ function DetailedFeature({
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.5 }}
                 >
-                    {/* Left / Info side */}
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E]">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-foreground">
                                 <Icon className="h-6 w-6" strokeWidth={1.5} />
                             </div>
-                            <span
-                                className="text-sm font-semibold tracking-[0.15em] uppercase text-[#D4A853]"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
+                            <span className="text-sm font-semibold tracking-[0.15em] uppercase text-primary">
                                 Feature
                             </span>
                         </div>
 
-                        <h2
-                            className="text-4xl md:text-6xl font-normal text-[#1A1A2E] leading-tight mb-3"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
+                        <h2 className="font-display text-4xl md:text-6xl text-foreground leading-tight mb-3">
                             {feature.title}
                         </h2>
-                        <p
-                            className="text-lg md:text-xl text-[#D4A853] font-medium mb-6"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
+                        <p className="text-lg md:text-xl text-primary font-medium mb-6">
                             {feature.tagline}
                         </p>
-                        <p
-                            className="text-base leading-relaxed text-[#1A1A2E]/60 mb-10 max-w-xl"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                        >
+                        <p className="text-base leading-relaxed text-muted-foreground mb-10 max-w-xl">
                             {feature.description}
                         </p>
 
-                        {/* Benefits list */}
                         <div className="space-y-3 mb-10">
                             {feature.benefits.map((benefit) => (
                                 <div key={benefit} className="flex items-start gap-3">
-                                    <CheckCircle2 className="h-5 w-5 text-[#8BA888] mt-0.5 shrink-0" />
-                                    <span
-                                        className="text-sm text-[#1A1A2E]/70"
-                                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                                    >
+                                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 shrink-0" />
+                                    <span className="text-sm text-muted-foreground">
                                         {benefit}
                                     </span>
                                 </div>
@@ -271,24 +246,17 @@ function DetailedFeature({
                         </div>
                     </div>
 
-                    {/* Right / Capabilities cards */}
                     <div className="flex-1 w-full">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {feature.capabilities.map((cap) => (
                                 <div
                                     key={cap.label}
-                                    className="rounded-2xl border border-[#1A1A2E]/8 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                                    className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                                 >
-                                    <h3
-                                        className="text-base font-semibold text-[#1A1A2E] mb-2"
-                                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                                    >
+                                    <h3 className="text-base font-semibold text-foreground mb-2">
                                         {cap.label}
                                     </h3>
-                                    <p
-                                        className="text-sm leading-relaxed text-[#1A1A2E]/60"
-                                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                                    >
+                                    <p className="text-sm leading-relaxed text-muted-foreground">
                                         {cap.desc}
                                     </p>
                                 </div>
@@ -306,7 +274,7 @@ function FeatureNav() {
     const isInView = useInView(ref, { once: true, margin: '-40px' });
 
     return (
-        <section ref={ref} className="bg-white border-b border-[#1A1A2E]/6 sticky top-0 z-30">
+        <section ref={ref} className="bg-card border-b border-border sticky top-0 z-30">
             <motion.div
                 className="mx-auto max-w-7xl px-6 lg:px-8"
                 initial={{ opacity: 0 }}
@@ -318,8 +286,7 @@ function FeatureNav() {
                         <a
                             key={f.id}
                             href={`#${f.id}`}
-                            className="shrink-0 rounded-full px-4 py-2 text-xs font-medium text-[#1A1A2E]/60 transition-colors hover:text-[#1A1A2E] hover:bg-[#1A1A2E]/5"
-                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                            className="shrink-0 rounded-full px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"
                         >
                             {f.title}
                         </a>
@@ -334,12 +301,6 @@ export default function Features() {
     return (
         <MarketingLayout>
             <Head title="Features — Estate">
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap"
-                    rel="stylesheet"
-                />
                 <meta
                     name="description"
                     content="Explore all Estate features — property management, rent & billing, maintenance, financial reporting, tenant portal, and utility management."

@@ -6,7 +6,7 @@ interface MarketingLayoutProps {
 
 export default function MarketingLayout({ children }: MarketingLayoutProps) {
     return (
-        <div className="min-h-screen bg-[#FAF7F2] text-[#1A1A2E] antialiased">
+        <div className="min-h-screen bg-background text-foreground antialiased">
             {children}
         </div>
     );

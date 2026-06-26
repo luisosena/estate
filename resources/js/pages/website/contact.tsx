@@ -39,11 +39,11 @@ function ContactHero() {
     return (
         <section
             ref={ref}
-            className="relative min-h-[50vh] flex items-center bg-[#FAF7F2] pt-36 pb-24 lg:pt-44 lg:pb-32 overflow-hidden"
+            className="relative min-h-[50vh] flex items-center bg-background pt-36 pb-24 lg:pt-44 lg:pb-32 overflow-hidden"
         >
             <div className="absolute inset-0 -z-10">
-                <div className="absolute top-20 left-1/3 h-[500px] w-[500px] rounded-full bg-[#D4A853]/8 blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-[#8BA888]/8 blur-3xl" />
+                <div className="absolute top-20 left-1/3 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-success/5 blur-3xl" />
             </div>
 
             <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
@@ -52,17 +52,11 @@ function ContactHero() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
-                    <h1
-                        className="text-4xl leading-[1.1] font-normal tracking-tight text-[#1A1A2E] sm:text-6xl lg:text-7xl"
-                        style={{ fontFamily: "'Manrope', sans-serif" }}
-                    >
+                    <h1 className="font-display text-4xl leading-[1.1] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
                         Get in{' '}
-                        <span className="text-[#D4A853]">touch</span>
+                        <span className="text-primary">touch</span>
                     </h1>
-                    <p
-                        className="mx-auto max-w-2xl text-lg md:text-xl text-[#1A1A2E]/60 leading-relaxed mt-6"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed mt-6">
                         Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
                     </p>
                 </motion.div>
@@ -82,30 +76,23 @@ function ContactInfoCard({ info, index }: { info: (typeof contactInfo)[0]; index
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="rounded-2xl border border-[#1A1A2E]/8 bg-white p-8 shadow-sm"
+            className="rounded-2xl border border-border bg-card p-8 shadow-sm"
         >
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] mb-6">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted text-foreground mb-6">
                 <Icon className="h-7 w-7" strokeWidth={1.5} />
             </div>
-            <h3
-                className="text-lg font-semibold text-[#1A1A2E] mb-2"
-                style={{ fontFamily: "'Outfit', sans-serif" }}
-            >
+            <h3 className="text-lg font-semibold text-foreground mb-2">
                 {info.title}
             </h3>
             {info.link ? (
                 <a
                     href={info.link}
-                    className="text-base text-[#1A1A2E]/60 hover:text-[#D4A853] transition-colors"
-                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                    className="text-base text-muted-foreground hover:text-primary transition-colors"
                 >
                     {info.value}
                 </a>
             ) : (
-                <p
-                    className="text-base text-[#1A1A2E]/60"
-                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                >
+                <p className="text-base text-muted-foreground">
                     {info.value}
                 </p>
             )}
@@ -125,7 +112,6 @@ function ContactForm() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Implement form submission logic
         console.log('Form submitted:', formData);
     };
 
@@ -135,21 +121,14 @@ function ContactForm() {
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="rounded-2xl border border-[#1A1A2E]/8 bg-white p-8 shadow-sm"
+            className="rounded-2xl border border-border bg-card p-8 shadow-sm"
         >
-            <h2
-                className="text-2xl font-semibold text-[#1A1A2E] mb-6"
-                style={{ fontFamily: "'Outfit', sans-serif" }}
-            >
+            <h2 className="text-2xl font-semibold text-foreground mb-6">
                 Send us a message
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                    <label
-                        htmlFor="name"
-                        className="block text-sm font-medium text-[#1A1A2E] mb-2"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                         Name
                     </label>
                     <Input
@@ -163,11 +142,7 @@ function ContactForm() {
                     />
                 </div>
                 <div>
-                    <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-[#1A1A2E] mb-2"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                         Email
                     </label>
                     <Input
@@ -181,11 +156,7 @@ function ContactForm() {
                     />
                 </div>
                 <div>
-                    <label
-                        htmlFor="subject"
-                        className="block text-sm font-medium text-[#1A1A2E] mb-2"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
                         Subject
                     </label>
                     <Input
@@ -199,11 +170,7 @@ function ContactForm() {
                     />
                 </div>
                 <div>
-                    <label
-                        htmlFor="message"
-                        className="block text-sm font-medium text-[#1A1A2E] mb-2"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
                         Message
                     </label>
                     <Textarea
@@ -218,8 +185,7 @@ function ContactForm() {
                 </div>
                 <Button
                     type="submit"
-                    className="w-full rounded-full bg-[#1A1A2E] px-8 py-4 text-base font-semibold text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E] dark:hover:bg-[#2A2A4E]"
-                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                    className="w-full rounded-full px-8 py-4 text-base font-semibold"
                 >
                     <Send className="h-5 w-5 mr-2" />
                     Send Message
@@ -233,12 +199,6 @@ export default function Contact() {
     return (
         <MarketingLayout>
             <Head title="Contact — Estate">
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap"
-                    rel="stylesheet"
-                />
                 <meta
                     name="description"
                     content="Contact the Estate team. Get in touch with us for questions, support, or inquiries about our property management platform."
@@ -247,20 +207,14 @@ export default function Contact() {
 
             <Navbar />
             <ContactHero />
-            <section className="py-24 lg:py-32 bg-[#FAF7F2]">
+            <section className="py-24 lg:py-32 bg-muted/30">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                         <div>
-                            <h2
-                                className="text-3xl md:text-4xl font-normal text-[#1A1A2E] leading-tight mb-6"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
+                            <h2 className="font-display text-3xl md:text-4xl text-foreground leading-tight mb-6">
                                 Contact Information
                             </h2>
-                            <p
-                                className="text-lg text-[#1A1A2E]/60 mb-10"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
+                            <p className="text-lg text-muted-foreground mb-10">
                                 Reach out to us through any of these channels. We're here to help you succeed.
                             </p>
                             <div className="grid grid-cols-1 gap-6">
