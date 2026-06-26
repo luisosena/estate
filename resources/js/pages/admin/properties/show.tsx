@@ -81,16 +81,16 @@ interface AdminPropertyShowProps {
 
 /* ─── Helpers ────────────────────────────────────────────────────── */
 
-const getStatusColor = (status: string) => {
+const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
         case 'active':
-            return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
+            return 'default';
         case 'inactive':
-            return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800/30 dark:text-gray-400 dark:border-gray-800';
+            return 'secondary';
         case 'maintenance':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
+            return 'outline';
         default:
-            return 'bg-gray-100 text-gray-800 border-gray-200';
+            return 'secondary';
     }
 };
 
@@ -155,7 +155,7 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                         {property.name}
                     </h1>
                     <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                        <Badge variant="outline" className={getStatusColor(property.status) + " border-none text-[10px] uppercase font-bold px-2 h-5"}>
+                        <Badge variant={getStatusVariant(property.status)} className="text-[10px] uppercase font-bold px-2 h-5">
                             {property.status}
                         </Badge>
                         <span className="text-sm text-muted-foreground font-medium flex items-center gap-1.5">
@@ -330,7 +330,7 @@ export default function AdminPropertyShow({ property }: AdminPropertyShowProps) 
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-muted-foreground/70">System Integrity</span>
-                                <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-none h-4 px-1.5 text-[9px] uppercase">Verified</Badge>
+                                <Badge variant="secondary" className="bg-success/10 text-success border-none h-4 px-1.5 text-[9px] uppercase">Verified</Badge>
                             </div>
                         </CardContent>
                     </Card>

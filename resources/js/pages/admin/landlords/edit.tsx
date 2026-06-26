@@ -189,11 +189,11 @@ export default function AdminLandlordEdit({ landlord }: AdminLandlordEditProps) 
             <CardContent>
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                    <div className={`h-2.5 w-2.5 rounded-full ${landlord.email_verified_at ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-muted-foreground/40'}`} />
+                                <div className={`h-2.5 w-2.5 rounded-full ${landlord.email_verified_at ? 'bg-success shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-muted-foreground/40'}`} />
                     <span className="font-semibold text-muted-foreground">Verification Status</span>
                 </div>
                 <div className="text-right">
-                    <span className={`text-xs font-bold uppercase tracking-wider ${landlord.email_verified_at ? 'text-green-600' : 'text-muted-foreground'}`}>
+                    <span className={`text-xs font-bold uppercase tracking-wider ${landlord.email_verified_at ? 'text-success' : 'text-muted-foreground'}`}>
                         {landlord.email_verified_at ? 'Verified Account' : 'Pending Verification'}
                     </span>
                     {landlord.email_verified_at && (

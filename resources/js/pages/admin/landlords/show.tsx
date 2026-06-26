@@ -297,14 +297,14 @@ export default function AdminLandlordShow({ landlord, stats }: AdminLandlordShow
 
 function AlertTriangleCard({ title, message }: { title: string, message: string }) {
     return (
-        <Card className="bg-orange-50/50 dark:bg-orange-950/10 border-orange-200/50 dark:border-orange-800/30 shadow-none">
+        <Card className="bg-warning/10 border-warning/20 shadow-none">
             <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-tighter text-orange-600 dark:text-orange-400">
+                <CardTitle className="text-xs font-bold uppercase tracking-tighter text-warning">
                     {title}
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-xs text-orange-600/80 dark:text-orange-400/80 font-medium leading-relaxed italic">
+                <p className="text-xs text-warning/80 font-medium leading-relaxed italic">
                     {message}
                 </p>
             </CardContent>

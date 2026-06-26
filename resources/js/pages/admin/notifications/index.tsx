@@ -63,16 +63,16 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const getPriorityColor = (priority: string) => {
+const getPriorityVariant = (priority: string): "default" | "secondary" | "destructive" | "outline" => {
   switch (priority) {
     case 'high':
-      return 'bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 border-red-200 dark:border-red-500/30';
+      return 'destructive';
     case 'medium':
-      return 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-500/30';
+      return 'outline';
     case 'low':
-      return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30';
+      return 'default';
     default:
-      return 'bg-muted text-muted-foreground border-border/50';
+      return 'secondary';
   }
 };
 
@@ -173,23 +173,23 @@ export default function AdminNotifications({ notifications, unreadCount, filters
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-none bg-rose-500/5 border-rose-500/10">
+            <Card className="border-border/50 shadow-none bg-destructive/5 border-destructive/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest text-rose-600">Unread</CardTitle>
-                <div className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-destructive">Unread</CardTitle>
+                <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-black text-rose-600">{unreadCount}</div>
+                <div className="text-2xl font-black text-destructive">{unreadCount}</div>
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-none bg-emerald-500/5 border-emerald-500/10">
+            <Card className="border-border/50 shadow-none bg-success/5 border-success/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest text-emerald-600">Acknowledged</CardTitle>
-                <Check className="h-4 w-4 text-emerald-600" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-success">Acknowledged</CardTitle>
+                <Check className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-black text-emerald-600">{meta.total - unreadCount}</div>
+                <div className="text-2xl font-black text-success">{meta.total - unreadCount}</div>
               </CardContent>
             </Card>
           </div>
@@ -281,7 +281,7 @@ export default function AdminNotifications({ notifications, unreadCount, filters
                             <h3 className={`text-sm font-bold truncate ${notification.read_at ? 'text-muted-foreground' : 'text-foreground font-black'}`}>
                               {notification.title}
                             </h3>
-                            <Badge variant="outline" className={`${getPriorityColor(notification.priority)} text-[10px] border-none uppercase font-bold px-1.5 h-4`}>
+                            <Badge variant={getPriorityVariant(notification.priority)} className="text-[10px] uppercase font-bold px-1.5 h-4">
                               {notification.priority}
                             </Badge>
                             {!notification.read_at && (

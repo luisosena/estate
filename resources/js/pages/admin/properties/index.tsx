@@ -82,16 +82,16 @@ interface AdminPropertiesProps {
 
 /* ─── Helpers ────────────────────────────────────────────────────── */
 
-const getStatusColor = (status: string) => {
+const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
         case 'active':
-            return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
+            return 'default';
         case 'inactive':
-            return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800/30 dark:text-gray-400 dark:border-gray-800';
+            return 'secondary';
         case 'maintenance':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
+            return 'outline';
         default:
-            return 'bg-gray-100 text-gray-800 border-gray-200';
+            return 'secondary';
     }
 };
 
@@ -254,7 +254,7 @@ export default function AdminProperties({
                                                     <h3 className="font-bold text-foreground text-sm group-hover:text-primary transition-colors">
                                                         {property.name}
                                                     </h3>
-                                                    <Badge variant="outline" className={getStatusColor(property.status) + " text-[10px] border-none uppercase font-bold px-1.5 h-4"}>
+                                                    <Badge variant={getStatusVariant(property.status)} className="text-[10px] uppercase font-bold px-1.5 h-4">
                                                         {property.status}
                                                     </Badge>
                                                 </div>

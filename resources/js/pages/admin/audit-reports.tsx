@@ -83,21 +83,23 @@ const formatDate = (date: string) => {
     });
 };
 
-const statusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-        active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-        pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-        paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-        overdue: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-        maintenance: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-        available: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-        occupied: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-    };
-    return (
-        <Badge className={`text-xs ${variants[status] ?? 'bg-gray-100 text-gray-800'}`}>
-            {status}
-        </Badge>
-    );
+const statusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+        case 'active':
+        case 'paid':
+            return 'default';
+        case 'pending':
+        case 'maintenance':
+            return 'outline';
+        case 'overdue':
+            return 'destructive';
+        case 'available':
+            return 'outline';
+        case 'occupied':
+            return 'default';
+        default:
+            return 'secondary';
+    }
 };
 
 export default function AuditReports({
@@ -183,7 +185,7 @@ export default function AuditReports({
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {statusBadge(property.status)}
+                                        <Badge variant={statusVariant(property.status)} className="text-xs">{property.status}</Badge>
                                         <span className="text-xs text-muted-foreground">{formatDate(property.created_at)}</span>
                                     </div>
                                 </div>
@@ -211,7 +213,7 @@ export default function AuditReports({
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {statusBadge(tenancy.status)}
+                                        <Badge variant={statusVariant(tenancy.status)} className="text-xs">{tenancy.status}</Badge>
                                         <span className="text-xs text-muted-foreground">{formatDate(tenancy.created_at)}</span>
                                     </div>
                                 </div>
@@ -240,7 +242,7 @@ export default function AuditReports({
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <span className="text-sm font-semibold">{formatCurrency(payment.amount)}</span>
-                                        {statusBadge(payment.status)}
+                                        <Badge variant={statusVariant(payment.status)} className="text-xs">{payment.status}</Badge>
                                     </div>
                                 </div>
                             ))}
