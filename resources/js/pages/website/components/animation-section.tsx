@@ -344,11 +344,11 @@ export default function AnimationSection() {
     const CurrentSvg = svgComponents[currentIndex];
 
     return (
-        <section className="relative bg-white py-24 lg:py-32 overflow-hidden">
+        <section className="relative bg-background py-24 lg:py-32 overflow-hidden">
             {/* Subtle background gradients */}
             <div className="absolute inset-0 -z-10">
-                <div className="absolute top-0 right-1/4 h-96 w-96 rounded-full bg-[#D4A853]/5 blur-3xl" />
-                <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-[#8BA888]/5 blur-3xl" />
+                <div className="absolute top-0 right-1/4 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-success/5 blur-3xl" />
             </div>
 
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -359,16 +359,10 @@ export default function AnimationSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2
-                        className="text-4xl md:text-6xl font-normal text-[#1A1A2E] leading-tight"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <h2 className="text-4xl md:text-6xl font-normal text-foreground leading-tight">
                         Estate in action
                     </h2>
-                    <p
-                        className="mt-5 text-base sm:text-lg text-[#1A1A2E]/60 leading-relaxed"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <p className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed">
                         Watch how Estate transforms property management — automating payments, generating reports, and organizing your portfolio.
                     </p>
                 </motion.div>
@@ -388,16 +382,10 @@ export default function AnimationSection() {
                                 <CurrentSvg color={currentDisplay.color} />
                             </div>
                             <div className="flex-1 max-w-lg">
-                                <h3
-                                    className="text-3xl md:text-4xl lg:text-5xl font-normal text-[#1A1A2E] leading-tight"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <h3 className="text-3xl md:text-4xl lg:text-5xl font-normal text-foreground leading-tight">
                                     {currentDisplay.header}
                                 </h3>
-                                <p
-                                    className="mt-5 text-base sm:text-lg text-[#1A1A2E]/60 leading-relaxed"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <p className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed">
                                     {currentDisplay.description}
                                 </p>
                             </div>
@@ -418,7 +406,7 @@ export default function AnimationSection() {
                                 className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                                     index === currentIndex
                                         ? 'scale-110'
-                                        : 'bg-[#1A1A2E]/20 hover:bg-[#1A1A2E]/30'
+                                        : 'bg-foreground/20 hover:bg-foreground/30'
                                 }`}
                                 style={
                                     index === currentIndex

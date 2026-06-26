@@ -55,18 +55,17 @@ export default function FeaturesSection() {
     const isInView = useInView(ref, { once: true, margin: '-80px' });
 
     return (
-        <section id="features" ref={ref} className="relative bg-[#FAF7F2] py-24 lg:py-32 overflow-hidden">
+        <section id="features" ref={ref} className="relative bg-background py-24 lg:py-32 overflow-hidden">
             {/* Subtle background gradients */}
             <div className="absolute inset-0 -z-10">
-                <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-[#D4A853]/5 blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-[#8BA888]/5 blur-3xl" />
+                <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-success/5 blur-3xl" />
             </div>
 
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 {/* Left-aligned heading */}
                 <motion.h2
-                    className="mb-14 text-4xl md:text-6xl font-normal text-[#1A1A2E] leading-tight"
-                    style={{ fontFamily: "'Outfit', sans-serif" }}
+                    className="mb-14 text-4xl md:text-6xl font-normal text-foreground leading-tight"
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.5 }}
@@ -88,25 +87,19 @@ export default function FeaturesSection() {
                             >
                                 {/* Icon — small outline, sits above title */}
                                 <div className="mb-5">
-                                    <Icon
-                                        className="h-7 w-7 text-[#1A1A2E]/50"
-                                        strokeWidth={1.25}
-                                    />
+                                <Icon
+                                    className="h-7 w-7 text-muted-foreground"
+                                    strokeWidth={1.25}
+                                />
                                 </div>
 
                                 {/* Title */}
-                                <h3
-                                    className="mb-2 text-xl md:text-2xl font-normal text-[#1A1A2E] leading-tight"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <h3 className="mb-2 text-xl md:text-2xl font-normal text-foreground leading-tight">
                                     {feature.title}
                                 </h3>
 
                                 {/* Description */}
-                                <p
-                                    className="text-sm leading-relaxed text-[#1A1A2E]/60 font-normal"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <p className="text-sm leading-relaxed text-muted-foreground font-normal">
                                     {feature.description}
                                 </p>
                             </motion.div>
@@ -123,8 +116,7 @@ export default function FeaturesSection() {
                 >
                     <Button
                         asChild
-                        className="rounded-full bg-[#1A1A2E] hover:bg-[#2A2A4E] text-[#FAF7F2] text-base font-semibold px-8 py-4 h-auto transition-all duration-200 shadow-sm"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                        className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-base font-semibold px-8 py-4 h-auto transition-all duration-200 shadow-sm"
                     >
                         <Link href="/register">
                             Get Started
