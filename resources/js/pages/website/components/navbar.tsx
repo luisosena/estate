@@ -160,16 +160,16 @@ export default function Navbar() {
             <motion.nav
                 className={`fixed z-50 overflow-hidden transition-[background-color,box-shadow,backdrop-filter] duration-300 ${
                     navbarExpanded
-                        ? 'inset-x-0 top-0 rounded-none border-b border-[#1A1A2E]/6'
+                        ? 'inset-x-0 top-0 rounded-none border-b border-border'
                         : scrolled
-                        ? 'inset-x-4 top-4 rounded-full border border-[#1A1A2E]/6'
+                        ? 'inset-x-4 top-4 rounded-full border border-border'
                         : 'inset-x-4 top-4 rounded-full border border-transparent'
                 }`}
                 style={{
-                    backgroundColor: (scrolled || navbarExpanded) ? 'rgba(250, 247, 242, 0.92)' : 'rgba(250, 247, 242, 0)',
+                    backgroundColor: (scrolled || navbarExpanded) ? 'oklch(0.99 0.003 162 / 0.92)' : 'oklch(0.99 0.003 162 / 0)',
                     backdropFilter: (scrolled || navbarExpanded) ? 'blur(20px)' : 'blur(0px)',
                     boxShadow: (scrolled || navbarExpanded)
-                        ? '0 20px 40px -15px rgba(26, 26, 46, 0.1), 0 1px 3px rgba(26, 26, 46, 0.05)'
+                        ? '0 20px 40px -15px rgb(0 0 0 / 0.08), 0 1px 3px rgb(0 0 0 / 0.04)'
                         : 'none',
                 }}
                 onMouseLeave={handleClose}
@@ -200,8 +200,7 @@ export default function Navbar() {
                                 <Button
                                     asChild
                                     variant="ghost"
-                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 dark:hover:bg-[#1A1A2E]/5 rounded-lg px-3 py-2 h-auto"
-                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-foreground transition-colors duration-200 hover:text-foreground hover:bg-muted rounded-lg px-3 py-2 h-auto"
                                 >
                                     <Link href="/features">
                                         What we offer
@@ -221,8 +220,7 @@ export default function Navbar() {
                                 <Button
                                     asChild
                                     variant="ghost"
-                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 dark:hover:bg-[#1A1A2E]/5 rounded-lg px-3 py-2 h-auto"
-                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                    className="flex items-center gap-1 text-sm font-medium tracking-wide text-foreground transition-colors duration-200 hover:text-foreground hover:bg-muted rounded-lg px-3 py-2 h-auto"
                                 >
                                     <Link href="/resources">
                                         Resources
@@ -241,8 +239,7 @@ export default function Navbar() {
                                     <Component
                                         key={item}
                                         href={href}
-                                        className="text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors duration-200 hover:text-black"
-                                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                                        className="text-sm font-medium tracking-wide text-foreground transition-colors duration-200 hover:text-foreground"
                                         onMouseEnter={handleClose}
                                     >
                                         {item}
@@ -256,15 +253,13 @@ export default function Navbar() {
                             <div className="hidden items-center gap-4 md:flex">
                                 <TryDemoButton
                                     variant="ghost"
-                                    className="text-sm font-medium tracking-wide text-[#1A1A2E] hover:bg-[#1A1A2E]/5"
-                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                    className="text-sm font-medium tracking-wide text-foreground hover:bg-muted"
                                     onMouseEnter={handleClose}
                                 />
                                 <Button
                                     asChild
                                     variant="ghost"
-                                    className="text-sm font-medium tracking-wide text-[#1A1A2E] dark:text-[#1A1A2E] transition-colors duration-200 hover:text-black hover:bg-[#1A1A2E]/5 dark:hover:bg-transparent dark:hover:text-black"
-                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                    className="text-sm font-medium tracking-wide text-foreground transition-colors duration-200 hover:text-foreground hover:bg-muted"
                                     onMouseEnter={handleClose}
                                 >
                                     <Link href="/login">
@@ -273,8 +268,7 @@ export default function Navbar() {
                                 </Button>
                                 <Button
                                     asChild
-                                    className="rounded-full bg-[#1A1A2E] px-6 py-2.5 text-sm font-medium tracking-wide text-[#FAF7F2] transition-all duration-200 hover:bg-[#2A2A4E] dark:hover:bg-[#2A2A4E]"
-                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                    className="rounded-full bg-primary px-6 py-2.5 text-sm font-medium tracking-wide text-primary-foreground transition-all duration-200 hover:bg-primary/90"
                                     onMouseEnter={handleClose}
                                 >
                                     <Link href="/register">
@@ -290,13 +284,13 @@ export default function Navbar() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/10 dark:hover:bg-[#1A1A2E]/10"
+                                            className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-muted/80"
                                         >
                                             <Menu className="h-5 w-5" />
                                             <span className="sr-only">Open menu</span>
                                         </Button>
                                     </SheetTrigger>
-                                    <SheetContent side="right" className="w-[300px] border-l-[#1A1A2E]/10 bg-[#FAF7F2] p-6">
+                                    <SheetContent side="right" className="w-[300px] border-l-border bg-card p-6">
                                         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                                         <div className="mt-8 flex flex-col gap-6">
                                             <div className="flex flex-col gap-4">
@@ -304,8 +298,7 @@ export default function Navbar() {
                                                     <Button
                                                         asChild
                                                         variant="ghost"
-                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E] px-0 hover:bg-transparent dark:hover:bg-transparent h-auto"
-                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-muted-foreground transition-colors hover:text-foreground px-0 hover:bg-transparent h-auto"
                                                     >
                                                         <Link href="/features">
                                                             What we offer
@@ -317,8 +310,7 @@ export default function Navbar() {
                                                     <Button
                                                         asChild
                                                         variant="ghost"
-                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E] px-0 hover:bg-transparent dark:hover:bg-transparent h-auto"
-                                                        style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                        className="flex w-full items-center justify-between text-lg font-medium tracking-wide text-muted-foreground transition-colors hover:text-foreground px-0 hover:bg-transparent h-auto"
                                                     >
                                                         <Link href="/resources">
                                                             Resources
@@ -333,26 +325,23 @@ export default function Navbar() {
                                                         <Component
                                                             key={item}
                                                             href={href}
-                                                            className="text-lg font-medium tracking-wide text-[#1A1A2E]/70 transition-colors hover:text-[#1A1A2E]"
-                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                            className="text-lg font-medium tracking-wide text-muted-foreground transition-colors hover:text-foreground"
                                                         >
                                                             {item}
                                                         </Component>
                                                     );
                                                 })}
                                             </div>
-                                            <Separator className="bg-[#1A1A2E]/10" />
+                                            <Separator className="bg-border" />
                                             <div className="flex flex-col gap-4">
                                                 <TryDemoButton
                                                     variant="outline"
-                                                    className="inline-flex w-full items-center justify-center rounded-full border border-[#1A1A2E]/15 px-6 py-3 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/5 dark:hover:bg-[#1A1A2E]/5 bg-transparent"
-                                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                    className="inline-flex w-full items-center justify-center rounded-full border border-input px-6 py-3 text-sm font-medium tracking-wide text-foreground transition-colors hover:bg-muted bg-transparent"
                                                 />
                                                 <Button
                                                     asChild
                                                     variant="outline"
-                                                    className="inline-flex items-center justify-center rounded-full border border-[#1A1A2E]/15 px-6 py-3 text-sm font-medium tracking-wide text-[#1A1A2E] transition-colors hover:bg-[#1A1A2E]/5 dark:hover:bg-[#1A1A2E]/5 bg-transparent"
-                                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                    className="inline-flex items-center justify-center rounded-full border border-input px-6 py-3 text-sm font-medium tracking-wide text-foreground transition-colors hover:bg-muted bg-transparent"
                                                 >
                                                     <Link href="/login">
                                                         Sign in
@@ -360,8 +349,7 @@ export default function Navbar() {
                                                 </Button>
                                                 <Button
                                                     asChild
-                                                    className="inline-flex items-center justify-center rounded-full bg-[#1A1A2E] px-6 py-3 text-sm font-medium tracking-wide text-[#FAF7F2] transition-colors hover:bg-[#2A2A4E] dark:hover:bg-[#2A2A4E]"
-                                                    style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                    className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-medium tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
                                                 >
                                                     <Link href="/register">
                                                         Get Started
@@ -379,7 +367,7 @@ export default function Navbar() {
                     <AnimatePresence onExitComplete={() => setNavbarExpanded(false)}>
                         {offerOpen && (
                             <motion.div
-                                className="w-full overflow-hidden border-t border-[#1A1A2E]/6 bg-transparent"
+                                className="w-full overflow-hidden border-t border-border bg-transparent"
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
@@ -393,21 +381,19 @@ export default function Navbar() {
                                                 <Component
                                                     key={item.title}
                                                     href={item.href}
-                                                    className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-[#1A1A2E]/5"
+                                                    className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-muted"
                                                 >
-                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors group-hover/mega:bg-[#1A1A2E] group-hover/mega:text-white">
+                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground transition-colors group-hover/mega:bg-foreground group-hover/mega:text-primary-foreground">
                                                         <item.icon className="h-5 w-5" />
                                                     </div>
                                                     <div className="pt-0.5">
                                                         <div
-                                                            className="text-sm font-semibold text-[#1A1A2E]"
-                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                            className="text-sm font-semibold text-foreground"
                                                         >
                                                             {item.title}
                                                         </div>
                                                         <div
-                                                            className="mt-0.5 text-xs leading-relaxed text-[#1A1A2E]/60"
-                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                            className="mt-0.5 text-xs leading-relaxed text-muted-foreground"
                                                         >
                                                             {item.description}
                                                         </div>
@@ -421,7 +407,7 @@ export default function Navbar() {
                         )}
                         {resourcesOpen && (
                             <motion.div
-                                className="w-full overflow-hidden border-t border-[#1A1A2E]/6 bg-transparent"
+                                className="w-full overflow-hidden border-t border-border bg-transparent"
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
@@ -435,21 +421,19 @@ export default function Navbar() {
                                                 <Component
                                                     key={item.title}
                                                     href={item.href}
-                                                    className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-[#1A1A2E]/5"
+                                                    className="group/mega flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-muted"
                                                 >
-                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1A1A2E]/5 text-[#1A1A2E] transition-colors group-hover/mega:bg-[#1A1A2E] group-hover/mega:text-white">
+                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground transition-colors group-hover/mega:bg-foreground group-hover/mega:text-primary-foreground">
                                                         <item.icon className="h-5 w-5" />
                                                     </div>
                                                     <div className="pt-0.5">
                                                         <div
-                                                            className="text-sm font-semibold text-[#1A1A2E]"
-                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                            className="text-sm font-semibold text-foreground"
                                                         >
                                                             {item.title}
                                                         </div>
                                                         <div
-                                                            className="mt-0.5 text-xs leading-relaxed text-[#1A1A2E]/60"
-                                                            style={{ fontFamily: "'Nunito', sans-serif" }}
+                                                            className="mt-0.5 text-xs leading-relaxed text-muted-foreground"
                                                         >
                                                             {item.description}
                                                         </div>
