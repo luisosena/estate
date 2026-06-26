@@ -69,16 +69,16 @@ interface TenantNotificationsProps {
   };
 }
 
-const getPriorityColor = (priority: string) => {
+const getPriorityVariant = (priority: string) => {
   switch (priority) {
     case 'high':
-      return 'bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 border-red-200 dark:border-red-500/30';
+      return 'destructive';
     case 'medium':
-      return 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-500/30';
+      return 'secondary';
     case 'low':
-      return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30';
+      return 'outline';
     default:
-      return 'bg-muted text-muted-foreground border-border/50';
+      return 'outline';
   }
 };
 
@@ -306,7 +306,7 @@ export default function TenantNotifications({ notifications, unreadCount, filter
                                                     {formatDate(notification.created_at)}
                                                 </div>
                                                 
-                                                <Badge className={cn("rounded-full text-[9px] px-2 py-0 border-none shadow-none font-black uppercase tracking-widest h-4", getPriorityColor(notification.priority))}>
+                                                <Badge variant={getPriorityVariant(notification.priority)} className="rounded-full text-[9px] px-2 py-0 border-none shadow-none font-black uppercase tracking-widest h-4">
                                                     {notification.priority}
                                                 </Badge>
 
@@ -326,7 +326,7 @@ export default function TenantNotifications({ notifications, unreadCount, filter
                                                     onClick={() => markAsRead(notification.id)}
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-success hover:bg-success/10 transition-colors"
                                                     title="Process"
                                                 >
                                                     <Check className="h-4 w-4" />
@@ -336,7 +336,7 @@ export default function TenantNotifications({ notifications, unreadCount, filter
                                                     onClick={() => markAsUnread(notification.id)}
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                                                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-warning hover:bg-warning/10 transition-colors"
                                                     title="Re-open"
                                                 >
                                                     <X className="h-4 w-4" />
@@ -346,7 +346,7 @@ export default function TenantNotifications({ notifications, unreadCount, filter
                                                 onClick={() => deleteNotification(notification.id)}
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-9 w-9 rounded-full text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                                className="h-9 w-9 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                                                 title="Delete Record"
                                             >
                                                 <Trash2 className="h-4 w-4" />

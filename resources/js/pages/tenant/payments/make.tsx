@@ -266,8 +266,8 @@ export default function MakePayment({
         <Card className="max-w-md w-full shadow-2xl border-border/50 overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="bg-primary h-2 w-full" />
             <CardHeader className="text-center pb-2">
-                <div className="mx-auto w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-green-500" />
+                <div className="mx-auto w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-success" />
                 </div>
                 <CardTitle className="text-2xl font-bold">Payment Logged</CardTitle>
                 <CardDescription>Thank you for your timely settlement.</CardDescription>
@@ -484,7 +484,7 @@ export default function MakePayment({
                         </div>
 
                         {isOverpayment && (
-                            <div className="mt-2 text-[11px] text-amber-600 bg-amber-500/5 px-4 py-2 rounded-full border border-amber-200/50 flex items-center gap-1.5 font-medium animate-in zoom-in-95">
+                            <div className="mt-2 text-[11px] text-warning bg-warning/5 px-4 py-2 rounded-full border border-warning/20 flex items-center gap-1.5 font-medium animate-in zoom-in-95">
                                 <Info className="w-3 h-3" />
                                 This exceeds your current balance. Extra will credit your advance account.
                             </div>
@@ -609,7 +609,7 @@ export default function MakePayment({
                             </div>
 
                             <div className="bg-muted/30 p-4 rounded-2xl flex gap-3 items-start border border-dashed border-border">
-                                <ShieldCheck className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                                <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
                                 <div className="flex flex-col gap-0.5">
                                     <p className="text-[10px] font-bold text-foreground uppercase tracking-wider">Secure Logging</p>
                                     <p className="text-[10px] text-muted-foreground leading-relaxed">This record will be cross-referenced with bank/operator logs for verification.</p>

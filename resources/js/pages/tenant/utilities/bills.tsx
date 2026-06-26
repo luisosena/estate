@@ -19,7 +19,7 @@ import { MetricCard } from '@/components/shared/DashboardComponents';
 import Pagination from '@/components/shared/Pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
   Table,
@@ -103,38 +103,33 @@ const formatFullDate = (dateString: string | null) => {
   });
 };
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string) => {
   switch (status.toLowerCase()) {
     case 'paid':
-      return (
-        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 font-bold text-[10px] uppercase tracking-widest px-2 shadow-sm">
-           <CheckCircle2 className="mr-1 h-3 w-3" />
-          Paid
-        </Badge>
-      );
+      return 'default';
     case 'pending':
-      return (
-        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600 font-bold text-[10px] uppercase tracking-widest px-2 shadow-sm">
-           <Clock className="mr-1 h-3 w-3" />
-          Pending
-        </Badge>
-      );
+      return 'secondary';
     case 'overdue':
-      return (
-        <Badge variant="destructive" className="font-bold text-[10px] uppercase tracking-widest px-2 shadow-sm">
-           <AlertCircle className="mr-1 h-3 w-3" />
-          Overdue
-        </Badge>
-      );
+      return 'destructive';
     case 'partial':
-      return (
-        <Badge variant="outline" className="border-blue-500 text-blue-500 font-bold text-[10px] uppercase tracking-widest px-2">
-           <Clock className="mr-1 h-3 w-3" />
-          Partial
-        </Badge>
-      );
+      return 'outline';
     default:
-      return <Badge variant="outline" className="font-bold text-[10px] uppercase tracking-widest px-2">{status}</Badge>;
+      return 'outline';
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'paid':
+      return { label: 'Paid', icon: CheckCircle2 };
+    case 'pending':
+      return { label: 'Pending', icon: Clock };
+    case 'overdue':
+      return { label: 'Overdue', icon: AlertCircle };
+    case 'partial':
+      return { label: 'Partial', icon: Clock };
+    default:
+      return { label: status, icon: null };
   }
 };
 
@@ -295,22 +290,30 @@ export default function TenantUtilityBills({
                                                 <TableCell className="p-4 align-middle text-right font-black text-foreground">
                                                     {formatCurrency(bill.amount_due)}
                                                 </TableCell>
-                                                <TableCell className="p-4 align-middle text-right text-emerald-600 font-bold">
+                                                <TableCell className="p-4 align-middle text-right text-success font-bold">
                                                     {formatCurrency(bill.amount_paid)}
                                                 </TableCell>
                                                 <TableCell className="p-4 align-middle whitespace-nowrap">
                                                     <div className="flex items-center gap-2">
                                                         <span className={cn(
                                                             "font-bold",
-                                                            isOverdue ? "text-rose-600 font-black" : "text-muted-foreground"
+                                                            isOverdue ? "text-destructive font-black" : "text-muted-foreground"
                                                         )}>
                                                             {formatFullDate(bill.due_date)}
                                                         </span>
-                                                        {isOverdue && <AlertCircle className="h-3 w-3 text-rose-600 animate-pulse" />}
+                                                        {isOverdue && <AlertCircle className="h-3 w-3 text-destructive animate-pulse" />}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="p-6 align-middle text-right">
-                                                    {getStatusBadge(bill.status)}
+                                                    {(() => {
+                                                        const { label, icon: Icon } = getStatusLabel(bill.status);
+                                                        return (
+                                                            <Badge variant={getStatusVariant(bill.status)} className="font-bold text-[10px] uppercase tracking-widest px-2 shadow-sm">
+                                                                {Icon && <Icon className="mr-1 h-3 w-3" />}
+                                                                {label}
+                                                            </Badge>
+                                                        );
+                                                    })()}
                                                 </TableCell>
                                             </TableRow>
                                         );

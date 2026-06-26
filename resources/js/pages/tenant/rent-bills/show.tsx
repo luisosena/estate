@@ -1,11 +1,10 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { 
   ArrowLeft, 
   CheckCircle2, 
   Clock, 
   AlertCircle, 
   Receipt, 
-  Home, 
   DollarSign,
   CalendarDays,
   Info,
@@ -81,58 +80,34 @@ const formatDateTime = (dateString: string | null) => {
   });
 };
 
-const getPaymentStatusBadge = (status: string) => {
+const getPaymentStatusVariant = (status: string) => {
   switch (status.toLowerCase()) {
     case 'completed':
     case 'paid':
-      return <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-200 shadow-none capitalize">Completed</Badge>;
+      return 'default';
     case 'pending':
-      return <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-200 shadow-none capitalize">Pending</Badge>;
+      return 'secondary';
     case 'failed':
-      return <Badge variant="destructive" className="shadow-none capitalize">Failed</Badge>;
+      return 'destructive';
     default:
-      return <Badge variant="outline" className="shadow-none capitalize">{status}</Badge>;
+      return 'outline';
   }
 };
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string) => {
   switch (status) {
     case 'paid':
-      return (
-        <Badge variant="default" className="bg-green-500 hover:bg-green-600 shadow-none capitalize">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Paid
-        </Badge>
-      );
+      return 'default';
     case 'pending':
-      return (
-        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600 text-white shadow-none capitalize">
-          <Clock className="mr-1 h-3 w-3" />
-          Pending balance
-        </Badge>
-      );
+      return 'secondary';
     case 'partial':
-      return (
-        <Badge variant="outline" className="border-blue-500 text-blue-500 shadow-none capitalize">
-          <Clock className="mr-1 h-3 w-3" />
-          Partially Paid
-        </Badge>
-      );
+      return 'outline';
     case 'overdue':
-      return (
-        <Badge variant="destructive" className="shadow-none capitalize">
-          <AlertCircle className="mr-1 h-3 w-3" />
-          Overdue
-        </Badge>
-      );
+      return 'destructive';
     case 'waived':
-      return (
-        <Badge variant="outline" className="text-muted-foreground shadow-none capitalize">
-          Waived
-        </Badge>
-      );
+      return 'outline';
     default:
-      return <Badge variant="outline" className="shadow-none capitalize">{status}</Badge>;
+      return 'outline';
   }
 };
 
@@ -167,7 +142,17 @@ export default function RentBillShow({ rentBill }: Props) {
                         <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                             Invoice #{rentBill.id}
                         </h1>
-                        {getStatusBadge(rentBill.status)}
+                        {(() => {
+                          const labels: Record<string, string> = { paid: 'Paid', pending: 'Pending balance', partial: 'Partially Paid', overdue: 'Overdue', waived: 'Waived' };
+                          const icons: Record<string, any> = { paid: CheckCircle2, pending: Clock, partial: Clock, overdue: AlertCircle };
+                          const Icon = icons[rentBill.status];
+                          return (
+                            <Badge variant={getStatusVariant(rentBill.status)} className="shadow-none capitalize">
+                              {Icon && <Icon className="mr-1 h-3 w-3" />}
+                              {labels[rentBill.status] ?? rentBill.status}
+                            </Badge>
+                          );
+                        })()}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
                         Detailed breakdown for the {formatDate(rentBill.billing_month)} billing cycle.
@@ -212,13 +197,13 @@ export default function RentBillShow({ rentBill }: Props) {
                             </div>
                             <div className="flex flex-col gap-1 border-l sm:pl-8 border-border/50">
                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Paid Amount</span>
-                                <span className="text-3xl font-bold text-green-600 dark:text-green-500">{formatCurrency(rentBill.amount_paid)}</span>
+                                <span className="text-3xl font-bold text-success">{formatCurrency(rentBill.amount_paid)}</span>
                             </div>
                             <div className="flex flex-col gap-1 border-l sm:pl-8 border-border/50">
                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Outstanding</span>
                                 <span className={cn(
                                     "text-3xl font-bold",
-                                    rentBill.outstanding_amount > 0 ? "text-amber-600" : "text-green-600"
+                                    rentBill.outstanding_amount > 0 ? "text-warning" : "text-success"
                                 )}>
                                     {formatCurrency(rentBill.outstanding_amount)}
                                 </span>
@@ -271,7 +256,14 @@ export default function RentBillShow({ rentBill }: Props) {
                                                     Ref: {payment.reference_number}
                                                 </code>
                                             )}
-                                            {getPaymentStatusBadge(payment.status)}
+                                            {(() => {
+                                              const labels: Record<string, string> = { completed: 'Completed', paid: 'Completed', pending: 'Pending', failed: 'Failed' };
+                                              return (
+                                                <Badge variant={getPaymentStatusVariant(payment.status)} className="shadow-none capitalize">
+                                                  {labels[payment.status.toLowerCase()] ?? payment.status}
+                                                </Badge>
+                                              );
+                                            })()}
                                         </div>
                                     </div>
                                 ))}

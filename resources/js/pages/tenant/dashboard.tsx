@@ -277,21 +277,21 @@ export default function TenantDashboard({
                                     className={cn(
                                         "flex flex-col p-4 rounded-xl border transition-colors",
                                         currentBill?.status === 'overdue' 
-                                            ? 'bg-red-50 hover:bg-red-100 border-red-200 dark:bg-red-950/20 dark:border-red-900/30' 
+                                            ? 'bg-destructive/5 hover:bg-destructive/10 border-destructive/20' 
                                             : 'bg-card hover:bg-muted/50 border-border/60'
                                     )}
                                 >
                                     <span className={cn(
                                         "text-xs font-semibold mb-2 flex items-center gap-1.5",
-                                        currentBill?.status === 'overdue' ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground'
+                                        currentBill?.status === 'overdue' ? 'text-destructive' : 'text-muted-foreground'
                                     )}>
-                                        {currentBill?.status === 'overdue' ? <AlertCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5 text-amber-500" />}
+                                        {currentBill?.status === 'overdue' ? <AlertCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5 text-warning" />}
                                         Rent: {currentBill?.status ?? 'No Bill'}
                                     </span>
                                     <div className="flex justify-between items-end">
                                         <span className={cn(
                                             "text-2xl font-bold",
-                                            currentBill?.status === 'overdue' ? 'text-red-700 dark:text-red-400' : 'text-foreground'
+                                            currentBill?.status === 'overdue' ? 'text-destructive' : 'text-foreground'
                                         )}>
                                             {formatCurrency(currentBill?.outstanding_amount ?? 0)}
                                         </span>
@@ -304,21 +304,21 @@ export default function TenantDashboard({
                                     className={cn(
                                         "flex flex-col p-4 rounded-xl border transition-colors",
                                         pendingUtilities > 0 
-                                            ? 'bg-amber-50 hover:bg-amber-100 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/30' 
+                                            ? 'bg-warning/5 hover:bg-warning/10 border-warning/20' 
                                             : 'bg-card hover:bg-muted/50 border-border/60'
                                     )}
                                 >
                                     <span className={cn(
                                         "text-xs font-semibold mb-2 flex items-center gap-1.5",
-                                        pendingUtilities > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground'
+                                        pendingUtilities > 0 ? 'text-warning' : 'text-muted-foreground'
                                     )}>
-                                        <Zap className={cn("w-3.5 h-3.5", pendingUtilities > 0 ? "text-amber-600" : "text-muted-foreground")} />
+                                        <Zap className={cn("w-3.5 h-3.5", pendingUtilities > 0 ? "text-warning" : "text-muted-foreground")} />
                                         Utilities: {pendingUtilities} Pending
                                     </span>
                                     <div className="flex justify-between items-end">
                                         <span className={cn(
                                             "text-2xl font-bold",
-                                            pendingUtilities > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'
+                                            pendingUtilities > 0 ? 'text-warning' : 'text-foreground'
                                         )}>
                                             {formatCurrency(totalUtilityBalance)}
                                         </span>
@@ -383,7 +383,7 @@ export default function TenantDashboard({
 
                 {/* Notifications Hint if active alerts */}
                 {(currentBill?.status === 'overdue' || pendingUtilities > 0) && (
-                    <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 p-4 rounded-xl flex items-start gap-2">
+                    <div className="text-sm text-destructive bg-destructive/5 border border-destructive/20 p-4 rounded-xl flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                         <div>
                             <p className="font-semibold">Action Required</p>

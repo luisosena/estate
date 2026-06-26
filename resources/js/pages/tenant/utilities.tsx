@@ -23,7 +23,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { formatCurrency } from '@/lib/formatters';
-import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 
 interface UtilityType {
@@ -71,28 +70,16 @@ const getUtilityIcon = (typeName: string) => {
   return Zap;
 };
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string) => {
   switch (status.toLowerCase()) {
     case 'active':
-      return (
-        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 font-black text-[10px] uppercase tracking-widest px-2">
-          Active
-        </Badge>
-      );
+      return 'default';
     case 'suspended':
-      return (
-        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600 font-black text-[10px] uppercase tracking-widest px-2">
-          Suspended
-        </Badge>
-      );
+      return 'secondary';
     case 'disconnected':
-      return (
-        <Badge variant="destructive" className="font-black text-[10px] uppercase tracking-widest px-2">
-          Inactive
-        </Badge>
-      );
+      return 'destructive';
     default:
-      return <Badge variant="outline" className="font-black text-[10px] uppercase tracking-widest px-2">{status}</Badge>;
+      return 'outline';
   }
 };
 
@@ -193,7 +180,7 @@ export default function TenantUtilities({
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-black tracking-tight">Active Provisioning</h2>
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-muted/20 border border-border/50 rounded-full text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                        <CheckCircle2 className="w-3 h-3 text-success" />
                         System Synchronized
                     </div>
                 </div>
@@ -216,7 +203,9 @@ export default function TenantUtilities({
                                             <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 group-hover:bg-primary/10 transition-colors">
                                                 <Icon className="w-7 h-7 text-primary" />
                                             </div>
-                                            {getStatusBadge(utility.status)}
+                                            <Badge variant={getStatusVariant(utility.status)} className="font-black text-[10px] uppercase tracking-widest px-2">
+                                                {utility.status}
+                                            </Badge>
                                         </div>
                                         <div>
                                             <h4 className="font-black text-lg uppercase tracking-tight text-foreground truncate">

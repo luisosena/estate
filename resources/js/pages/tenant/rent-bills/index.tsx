@@ -77,44 +77,20 @@ const formatCurrency = (amount: number) =>
     minimumFractionDigits: 0,
   }).format(amount);
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string) => {
   switch (status) {
     case 'paid':
-      return (
-        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Settled
-        </Badge>
-      );
+      return 'default';
     case 'pending':
-      return (
-        <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-          <Clock className="mr-1 h-3 w-3" />
-          Outstanding
-        </Badge>
-      );
+      return 'secondary';
     case 'partial':
-      return (
-        <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 border-blue-500/20">
-          <Info className="mr-1 h-3 w-3" />
-          Partial
-        </Badge>
-      );
+      return 'outline';
     case 'overdue':
-      return (
-        <Badge variant="destructive">
-          <AlertCircle className="mr-1 h-3 w-3" />
-          Past Due
-        </Badge>
-      );
+      return 'destructive';
     case 'waived':
-        return (
-          <Badge variant="outline" className="text-gray-500">
-            Waived
-          </Badge>
-        );
+      return 'outline';
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return 'outline';
   }
 };
 
@@ -164,7 +140,17 @@ export default function RentBillsIndex({ rentBills, currentMonthBill, stats }: I
                             <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                                 Due {formatFullDate(currentMonthBill.due_date)}
                             </span>
-                            {getStatusBadge(currentMonthBill.status)}
+                            {(() => {
+                              const labels: Record<string, string> = { paid: 'Settled', pending: 'Outstanding', partial: 'Partial', overdue: 'Past Due', waived: 'Waived' };
+                              const icons: Record<string, any> = { paid: CheckCircle2, pending: Clock, partial: Info, overdue: AlertCircle };
+                              const Icon = icons[currentMonthBill.status];
+                              return (
+                                <Badge variant={getStatusVariant(currentMonthBill.status)}>
+                                  {Icon && <Icon className="mr-1 h-3 w-3" />}
+                                  {labels[currentMonthBill.status] ?? currentMonthBill.status}
+                                </Badge>
+                              );
+                            })()}
                         </div>
                       </div>
                       <div className="flex flex-col items-start sm:items-end">
@@ -200,12 +186,12 @@ export default function RentBillsIndex({ rentBills, currentMonthBill, stats }: I
                     </CardContent>
                   </Card>
                   
-                  <Card className="border-border/50 shadow-none bg-rose-500/5 border-rose-500/10">
+                  <Card className="border-border/50 shadow-none bg-destructive/5 border-destructive/10">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                       <CardTitle className="text-[10px] font-black uppercase tracking-widest text-rose-600">Action Required</CardTitle>
+                       <CardTitle className="text-[10px] font-black uppercase tracking-widest text-destructive">Action Required</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-black text-rose-600">{stats.pending}</div>
+                      <div className="text-2xl font-black text-destructive">{stats.pending}</div>
                     </CardContent>
                   </Card>
               </div>
@@ -276,12 +262,12 @@ export default function RentBillsIndex({ rentBills, currentMonthBill, stats }: I
                                 </div>
                               </td>
                               <td className="p-6 align-middle">
-                                <div className="font-medium text-sm text-emerald-600">
+                                <div className="font-medium text-sm text-success">
                                   {formatCurrency(bill.amount_paid)}
                                 </div>
                               </td>
                               <td className="p-6 align-middle">
-                                <div className={`font-black text-sm ${bill.outstanding_amount > 0 ? 'text-rose-600' : 'text-foreground'}`}>
+                                <div className={`font-black text-sm ${bill.outstanding_amount > 0 ? 'text-destructive' : 'text-foreground'}`}>
                                   {formatCurrency(bill.outstanding_amount)}
                                 </div>
                               </td>
@@ -293,7 +279,17 @@ export default function RentBillsIndex({ rentBills, currentMonthBill, stats }: I
                                 </div>
                               </td>
                               <td className="p-6 align-middle">
-                                {getStatusBadge(bill.status)}
+                                {(() => {
+                                  const labels: Record<string, string> = { paid: 'Settled', pending: 'Outstanding', partial: 'Partial', overdue: 'Past Due', waived: 'Waived' };
+                                  const icons: Record<string, any> = { paid: CheckCircle2, pending: Clock, partial: Info, overdue: AlertCircle };
+                                  const Icon = icons[bill.status];
+                                  return (
+                                    <Badge variant={getStatusVariant(bill.status)}>
+                                      {Icon && <Icon className="mr-1 h-3 w-3" />}
+                                      {labels[bill.status] ?? bill.status}
+                                    </Badge>
+                                  );
+                                })()}
                               </td>
                               <td className="p-6 align-middle text-right">
                                 <Button asChild variant="ghost" size="sm" className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-primary hover:bg-primary/5">

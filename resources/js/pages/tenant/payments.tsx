@@ -61,38 +61,18 @@ const formatCurrency = (amount: number) =>
     minimumFractionDigits: 0,
   }).format(amount);
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string) => {
   switch (status) {
     case 'paid':
-      return (
-        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Paid
-        </Badge>
-      );
+      return 'default';
     case 'pending':
-      return (
-        <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-          <Clock className="mr-1 h-3 w-3" />
-          Processing
-        </Badge>
-      );
+      return 'secondary';
     case 'partial':
-      return (
-        <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 border-blue-500/20">
-          <Info className="mr-1 h-3 w-3" />
-          Partial
-        </Badge>
-      );
+      return 'outline';
     case 'failed':
-      return (
-        <Badge variant="destructive">
-          <AlertCircle className="mr-1 h-3 w-3" />
-          Failed
-        </Badge>
-      );
+      return 'destructive';
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return 'outline';
   }
 };
 
@@ -148,30 +128,30 @@ export default function TenantPayments({ tenant, tenancy, payments, pendingAmoun
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50 shadow-none bg-rose-500/5 border-rose-500/10 relative overflow-hidden group">
+              <Card className="border-border/50 shadow-none bg-destructive/5 border-destructive/10 relative overflow-hidden group">
                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
                     <Clock className="h-20 w-20" />
                 </div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-rose-600">Pending Balance</CardTitle>
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-destructive">Pending Balance</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-black text-rose-600">
+                  <div className="text-3xl font-black text-destructive">
                     {formatCurrency(pendingAmount)}
                   </div>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Outstanding for current cycle</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50 shadow-none bg-emerald-500/5 border-emerald-500/10 relative overflow-hidden group">
+              <Card className="border-border/50 shadow-none bg-success/5 border-success/10 relative overflow-hidden group">
                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
                     <History className="h-20 w-20" />
                 </div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Lifetime Ledger</CardTitle>
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-success">Lifetime Ledger</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-black text-emerald-600">
+                  <div className="text-3xl font-black text-success">
                     {meta.total}
                   </div>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Confirmed transactions</p>
@@ -269,7 +249,18 @@ export default function TenantPayments({ tenant, tenancy, payments, pendingAmoun
                                 </div>
                               </td>
                               <td className="p-6 align-middle">
-                                {getStatusBadge(payment.status)}
+                                {(() => {
+                                  const variant = getStatusVariant(payment.status);
+                                  const labels: Record<string, string> = { paid: 'Paid', pending: 'Processing', partial: 'Partial', failed: 'Failed' };
+                                  const icons: Record<string, any> = { paid: CheckCircle2, pending: Clock, partial: Info, failed: AlertCircle };
+                                  const Icon = icons[payment.status];
+                                  return (
+                                    <Badge variant={variant}>
+                                      {Icon && <Icon className="mr-1 h-3 w-3" />}
+                                      {labels[payment.status] ?? payment.status}
+                                    </Badge>
+                                  );
+                                })()}
                               </td>
                               <td className="p-6 align-middle">
                                 <ReceiptDownloadButton

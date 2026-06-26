@@ -48,15 +48,21 @@ const formatFileSize = (bytes: number) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
-const getCategoryBadge = (category: string) => {
-  const variants: Record<string, string> = {
-    tenancy_agreement: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    receipt: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-    inspection_photo: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-    id_document: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-    other: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20',
-  };
+const getCategoryVariant = (category: string) => {
+  switch (category) {
+    case 'receipt':
+      return 'default';
+    case 'tenancy_agreement':
+      return 'outline';
+    case 'inspection_photo':
+    case 'id_document':
+      return 'secondary';
+    default:
+      return 'outline';
+  }
+};
 
+const getCategoryLabel = (category: string) => {
   const labels: Record<string, string> = {
     tenancy_agreement: 'Agreement',
     receipt: 'Receipt',
@@ -64,27 +70,11 @@ const getCategoryBadge = (category: string) => {
     id_document: 'ID Document',
     other: 'Other',
   };
-
-  return (
-    <Badge variant="secondary" className={cn(variants[category] || variants.other)}>
-      {labels[category] || category}
-    </Badge>
-  );
+  return labels[category] || category;
 };
 
 const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case 'tenancy_agreement':
-      return <FileText className="h-5 w-5 text-blue-500" />;
-    case 'receipt':
-      return <FileText className="h-5 w-5 text-emerald-500" />;
-    case 'inspection_photo':
-      return <FileText className="h-5 w-5 text-purple-500" />;
-    case 'id_document':
-      return <FileText className="h-5 w-5 text-amber-500" />;
-    default:
-      return <FileText className="h-5 w-5 text-muted-foreground" />;
-  }
+  return <FileText className="h-5 w-5 text-primary" />;
 };
 
 export default function TenantDocuments({ tenancy, documents }: Props) {
@@ -168,11 +158,11 @@ export default function TenantDocuments({ tenancy, documents }: Props) {
                   <CardContent className="px-5 py-4 flex items-center gap-3">
                     <div className={cn(
                       "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                      tenancy.status === 'active' ? 'bg-emerald-500/10' : 'bg-gray-500/10'
+                      tenancy.status === 'active' ? 'bg-success/10' : 'bg-muted/50'
                     )}>
                       <div className={cn(
                         "h-2.5 w-2.5 rounded-full",
-                        tenancy.status === 'active' ? 'bg-emerald-500' : 'bg-gray-500'
+                        tenancy.status === 'active' ? 'bg-success' : 'bg-muted-foreground'
                       )} />
                     </div>
                     <div>
@@ -212,7 +202,9 @@ export default function TenantDocuments({ tenancy, documents }: Props) {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{doc.file_name}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      {getCategoryBadge(doc.category)}
+                      <Badge variant={getCategoryVariant(doc.category)}>
+                        {getCategoryLabel(doc.category)}
+                      </Badge>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <HardDrive className="h-3 w-3" />
                         {formatFileSize(doc.file_size)}
