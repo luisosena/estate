@@ -42,7 +42,7 @@ export function DemoBanner() {
             className={`sticky top-0 z-50 flex flex-col gap-2 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 ${
                 isExpiringSoon
                     ? 'border-destructive/30 bg-destructive/10 text-destructive'
-                    : 'border-amber-300 bg-amber-50 text-amber-900'
+                    : 'border-warning/30 bg-warning/10 text-warning'
             }`}
         >
             <div className="flex items-center gap-3">

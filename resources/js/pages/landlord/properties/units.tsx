@@ -41,11 +41,11 @@ export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
 
   const getStatusBadge = (status: string) => {
     return status === 'available' ? (
-      <Badge variant="secondary" className="bg-green-100 text-green-800">
+      <Badge variant="secondary" className="bg-success/10 text-success">
         Available
       </Badge>
     ) : (
-      <Badge variant="secondary" className="bg-red-100 text-red-800">
+      <Badge variant="secondary" className="bg-destructive/10 text-destructive">
         Occupied
       </Badge>
     );
@@ -107,20 +107,20 @@ export default function PropertyUnits({ property, units }: PropertyUnitsProps) {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Available</CardTitle>
-                <div className="h-4 w-4 bg-green-500 rounded-full" />
+                <div className="h-4 w-4 bg-success rounded-full" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{availableUnits}</div>
+                <div className="text-2xl font-bold text-success">{availableUnits}</div>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Occupied</CardTitle>
-                <div className="h-4 w-4 bg-red-500 rounded-full" />
+                <div className="h-4 w-4 bg-destructive rounded-full" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{occupiedUnits}</div>
+                <div className="text-2xl font-bold text-destructive">{occupiedUnits}</div>
               </CardContent>
             </Card>
           </div>

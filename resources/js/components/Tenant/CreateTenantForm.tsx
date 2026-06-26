@@ -82,16 +82,16 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
                     </CardHeader>
                     <CardContent>
                         {success && (
-                            <Alert className="mb-6 bg-green-50 border-green-200">
-                                <AlertDescription className="text-green-800">
+                            <Alert className="mb-6 bg-success/10 border-success/20">
+                                <AlertDescription className="text-success">
                                     {success}
                                 </AlertDescription>
                             </Alert>
                         )}
 
                         {Object.keys(errors).length > 0 && (
-                            <Alert className="mb-6 bg-red-50 border-red-200">
-                                <AlertDescription className="text-red-800">
+                            <Alert className="mb-6 bg-destructive/10 border-destructive/20">
+                                <AlertDescription className="text-destructive">
                                     Please fix the errors below.
                                 </AlertDescription>
                             </Alert>
@@ -103,13 +103,13 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2 mb-4">
                                         <Home className="h-5 w-5" />
-                                        <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                                        <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
                                     </div>
                                     
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         <Field>
                                             <FieldLabel htmlFor="full_name">
-                                                Full Name <span className="text-red-500">*</span>
+                                                Full Name <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Input
                                                 id="full_name"
@@ -125,7 +125,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
 
                                         <Field>
                                             <FieldLabel htmlFor="phone">
-                                                Phone Number <span className="text-red-500">*</span>
+                                                Phone Number <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Input
                                                 id="phone"
@@ -141,7 +141,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
 
                                         <Field className="md:col-span-2">
                                             <FieldLabel htmlFor="email">
-                                                Email Address <span className="text-red-500">*</span>
+                                                Email Address <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Input
                                                 id="email"
@@ -167,7 +167,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         <Field>
                                             <FieldLabel htmlFor="emergency_contact_name">
-                                                Contact Name <span className="text-red-500">*</span>
+                                                Contact Name <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Input
                                                 id="emergency_contact_name"
@@ -183,7 +183,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
 
                                         <Field>
                                             <FieldLabel htmlFor="emergency_contact_phone">
-                                                Contact Phone <span className="text-red-500">*</span>
+                                                Contact Phone <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Input
                                                 id="emergency_contact_phone"
@@ -199,7 +199,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
 
                                         <Field className="md:col-span-2">
                                             <FieldLabel htmlFor="emergency_contact_relation">
-                                                Relationship <span className="text-red-500">*</span>
+                                                Relationship <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Input
                                                 id="emergency_contact_relation"
@@ -227,7 +227,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         <Field>
                                             <FieldLabel htmlFor="unit_id">
-                                                Select Unit <span className="text-red-500">*</span>
+                                                Select Unit <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Select value={data.unit_id} onValueChange={(value) => setData('unit_id', value)}>
                                                 <SelectTrigger aria-invalid={!!errors.unit_id}>
@@ -238,7 +238,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
                                                         <SelectItem key={unit.id} value={unit.id.toString()}>
                                                             <div>
                                                                 <div>{unit.unit_code} - {unit.unit_name}</div>
-                                                                <div className="text-xs text-gray-500">
+                                                                <div className="text-xs text-muted-foreground">
                                                                     {unit.property?.name || 'Unknown Property'}
                                                                 </div>
                                                             </div>
@@ -251,7 +251,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
 
                                         <Field>
                                             <FieldLabel htmlFor="move_in_date">
-                                                Move-in Date <span className="text-red-500">*</span>
+                                                Move-in Date <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Input
                                                 id="move_in_date"
@@ -266,7 +266,7 @@ export default function CreateTenantForm({ availableUnits, errors = {}, success 
 
                                         <Field>
                                             <FieldLabel htmlFor="monthly_rent">
-                                                Monthly Rent <span className="text-red-500">*</span>
+                                                Monthly Rent <span className="text-destructive">*</span>
                                             </FieldLabel>
                                             <Input
                                                 id="monthly_rent"

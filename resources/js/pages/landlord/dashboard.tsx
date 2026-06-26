@@ -532,7 +532,7 @@ export default function Dashboard({
                                         <span className="mb-2 flex items-center justify-between text-xs font-semibold text-muted-foreground">
                                             <span className="flex items-center gap-1.5">
                                                 <Clock
-                                                    className="h-3.5 w-3.5 text-amber-500"
+                                                    className="h-3.5 w-3.5 text-warning"
                                                     aria-hidden="true"
                                                 />
                                                 Pending

@@ -660,9 +660,9 @@ export default function TenantEditModal({
             {/* Overpayment Warning */}
             {((formData.payment_type === 'rent' && formData.amount > (outstandingRent || 0)) || 
               (formData.payment_type === 'utility' && formData.amount > (outstandingUtilities || 0))) && (
-              <Alert className="bg-amber-50 border-amber-200">
-                <AlertCircleIcon className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-700">
+              <Alert className="bg-warning/10 border-warning/20">
+                <AlertCircleIcon className="h-4 w-4 text-warning" />
+                <AlertDescription className="text-warning">
                   Note: The amount entered is more than the {formData.payment_type} amount due ({formData.payment_type === 'rent' ? outstandingRent : outstandingUtilities} TZS) and it will be recorded as is.
                 </AlertDescription>
               </Alert>

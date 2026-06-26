@@ -308,7 +308,7 @@ export default function AdminNotifications({ notifications, unreadCount, filters
                             onClick={() => markAsRead(notification.id)}
                             variant="ghost"
                             size="icon"
-                            className="h-9 w-9 text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                            className="h-9 w-9 text-muted-foreground hover:text-success hover:bg-success/10 transition-colors"
                             title="Mark as read"
                           >
                             <Check className="h-4 w-4" />
@@ -318,7 +318,7 @@ export default function AdminNotifications({ notifications, unreadCount, filters
                             onClick={() => markAsUnread(notification.id)}
                             variant="ghost"
                             size="icon"
-                            className="h-9 w-9 text-muted-foreground hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                            className="h-9 w-9 text-muted-foreground hover:text-warning hover:bg-warning/10 transition-colors"
                             title="Mark as unread"
                           >
                             <X className="h-4 w-4" />
@@ -328,7 +328,7 @@ export default function AdminNotifications({ notifications, unreadCount, filters
                           onClick={() => deleteNotification(notification.id)}
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                           title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />

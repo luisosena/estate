@@ -548,7 +548,7 @@ export default function TenantShow({
                       : 'Less than 1 day';
                     
                     return (
-                      <TableRow key={history.id} className={history.status === 'active' ? 'bg-green-50/5' : ''}>
+                      <TableRow key={history.id} className={history.status === 'active' ? 'bg-success/5' : ''}>
                         <TableCell>
                           <div>
                             <div className="font-medium">
@@ -584,7 +584,7 @@ export default function TenantShow({
                           >
                             {history.status === 'active' ? (
                               <>
-                                <span className="w-2 h-2 bg-green-500 rounded-full mr-1 inline-block"></span>
+                                <span className="w-2 h-2 bg-success rounded-full mr-1 inline-block"></span>
                                 Active
                               </>
                             ) : (
@@ -611,7 +611,7 @@ export default function TenantShow({
                   </div>
                   <div>
                     <span className="text-muted-foreground">Active Tenancies:</span>
-                    <span className="ml-2 font-medium text-green-400">
+                    <span className="ml-2 font-medium text-success">
                       {tenancy_history.filter(t => t.status === 'active').length}
                     </span>
                   </div>
@@ -737,7 +737,7 @@ export default function TenantShow({
                               size="sm"
                               onClick={() => handleDeleteDocument(doc.id)}
                             >
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                              <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
                         </TableCell>

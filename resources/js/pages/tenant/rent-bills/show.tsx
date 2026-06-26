@@ -294,7 +294,7 @@ export default function RentBillShow({ rentBill }: Props) {
                     </CardHeader>
                     <CardContent className="flex flex-col gap-5">
                         <div className="flex gap-4 items-start">
-                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-card border border-border flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
                                 <Building2 className="w-5 h-5 text-primary" />
                             </div>
                             <div>
@@ -304,7 +304,7 @@ export default function RentBillShow({ rentBill }: Props) {
                         </div>
 
                         <div className="flex gap-4 items-start">
-                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-card border border-border flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
                                 <MapPin className="w-5 h-5 text-primary" />
                             </div>
                             <div>

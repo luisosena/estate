@@ -154,9 +154,9 @@ export default function AuditReports({
                                     </div>
                                     <div className="flex items-center gap-3">
                                         {landlord.email_verified_at ? (
-                                            <CheckCircle className="w-4 h-4 text-green-500" />
+                                            <CheckCircle className="w-4 h-4 text-success" />
                                         ) : (
-                                            <Badge className="text-xs bg-yellow-100 text-yellow-800">Unverified</Badge>
+                                            <Badge className="text-xs bg-warning/10 text-warning">Unverified</Badge>
                                         )}
                                         <span className="text-xs text-muted-foreground">{formatDate(landlord.created_at)}</span>
                                     </div>

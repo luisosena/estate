@@ -264,7 +264,7 @@ export default function TenantUtilityBills({
                                     <TableRow>
                                         <TableCell colSpan={6} className="p-24 text-center">
                                             <div className="flex flex-col items-center justify-center gap-4 opacity-30">
-                                                <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+                                                <CheckCircle2 className="h-10 w-10 text-success" />
                                                 <div className="max-w-xs">
                                                     <p className="text-sm font-black uppercase tracking-widest">Stream Synchronized</p>
                                                     <p className="text-[10px] font-bold uppercase tracking-tighter mt-1">No utility invoicing records identified in your ledger.</p>

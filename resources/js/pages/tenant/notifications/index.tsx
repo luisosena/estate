@@ -82,16 +82,16 @@ const getPriorityVariant = (priority: string) => {
   }
 };
 
-const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string) => {
   const t = type.toLowerCase();
   if (t.includes('expiring')) {
-    return <CalendarDays className="h-4 w-4 text-orange-500" />;
+    return <CalendarDays className="h-4 w-4 text-warning" />;
   } else if (t.includes('ended')) {
-    return <Archive className="h-4 w-4 text-blue-500" />;
+    return <Archive className="h-4 w-4 text-chart-4" />;
   } else if (t.includes('payment')) {
-    return <CreditCard className="h-4 w-4 text-green-500" />;
+    return <CreditCard className="h-4 w-4 text-success" />;
   } else if (t.includes('utility')) {
-    return <Zap className="h-4 w-4 text-purple-500" />;
+    return <Zap className="h-4 w-4 text-chart-2" />;
   }
   return <Bell className="h-4 w-4 text-muted-foreground" />;
 };

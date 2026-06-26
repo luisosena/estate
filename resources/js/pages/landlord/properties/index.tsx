@@ -189,19 +189,19 @@ export default function LandlordProperties({ properties, stats }: LandlordProper
                       <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-600">{property.units_count}</div>
+                            <div className="text-2xl font-bold text-chart-4">{property.units_count}</div>
                             <div className="text-sm text-muted-foreground">Total Units</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-green-600">{property.occupied_units}</div>
+                            <div className="text-2xl font-bold text-success">{property.occupied_units}</div>
                             <div className="text-sm text-muted-foreground">Occupied</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-orange-600">{property.available_units}</div>
+                            <div className="text-2xl font-bold text-warning">{property.available_units}</div>
                             <div className="text-sm text-muted-foreground">Available</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-2xl font-bold text-purple-600">{property.active_tenants_count}</div>
+                            <div className="text-2xl font-bold text-chart-2">{property.active_tenants_count}</div>
                             <div className="text-sm text-muted-foreground">Active Tenants</div>
                           </div>
                         </div>

@@ -97,8 +97,8 @@ export default function PreviewPage({ preview }: Props) {
           <span className="text-muted-foreground">Total Rows:</span>
           <span>{preview.total_rows}</span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-200 bg-green-50 text-green-700 dark:border-green-900/30 dark:bg-green-950/20 dark:text-green-400 text-xs font-semibold shadow-sm">
-          <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-success/20 bg-success/10 text-success text-xs font-semibold shadow-sm">
+          <CheckCircle2 className="w-3.5 h-3.5 text-success" />
           <span>{validRows.length} Valid</span>
         </div>
         {preview.error_count > 0 && (

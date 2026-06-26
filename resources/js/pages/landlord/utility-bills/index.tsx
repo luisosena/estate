@@ -248,11 +248,11 @@ export default function LandlordUtilityBillsIndex({
                               <TableCell className="p-4 align-middle text-right font-bold text-foreground">
                                 {formatCurrency(bill.amount_due)}
                               </TableCell>
-                              <TableCell className="p-4 align-middle text-right text-emerald-600 font-semibold">
+                              <TableCell className="p-4 align-middle text-right text-success font-semibold">
                                 {formatCurrency(bill.amount_paid)}
                               </TableCell>
                               <TableCell className="p-4 align-middle whitespace-nowrap">
-                                <span className={bill.status === 'overdue' ? 'text-rose-600 font-black' : 'font-medium'}>
+                                <span className={bill.status === 'overdue' ? 'text-destructive font-black' : 'font-medium'}>
                                   {formatDate(bill.due_date)}
                                 </span>
                               </TableCell>

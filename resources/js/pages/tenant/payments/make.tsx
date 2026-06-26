@@ -472,12 +472,12 @@ export default function MakePayment({
                         
                         <div className="flex flex-wrap justify-center gap-2">
                             {formData.payment_type === 'rent' && pendingAmount > 0 && (
-                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData((p: PaymentFormData) => ({ ...p, amount: pendingAmount }))} className="h-7 text-[10px] rounded-full bg-white font-bold border-primary/20 hover:bg-primary/5">
+                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData((p: PaymentFormData) => ({ ...p, amount: pendingAmount }))} className="h-7 text-[10px] rounded-full font-bold border-primary/20 hover:bg-primary/5">
                                     SET OUTSTANDING ({formatCurrency(pendingAmount)})
                                 </Button>
                             )}
                             {tenancy && (
-                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData((p: PaymentFormData) => ({ ...p, amount: tenancy.monthly_rent }))} className="h-7 text-[10px] rounded-full bg-white font-bold border-primary/20 hover:bg-primary/5">
+                                <Button variant="outline" size="sm" type="button" onClick={() => setFormData((p: PaymentFormData) => ({ ...p, amount: tenancy.monthly_rent }))} className="h-7 text-[10px] rounded-full font-bold border-primary/20 hover:bg-primary/5">
                                     SET MONTHLY RENT ({formatCurrency(tenancy.monthly_rent)})
                                 </Button>
                             )}
@@ -630,7 +630,7 @@ export default function MakePayment({
 
                     {/* Help Card */}
                     <div className="p-6 bg-muted/40 rounded-3xl border flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
-                        <div className="w-10 h-10 rounded-2xl bg-white dark:bg-card border border-border flex items-center justify-center shrink-0 shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-background border border-border flex items-center justify-center shrink-0 shadow-sm">
                             <Info className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex flex-col gap-1">

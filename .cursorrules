@@ -6,17 +6,18 @@ You are working on the **Estate Practice** property management application - a L
 
 ## Critical Documentation
 
-**ALWAYS read these documentation files BEFORE starting any task:**
+**ALWAYS read these documentation files BEFORE starting any task** (all under `docs/projectsummary/`):
 
-1. **`docs/PROJECT_ARCHITECTURE.md`** - System architecture, tech stack, modules, data flows
-2. **`docs/BUSINESS_LOGIC.md`** - User roles (Admin/Landlord/Tenant), permissions, CRUD operations, workflows, validation rules
-3. **`docs/DATABASE_SCHEMA.md`** - All database tables, relationships, ER diagrams
-4. **`docs/DESIGN_PRINCIPLES.md`** - shadcn/ui protocol, coding conventions, TailwindCSS usage
-5. **`docs/API_REFERENCE.md`** - All API endpoints, authentication, error handling
-6. **`docs/CONFIGURATION.md`** - Environment variables, feature flags
-7. **`docs/DEPENDENCY_TREE.md`** - All dependencies and versions
-8. **`docs/DEVELOPMENT_WORKFLOW.md`** - Setup, coding standards, testing, deployment
-9. **`docs/KNOWN_ANOMALIES.md`** - Known issues, technical debt, workarounds
+1. **`docs/projectsummary/OVERVIEW.md`** - High-level project overview and entry point
+2. **`docs/projectsummary/PROJECT_ARCHITECTURE.md`** - System architecture, tech stack, modules, data flows
+3. **`docs/projectsummary/BUSINESS_LOGIC.md`** - User roles (Admin/Landlord/Tenant), permissions, CRUD operations, workflows, validation rules
+4. **`docs/projectsummary/DATABASE_SCHEMA.md`** - All database tables, relationships, ER diagrams
+5. **`docs/projectsummary/DESIGN_PRINCIPLES.md`** - shadcn/ui protocol, coding conventions, TailwindCSS usage
+6. **`docs/projectsummary/API_REFERENCE.md`** - All API endpoints, authentication, error handling
+7. **`docs/projectsummary/CONFIGURATION.md`** - Environment variables, feature flags
+8. **`docs/projectsummary/DEPENDENCY_TREE.md`** - All dependencies and versions
+9. **`docs/projectsummary/DEVELOPMENT_WORKFLOW.md`** - Setup, coding standards, testing, deployment
+10. **`docs/projectsummary/KNOWN_ANOMALIES.md`** - Known issues, technical debt, workarounds
 
 ## shadcn/ui Protocol (MANDATORY)
 

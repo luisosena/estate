@@ -19,7 +19,7 @@ export default function FormLayout01() {
               <Field className="gap-2">
                 <FieldLabel htmlFor="first-name">
                   First name
-                  <span className="text-red-500">*</span>
+                  <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Input
                   type="text"
@@ -35,7 +35,7 @@ export default function FormLayout01() {
               <Field className="gap-2">
                 <FieldLabel htmlFor="last-name">
                   Last name
-                  <span className="text-red-500">*</span>
+                  <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Input
                   type="text"
@@ -51,7 +51,7 @@ export default function FormLayout01() {
               <Field className="gap-2">
                 <FieldLabel htmlFor="email">
                   Email
-                  <span className="text-red-500">*</span>
+                  <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Input
                   type="email"

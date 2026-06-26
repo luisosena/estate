@@ -42,8 +42,8 @@ const statusConfig = (batch: CsvImportBatch) => {
 
   if (batch.failed_rows > 0) {
     return {
-      color: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-800',
-      icon: <AlertTriangle className="w-5 h-5 text-yellow-600" />,
+      color: 'bg-warning/10 border-warning/20',
+      icon: <AlertTriangle className="w-5 h-5 text-warning" />,
       title: 'Import Completed with Errors',
       description: `${batch.created_rows} records created, ${batch.failed_rows} rows had errors.`,
       badge: 'secondary' as const,
@@ -51,8 +51,8 @@ const statusConfig = (batch: CsvImportBatch) => {
   }
 
   return {
-    color: 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800',
-    icon: <CheckCircle2 className="w-5 h-5 text-green-600" />,
+    color: 'bg-success/10 border-success/20',
+    icon: <CheckCircle2 className="w-5 h-5 text-success" />,
     title: 'Import Successful',
     description: `All ${batch.created_rows} records created successfully.`,
     badge: 'default' as const,
@@ -74,8 +74,8 @@ export default function ShowPage({ batch }: Props) {
   return (
     <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 pb-12">
       {flash?.success && (
-        <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-900/30 dark:bg-green-950/20 dark:text-green-400">
-          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+        <Alert className="border-success/20 bg-success/10 text-success">
+          <CheckCircle2 className="h-4 w-4 text-success" />
           <AlertTitle>Import Complete</AlertTitle>
           <AlertDescription>{flash.success}</AlertDescription>
         </Alert>

@@ -201,7 +201,7 @@ function StatusBadge({ status }: StatusBadgeProps) {
     >
       <span
         className={`h-1.5 w-1.5 rounded-full ${
-          isDone ? "bg-emerald-500" : "bg-amber-400"
+          isDone ? "bg-success" : "bg-warning"
         }`}
       />
       {isDone ? "Done" : "In Process"}

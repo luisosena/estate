@@ -263,11 +263,11 @@ export default function LandlordRentBillsIndex({ rentBills, stats }: Props) {
                               {formatCurrency(bill.amount_paid)}
                             </td>
                             <td className="p-4 align-middle">
-                              <span
+                                <span
                                 className={
                                   bill.outstanding_amount > 0
-                                    ? 'font-black text-amber-600'
-                                    : 'font-black text-emerald-600'
+                                    ? 'font-black text-warning'
+                                    : 'font-black text-success'
                                 }
                               >
                                 {formatCurrency(bill.outstanding_amount)}

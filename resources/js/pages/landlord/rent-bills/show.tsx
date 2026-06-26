@@ -191,12 +191,12 @@ export default function LandlordRentBillShow({ rentBill }: Props) {
 
         {/* Success/Error Messages */}
         {successMessage && (
-          <div className="mb-4 rounded-md bg-green-100 p-4 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <div className="mb-4 rounded-md bg-success/10 p-4 text-success">
             {successMessage}
           </div>
         )}
         {errorMessage && (
-          <div className="mb-4 rounded-md bg-red-100 p-4 text-red-800 dark:bg-red-900 dark:text-red-100">
+          <div className="mb-4 rounded-md bg-destructive/10 p-4 text-destructive">
             {errorMessage}
           </div>
         )}
@@ -221,13 +221,13 @@ export default function LandlordRentBillShow({ rentBill }: Props) {
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">Amount Paid</div>
-                    <div className="text-xl font-bold text-green-600">
+                    <div className="text-xl font-bold text-success">
                       {formatCurrency(rentBill.amount_paid)}
                     </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">Outstanding</div>
-                    <div className="text-xl font-bold text-amber-600">
+                    <div className="text-xl font-bold text-warning">
                       {formatCurrency(rentBill.outstanding_amount)}
                     </div>
                   </div>
@@ -380,7 +380,7 @@ export default function LandlordRentBillShow({ rentBill }: Props) {
         {/* Waive Modal */}
         {showWaiveModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
+            <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
               <h2 className="mb-4 text-xl font-bold">Waive Rent Bill</h2>
               <p className="mb-4 text-muted-foreground">
                 Are you sure you want to waive this rent bill? This action cannot be undone.

@@ -99,13 +99,13 @@ const getStatusBadge = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'active':
       return (
-        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 font-bold text-[10px] uppercase tracking-widest px-2 shadow-sm">
+        <Badge variant="default" className="bg-success hover:bg-success font-bold text-[10px] uppercase tracking-widest px-2 shadow-sm">
           Active
         </Badge>
       );
     case 'suspended':
       return (
-        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600 font-bold text-[10px] uppercase tracking-widest px-2 shadow-sm">
+        <Badge variant="secondary" className="bg-warning hover:bg-warning font-bold text-[10px] uppercase tracking-widest px-2 shadow-sm">
           Suspended
         </Badge>
       );
