@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { MoreHorizontal, Eye, Zap, AlertCircle, Clock, CheckCircle2, Filter } from 'lucide-react';
+import { MoreHorizontal, Eye, Zap, AlertCircle, Clock } from 'lucide-react';
 import React from 'react';
 import { route } from 'ziggy-js';
 
@@ -104,44 +104,20 @@ const formatDate = (dateString: string | null) => {
   });
 };
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status.toLowerCase()) {
     case 'paid':
-      return (
-        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Paid
-        </Badge>
-      );
+      return 'default';
     case 'pending':
-      return (
-        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600">
-          <Clock className="mr-1 h-3 w-3" />
-          Pending
-        </Badge>
-      );
+      return 'secondary';
     case 'overdue':
-      return (
-        <Badge variant="destructive">
-          <AlertCircle className="mr-1 h-3 w-3" />
-          Overdue
-        </Badge>
-      );
+      return 'destructive';
     case 'partial':
-      return (
-        <Badge variant="outline" className="border-blue-500 text-blue-500">
-          <Clock className="mr-1 h-3 w-3" />
-          Partial
-        </Badge>
-      );
+      return 'outline';
     case 'waived':
-      return (
-        <Badge variant="outline" className="text-gray-500 border-gray-300">
-          Waived
-        </Badge>
-      );
+      return 'outline';
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return 'outline';
   }
 };
 
@@ -159,7 +135,7 @@ export default function LandlordUtilityBillsIndex({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
-                  <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                  <span className="w-2 h-2 rounded-full bg-chart-4" />
                   Service Billing
                 </Badge>
               </div>
@@ -174,37 +150,37 @@ export default function LandlordUtilityBillsIndex({
 
           <div className="flex flex-1 flex-col gap-6">
             <div className="grid gap-4 md:grid-cols-3">
-              <Card className="border-border/50 shadow-none bg-amber-500/5 border-amber-500/10">
+              <Card className="border-border/50 shadow-none bg-warning/5 border-warning/10">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-amber-600">Pending Receivables</CardTitle>
-                  <Clock className="h-4 w-4 text-amber-600/50" />
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-warning">Pending Receivables</CardTitle>
+                  <Clock className="h-4 w-4 text-warning/50" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-black text-amber-600">
+                  <div className="text-2xl font-black text-warning">
                     {formatCurrency(summary.total_pending)}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50 shadow-none bg-red-500/5 border-red-500/10">
+              <Card className="border-border/50 shadow-none bg-destructive/5 border-destructive/10">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-red-600">Overdue Collected</CardTitle>
-                  <AlertCircle className="h-4 w-4 text-red-600/50" />
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-destructive">Overdue Collected</CardTitle>
+                  <AlertCircle className="h-4 w-4 text-destructive/50" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-black text-red-600">
+                  <div className="text-2xl font-black text-destructive">
                     {formatCurrency(summary.total_overdue)}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50 shadow-none bg-blue-500/5 border-blue-500/10">
+              <Card className="border-border/50 shadow-none bg-chart-4/5 border-chart-4/10">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-blue-600">Partial Settlements</CardTitle>
-                  <Zap className="h-4 w-4 text-blue-600/50" />
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-chart-4">Partial Settlements</CardTitle>
+                  <Zap className="h-4 w-4 text-chart-4/50" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-black text-blue-600">
+                  <div className="text-2xl font-black text-chart-4">
                     {formatCurrency(summary.total_partial)}
                   </div>
                 </CardContent>
@@ -281,7 +257,9 @@ export default function LandlordUtilityBillsIndex({
                                 </span>
                               </TableCell>
                               <TableCell className="p-4 align-middle">
-                                {getStatusBadge(bill.status)}
+                                <Badge variant={getStatusVariant(bill.status)} className="capitalize">
+                                  {bill.status}
+                                </Badge>
                               </TableCell>
                               <TableCell className="p-4 align-middle text-right">
                                 <DropdownMenu>

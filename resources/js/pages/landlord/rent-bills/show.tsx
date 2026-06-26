@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, AlertCircle, CheckCircle2, Clock, XCircle, Receipt, Building, User, Home, DollarSign } from 'lucide-react';
+import { ArrowLeft, XCircle, Receipt, Building, User, Home, DollarSign } from 'lucide-react';
 import { useState } from 'react';
 import React from 'react';
 import { route } from 'ziggy-js';
@@ -91,60 +91,35 @@ const formatDateTime = (dateString: string | null) => {
   });
 };
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
     case 'paid':
-      return (
-        <Badge variant="default" className="bg-green-500">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Paid
-        </Badge>
-      );
+      return 'default';
     case 'pending':
-      return (
-        <Badge variant="secondary" className="bg-amber-500">
-          <Clock className="mr-1 h-3 w-3" />
-          Pending
-        </Badge>
-      );
+      return 'secondary';
     case 'partial':
-      return (
-        <Badge variant="outline" className="border-blue-500 text-blue-500">
-          <Clock className="mr-1 h-3 w-3" />
-          Partial
-        </Badge>
-      );
+      return 'outline';
     case 'overdue':
-      return (
-        <Badge variant="destructive">
-          <AlertCircle className="mr-1 h-3 w-3" />
-          Overdue
-        </Badge>
-      );
+      return 'destructive';
     case 'waived':
-      return (
-        <Badge variant="outline" className="text-gray-500">
-          <XCircle className="mr-1 h-3 w-3" />
-          Waived
-        </Badge>
-      );
+      return 'outline';
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return 'outline';
   }
 };
 
-const getPaymentStatusBadge = (status: string) => {
+const getPaymentStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
     case 'completed':
-      return <Badge variant="default" className="bg-green-500">Completed</Badge>;
+      return 'default';
     case 'pending':
-      return <Badge variant="secondary" className="bg-amber-500">Pending</Badge>;
+      return 'secondary';
     case 'failed':
-      return <Badge variant="destructive">Failed</Badge>;
+      return 'destructive';
     case 'cancelled':
-      return <Badge variant="outline">Cancelled</Badge>;
+      return 'outline';
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return 'outline';
   }
 };
 
@@ -184,7 +159,9 @@ export default function LandlordRentBillShow({ rentBill }: Props) {
                   <Receipt className="w-3 h-3" />
                   Bill Details
                 </Badge>
-                {getStatusBadge(rentBill.status)}
+                <Badge variant={getStatusVariant(rentBill.status)} className="capitalize">
+                  {rentBill.status}
+                </Badge>
               </div>
               <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                 #{rentBill.id} - {formatDate(rentBill.billing_month)}
@@ -296,7 +273,9 @@ export default function LandlordRentBillShow({ rentBill }: Props) {
                             </div>
                           )}
                         </div>
-                        {getPaymentStatusBadge(payment.status)}
+                        <Badge variant={getPaymentStatusVariant(payment.status)} className="capitalize">
+                          {payment.status}
+                        </Badge>
                       </div>
                     ))}
                   </div>

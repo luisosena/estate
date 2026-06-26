@@ -322,7 +322,7 @@ export default function LandlordTenantsIndex({
                     {Object.entries(groupedTenants).map(([propertyName, propertyTenants], index) => (
                       <div key={propertyName}>
                         <div className="mb-4 px-6 underline underline-offset-4 decoration-primary/20">
-                          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
                             <Building2 className="h-5 w-5 text-primary" />
                             {propertyName}
                           </h3>

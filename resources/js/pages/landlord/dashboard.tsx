@@ -23,12 +23,12 @@ import {
     Upload,
     Users,
     Zap,
-    type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 
 import AppLayout from '@/components/layout/AppLayout';
+import { MetricCard } from '@/components/shared/DashboardComponents';
 import { PaymentCollectionChart } from '@/components/shared/payment-collection-chart';
 import { RevenueTrendChart } from '@/components/shared/revenue-trend-chart';
 import { Badge } from '@/components/ui/badge';
@@ -152,63 +152,6 @@ const formatPropertyType = (type?: string | null) => {
     return type.charAt(0).toUpperCase() + type.slice(1);
 };
 
-type KpiColor = 'purple' | 'peach' | 'green' | 'blue';
-
-const KPI_COLORS: Record<KpiColor, string> = {
-    purple: 'bg-[#E6D5FF]',
-    peach: 'bg-[#FFE8D6]',
-    green: 'bg-[#D4F2E0]',
-    blue: 'bg-[#D4F0FF]',
-};
-
-function KpiCard({
-    title,
-    value,
-    icon: Icon,
-    description,
-    color = 'purple',
-    progress,
-}: {
-    title: string;
-    value: string;
-    icon: LucideIcon;
-    description: string;
-    color?: KpiColor;
-    progress?: number;
-}) {
-    return (
-        <div
-            className={cn(
-                'flex flex-col gap-3 rounded-2xl border border-black p-5',
-                KPI_COLORS[color],
-            )}
-        >
-            <Icon
-                className="h-5 w-5 text-gray-900"
-                strokeWidth={1.5}
-                aria-hidden="true"
-            />
-            <div className="flex flex-col gap-1">
-                <span className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums sm:text-3xl">
-                    {value}
-                </span>
-                <div className="text-sm font-semibold text-gray-800">
-                    {title}
-                </div>
-                <p className="text-xs font-normal text-gray-600">
-                    {description}
-                </p>
-            </div>
-            {typeof progress === 'number' && (
-                <Progress
-                    value={progress}
-                    className="mt-1 h-1.5 bg-white/60 [&_[data-slot=progress-indicator]]:bg-gray-900"
-                />
-            )}
-        </div>
-    );
-}
-
 export default function Dashboard({
     properties,
     stats,
@@ -274,10 +217,7 @@ export default function Dashboard({
     );
 
     return (
-        <div
-            className="min-h-full font-sans"
-            style={{ backgroundColor: '#fff7f0' }}
-        >
+        <div className="min-h-full font-sans bg-background">
             <main className="mx-auto flex w-full max-w-[1600px] flex-col gap-8 px-4 py-6 pb-12 sm:px-6 lg:px-8">
                 {/* Header Section */}
                 <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -338,35 +278,49 @@ export default function Dashboard({
 
                 {/* KPI Summary Row */}
                 <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <KpiCard
+                    <MetricCard
                         title="Total Tenants"
                         value={formatNumber(stats.total_tenants)}
                         icon={Users}
                         description={`Across ${formatNumber(stats.total_properties)} properties`}
-                        color="purple"
                     />
-                    <KpiCard
+                    <MetricCard
                         title="Properties & Units"
                         value={formatNumber(stats.total_properties)}
                         icon={Building2}
                         description={`${formatNumber(stats.total_units)} total listed units`}
-                        color="peach"
                     />
-                    <KpiCard
+                    <MetricCard
                         title="Monthly Revenue"
                         value={formatCurrencyCompact(stats.monthly_revenue)}
                         icon={DollarSign}
                         description="Collected this month"
-                        color="green"
                     />
-                    <KpiCard
-                        title="Occupancy Rate"
-                        value={`${occupancyRate}%`}
-                        icon={Home}
-                        description={`${formatNumber(stats.occupied_units)} of ${formatNumber(stats.total_units)} units filled`}
-                        color="blue"
-                        progress={occupancyRate}
-                    />
+                    <Card className="gap-3 p-5 transition-colors hover:border-foreground/20">
+                        <div className="flex items-start justify-between gap-3">
+                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                                Occupancy Rate
+                            </span>
+                            <Home
+                                className="h-4 w-4 shrink-0 text-muted-foreground"
+                                aria-hidden="true"
+                            />
+                        </div>
+                        <div className="text-2xl font-medium leading-tight tracking-tight tabular-nums text-foreground">
+                            {occupancyRate}%
+                        </div>
+                        <Progress
+                            value={occupancyRate}
+                            className={cn(
+                                'h-1.5',
+                                occupancyRate < 50 && '[&_[data-slot=progress-indicator]]:bg-destructive',
+                                occupancyRate >= 50 && occupancyRate < 80 && '[&_[data-slot=progress-indicator]]:bg-warning',
+                            )}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            {formatNumber(stats.occupied_units)} of {formatNumber(stats.total_units)} units filled
+                        </p>
+                    </Card>
                 </section>
 
                 {/* Main Split Grid */}
@@ -410,7 +364,7 @@ export default function Dashboard({
                                 </CardContent>
                             </Card>
                         ) : (
-                            <Card className="overflow-hidden rounded-2xl bg-[#FFE8D6] p-0 shadow-none">
+                            <Card className="overflow-hidden rounded-2xl p-0 shadow-none">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="hover:bg-transparent">
@@ -508,8 +462,8 @@ export default function Dashboard({
                                                                 value={rate}
                                                                 className={cn(
                                                                     'h-1.5 w-24',
-                                                                    rate < 50 && '[&_[data-slot=progress-indicator]]:bg-rose-500',
-                                                                    rate >= 50 && rate < 80 && '[&_[data-slot=progress-indicator]]:bg-amber-500',
+                                                                    rate < 50 && '[&_[data-slot=progress-indicator]]:bg-destructive',
+                                                                    rate >= 50 && rate < 80 && '[&_[data-slot=progress-indicator]]:bg-warning',
                                                                 )}
                                                             />
                                                             <span className="text-[10px] text-muted-foreground tabular-nums">

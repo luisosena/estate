@@ -80,16 +80,8 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
 
   const currentMetrics = propertyMetrics || metrics;
 
-  const getStatusBadge = (status: string) => {
-    return status === 'available' ? (
-      <Badge variant="secondary" className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400">
-        Available
-      </Badge>
-    ) : (
-      <Badge variant="secondary" className="bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400">
-        Occupied
-      </Badge>
-    );
+  const getStatusVariant = (status: string): 'default' | 'secondary' => {
+    return status === 'available' ? 'default' : 'secondary';
   };
 
   // Group units by property for the current page
@@ -159,23 +151,23 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-none bg-emerald-500/5 border-emerald-500/10">
+            <Card className="border-border/50 shadow-none bg-success/5 border-success/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest text-emerald-600">Available</CardTitle>
-                <BedDouble className="h-4 w-4 text-emerald-600" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-success">Available</CardTitle>
+                <BedDouble className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-black text-emerald-600">{currentMetrics.available_units}</div>
+                <div className="text-2xl font-black text-success">{currentMetrics.available_units}</div>
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-none bg-rose-500/5 border-rose-500/10">
+            <Card className="border-border/50 shadow-none bg-destructive/5 border-destructive/10">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest text-rose-600">Occupied</CardTitle>
-                <Users className="h-4 w-4 text-rose-600" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-destructive">Occupied</CardTitle>
+                <Users className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-black text-rose-600">{currentMetrics.occupied_units}</div>
+                <div className="text-2xl font-black text-destructive">{currentMetrics.occupied_units}</div>
               </CardContent>
             </Card>
 
@@ -300,7 +292,9 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
                               </div>
                               
                               <div className="flex items-center gap-2">
-                                {getStatusBadge(unit.status)}
+                                <Badge variant={getStatusVariant(unit.status)}>
+                                  {unit.status === 'available' ? 'Available' : 'Occupied'}
+                                </Badge>
                                 <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-primary/10 text-primary">
                                     <Link href={`/landlord/units/${unit.id}`}>
                                       <Eye className="h-4 w-4" />
@@ -339,7 +333,9 @@ export default function UnitsIndex({ units, properties, selectedProperty, metric
                         </div>
                         
                         <div className="flex items-center gap-3">
-                          {getStatusBadge(unit.status)}
+                          <Badge variant={getStatusVariant(unit.status)}>
+                            {unit.status === 'available' ? 'Available' : 'Occupied'}
+                          </Badge>
                           <Button asChild variant="outline" size="sm" className="h-9 px-4 text-xs font-bold border-border/50 bg-background hover:bg-muted group/btn">
                               <Link href={`/landlord/units/${unit.id}`}>
                                 <Eye className="h-3.5 w-3.5 mr-2 group-hover/btn:scale-110 transition-transform" />

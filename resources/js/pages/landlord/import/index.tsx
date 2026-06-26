@@ -36,19 +36,19 @@ interface Props {
   };
 }
 
-const getStatusBadgeClasses = (status: string): string => {
+const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
     case 'completed':
-      return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900/30';
+      return 'default';
     case 'failed':
-      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30';
+      return 'destructive';
     case 'processing':
-      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30 animate-pulse';
+      return 'secondary';
     case 'pending':
-      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/30';
+      return 'outline';
     case 'cancelled':
     default:
-      return 'bg-zinc-50 text-zinc-700 border-zinc-200 dark:bg-zinc-950/30 dark:text-zinc-400 dark:border-zinc-900/30';
+      return 'outline';
   }
 };
 
@@ -384,10 +384,10 @@ export default function ImportIndex({ batches }: Props) {
                         {formatDateTime(batch.created_at)}
                       </TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold border ${getStatusBadgeClasses(batch.status)}`}>
+                        <Badge variant={getStatusVariant(batch.status)} className={`gap-1 ${batch.status === 'processing' ? 'animate-pulse' : ''}`}>
                           {statusIcon(batch.status)}
                           <span className="capitalize">{batch.status}</span>
-                        </span>
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-sm font-semibold">
                         {batch.created_rows} / {batch.total_rows}

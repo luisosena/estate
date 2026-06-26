@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { MoreHorizontal, Eye, AlertCircle, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { MoreHorizontal, Eye } from 'lucide-react';
 import React from 'react';
 import { route } from 'ziggy-js';
 
@@ -96,45 +96,20 @@ const formatCurrency = (amount: number) =>
     minimumFractionDigits: 0,
   }).format(amount);
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
     case 'paid':
-      return (
-        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Paid
-        </Badge>
-      );
+      return 'default';
     case 'pending':
-      return (
-        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600">
-          <Clock className="mr-1 h-3 w-3" />
-          Pending
-        </Badge>
-      );
+      return 'secondary';
     case 'partial':
-      return (
-        <Badge variant="outline" className="border-blue-500 text-blue-500">
-          <Clock className="mr-1 h-3 w-3" />
-          Partial
-        </Badge>
-      );
+      return 'outline';
     case 'overdue':
-      return (
-        <Badge variant="destructive">
-          <AlertCircle className="mr-1 h-3 w-3" />
-          Overdue
-        </Badge>
-      );
+      return 'destructive';
     case 'waived':
-      return (
-        <Badge variant="outline" className="text-gray-500">
-          <XCircle className="mr-1 h-3 w-3" />
-          Waived
-        </Badge>
-      );
+      return 'outline';
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return 'outline';
   }
 };
 
@@ -149,7 +124,7 @@ export default function LandlordRentBillsIndex({ rentBills, stats }: Props) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
-                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  <span className="w-2 h-2 rounded-full bg-destructive" />
                   Invoicing
                 </Badge>
               </div>
@@ -173,34 +148,34 @@ export default function LandlordRentBillsIndex({ rentBills, stats }: Props) {
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50 shadow-none bg-amber-500/5 border-amber-500/10">
+              <Card className="border-border/50 shadow-none bg-warning/5 border-warning/10">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-amber-600">Pending</CardTitle>
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-warning">Pending</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-black text-amber-600">
+                  <div className="text-2xl font-black text-warning">
                     {stats.pending}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50 shadow-none bg-red-500/5 border-red-500/10">
+              <Card className="border-border/50 shadow-none bg-destructive/5 border-destructive/10">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-red-600">Overdue</CardTitle>
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-destructive">Overdue</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-black text-red-600">
+                  <div className="text-2xl font-black text-destructive">
                     {stats.overdue}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50 shadow-none bg-emerald-500/5 border-emerald-500/10">
+              <Card className="border-border/50 shadow-none bg-success/5 border-success/10">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-emerald-600">Settled</CardTitle>
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-success">Settled</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-black text-emerald-600">
+                  <div className="text-2xl font-black text-success">
                     {stats.paid}
                   </div>
                 </CardContent>
@@ -302,7 +277,9 @@ export default function LandlordRentBillsIndex({ rentBills, stats }: Props) {
                               {formatDate(bill.due_date)}
                             </td>
                             <td className="p-4 align-middle">
-                              {getStatusBadge(bill.status)}
+                              <Badge variant={getStatusVariant(bill.status)} className="capitalize">
+                                {bill.status}
+                              </Badge>
                             </td>
                             <td className="p-4 align-middle text-right">
                               <DropdownMenu>

@@ -133,7 +133,7 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
-                  <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                  <span className="w-2 h-2 rounded-full bg-chart-4" />
                   Bill Details
                 </Badge>
               </div>
@@ -184,7 +184,7 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
               </div>
               <div className="flex justify-between items-center py-2 border-b border-border/50">
                 <span className="text-muted-foreground">Amount Paid</span>
-                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="text-lg font-bold text-success">
                   {formatCurrency(bill.amount_paid)}
                 </span>
               </div>
@@ -192,7 +192,7 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
                 <span className="text-muted-foreground">Outstanding</span>
                 <span
                   className={`text-lg font-bold ${
-                    outstandingAmount > 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'
+                    outstandingAmount > 0 ? 'text-destructive' : 'text-success'
                   }`}
                 >
                   {formatCurrency(outstandingAmount)}
@@ -271,7 +271,7 @@ export default function LandlordUtilityBillShow({ bill }: Props) {
                       <div
                         className={`flex h-10 w-10 items-center justify-center rounded-full ${
                           payment.status === 'completed'
-                            ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                            ? 'bg-success/20 text-success'
                             : 'bg-muted text-muted-foreground border border-border/50'
                         }`}
                       >

@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { MoreHorizontal, Eye, CheckCircle2, Clock } from 'lucide-react';
+import { MoreHorizontal, Eye } from 'lucide-react';
 import React from 'react';
 
 import AppLayout from '@/components/layout/AppLayout';
@@ -101,44 +101,20 @@ const formatCurrency = (amount: number) =>
     minimumFractionDigits: 0,
   }).format(amount);
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
     case 'paid':
-      return (
-        <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
-          <CheckCircle2 className="mr-1 h-3 w-3" />
-          Paid
-        </Badge>
-      );
+      return 'default';
     case 'pending':
-      return (
-        <Badge variant="secondary" className="bg-amber-500 hover:bg-amber-600">
-          <Clock className="mr-1 h-3 w-3" />
-          Pending
-        </Badge>
-      );
+      return 'secondary';
     case 'partial':
-      return (
-        <Badge variant="outline" className="border-blue-500 text-blue-500">
-          <Clock className="mr-1 h-3 w-3" />
-          Partial
-        </Badge>
-      );
+      return 'outline';
     case 'overdue':
-      return (
-        <Badge variant="destructive">
-          <Clock className="mr-1 h-3 w-3" />
-          Overdue
-        </Badge>
-      );
+      return 'destructive';
     case 'cancelled':
-      return (
-        <Badge variant="outline" className="text-gray-500">
-          Cancelled
-        </Badge>
-      );
+      return 'outline';
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return 'outline';
   }
 };
 
@@ -153,7 +129,7 @@ export default function PaymentsIndex({ payments, stats }: Props) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant="outline" className="text-xs bg-card font-medium text-muted-foreground border-border/50 flex gap-1.5 items-center">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="w-2 h-2 rounded-full bg-success" />
                   Financial Records
                 </Badge>
               </div>
@@ -308,7 +284,9 @@ export default function PaymentsIndex({ payments, stats }: Props) {
                           {payment.payment_method}
                         </td>
                         <td className="p-4 align-middle">
-                          {getStatusBadge(payment.status)}
+                          <Badge variant={getStatusVariant(payment.status)} className="capitalize">
+                            {payment.status}
+                          </Badge>
                         </td>
                         <td className="p-4 align-middle">
                           <ReceiptDownloadButton

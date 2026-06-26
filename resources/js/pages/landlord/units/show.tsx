@@ -50,28 +50,20 @@ interface UnitShowProps {
 }
 
 export default function UnitShow({ unit }: UnitShowProps) {
-  const getStatusBadge = (status: string) => {
-    return status === 'available' ? (
-      <Badge variant="secondary" className="bg-green-100 text-green-800">
-        Available
-      </Badge>
-    ) : (
-      <Badge variant="secondary" className="bg-red-100 text-red-800">
-        Occupied
-      </Badge>
-    );
+  const getStatusVariant = (status: string): 'default' | 'secondary' => {
+    return status === 'available' ? 'default' : 'secondary';
   };
 
-  const getTenancyStatusBadge = (status: string) => {
+  const getTenancyStatusVariant = (status: string): 'default' | 'destructive' | 'outline' | 'secondary' => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+        return 'default';
       case 'ended':
-        return <Badge variant="destructive">Ended</Badge>;
+        return 'destructive';
       case 'pending':
-        return <Badge variant="outline">Pending</Badge>;
+        return 'outline';
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return 'secondary';
     }
   };
 
@@ -87,7 +79,9 @@ export default function UnitShow({ unit }: UnitShowProps) {
                   <Home className="w-3 h-3" />
                   Unit Details
                 </Badge>
-                {getStatusBadge(unit.status)}
+                <Badge variant={getStatusVariant(unit.status)}>
+                  {unit.status === 'available' ? 'Available' : 'Occupied'}
+                </Badge>
               </div>
               <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                 {unit.unit_name}
@@ -136,7 +130,11 @@ export default function UnitShow({ unit }: UnitShowProps) {
                       <label className="text-sm font-medium text-muted-foreground">
                         Status
                       </label>
-                      <div className="mt-1">{getStatusBadge(unit.status)}</div>
+                      <div className="mt-1">
+                        <Badge variant={getStatusVariant(unit.status)}>
+                          {unit.status === 'available' ? 'Available' : 'Occupied'}
+                        </Badge>
+                      </div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">
@@ -195,7 +193,9 @@ export default function UnitShow({ unit }: UnitShowProps) {
                               </div>
                             </div>
                           </div>
-                          {getTenancyStatusBadge(tenancy.status)}
+                          <Badge variant={getTenancyStatusVariant(tenancy.status)} className="capitalize">
+                            {tenancy.status}
+                          </Badge>
                         </div>
                       ))}
                     </div>

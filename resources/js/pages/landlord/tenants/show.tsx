@@ -263,17 +263,17 @@ export default function TenantShow({
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm font-medium text-gray-400">Full Name</p>
-                <p className="mt-1 text-sm text-gray-200">{tenant.full_name}</p>
+                <p className="text-sm font-medium text-muted-foreground">Full Name</p>
+                <p className="mt-1 text-sm text-foreground">{tenant.full_name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-400">Phone</p>
-                <p className="mt-1 text-sm text-gray-200">{tenant.phone}</p>
+                <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                <p className="mt-1 text-sm text-foreground">{tenant.phone}</p>
               </div>
               {tenant.email && (
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Email</p>
-                  <p className="mt-1 text-sm text-gray-200">{tenant.email}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Email</p>
+                  <p className="mt-1 text-sm text-foreground">{tenant.email}</p>
                 </div>
               )}
             </div>
@@ -301,20 +301,20 @@ export default function TenantShow({
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Name</p>
-                  <p className="mt-1 text-sm text-gray-200">
+                  <p className="text-sm font-medium text-muted-foreground">Name</p>
+                  <p className="mt-1 text-sm text-foreground">
                     {tenant.emergency_contact_name || '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Phone</p>
-                  <p className="mt-1 text-sm text-gray-200">
+                  <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                  <p className="mt-1 text-sm text-foreground">
                     {tenant.emergency_contact_phone || '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Relation</p>
-                  <p className="mt-1 text-sm text-gray-200">
+                  <p className="text-sm font-medium text-muted-foreground">Relation</p>
+                  <p className="mt-1 text-sm text-foreground">
                     {tenant.emergency_contact_relation || '—'}
                   </p>
                 </div>
@@ -368,7 +368,7 @@ export default function TenantShow({
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <p className="text-sm font-medium text-muted-foreground">Status</p>
                   <p className="mt-1">
                     <Badge 
                       variant={tenancy.status === 'active' ? 'default' : 'secondary'}
@@ -379,29 +379,29 @@ export default function TenantShow({
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Move-in Date</p>
-                  <p className="mt-1 text-sm text-gray-200">
+                  <p className="text-sm font-medium text-muted-foreground">Move-in Date</p>
+                  <p className="mt-1 text-sm text-foreground">
                     {formatDate(tenancy.move_in_date)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Move-out Date</p>
-                  <p className="mt-1 text-sm text-gray-200">
+                  <p className="text-sm font-medium text-muted-foreground">Move-out Date</p>
+                  <p className="mt-1 text-sm text-foreground">
                     {formatDate(tenancy.move_out_date)}
                   </p>
                 </div>
                 {tenancy.monthly_rent && (
                   <div>
-                    <p className="text-sm font-medium text-gray-400">Monthly Rent</p>
-                    <p className="mt-1 text-sm text-gray-200">
+                    <p className="text-sm font-medium text-muted-foreground">Monthly Rent</p>
+                    <p className="mt-1 text-sm text-foreground">
                       {formatCurrency(tenancy.monthly_rent)}
                     </p>
                   </div>
                 )}
                 {tenancy.security_deposit && (
                   <div>
-                    <p className="text-sm font-medium text-gray-400">Security Deposit</p>
-                    <p className="mt-1 text-sm text-gray-200">
+                    <p className="text-sm font-medium text-muted-foreground">Security Deposit</p>
+                    <p className="mt-1 text-sm text-foreground">
                       {formatCurrency(tenancy.security_deposit)}
                     </p>
                   </div>
@@ -430,14 +430,14 @@ export default function TenantShow({
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Unit</p>
-                  <p className="mt-1 text-sm text-gray-200">{unit.unit_name}</p>
-                  <p className="text-sm text-gray-400">{unit.unit_code}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Unit</p>
+                  <p className="mt-1 text-sm text-foreground">{unit.unit_name}</p>
+                  <p className="text-sm text-muted-foreground">{unit.unit_code}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Property</p>
-                  <p className="mt-1 text-sm text-gray-200">{property.name}</p>
-                  <p className="text-sm text-gray-400">{property.address}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Property</p>
+                  <p className="mt-1 text-sm text-foreground">{property.name}</p>
+                  <p className="text-sm text-muted-foreground">{property.address}</p>
                 </div>
               </div>
             </CardContent>
@@ -464,11 +464,11 @@ export default function TenantShow({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-gray-400">Date</TableHead>
-                    <TableHead className="text-gray-400">Type</TableHead>
-                    <TableHead className="text-gray-400">Amount</TableHead>
-                    <TableHead className="text-gray-400">Status</TableHead>
-                    <TableHead className="text-gray-400">Actions</TableHead>
+                    <TableHead className="text-muted-foreground">Date</TableHead>
+                    <TableHead className="text-muted-foreground">Type</TableHead>
+                    <TableHead className="text-muted-foreground">Amount</TableHead>
+                    <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-muted-foreground">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -511,7 +511,7 @@ export default function TenantShow({
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <div>
                 <CardTitle className="text-lg font-medium">Tenancy History</CardTitle>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Complete rental history for this tenant
                 </p>
               </div>
@@ -530,12 +530,12 @@ export default function TenantShow({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-gray-400">Period</TableHead>
-                    <TableHead className="text-gray-400">Unit</TableHead>
-                    <TableHead className="text-gray-400">Property</TableHead>
-                    <TableHead className="text-gray-400">Duration</TableHead>
-                    <TableHead className="text-gray-400">Monthly Rent</TableHead>
-                    <TableHead className="text-gray-400">Status</TableHead>
+                    <TableHead className="text-muted-foreground">Period</TableHead>
+                    <TableHead className="text-muted-foreground">Unit</TableHead>
+                    <TableHead className="text-muted-foreground">Property</TableHead>
+                    <TableHead className="text-muted-foreground">Duration</TableHead>
+                    <TableHead className="text-muted-foreground">Monthly Rent</TableHead>
+                    <TableHead className="text-muted-foreground">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -554,7 +554,7 @@ export default function TenantShow({
                             <div className="font-medium">
                               {formatDate(history.move_in_date)} - {formatDate(history.move_out_date) || 'Present'}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-muted-foreground">
                               {durationText}
                             </div>
                           </div>
@@ -589,7 +589,7 @@ export default function TenantShow({
                               </>
                             ) : (
                               <>
-                                <span className="w-2 h-2 bg-gray-400 rounded-full mr-1 inline-block"></span>
+                                <span className="w-2 h-2 bg-muted-foreground rounded-full mr-1 inline-block"></span>
                                 Ended
                               </>
                             )}
@@ -602,22 +602,22 @@ export default function TenantShow({
               </Table>
               
               {/* Tenancy Summary */}
-              <div className="mt-6 p-4 bg-gray-50/5 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-300 mb-2">Tenancy Summary</h4>
+              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">Tenancy Summary</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">Total Tenancies:</span>
+                    <span className="text-muted-foreground">Total Tenancies:</span>
                     <span className="ml-2 font-medium">{tenancy_history.length}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Active Tenancies:</span>
+                    <span className="text-muted-foreground">Active Tenancies:</span>
                     <span className="ml-2 font-medium text-green-400">
                       {tenancy_history.filter(t => t.status === 'active').length}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Completed Tenancies:</span>
-                    <span className="ml-2 font-medium text-gray-400">
+                    <span className="text-muted-foreground">Completed Tenancies:</span>
+                    <span className="ml-2 font-medium text-muted-foreground">
                       {tenancy_history.filter(t => t.status === 'ended').length}
                     </span>
                   </div>
@@ -633,7 +633,7 @@ export default function TenantShow({
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <div>
                 <CardTitle className="text-lg font-medium">Documents</CardTitle>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Tenancy agreement and related documents
                 </p>
               </div>
@@ -648,7 +648,7 @@ export default function TenantShow({
             </CardHeader>
             <CardContent>
               {showUploadForm && (
-                <form onSubmit={handleUploadDocument} className="mb-6 p-4 bg-gray-50/5 rounded-lg space-y-4">
+                <form onSubmit={handleUploadDocument} className="mb-6 p-4 bg-muted/50 rounded-lg space-y-4">
                   <Field>
                     <FieldLabel htmlFor="document">Document File</FieldLabel>
                     <Input
@@ -696,11 +696,11 @@ export default function TenantShow({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-gray-400">File Name</TableHead>
-                      <TableHead className="text-gray-400">Category</TableHead>
-                      <TableHead className="text-gray-400">Size</TableHead>
-                      <TableHead className="text-gray-400">Uploaded</TableHead>
-                      <TableHead className="text-gray-400">Actions</TableHead>
+                      <TableHead className="text-muted-foreground">File Name</TableHead>
+                      <TableHead className="text-muted-foreground">Category</TableHead>
+                      <TableHead className="text-muted-foreground">Size</TableHead>
+                      <TableHead className="text-muted-foreground">Uploaded</TableHead>
+                      <TableHead className="text-muted-foreground">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -708,7 +708,7 @@ export default function TenantShow({
                       <TableRow key={doc.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-gray-400" />
+                            <FileText className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium">{doc.file_name}</span>
                           </div>
                         </TableCell>
@@ -717,10 +717,10 @@ export default function TenantShow({
                             {doc.category.replace('_', ' ')}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-gray-500">
+                        <TableCell className="text-sm text-muted-foreground">
                           {formatFileSize(doc.file_size)}
                         </TableCell>
-                        <TableCell className="text-sm text-gray-500">
+                        <TableCell className="text-sm text-muted-foreground">
                           {formatDate(doc.uploaded_at)}
                         </TableCell>
                         <TableCell>
@@ -747,9 +747,9 @@ export default function TenantShow({
                 </Table>
               ) : (
                 <div className="text-center py-8">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-200">No documents</h3>
-                  <p className="mt-1 text-sm text-gray-400">
+                  <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-2 text-sm font-medium text-foreground">No documents</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Upload a tenancy agreement or related documents.
                   </p>
                 </div>

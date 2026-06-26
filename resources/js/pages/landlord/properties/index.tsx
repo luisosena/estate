@@ -65,10 +65,10 @@ interface LandlordPropertiesProps {
   stats: Stats;
 }
 
-const getOccupancyColor = (rate: number) => {
-  if (rate >= 90) return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400';
-  if (rate >= 70) return 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400';
-  return 'bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400';
+const getOccupancyVariant = (rate: number): 'default' | 'secondary' | 'destructive' => {
+  if (rate >= 90) return 'default';
+  if (rate >= 70) return 'secondary';
+  return 'destructive';
 };
 
 export default function LandlordProperties({ properties, stats }: LandlordPropertiesProps) {
@@ -181,7 +181,7 @@ export default function LandlordProperties({ properties, stats }: LandlordProper
                               {property.address}
                             </CardDescription>
                           </div>
-                          <Badge className={getOccupancyColor(property.occupancy_rate)}>
+                          <Badge variant={getOccupancyVariant(property.occupancy_rate)}>
                             {property.occupancy_rate}% Occupied
                           </Badge>
                         </div>
