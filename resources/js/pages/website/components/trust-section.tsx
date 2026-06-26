@@ -42,7 +42,7 @@ export default function TrustSection() {
     const isInView = useInView(ref, { once: true, margin: '-80px' });
 
     return (
-        <section ref={ref} className="relative bg-[#FAF7F2] py-24 lg:py-32">
+        <section ref={ref} className="relative bg-background py-24 lg:py-32">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <motion.div
                     className="mx-auto max-w-2xl text-center"
@@ -50,16 +50,10 @@ export default function TrustSection() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.5 }}
                 >
-                    <p
-                        className="mb-4 text-xs font-bold tracking-widest uppercase text-[#D4A853]"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <p className="mb-4 text-xs font-bold tracking-widest uppercase text-primary">
                         Built for Scale
                     </p>
-                    <h2
-                        className="text-3xl font-normal text-[#1A1A2E] sm:text-4xl"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
-                    >
+                    <h2 className="font-display text-3xl font-normal text-foreground sm:text-4xl">
                         Enterprise-ready, from day one
                     </h2>
                 </motion.div>
@@ -68,7 +62,7 @@ export default function TrustSection() {
                     {trustItems.map((item, i) => (
                         <motion.div
                             key={item.title}
-                            className="group relative rounded-2xl border border-black bg-white p-8 text-center transition-all duration-500 hover:border-black"
+                            className="group relative rounded-2xl border border-border bg-card p-8 text-center transition-all duration-500 hover:border-border"
                             initial={{ opacity: 0, y: 25 }}
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.5, delay: 0.15 + i * 0.12 }}
@@ -79,16 +73,10 @@ export default function TrustSection() {
                             >
                                 {item.icon}
                             </div>
-                            <h3
-                                className="mb-3 text-xl font-normal text-[#1A1A2E]"
-                                style={{ fontFamily: "'DM Serif Display', serif" }}
-                            >
+                            <h3 className="mb-3 text-xl font-normal text-foreground">
                                 {item.title}
                             </h3>
-                            <p
-                                className="text-sm leading-relaxed text-[#1A1A2E]/55"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
+                            <p className="text-sm leading-relaxed text-muted-foreground">
                                 {item.description}
                             </p>
                         </motion.div>

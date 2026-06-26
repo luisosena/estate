@@ -10,7 +10,7 @@ export default function CtaSection() {
     const isInView = useInView(ref, { once: true, margin: '-80px' });
 
     return (
-        <section ref={ref} className="relative overflow-hidden bg-[#1A1A2E] py-24 lg:py-32">
+        <section ref={ref} className="relative overflow-hidden bg-foreground py-24 lg:py-32">
             {/* Decorative elements */}
             <div className="absolute inset-0 opacity-10">
                 <div
@@ -22,8 +22,8 @@ export default function CtaSection() {
                     }}
                 />
             </div>
-            <div className="absolute -top-32 -right-32 h-64 w-64 rounded-full bg-[#D4A853]/10 blur-3xl" />
-            <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-[#8BA888]/10 blur-3xl" />
+            <div className="absolute -top-32 -right-32 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-success/10 blur-3xl" />
 
             <div className="relative mx-auto max-w-4xl px-6 text-center lg:px-8">
                 <motion.div
@@ -31,16 +31,10 @@ export default function CtaSection() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2
-                        className="text-4xl md:text-6xl font-normal text-white leading-tight"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <h2 className="text-4xl md:text-6xl font-normal text-primary-foreground leading-tight">
                         Partner with us to modernize your operations.
                     </h2>
-                    <p
-                        className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-white/80"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <p className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-primary-foreground/80">
                         Estate is currently onboarding selective real estate portfolios and asset managers for our rolling-launch pilot.
                         Get in touch to lock in your cohort onboarding and secure dedicated operational support.
                     </p>
@@ -50,8 +44,7 @@ export default function CtaSection() {
                             asChild
                             variant="secondary"
                             size="lg"
-                            className="group rounded-full bg-white px-8 py-6 text-sm font-bold tracking-wide text-[#1A1A2E] border border-black transition-all duration-300 hover:bg-white/90 dark:hover:bg-white/90"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                            className="group rounded-full bg-primary-foreground px-8 py-6 text-sm font-bold tracking-wide text-foreground border border-black transition-all duration-300 hover:bg-primary-foreground/90"
                         >
                             <Link href="/register">
                                 Get Started
@@ -69,8 +62,7 @@ export default function CtaSection() {
                         <TryDemoButton
                             variant="outline"
                             size="lg"
-                            className="group rounded-full border-2 border-white/40 bg-transparent px-8 py-6 text-sm font-bold tracking-wide text-white transition-all duration-300 hover:bg-white/10 hover:-translate-y-0.5"
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
+                            className="group rounded-full border-2 border-primary-foreground/40 bg-transparent px-8 py-6 text-sm font-bold tracking-wide text-primary-foreground transition-all duration-300 hover:bg-primary-foreground/10 hover:-translate-y-0.5"
                             label="Try Demo"
                         />
                     </div>

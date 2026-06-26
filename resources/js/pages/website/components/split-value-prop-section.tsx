@@ -7,11 +7,11 @@ export default function SplitValuePropSection() {
     const isInView = useInView(ref, { once: true, margin: '-100px' });
 
     return (
-        <section ref={ref} className="relative bg-[#FAF7F2] py-24 lg:py-32 overflow-hidden">
+        <section ref={ref} className="relative bg-background py-24 lg:py-32 overflow-hidden">
             {/* Subtle background gradients */}
             <div className="absolute inset-0 -z-10">
-                <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-[#D4A853]/5 blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-[#8BA888]/5 blur-3xl" />
+                <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-success/5 blur-3xl" />
             </div>
 
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -22,10 +22,7 @@ export default function SplitValuePropSection() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2
-                        className="text-4xl md:text-6xl font-normal text-[#1A1A2E] leading-tight"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <h2 className="text-4xl md:text-6xl font-normal text-foreground leading-tight">
                         Build exceptional<br />property operations
                     </h2>
                 </motion.div>
@@ -34,22 +31,16 @@ export default function SplitValuePropSection() {
                 <div className="grid grid-cols-1 lg:grid-cols-[0.35fr_0.65fr] gap-12 lg:gap-16 items-stretch">
                     {/* Left Column: Anchor Intro Card */}
                     <motion.div
-                        className="relative flex flex-col justify-between bg-[#F1EFEA] rounded-[24px] p-8 md:p-10 min-h-[520px] overflow-hidden border border-[#1A1A2E]/5"
+                        className="relative flex flex-col justify-between bg-muted rounded-[24px] p-8 md:p-10 min-h-[520px] overflow-hidden border border-border"
                         initial={{ opacity: 0, x: -30 }}
                         animate={isInView ? { opacity: 1, x: 0 } : {}}
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
                         <div className="relative z-10">
-                            <p
-                                className="text-[#1A1A2E]/80 text-base leading-relaxed mb-8 font-normal"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
+                            <p className="text-foreground/80 text-base leading-relaxed mb-8 font-normal">
                                 Great property operations are more than just collection portals. They are high-fidelity experiences that show your brand in its best light, every time. They are repeatable, fast to scale, and deeply personal. They inform your financial operation and scale across your entire portfolio.
                             </p>
-                            <Button
-                                className="rounded-full bg-[#1A1A2E] hover:bg-[#2A2A4E] text-[#FAF7F2] text-sm font-semibold px-6 py-3 h-auto w-fit transition-all duration-200"
-                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
+                            <Button className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold px-6 py-3 h-auto w-fit transition-all duration-200">
                                 Learn more
                             </Button>
                         </div>
@@ -146,7 +137,7 @@ export default function SplitValuePropSection() {
                         {/* Grid Item 1: Revenue Velocity */}
                         <div className="flex flex-col items-start gap-4">
                             {/* Green illustrative icon */}
-                            <div className="rounded-xl p-1 bg-white border border-[#1A1A2E]/5 shadow-sm">
+                            <div className="rounded-xl p-1 bg-card border border-border shadow-sm">
                                 <svg viewBox="0 0 48 48" className="h-10 w-10 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect x="4" y="8" width="40" height="32" rx="4" fill="#E8F5E9" stroke="#2E7D32" strokeWidth="2" />
                                     <line x1="4" y1="18" x2="44" y2="18" stroke="#2E7D32" strokeWidth="2" />
@@ -158,16 +149,10 @@ export default function SplitValuePropSection() {
                                 </svg>
                             </div>
                             <div>
-                                <h3
-                                    className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <h3 className="text-xl md:text-2xl font-normal text-foreground mb-2 leading-tight">
                                     Accelerate Revenue Velocity
                                 </h3>
-                                <p
-                                    className="text-sm leading-relaxed text-[#1A1A2E]/60 font-normal"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <p className="text-sm leading-relaxed text-muted-foreground font-normal">
                                     Accelerate the path from booking to active occupancy. Enable day-one move-in readiness, shorten vacant periods, and reduce your dependency on manual follow-ups.
                                 </p>
                             </div>
@@ -176,7 +161,7 @@ export default function SplitValuePropSection() {
                         {/* Grid Item 2: Consistency & Efficiency */}
                         <div className="flex flex-col items-start gap-4">
                             {/* Blue illustrative icon */}
-                            <div className="rounded-xl p-1 bg-white border border-[#1A1A2E]/5 shadow-sm">
+                            <div className="rounded-xl p-1 bg-card border border-border shadow-sm">
                                 <svg viewBox="0 0 48 48" className="h-10 w-10 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="24" cy="24" r="18" fill="#E3F2FD" stroke="#1565C0" strokeWidth="2" />
                                     <path d="M24 6 A18 18 0 0 1 42 24 L24 24 Z" fill="#90CAF9" stroke="#1565C0" strokeWidth="2" />
@@ -184,16 +169,10 @@ export default function SplitValuePropSection() {
                                 </svg>
                             </div>
                             <div>
-                                <h3
-                                    className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <h3 className="text-xl md:text-2xl font-normal text-foreground mb-2 leading-tight">
                                     Create Consistency & Efficiency
                                 </h3>
-                                <p
-                                    className="text-sm leading-relaxed text-[#1A1A2E]/60 font-normal"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <p className="text-sm leading-relaxed text-muted-foreground font-normal">
                                     Slash infrastructure cost and create a flexible and scalable property operations layer, that's risk-free, and independent of fragmented legacy tools.
                                 </p>
                             </div>
@@ -202,23 +181,17 @@ export default function SplitValuePropSection() {
                         {/* Grid Item 3: Scale Property Expertise */}
                         <div className="flex flex-col items-start gap-4">
                             {/* Pink illustrative icon */}
-                            <div className="rounded-xl p-1 bg-white border border-[#1A1A2E]/5 shadow-sm">
+                            <div className="rounded-xl p-1 bg-card border border-border shadow-sm">
                                 <svg viewBox="0 0 48 48" className="h-10 w-10 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M8 10 H40 V34 H20 L10 40 V34 H8 Z" fill="#FCE4EC" stroke="#C2185B" strokeWidth="2" strokeLinejoin="round" />
                                     <path d="M19 16 L29 22 L19 28 Z" fill="#F48FB1" stroke="#C2185B" strokeWidth="2" strokeLinejoin="round" />
                                 </svg>
                             </div>
                             <div>
-                                <h3
-                                    className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <h3 className="text-xl md:text-2xl font-normal text-foreground mb-2 leading-tight">
                                     Scale Property Expertise
                                 </h3>
-                                <p
-                                    className="text-sm leading-relaxed text-[#1A1A2E]/60 font-normal"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <p className="text-sm leading-relaxed text-muted-foreground font-normal">
                                     Give front-line teams the independence to showcase real units with the standards and consistency of an expert playbook so anyone can manage complex tenancies with confidence.
                                 </p>
                             </div>
@@ -227,7 +200,7 @@ export default function SplitValuePropSection() {
                         {/* Grid Item 4: Reveal Portfolio Intelligence */}
                         <div className="flex flex-col items-start gap-4">
                             {/* Gold/yellow illustrative icon */}
-                            <div className="rounded-xl p-1 bg-white border border-[#1A1A2E]/5 shadow-sm">
+                            <div className="rounded-xl p-1 bg-card border border-border shadow-sm">
                                 <svg viewBox="0 0 48 48" className="h-10 w-10 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect x="8" y="6" width="32" height="36" rx="4" fill="#FFFDE7" stroke="#F57F17" strokeWidth="2" />
                                     <line x1="14" y1="12" x2="24" y2="12" stroke="#F57F17" strokeWidth="2" strokeLinecap="round" />
@@ -238,16 +211,10 @@ export default function SplitValuePropSection() {
                                 </svg>
                             </div>
                             <div>
-                                <h3
-                                    className="text-xl md:text-2xl font-normal text-[#1A1A2E] mb-2 leading-tight"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <h3 className="text-xl md:text-2xl font-normal text-foreground mb-2 leading-tight">
                                     Reveal Portfolio Intelligence
                                 </h3>
-                                <p
-                                    className="text-sm leading-relaxed text-[#1A1A2E]/60 font-normal"
-                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                >
+                                <p className="text-sm leading-relaxed text-muted-foreground font-normal">
                                     Transform the "dark ledger" into actionable insights. Correlate granular rent payments, late-fee patterns, and utility consumption directly to overall yield.
                                 </p>
                             </div>

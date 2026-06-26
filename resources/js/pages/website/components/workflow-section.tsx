@@ -9,22 +9,22 @@ const steps = [
         description:
             'Add your properties, create units, and invite tenants. Estate auto-generates tenant portals and sets up payment tracking from day one.',
         mockup: (
-            <div className="rounded-lg border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
+            <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 p-5 backdrop-blur-sm">
                 <div className="mb-4 flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-[#D4A853]/30" />
+                    <div className="h-8 w-8 rounded-lg bg-primary/30" />
                     <div>
-                        <div className="h-2.5 w-28 rounded bg-white/30" />
-                        <div className="mt-1.5 h-2 w-20 rounded bg-white/15" />
+                        <div className="h-2.5 w-28 rounded bg-primary-foreground/30" />
+                        <div className="mt-1.5 h-2 w-20 rounded bg-primary-foreground/15" />
                     </div>
                 </div>
                 <div className="space-y-2">
                     {['Sunrise Apartments', 'Maple Lane Complex', 'Downtown Lofts'].map((name, i) => (
-                        <div key={name} className="flex items-center justify-between rounded-md bg-white/5 px-3 py-2.5">
+                        <div key={name} className="flex items-center justify-between rounded-md bg-primary-foreground/5 px-3 py-2.5">
                             <div className="flex items-center gap-2">
-                                <div className="h-6 w-6 rounded bg-[#D4A853]/20" />
-                                <span className="text-xs text-white/70" style={{ fontFamily: "'Outfit', sans-serif" }}>{name}</span>
+                                <div className="h-6 w-6 rounded bg-primary/20" />
+                                <span className="text-xs text-primary-foreground/70">{name}</span>
                             </div>
-                            <span className="text-[10px] text-[#8BA888]" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                            <span className="text-[10px] text-success">
                                 {[12, 8, 6][i]} units
                             </span>
                         </div>
@@ -40,8 +40,8 @@ const steps = [
         description:
             'Collect rent automatically, track maintenance requests, send notifications, and monitor utility consumption. All in real-time, all in one place.',
         mockup: (
-            <div className="rounded-lg border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-                <div className="mb-4 h-2.5 w-24 rounded bg-white/20" />
+            <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 p-5 backdrop-blur-sm">
+                <div className="mb-4 h-2.5 w-24 rounded bg-primary-foreground/20" />
                 <div className="grid grid-cols-2 gap-3">
                     {[
                         { label: 'Collected', value: '$24,800', color: '#8BA888' },
@@ -49,9 +49,9 @@ const steps = [
                         { label: 'Occupancy', value: '94%', color: '#8BA888' },
                         { label: 'Requests', value: '3 open', color: '#C4775A' },
                     ].map((item) => (
-                        <div key={item.label} className="rounded-md bg-white/5 p-3">
-                            <div className="text-[10px] uppercase tracking-wider text-white/40" style={{ fontFamily: "'Outfit', sans-serif" }}>{item.label}</div>
-                            <div className="mt-1 text-lg font-medium" style={{ color: item.color, fontFamily: "'DM Serif Display', serif" }}>{item.value}</div>
+                        <div key={item.label} className="rounded-md bg-primary-foreground/5 p-3">
+                            <div className="text-[10px] uppercase tracking-wider text-primary-foreground/40">{item.label}</div>
+                            <div className="mt-1 font-display text-lg font-medium" style={{ color: item.color }}>{item.value}</div>
                         </div>
                     ))}
                 </div>
@@ -65,8 +65,8 @@ const steps = [
         description:
             'Analyze revenue trends, spot vacancies early, optimize rent pricing, and expand your portfolio with confidence. Estate grows with you.',
         mockup: (
-            <div className="rounded-lg border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-                <div className="mb-4 h-2.5 w-24 rounded bg-white/20" />
+            <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 p-5 backdrop-blur-sm">
+                <div className="mb-4 h-2.5 w-24 rounded bg-primary-foreground/20" />
                 <div className="flex items-end gap-1.5 h-28">
                     {[30, 45, 35, 55, 50, 65, 60, 75, 70, 85, 80, 95].map((h, i) => (
                         <div
@@ -80,14 +80,14 @@ const steps = [
                     ))}
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                    <span className="text-[10px] text-white/40" style={{ fontFamily: "'Outfit', sans-serif" }}>Jan</span>
-                    <span className="text-[10px] text-white/40" style={{ fontFamily: "'Outfit', sans-serif" }}>Dec</span>
+                    <span className="text-[10px] text-primary-foreground/40">Jan</span>
+                    <span className="text-[10px] text-primary-foreground/40">Dec</span>
                 </div>
-                <div className="mt-3 flex items-center gap-2 rounded-md bg-[#8BA888]/15 px-3 py-2">
-                    <svg className="h-4 w-4 text-[#8BA888]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="mt-3 flex items-center gap-2 rounded-md bg-success/15 px-3 py-2">
+                    <svg className="h-4 w-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
                     </svg>
-                    <span className="text-xs text-[#8BA888]" style={{ fontFamily: "'Outfit', sans-serif" }}>+23% revenue growth</span>
+                    <span className="text-xs text-success">+23% revenue growth</span>
                 </div>
             </div>
         ),
@@ -100,7 +100,7 @@ export default function WorkflowSection() {
     const [activeStep, setActiveStep] = useState(0);
 
     return (
-        <section id="how-it-works" ref={ref} className="relative bg-[#1A1A2E] py-24 lg:py-32 overflow-hidden">
+        <section id="how-it-works" ref={ref} className="relative bg-foreground py-24 lg:py-32 overflow-hidden">
             {/* Subtle background texture */}
             <div className="absolute inset-0 opacity-[0.03]">
                 <div
@@ -121,16 +121,10 @@ export default function WorkflowSection() {
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
                 >
-                    <p
-                        className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-[#D4A853]"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                    >
+                    <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-primary">
                         How It Works
                     </p>
-                    <h2
-                        className="text-3xl font-normal text-white sm:text-4xl lg:text-5xl"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
-                    >
+                    <h2 className="font-display text-3xl font-normal text-primary-foreground sm:text-4xl lg:text-5xl">
                         Three steps to seamless management
                     </h2>
                 </motion.div>
@@ -144,12 +138,12 @@ export default function WorkflowSection() {
                         animate={isInView ? { opacity: 1, x: 0 } : {}}
                         transition={{ duration: 0.7, delay: 0.3 }}
                     >
-                        <div className="relative rounded-xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+                        <div className="relative rounded-xl border border-primary-foreground/10 bg-primary-foreground/[0.03] p-6 backdrop-blur-sm">
                             {/* Browser dots */}
                             <div className="mb-4 flex gap-1.5">
-                                <div className="h-2.5 w-2.5 rounded-full bg-white/20" />
-                                <div className="h-2.5 w-2.5 rounded-full bg-white/20" />
-                                <div className="h-2.5 w-2.5 rounded-full bg-white/20" />
+                                <div className="h-2.5 w-2.5 rounded-full bg-primary-foreground/20" />
+                                <div className="h-2.5 w-2.5 rounded-full bg-primary-foreground/20" />
+                                <div className="h-2.5 w-2.5 rounded-full bg-primary-foreground/20" />
                             </div>
                             {steps[activeStep].mockup}
                         </div>
@@ -181,7 +175,6 @@ export default function WorkflowSection() {
                                                     className="text-xs font-semibold transition-colors duration-300"
                                                     style={{
                                                         color: activeStep === i ? '#1A1A2E' : 'rgba(255,255,255,0.4)',
-                                                        fontFamily: "'Outfit', sans-serif",
                                                     }}
                                                 >
                                                     {step.number}
@@ -195,18 +188,14 @@ export default function WorkflowSection() {
                                         {/* Step content */}
                                         <div className="pb-2">
                                             <h3
-                                                className="text-2xl font-normal transition-colors duration-300"
+                                                className="font-display text-2xl font-normal transition-colors duration-300"
                                                 style={{
                                                     color: activeStep === i ? '#D4A853' : 'rgba(255,255,255,0.7)',
-                                                    fontFamily: "'DM Serif Display', serif",
                                                 }}
                                             >
                                                 {step.title}
                                             </h3>
-                                            <p
-                                                className="mt-1 text-sm font-medium text-white/50"
-                                                style={{ fontFamily: "'Outfit', sans-serif" }}
-                                            >
+                                            <p className="mt-1 text-sm font-medium text-primary-foreground/50">
                                                 {step.subtitle}
                                             </p>
                                             <motion.div
@@ -218,10 +207,7 @@ export default function WorkflowSection() {
                                                 transition={{ duration: 0.3 }}
                                                 className="overflow-hidden"
                                             >
-                                                <p
-                                                    className="mt-3 text-sm leading-relaxed text-white/40"
-                                                    style={{ fontFamily: "'Outfit', sans-serif" }}
-                                                >
+                                                <p className="mt-3 text-sm leading-relaxed text-primary-foreground/40">
                                                     {step.description}
                                                 </p>
                                             </motion.div>
