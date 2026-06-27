@@ -111,6 +111,7 @@ Managing rental properties still means juggling spreadsheets, chasing payments o
   </tr>
 </table>
 
+---
 
 ## Overview
 
@@ -186,7 +187,6 @@ Once logged in, you'll land on the **Landlord Dashboard**. From here:
 - **Bills** generate automatically each month, or create them manually
 - **Record payments** as they come in and watch your dashboard update in real time
 - **Export reports** as CSV or PDF for your records
-
 
 ---
 
