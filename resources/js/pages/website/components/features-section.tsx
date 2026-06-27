@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { motion, useInView } from 'framer-motion';
 import {
     Building2,
@@ -8,8 +9,8 @@ import {
     Zap,
 } from 'lucide-react';
 import { useRef } from 'react';
+
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/react';
 
 const features = [
     {

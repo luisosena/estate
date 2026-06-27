@@ -3,13 +3,13 @@ import { motion, useInView } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { useRef, useState } from 'react';
 
-import MarketingLayout from '@/layouts/marketing/marketing-layout';
-import Navbar from '@/pages/website/components/navbar';
-import Footer from '@/pages/website/components/footer';
-import CtaSection from '@/pages/website/components/cta-section';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import MarketingLayout from '@/layouts/marketing/marketing-layout';
+import CtaSection from '@/pages/website/components/cta-section';
+import Footer from '@/pages/website/components/footer';
+import Navbar from '@/pages/website/components/navbar';
 
 const contactInfo = [
     {

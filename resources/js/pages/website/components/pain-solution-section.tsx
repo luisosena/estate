@@ -1,6 +1,4 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
-import { Button } from '@/components/ui/button';
 import {
     BarChart3,
     Clock,
@@ -9,6 +7,9 @@ import {
     Wrench,
     Upload,
 } from 'lucide-react';
+import { useRef } from 'react';
+
+import { Button } from '@/components/ui/button';
 
 const painPoints = [
     {

@@ -4,9 +4,9 @@ import { Building2, Users, Target, Heart, ArrowRight } from 'lucide-react';
 import { useRef } from 'react';
 
 import MarketingLayout from '@/layouts/marketing/marketing-layout';
-import Navbar from '@/pages/website/components/navbar';
-import Footer from '@/pages/website/components/footer';
 import CtaSection from '@/pages/website/components/cta-section';
+import Footer from '@/pages/website/components/footer';
+import Navbar from '@/pages/website/components/navbar';
 
 const values = [
     {

@@ -1,10 +1,10 @@
+import { usePage } from '@inertiajs/react';
 import { type ReactNode } from 'react';
 
+import AppLayoutTemplate from '@/components/layout/AppLayout';
 import { Toaster } from '@/components/ui/sonner';
 import { useRealTimeNotifications } from '@/hooks/use-real-time-notifications';
-import AppLayoutTemplate from '@/components/layout/AppLayout';
 import { type BreadcrumbItem, type SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
 
 interface AppLayoutProps {
     children: ReactNode;

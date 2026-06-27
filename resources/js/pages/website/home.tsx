@@ -1,13 +1,13 @@
 import { Head } from '@inertiajs/react';
 
 import MarketingLayout from '@/layouts/marketing/marketing-layout';
+import AnimationSection from '@/pages/website/components/animation-section';
 import CtaSection from '@/pages/website/components/cta-section';
+import FeaturesSection from '@/pages/website/components/features-section';
 import Footer from '@/pages/website/components/footer';
 import HeroSection from '@/pages/website/components/hero-section';
 import Navbar from '@/pages/website/components/navbar';
 import PainSolutionSection from '@/pages/website/components/pain-solution-section';
-import FeaturesSection from '@/pages/website/components/features-section';
-import AnimationSection from '@/pages/website/components/animation-section';
 import SplitValuePropSection from '@/pages/website/components/split-value-prop-section';
 
 export default function Home() {
