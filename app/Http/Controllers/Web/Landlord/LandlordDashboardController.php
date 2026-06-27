@@ -18,6 +18,9 @@ class LandlordDashboardController extends Controller
 
     public function index(Request $request)
     {
+        // TODO: Sentry test — remove after verifying
+        throw new \Exception('Sentry test — delete me after confirming it works');
+
         $this->authorize('viewAny', Property::class);
 
         $months = min(max((int) $request->get('months', 6), 1), 24);
