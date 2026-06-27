@@ -39,77 +39,40 @@ Managing rental properties still means juggling spreadsheets, chasing payments o
 
 ### Built With
 
-<table>
-  <tr>
-    <td align="center"><strong>Backend</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel 12" />
-      <img src="https://img.shields.io/badge/PHP-8.5-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.5" />
-      <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Frontend</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
-      <img src="https://img.shields.io/badge/Inertia.js-v2-9F7AEA?style=flat-square" alt="Inertia.js v2" />
-      <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Auth</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/Fortify-v1-FF2D20?style=flat-square" alt="Fortify" />
-      <img src="https://img.shields.io/badge/Sanctum-v1-FF2D20?style=flat-square" alt="Sanctum" />
-      <img src="https://img.shields.io/badge/2FA-TOTP-000000?style=flat-square" alt="2FA TOTP" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Mobile</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/React_Native-0.76-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native" />
-      <img src="https://img.shields.io/badge/Expo-51-000020?style=flat-square&logo=expo&logoColor=white" alt="Expo" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Infra</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
-      <img src="https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white" alt="Render" />
-      <img src="https://img.shields.io/badge/Sentry-362D59?style=flat-square&logo=sentry&logoColor=white" alt="Sentry" />
-      <img src="https://img.shields.io/badge/Laravel_Reverb-v1-FF2D20?style=flat-square" alt="Laravel Reverb" />
-    </td>
-  </tr>
-</table>
+<img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel 12" />
+<img src="https://img.shields.io/badge/PHP-8.5-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.5" />
+<img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis" />
+<img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
+<img src="https://img.shields.io/badge/Inertia.js-v2-9F7AEA?style=flat-square" alt="Inertia.js v2" />
+<img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
+<img src="https://img.shields.io/badge/Fortify-v1-FF2D20?style=flat-square" alt="Fortify" />
+<img src="https://img.shields.io/badge/Sanctum-v1-FF2D20?style=flat-square" alt="Sanctum" />
+<img src="https://img.shields.io/badge/2FA-TOTP-000000?style=flat-square" alt="2FA TOTP" />
+<img src="https://img.shields.io/badge/React_Native-0.76-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native" />
+<img src="https://img.shields.io/badge/Expo-51-000020?style=flat-square&logo=expo&logoColor=white" alt="Expo" />
+
+| Category | Stack |
+|----------|-------|
+| **Backend** | Laravel 12, PHP 8.5, Redis |
+| **Frontend** | React 19, Inertia.js v2, Tailwind CSS v4 |
+| **Auth** | Fortify, Sanctum, 2FA TOTP |
+| **Mobile** | React Native 0.76, Expo 51 |
 
 ### Infrastructure
 
-<table>
-  <tr>
-    <td align="center"><strong>Containers</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Hosting</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white" alt="Render" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Monitoring</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/Sentry-362D59?style=flat-square&logo=sentry&logoColor=white" alt="Sentry" />
-    </td>
-  </tr>
-  <tr>
-    <td align="center"><strong>WebSockets</strong></td>
-    <td>
-      <img src="https://img.shields.io/badge/Laravel_Reverb-v1-FF2D20?style=flat-square" alt="Laravel Reverb" />
-    </td>
-  </tr>
-</table>
+<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
+<img src="https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white" alt="Render" />
+<img src="https://img.shields.io/badge/Sentry-362D59?style=flat-square&logo=sentry&logoColor=white" alt="Sentry" />
+<img src="https://img.shields.io/badge/Laravel_Reverb-v1-FF2D20?style=flat-square" alt="Laravel Reverb" />
+<img src="https://img.shields.io/badge/PostHog-000000?style=flat-square&logo=posthog&logoColor=white" alt="PostHog" />
+
+| Category | Service |
+|----------|---------|
+| **Containers** | Docker |
+| **Hosting** | Render |
+| **Monitoring** | Sentry |
+| **WebSockets** | Laravel Reverb |
+| **Analytics** | PostHog |
 
 ---
 
