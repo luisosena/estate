@@ -92,15 +92,13 @@ Managing rental properties still means juggling spreadsheets, chasing payments o
 
 ### For Landlords
 
-| Feature | Description |
-|---------|-------------|
-| **Property & Unit Management** | Organise properties into units, track occupancy, and assign tenants — no spreadsheets |
-| **Tenant Onboarding** | Add tenants manually or bulk-import from CSV with lease details attached from day one |
-| **Automated Billing** | Rent bills generate monthly on schedule. Utility charges per unit. Never miss a billing cycle |
-| **Payment Tracking** | Log payments, reconcile against bills, and see overdue balances at a glance |
-| **Revenue Dashboard** | Revenue trends, payment collection breakdowns, occupancy rates — exportable as CSV or PDF |
-| **Document Management** | Store and share leases, receipts, and documents directly through the platform |
-| **Real-Time Notifications** | Instant alerts via in-app, email, WhatsApp, and push notifications when payments land or bills go overdue |
+- **Property & Unit Management** — Organise properties into units, track occupancy, and assign tenants — no spreadsheets
+- **Tenant Onboarding** — Add tenants manually or bulk-import from CSV with lease details attached from day one
+- **Automated Billing** — Rent bills generate monthly on schedule. Utility charges per unit. Never miss a billing cycle
+- **Payment Tracking** — Log payments, reconcile against bills, and see overdue balances at a glance
+- **Revenue Dashboard** — Revenue trends, payment collection breakdowns, occupancy rates — exportable as CSV or PDF
+- **Document Management** — Store and share leases, receipts, and documents directly through the platform
+- **Real-Time Notifications** — Instant alerts via in-app, email, WhatsApp, and push notifications when payments land or bills go overdue
 
 ### For Tenants
 
