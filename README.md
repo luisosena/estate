@@ -160,9 +160,6 @@ Managing rental properties still means juggling spreadsheets, chasing payments o
 | **Document Access** | View and download lease agreements and shared documents |
 | **Notifications** | Get alerted when a new bill is issued or a payment is confirmed |
 
-### Mobile App
-
-A companion **React Native** app provides landlords and tenants the same core features on the go — Sanctum-authenticated, with push notifications via Expo.
 
 ---
 
