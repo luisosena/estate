@@ -115,7 +115,7 @@ Managing rental properties still means juggling spreadsheets, chasing payments o
 
 ## Overview
 
-> **🌐 Try it live →** [estate-6icx.onrender.com](https://estate-6icx.onrender.com)
+[**Live Demo**](https://estate-6icx.onrender.com)
 
 ### Landlord Dashboard
 
