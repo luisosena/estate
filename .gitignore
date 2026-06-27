@@ -47,3 +47,5 @@ lint_results*.json
 *_pages_utf8.txt
 routes.txt
 routes_landlord.txt
+
+CLAUDE.md
