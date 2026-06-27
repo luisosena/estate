@@ -42,23 +42,43 @@ Managing rental properties still means juggling spreadsheets, chasing payments o
 <table>
   <tr>
     <td align="center"><strong>Backend</strong></td>
-    <td>Laravel 12 · PHP 8.5 · Redis</td>
+    <td>
+      <img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel 12" />
+      <img src="https://img.shields.io/badge/PHP-8.5-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP 8.5" />
+      <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis" />
+    </td>
   </tr>
   <tr>
     <td align="center"><strong>Frontend</strong></td>
-    <td>React 19 · Inertia.js v2 · Tailwind CSS v4</td>
+    <td>
+      <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
+      <img src="https://img.shields.io/badge/Inertia.js-v2-9F7AEA?style=flat-square" alt="Inertia.js v2" />
+      <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
+    </td>
   </tr>
   <tr>
     <td align="center"><strong>Auth</strong></td>
-    <td>Fortify · Sanctum · 2FA (TOTP)</td>
+    <td>
+      <img src="https://img.shields.io/badge/Fortify-v1-FF2D20?style=flat-square" alt="Fortify" />
+      <img src="https://img.shields.io/badge/Sanctum-v1-FF2D20?style=flat-square" alt="Sanctum" />
+      <img src="https://img.shields.io/badge/2FA-TOTP-000000?style=flat-square" alt="2FA TOTP" />
+    </td>
   </tr>
   <tr>
     <td align="center"><strong>Mobile</strong></td>
-    <td>React Native · Expo · Push Notifications</td>
+    <td>
+      <img src="https://img.shields.io/badge/React_Native-0.76-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native" />
+      <img src="https://img.shields.io/badge/Expo-51-000020?style=flat-square&logo=expo&logoColor=white" alt="Expo" />
+    </td>
   </tr>
   <tr>
     <td align="center"><strong>Infra</strong></td>
-    <td>Docker · Render · Sentry · Laravel Reverb</td>
+    <td>
+      <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
+      <img src="https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white" alt="Render" />
+      <img src="https://img.shields.io/badge/Sentry-362D59?style=flat-square&logo=sentry&logoColor=white" alt="Sentry" />
+      <img src="https://img.shields.io/badge/Laravel_Reverb-v1-FF2D20?style=flat-square" alt="Laravel Reverb" />
+    </td>
   </tr>
 </table>
 
@@ -92,13 +112,15 @@ Managing rental properties still means juggling spreadsheets, chasing payments o
 
 ### For Landlords
 
-- **Property & Unit Management** — Organise properties into units, track occupancy, and assign tenants — no spreadsheets
-- **Tenant Onboarding** — Add tenants manually or bulk-import from CSV with lease details attached from day one
-- **Automated Billing** — Rent bills generate monthly on schedule. Utility charges per unit. Never miss a billing cycle
-- **Payment Tracking** — Log payments, reconcile against bills, and see overdue balances at a glance
-- **Revenue Dashboard** — Revenue trends, payment collection breakdowns, occupancy rates — exportable as CSV or PDF
-- **Document Management** — Store and share leases, receipts, and documents directly through the platform
-- **Real-Time Notifications** — Instant alerts via in-app, email, WhatsApp, and push notifications when payments land or bills go overdue
+| Feature | Description |
+|---------|-------------|
+| **Property & Unit Management** | Organise properties into units, track occupancy, and assign tenants — no spreadsheets |
+| **Tenant Onboarding** | Add tenants manually or bulk-import from CSV with lease details attached from day one |
+| **Automated Billing** | Rent bills generate monthly on schedule. Utility charges per unit. Never miss a billing cycle |
+| **Payment Tracking** | Log payments, reconcile against bills, and see overdue balances at a glance |
+| **Revenue Dashboard** | Revenue trends, payment collection breakdowns, occupancy rates — exportable as CSV or PDF |
+| **Document Management** | Store and share leases, receipts, and documents directly through the platform |
+| **Real-Time Notifications** | Instant alerts via in-app, email, WhatsApp, and push notifications when payments land or bills go overdue |
 
 ### For Tenants
 
