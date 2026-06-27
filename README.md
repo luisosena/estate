@@ -111,32 +111,6 @@ Managing rental properties still means juggling spreadsheets, chasing payments o
   </tr>
 </table>
 
-#### Architecture Overview
-
-The application runs as a single Docker container on Render, packing Nginx, PHP-FPM, a queue worker, and the Reverb WebSocket server into one image. On each boot, `start.sh` loads secrets from Render's secret file, runs migrations and seeders, warms caches, then launches all four processes behind Nginx on port 8000.
-
-**Hosting (Render)**
-- Web service with Docker environment — the `Dockerfile` handles the full build (Composer, npm, Vite assets).
-- Render Secret File injects production `.env` values (database credentials, Redis URL, Sentry DSN, Reverb keys) at runtime.
-- Render Redis add-on provides the backing store for sessions, queues, and cache (`SESSION_DRIVER=redis`, `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`).
-
-**Database (MySQL)**
-- Provisioned as a managed database on Render (or external host).
-- Connection configured via `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` environment variables.
-- Migrations run automatically on every deploy via `php artisan migrate --force` in `start.sh`.
-
-**Monitoring (Sentry)**
-- Captures exceptions, performance traces, and profiling data in production.
-- Configured via `SENTRY_LARAVEL_DSN` with tunable sample rates (`SENTRY_TRACES_SAMPLE_RATE`, `SENTRY_PROFILES_SAMPLE_RATE`).
-- Ignores health-check endpoint (`/up`) to reduce noise.
-
-**WebSockets (Laravel Reverb)**
-- Runs in-process alongside Nginx and PHP-FPM, bound to `127.0.0.1:6001`.
-- Nginx proxies WebSocket upgrades at `/app/{key}` and `/apps/{id}` to the Reverb server.
-- Clients connect over `wss://` on port 443 (TLS terminated by Render) — the Pusher protocol handles the handshake.
-- Used for real-time notifications (payment alerts, bill reminders) via Laravel Broadcasting.
-
----
 
 ## Overview
 
