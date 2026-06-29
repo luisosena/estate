@@ -11,7 +11,6 @@ use App\Listeners\ProcessPaymentConfirmed;
 use App\Models\CsvImportBatch;
 use App\Policies\CsvImportBatchPolicy;
 use App\Policies\NotificationPolicy;
-use App\Services\DocSyncService;
 use App\Services\PaymentService;
 use App\Services\RentBillService;
 use App\Services\UtilityService;
@@ -34,10 +33,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(DocSyncService::class, function ($app) {
-            return new DocSyncService;
-        });
-
         $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
         $this->app->bind(RentBillServiceInterface::class, RentBillService::class);
         $this->app->bind(UtilityServiceInterface::class, UtilityService::class);

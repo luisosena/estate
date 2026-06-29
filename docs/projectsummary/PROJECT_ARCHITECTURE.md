@@ -286,7 +286,7 @@ Located in `app/Http/Controllers/Api/`:
 ### 3. Business Logic Layer
 Located in:
 - **Contracts**: `app/Contracts/` containing service interfaces (`PaymentServiceInterface`, `RentBillServiceInterface`, `UtilityServiceInterface`) for DI and testability.
-- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService` implements `PaymentServiceInterface`, `RentBillService` implements `RentBillServiceInterface`, `UtilityService`, `OnboardingService`, `DashboardServices`, `NotificationService`, `ReceiptService`, `DocumentService`, `RevenueAnalyticsService`, `DashboardExportService`, `DocSyncService`, plus role-scoped services in `Admin/`, `Landlord/`, `Tenant/` subdirectories). **Note**: `ReceiptService` uses DomPDF for on-demand receipt generation—receipts are streamed as PDF responses, not stored to disk.
+- **Services**: `app/Services/` containing exhaustive business rules divorced from controllers (e.g. `PaymentService` implements `PaymentServiceInterface`, `RentBillService` implements `RentBillServiceInterface`, `UtilityService`, `OnboardingService`, `DashboardServices`, `NotificationService`, `ReceiptService`, `DocumentService`, `RevenueAnalyticsService`, `DashboardExportService`, plus role-scoped services in `Admin/`, `Landlord/`, `Tenant/` subdirectories). **Note**: `ReceiptService` uses DomPDF for on-demand receipt generation—receipts are streamed as PDF responses, not stored to disk.
 - **Models**: `app/Models/` (User, Property, Unit, Tenant, Tenancy, Payment, RentBill, Document, etc.)
 - **Actions**: `app/Actions/Fortify/` (User creation, password validation)
 - **Channels**: `app/Channels/` (`WhatsAppChannel` via Twilio, `ExpoPushChannel` via Expo Push)

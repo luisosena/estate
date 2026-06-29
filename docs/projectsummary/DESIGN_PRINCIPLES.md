@@ -348,7 +348,7 @@ Business logic is encapsulated in services with contract interfaces for DI and t
 - `PaymentService` (implements `PaymentServiceInterface`): Payment processing logic
 - `RentBillService` (implements `RentBillServiceInterface`): Rent bill management
 - `UtilityService` (implements `UtilityServiceInterface`): Utility tracking operations
-- `TenantService`, `UnitService`, `OnboardingService`, `DocumentService`, `NotificationService`, `ReceiptService`, `RevenueAnalyticsService`, `DashboardExportService`, `DocSyncService`
+- `TenantService`, `UnitService`, `OnboardingService`, `DocumentService`, `NotificationService`, `ReceiptService`, `RevenueAnalyticsService`, `DashboardExportService`
 
 ### 5. Form Request Validation
 All form submissions use Laravel Form Requests (35+ across the codebase). API endpoints use dedicated requests under `app/Http/Requests/Api/`:

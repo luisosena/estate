@@ -169,7 +169,7 @@ String literals for status/role values do not exist in the active codebase.
 - **`Contracts`** — Service interfaces for DI and testability:
   - `PaymentServiceInterface.php`, `RentBillServiceInterface.php`, `UtilityServiceInterface.php`
 - **`Services`**
-  - Core: `PaymentService.php`, `RentBillService.php`, `UtilityService.php`, `ReceiptService.php`, `DocumentService.php`, `TenantService.php`, `UnitService.php`, `OnboardingService.php`, `NotificationService.php`, `DashboardExportService.php`, `RevenueAnalyticsService.php`, `DocSyncService.php`
+  - Core: `PaymentService.php`, `RentBillService.php`, `UtilityService.php`, `ReceiptService.php`, `DocumentService.php`, `TenantService.php`, `UnitService.php`, `OnboardingService.php`, `NotificationService.php`, `DashboardExportService.php`, `RevenueAnalyticsService.php`
   - Role-scoped: `Landlord\LandlordDashboardService.php`, `Admin\AdminDashboardService.php`, `Admin\AdminLandlordService.php`, `Tenant\TenantDashboardService.php`, `Landlord\LandlordStatisticsService.php`
 
 - **`Rules`**
@@ -369,7 +369,7 @@ String literals for status/role values do not exist in the active codebase.
 
 - **Service Pattern**
   - Services implement contracts in `app/Contracts/` (`PaymentServiceInterface`, `RentBillServiceInterface`, `UtilityServiceInterface`) for DI and testability.
-  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`, `ReceiptService`, `DocumentService`, `RevenueAnalyticsService`, `DashboardExportService`, `DocSyncService`, plus role-scoped dashboard services.
+  - `TenantService`, `UnitService`, `OnboardingService`, `DashboardServices`, `PaymentService`, `RentBillService`, `UtilityService`, `NotificationService`, `ReceiptService`, `DocumentService`, `RevenueAnalyticsService`, `DashboardExportService`, plus role-scoped dashboard services.
 
 ---
 

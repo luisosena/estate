@@ -16,7 +16,7 @@
 | Test suite | 348+ Pest tests, 1133 assertions, architecture guardrails in `ArchTest.php` |
 | Receipt system | DomPDF streaming via `ReceiptService`, `HandlesReceipts` trait |
 | Payment scaffold | Gateway contracts, M-Pesa/Manual drivers, event/listener — ready to activate |
-| CI | GitHub Actions: tests (PHP 8.4/8.5 matrix), lint, doc-sync |
+| CI | GitHub Actions: tests (PHP 8.4/8.5 matrix), lint |
 | Deployment skeleton | Dockerfile (PHP 8.5-fpm-alpine + Nginx + Vite build) |
 | Security events | `SecurityEvent::log()` on login, logout, password change, profile update |
 | Web authorization | 49 `$this->authorize()` calls across all Web controllers |
