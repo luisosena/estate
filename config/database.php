@@ -157,6 +157,10 @@ return [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
             'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
+            'stream' => [
+                'verify_peer' => env('REDIS_TLS_VERIFY_PEER', true),
+                'verify_peer_name' => env('REDIS_TLS_VERIFY_PEER_NAME', true),
+            ],
         ],
 
         'default' => [
